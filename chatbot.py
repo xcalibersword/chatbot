@@ -2,7 +2,7 @@ import random
 import re
 
 STATES = {
-    'init':20, 
+    'init':200, 
     'sales_query':211, 
     'payment_query':212,
     'gen_query':213,
@@ -18,8 +18,9 @@ STATES = {
 }
 
 INTENTS = {
-    'greet':10,
+    'greet':100,
     'affirm':191,
+    'ask_name':101,
     'indicate_plan':181,
     'deny':192,
     'sales_query':111,
@@ -32,19 +33,15 @@ INTENTS = {
 
 pattern = "你还记得(.*)吗？"
 
-name = {
-    "你的名字是什么？": [
-        "我是回音机器人",
-        "他们叫我王俊杰！",
-        "我名回音，姓机器人"
-    ],
-}
-
 SALES_PITCH = "您好，欢迎光临唯洛社保，很高兴为您服务。本店现在可以代缴上海、北京、长沙、广州、苏州、杭州、成都的五险一金。请问需要代缴哪个城市的呢？需要从几月份开始代缴呢？注意：社保局要求已怀孕的客户（代缴后再怀孕的客户不受影响）和重大疾病或者慢性病状态客户，我司不能为其代缴社保，如有隐瞒恶意代缴的责任自负！请注意参保手续开始办理后，无法退款。"
 
 weather = {
     "今天天气怎样？":"今天{}"
 }
+
+db_ask_name = [
+    "who u","what is your name", "who are you","你的名字是什么","你叫什么","你叫什么名"
+]
 
 db_affirm = [
     "yes","好","好的","可以","是的","有","没问题","确定","ok"
@@ -68,12 +65,22 @@ db_indicate_plan = [
     'plana', 'planb', 'plan a', 'plan b'
 ]
 
+db_report_issue = [
+    'issue','problem'
+]
+
 db_goodbye = [
     '再见','bye','goodbye'
 ]
 
+r_name = [
+    "我是回音机器人",
+    "他们叫我王俊杰！",
+    "我名回音，姓机器人"
+]
+
 r_greetings = [
-    '你好！','你好!!!!','Hello！',
+    '你好！','你好 :)','Hello！',
 ]
 
 r_query = [
@@ -90,10 +97,13 @@ random_chat = [
 ]
 
 SUB_LIST = [
+    ("'s"," is"),
+]
+
+REMOVE_LIST = [
     ".",
     ",",
     "!",
-    " ",
     "，",
     "。",
     "！",
@@ -107,10 +117,17 @@ REPLY_DATABASE = {
     'greet':   r_greetings,
     'sale_query': r_query,
     'goodbye': r_goodbye,
+    'ask_name': r_name
 }
 
 UNIVERSAL_INTENTS = {
-    INTENTS['greet']: 'greet'
+    INTENTS['sales_query']: (STATES['sales_query'], "好的，那么我就跟亲介绍一下"),
+    INTENTS['report_issue']: (STATES['record_issue'], "Please state your issue")
+}
+
+STATIC_INTENTS = {
+    INTENTS['greet']: 'greet',
+    INTENTS['ask_name']: 'ask_name',
 }
 
 MASTER_INTENT_LIST = [
@@ -121,12 +138,15 @@ MASTER_INTENT_LIST = [
     (INTENTS['purchase'],db_purchase),
     (INTENTS['gen_query'],db_gen_query),
     (INTENTS['goodbye'],db_goodbye),
+    (INTENTS['ask_name'],db_ask_name),
+    (INTENTS['report_issue'],db_report_issue),
+
 ]
 
 
 ### POLICIES ###
 POLICY_RULES = {
-    (STATES['init'], INTENTS['greet']): (STATES['confirm_query'], SALES_PITCH),
+    (STATES['init'], INTENTS['greet']): (STATES['init'], SALES_PITCH),
     (STATES['init'], INTENTS['gen_query']) : (STATES['confirm_query'], "您要问什么呢？"),
     (STATES['init'], INTENTS['sales_query']) : (STATES['sales_query'], "好的，那么我就跟亲介绍一下"),
     (STATES['init'], INTENTS['purchase']): (STATES['init_sale'], "Ok. Would you like to see our plans?"),
@@ -150,16 +170,22 @@ def check_policies(curr_state, intent):
     if key in POLICY_RULES:
         return POLICY_RULES[key]
     if intent in UNIVERSAL_INTENTS:
-        rep_key = UNIVERSAL_INTENTS[intent]
+        return UNIVERSAL_INTENTS[intent]
+    if intent in STATIC_INTENTS:
+        print("STATIC")
+        # State doesnt change
+        rep_key = STATIC_INTENTS[intent]
         return (curr_state,rep_key)
     return False
 
 ### GENERAL ###
-# Removes characters
+# Removes weird characters and converts to lowercase
 def format_text(text):
     text = text.lower()
-    for character in SUB_LIST:
+    for character in REMOVE_LIST:
         text = text.replace(character,"")
+    for pair in SUB_LIST:
+        text = text.replace(pair[0],pair[1])
     return text
 
 # Returns an intent
@@ -195,9 +221,7 @@ def intent_to_reply(state, intent):
     s_r = check_policies(state,intent)
     if not s_r:
         return (state, False)
-
     return s_r
-
 
 def rand_response(response_list):
     return random.choice(response_list)
@@ -211,11 +235,12 @@ def generate_reply(reply_key):
         return DEFAULT_CONFUSED
 
     # Temporary
-    return reply_key
+    if reply_key in REPLY_DATABASE:
+        r_list = get_reply_list(reply_key)
+        replytext = rand_response(r_list)
+        return replytext
 
-    r_list = get_reply_list(reply_key)
-    replytext = rand_response(r_list)
-    return replytext
+    return reply_key   
 
 class Chat:
     def __init__(self,user,convo_history):
