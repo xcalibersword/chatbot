@@ -1,5 +1,5 @@
 import re
-import en_core_web_sm
+# import en_core_web_sm
 import numpy as np
 
 
@@ -29,13 +29,14 @@ def prac1():
     print(pattern1.findall(message2))
 
     return 0
+
 #dict of intent and keywords
 #create pattern using re.compile and "|".join()
 #use pattern to identify intent then give the appriopriate response
 pattern = re.compile('http.*')
-while 1==1:
+while 1:
     msg = input("website: ")
     print(type(pattern.findall(msg)))
-    if pattern.findall(msg) == []
-        print('wonrg')
+    if pattern.findall(msg) == []:
+        print('wrong')
     print(type(pattern.match(msg)))
