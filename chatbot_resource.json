@@ -1,0 +1,42 @@
+{
+    "intents": {
+        "greet":100,
+        "affirm":191,
+        "ask_name":101,
+        "indicate_plan":1701,
+        "indicate_query":1702,
+        "deny":192,
+        "confusion":193,
+        "sales_query":111,
+        "payment_query":112,
+        "gen_query":113,
+        "report_issue":151,
+        "purchase":180,
+        "goodbye":199
+        },
+
+    "states": {
+        "init":200, 
+        "sales_query":211, 
+        "payment_query":212,
+        "gen_query":213,
+        "confirm_query": 218,
+        "ask_location":221,
+        "record_issue":251,
+        "recommend":271,
+        "init_sale":280,
+        "choose_plan":281,
+        "confirm_plan":282,
+        "payment":283,
+        "finish_sale":289,
+        "goodbye": 299
+        },
+
+    "match_db": {
+        "db_goodbye": [
+            "再见", 
+            "bye", 
+            "goodbye"
+            ]
+        }
+}

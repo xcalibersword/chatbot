@@ -1,221 +1,201 @@
 import random
 import re
+import json
 
-STATES = {
-    'init':200, 
-    'sales_query':211, 
-    'payment_query':212,
-    'gen_query':213,
-    'confirm_query': 218,
-    'ask_location':221,
-    'record_issue':251,
-    'recommend':271,
-    'init_sale':280,
-    'choose_plan':281,
-    'confirm_plan':282,
-    'payment':283,
-    'finish_sale':289,
-    'goodbye': 299
-}
 
-INTENTS = {
-    'greet':100,
-    'affirm':191,
-    'ask_name':101,
-    'indicate_plan':1701,
-    'indicate_query':1702,
-    'deny':192,
-    'confusion':193,
-    'sales_query':111,
-    'payment_query':112,
-    'gen_query':113,
-    'report_issue':151,
-    'purchase':180,
-    'goodbye':199
-}
+# class Chatbot
 
-pattern = "你还记得(.*)吗？"
+# This is so that all these links are built AFTER resources are initalized 
+def main_bot(json_data):
+    initalize_json_resources(json_data)
+    pattern = "你还记得(.*)吗？"
 
-SALES_PITCH = "您好，欢迎光临唯洛社保，很高兴为您服务。本店现在可以代缴上海、北京、长沙、广州、苏州、杭州、成都的五险一金。请问需要代缴哪个城市的呢？需要从几月份开始代缴呢？注意：社保局要求已怀孕的客户（代缴后再怀孕的客户不受影响）和重大疾病或者慢性病状态客户，我司不能为其代缴社保，如有隐瞒恶意代缴的责任自负！请注意参保手续开始办理后，无法退款。"
-CHOOSE_PRODUCT = "Please choose a plan: Plan A or Plan B"
+    SALES_PITCH = "您好，欢迎光临唯洛社保，很高兴为您服务。本店现在可以代缴上海、北京、长沙、广州、苏州、杭州、成都的五险一金。请问需要代缴哪个城市的呢？需要从几月份开始代缴呢？注意：社保局要求已怀孕的客户（代缴后再怀孕的客户不受影响）和重大疾病或者慢性病状态客户，我司不能为其代缴社保，如有隐瞒恶意代缴的责任自负！请注意参保手续开始办理后，无法退款。"
+    CHOOSE_PRODUCT = "Please choose a plan: Plan A or Plan B"
 
-db_ask_name = [
-    "who u","what is your name", "who are you","你的名字是什么","你叫什么","你叫什么名"
-]
+    db_ask_name = [
+        "who u","what is your name", "who are you","你的名字是什么","你叫什么","你叫什么名"
+    ]
 
-db_affirm = [
-    "yes","好","好的","可以","是的","有","没问题","确定","ok"
-]
+    db_affirm = [
+        "yes","好","好的","可以","是的","有","没问题","确定","ok"
+    ]
 
-db_deny = ["不好","不可以","不是","没有","没问题","不确定","no","not ok"]
+    db_deny = ["不好","不可以","不是","没有","没问题","不确定","no","not ok"]
 
-db_greetings = [
-    '你好','hello',"你好早","早安","下午好","午安","晚上好","您好", "hi"
-]
+    db_greetings = [
+        '你好','hello',"你好早","早安","下午好","午安","晚上好","您好", "hi"
+    ]
 
-db_gen_query = [
-    '请问','想问','问一下','ask'
-]
+    db_gen_query = [
+        '请问','想问','问一下','ask'
+    ]
 
-db_purchase = [
-    'buy', '我要买'
-]
+    db_purchase = [
+        'buy', '我要买'
+    ]
 
-db_pay_query = [
-    'pay','付钱'
-]
+    db_pay_query = [
+        'pay','付钱'
+    ]
 
-db_indicate_plan = [
-    'plana', 'planb', 'plan a', 'plan b'
-]
+    db_sales_query = [
+        'sales query','ask about your product'
+    ]
 
-db_report_issue = [
-    'issue','problem'
-]
+    db_indicate_plan = [
+        'plana', 'planb', 'plan a', 'plan b'
+    ]
 
-db_goodbye = [
-    '再见','bye','goodbye'
-]
+    db_report_issue = [
+        'issue','problem'
+    ]
 
-r_name = [
-    "我是回音机器人",
-    "他们叫我王俊杰！",
-    "我名回音，姓机器人"
-]
+    db_goodbye = [
+        '再见','bye','goodbye'
+    ]
 
-r_greetings = [
-    '你好！','你好 :)','Hello！',
-]
+    r_name = [
+        "我是回音机器人",
+        "他们叫我王俊杰！",
+        "我名回音，姓机器人"
+    ]
 
-r_sales_query = [
-    "好的，那么我就跟亲介绍一下",
-]
+    r_greetings = [
+        '你好！','你好 :)','Hello！',
+    ]
 
-r_query = [
-    'YOu have enquired!','Our products costs very little!','YAY'
-]
+    r_sales_query = [
+        "好的，那么我就跟亲介绍一下",
+    ]
 
-r_purchase = [
-    CHOOSE_PRODUCT,
-]
+    r_query = [
+        'YOu have enquired!','Our products costs very little!','YAY'
+    ]
 
-r_goodbye = [
-    '再见!!','Byebye!','Hope to see you again! :)'
-]
+    r_purchase = [
+        CHOOSE_PRODUCT,
+    ]
 
-random_chat = [
-    "多说一点！",
-    "为什么你那么认为？"
-]
+    r_goodbye = [
+        '再见!!','Byebye!','Hope to see you again! :)'
+    ]
 
-SUB_LIST = [
-    ("'s"," is"),
-]
+    random_chat = [
+        "多说一点！",
+        "为什么你那么认为？"
+    ]
 
-REMOVE_LIST = [
-    ".",
-    ",",
-    "!",
-    "，",
-    "。",
-    "！",
-]
+    SUB_LIST = [
+        ("'s"," is"),
+    ]
 
-weather_today = "乌云密布"
+    REMOVE_LIST = [
+        ".",
+        ",",
+        "!",
+        "，",
+        "。",
+        "！",
+    ]
 
-DEFAULT_CONFUSED = "不好意思，我听不懂"
 
-# Takes a key and returns a reply database
-REPLY_DATABASE = {
-    'greet':   r_greetings,
-    'purchase': r_purchase,
-    'sale_query': r_sales_query,
-    'goodbye': r_goodbye,
-    'ask_name': r_name
-}
+    DEFAULT_CONFUSED = "不好意思，我听不懂"
 
-UNIVERSAL_INTENTS = {
-    INTENTS['purchase']: (STATES['choose_plan'], CHOOSE_PRODUCT),
-    INTENTS['sales_query']: (STATES['sales_query'], "sales_query"),
-    INTENTS['report_issue']: (STATES['record_issue'], "Please state your issue")
-}
+    # Takes a key and returns a reply database
+    REPLY_DATABASE = {
+        'greet':   r_greetings,
+        'purchase': r_purchase,
+        'sale_query': r_sales_query,
+        'goodbye': r_goodbye,
+        'ask_name': r_name
+    }
 
-STATIC_INTENTS = {
-    INTENTS['greet']: 'greet',
-    INTENTS['ask_name']: 'ask_name',
-}
+    UNIVERSAL_INTENTS = {
+        INTENTS['purchase']: (STATES['choose_plan'], CHOOSE_PRODUCT),
+        INTENTS['sales_query']: (STATES['sales_query'], "sales_query"),
+        INTENTS['report_issue']: (STATES['record_issue'], "Please state your issue")
+    }
+
+    STATIC_INTENTS = {
+        INTENTS['greet']: 'greet',
+        INTENTS['ask_name']: 'ask_name',
+    }
 
 # KIV for lookup
-MASTER_INTENT_DICT = {
-    (INTENTS['greet']:db_greetings),
-    (INTENTS['affirm']:db_affirm),
-    (INTENTS['deny'],db_deny),
-    (INTENTS['indicate_plan'],db_indicate_plan),
-    (INTENTS['purchase'],db_purchase),
-    (INTENTS['gen_query'],db_gen_query),
-    (INTENTS['sales_query'], db_sales_query),
-    (INTENTS['payment_query'], db_pay_query)
-    (INTENTS['goodbye'],db_goodbye),
-    (INTENTS['ask_name'],db_ask_name),
-    (INTENTS['report_issue'],db_report_issue),
-}
+# MASTER_INTENT_DICT = {
+#     (INTENTS['greet'],db_greetings),
+#     (INTENTS['affirm'],db_affirm),
+#     (INTENTS['deny'],db_deny),
+#     (INTENTS['indicate_plan'],db_indicate_plan),
+#     (INTENTS['purchase'],db_purchase),
+#     (INTENTS['gen_query'],db_gen_query),
+#     (INTENTS['sales_query'], db_sales_query),
+#     (INTENTS['payment_query'], db_pay_query),
+#     (INTENTS['goodbye'],db_goodbye),
+#     (INTENTS['ask_name'],db_ask_name),
+#     (INTENTS['report_issue'],db_report_issue),
+# }
 
-# List for lookup purposes
-GENERAL_INTENT_LIST = [
-    (INTENTS['greet'],db_greetings),
-    (INTENTS['affirm'],db_affirm),
-    (INTENTS['deny'],db_deny),
-    (INTENTS['purchase'],db_purchase),
-    (INTENTS['gen_query'],db_gen_query),
-    (INTENTS['sales_query'], db_sales_query),
-    (INTENTS['payment_query'], db_pay_query)
-    (INTENTS['goodbye'],db_goodbye),
-    (INTENTS['ask_name'],db_ask_name),
-    (INTENTS['report_issue'],db_report_issue),
-]
+    # List for lookup purposes
+    GENERAL_INTENT_LIST = [
+        (INTENTS['greet'],db_greetings),
+        (INTENTS['affirm'],db_affirm),
+        (INTENTS['deny'],db_deny),
+        (INTENTS['purchase'],db_purchase),
+        (INTENTS['gen_query'],db_gen_query),
+        (INTENTS['sales_query'], db_sales_query),
+        (INTENTS['payment_query'], db_pay_query),
+        (INTENTS['goodbye'], db_goodbye),
+        (INTENTS['ask_name'], db_ask_name),
+        (INTENTS['report_issue'],db_report_issue),
+    ]
 
-MASTER_INTENT_LIST = [
-    (INTENTS['greet'],db_greetings),
-    (INTENTS['affirm'],db_affirm),
-    (INTENTS['deny'],db_deny),
-    (INTENTS['indicate_plan'],db_indicate_plan),
-    (INTENTS['purchase'],db_purchase),
-    (INTENTS['gen_query'],db_gen_query),
-    (INTENTS['sales_query'], db_sales_query),
-    (INTENTS['payment_query'], db_pay_query)
-    (INTENTS['goodbye'],db_goodbye),
-    (INTENTS['ask_name'],db_ask_name),
-    (INTENTS['report_issue'],db_report_issue),
-]
+    MASTER_INTENT_LIST = [
+        (INTENTS['greet'],db_greetings),
+        (INTENTS['affirm'],db_affirm),
+        (INTENTS['deny'],db_deny),
+        (INTENTS['indicate_plan'],db_indicate_plan),
+        (INTENTS['purchase'],db_purchase),
+        (INTENTS['gen_query'],db_gen_query),
+        (INTENTS['sales_query'], db_sales_query),
+        (INTENTS['payment_query'], db_pay_query),
+        (INTENTS['goodbye'],db_goodbye),
+        (INTENTS['ask_name'],db_ask_name),
+        (INTENTS['report_issue'],db_report_issue),
+    ]
 
 
-# Contextual Intents
-# key: state, val: list of intents
-SPECIAL_INTENT_DICT{
-    STATES['gen_query']:[INTENTS['indicate_query']]
-    STATES['choose_plan']:[(INTENTS['indicate_plan',db_indicate_plan])]
-}
+    # Contextual Intents
+    # key: state, val: list of intents
+    SPECIAL_INTENT_LIST = [
+        (STATES['gen_query'],[INTENTS['indicate_query'], db_gen_query]),
+        (STATES['choose_plan'],[INTENTS['indicate_plan'],db_indicate_plan])
+    ]
 
-### POLICIES ###
-POLICY_RULES = {
-    (STATES['init'], INTENTS['greet']): (STATES['init'], SALES_PITCH),
-    (STATES['init'], INTENTS['gen_query']) : (STATES['confirm_query'], "您要问什么呢？"),
-    (STATES['init'], INTENTS['purchase']): (STATES['init_sale'], "sales_query"),
-    (STATES['init'], INTENTS['payment_query']): (STATES['payment_query'], "好的，那么"),
-    (STATES['init'], INTENTS['goodbye']): (STATES['goodbye'], "BYE BYE"),
-    (STATES['sales_query'], INTENTS['purchase']): (STATES['payment_query'], "好的，那么"),
-    (STATES['sales_query'], INTENTS['goodbye']): (STATES['goodbye'], "WHY SIA"),
-    (STATES['init_sale'], INTENTS['affirm']): (STATES['choose_plan'], CHOOSE_PRODUCT),
-    (STATES['choose_plan'], INTENTS['confusion']): (STATES['sales_query'], "Oh, let me clarify the plans."),
-    (STATES['choose_plan'], INTENTS['affirm']): (STATES['choose_plan'], "Great! But you still have to choose a plan."),
-    (STATES['choose_plan'], INTENTS['indicate_plan']): (STATES['confirm_plan'], "Just to confirm, your plan is XXX."),
-    (STATES['confirm_plan'], INTENTS['affirm']): (STATES['payment'], "That will be $100!"),
-    (STATES['payment'], INTENTS['affirm']): (STATES['finish_sale'], "Success! Thank you for using SHEBAO! Is there anything else I can help with?"),
-    (STATES['finish_sale'], INTENTS['affirm']): (STATES['init'], SALES_PITCH),
-    (STATES['finish_sale'], INTENTS['goodbye']): (STATES['goodbye'], "Bye! Hope to see you again soon!"),
-    (STATES['sales_query'], INTENTS['goodbye']): (STATES['goodbye'], "WHY SIA"),
-    (STATES['goodbye'], INTENTS['goodbye']): (STATES['goodbye'],"You already said bye")
-}
+    ### POLICIES ###
+    POLICY_RULES = {
+        (STATES['init'], INTENTS['greet']): (STATES['init'], SALES_PITCH),
+        (STATES['init'], INTENTS['gen_query']) : (STATES['confirm_query'], "您要问什么呢？"),
+        (STATES['init'], INTENTS['purchase']): (STATES['init_sale'], "sales_query"),
+        (STATES['init'], INTENTS['payment_query']): (STATES['payment_query'], "好的，那么"),
+        (STATES['init'], INTENTS['goodbye']): (STATES['goodbye'], "BYE BYE"),
+        (STATES['sales_query'], INTENTS['purchase']): (STATES['payment_query'], "好的，那么"),
+        (STATES['sales_query'], INTENTS['goodbye']): (STATES['goodbye'], "WHY SIA"),
+        (STATES['init_sale'], INTENTS['affirm']): (STATES['choose_plan'], CHOOSE_PRODUCT),
+        (STATES['choose_plan'], INTENTS['confusion']): (STATES['sales_query'], "Oh, let me clarify the plans."),
+        (STATES['choose_plan'], INTENTS['affirm']): (STATES['choose_plan'], "Great! But you still have to choose a plan."),
+        (STATES['choose_plan'], INTENTS['indicate_plan']): (STATES['confirm_plan'], "Just to confirm, your plan is XXX."),
+        (STATES['confirm_plan'], INTENTS['affirm']): (STATES['payment'], "That will be $100!"),
+        (STATES['payment'], INTENTS['affirm']): (STATES['finish_sale'], "Success! Thank you for using SHEBAO! Is there anything else I can help with?"),
+        (STATES['finish_sale'], INTENTS['affirm']): (STATES['init'], SALES_PITCH),
+        (STATES['finish_sale'], INTENTS['goodbye']): (STATES['goodbye'], "Bye! Hope to see you again soon!"),
+        (STATES['sales_query'], INTENTS['goodbye']): (STATES['goodbye'], "WHY SIA"),
+        (STATES['goodbye'], INTENTS['goodbye']): (STATES['goodbye'],"You already said bye")
+    }
+
+    initiate_bot()
+
 
 # Returns state and reply key
 def check_policies(curr_state, intent):
@@ -353,6 +333,17 @@ class Customer:
     def get_accounts(self):
         return self.accounts
 
+def read_json(json_filename):
+    with open(json_filename, 'r') as f:
+        data = json.loads(f.read())
+    return data
+
+def initalize_json_resources(jdata):
+    global INTENTS
+    global STATES
+    INTENTS = jdata["intents"]
+    STATES = jdata["states"]
+    return
 
 def initiate_bot():
     thischat = Chat("Me", {})
@@ -364,4 +355,6 @@ def initiate_bot():
 
 if __name__ == "__main__":
     print("Initializing...")
-    initiate_bot()
+    # load json and print
+    json_data = read_json("chatbot_resource.json")
+    main_bot(json_data) 
