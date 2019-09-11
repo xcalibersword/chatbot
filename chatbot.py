@@ -7,6 +7,11 @@ import json
 def rand_response(response_list):
     return random.choice(response_list)
 
+def read_json(json_filename):
+    with open(json_filename, 'r') as f:
+        data = json.loads(f.read())
+    return data
+
 # Default things
 DEFAULT_CONFUSED = "不好意思，我听不懂"
 
@@ -35,7 +40,7 @@ def format_text(text):
 
 # Big Chatbot class
 class Chatbot():
-    INTENTS, STATES, MATCH_DB = ({},{},{})
+    INTENTS, STATES, MATCH_DB, REPLY_DB = ({},{},{},{})
     def __init__(self,json_data):
         self.init_bot(json_data)
 
@@ -45,10 +50,11 @@ class Chatbot():
         return
 
     def init_json_info(self, jdata):
-        global INTENTS, STATES, MATCH_DB    
+        global INTENTS, STATES, MATCH_DB, REPLY_DB    
         INTENTS = jdata["intents"]
         STATES = jdata["states"]
         MATCH_DB = jdata["match_db"]
+        REPLY_DB = jdata["reply_db"]
         return
 
     def start(self):
@@ -182,51 +188,48 @@ class Chatbot():
         pattern = "你还记得(.*)吗？"
 
         SALES_PITCH = "您好，欢迎光临唯洛社保，很高兴为您服务。本店现在可以代缴上海、北京、长沙、广州、苏州、杭州、成都的五险一金。请问需要代缴哪个城市的呢？需要从几月份开始代缴呢？注意：社保局要求已怀孕的客户（代缴后再怀孕的客户不受影响）和重大疾病或者慢性病状态客户，我司不能为其代缴社保，如有隐瞒恶意代缴的责任自负！请注意参保手续开始办理后，无法退款。"
-        CHOOSE_PRODUCT = "Please choose a plan: Plan A or Plan B"
 
-        r_name = [
-            "我是回音机器人",
-            "他们叫我王俊杰！",
-            "我名回音，姓机器人"
-        ]
+        # r_name = [
+        #     "我是回音机器人",
+        #     "他们叫我王俊杰！",
+        #     "我名回音，姓机器人"
+        # ]
 
-        r_greetings = [
-            '你好！','你好 :)','Hello！',
-        ]
+        # r_greet = [
+        #     '你好！','你好 :)','Hello！',
+        # ]
 
-        r_sales_query = [
-            "好的，那么我就跟亲介绍一下",
-        ]
+        # r_sales_query = [
+        #     "好的，那么我就跟亲介绍一下..... 你对我们的产品有兴趣吗？",
+        # ]
 
-        r_query = [
-            'YOu have enquired!','Our products costs very little!','YAY'
-        ]
+        # r_query = [
+        #     'YOu have enquired!','Our products costs very little!','YAY'
+        # ]
 
-        r_purchase = [
-            CHOOSE_PRODUCT,
-        ]
+        # r_purchase = [
+        #     CHOOSE_PRODUCT,
+        # ]
 
-        r_goodbye = [
-            '再见!!','Byebye!','Hope to see you again! :)'
-        ]
+        # r_goodbye = [
+        #     '再见!!','Byebye!','Hope to see you again! :)'
+        # ]
 
         random_chat = [
             "多说一点！",
             "为什么你那么认为？"
         ]
 
-        # Takes a key and returns a reply database
-        self.REPLY_DATABASE = {
-            'greet':   r_greetings,
-            'purchase': r_purchase,
-            'sale_query': r_sales_query,
-            'goodbye': r_goodbye,
-            'ask_name': r_name
-        }
+        self.REPLY_DATABASE = {}
+        REPLY_DB_LIST = ["greet", "purchase", "goodbye", "sales_query", "ask_name"]
+        for k in REPLY_DB_LIST:
+            dbk = "r_" + k
+            # Append as a tuple
+            self.REPLY_DATABASE[k] = REPLY_DB[dbk]
 
         # Changes state no matter what current state is
         self.UNIVERSAL_INTENTS = {
-            INTENTS['purchase']: (STATES['choose_plan'], CHOOSE_PRODUCT),
+            INTENTS['purchase']: (STATES['choose_plan'], "purchase"),
             INTENTS['sales_query']: (STATES['sales_query'], "sales_query"),
             INTENTS['report_issue']: (STATES['log_issue'], "Please state your issue")
         }
@@ -294,7 +297,7 @@ class Chatbot():
             (STATES['init'], INTENTS['goodbye']): (STATES['goodbye'], "BYE BYE"),
             (STATES['sales_query'], INTENTS['purchase']): (STATES['pay_query'], "好的，那么"),
             (STATES['sales_query'], INTENTS['goodbye']): (STATES['goodbye'], "WHY SIA"),
-            (STATES['init_sale'], INTENTS['affirm']): (STATES['choose_plan'], CHOOSE_PRODUCT),
+            (STATES['init_sale'], INTENTS['affirm']): (STATES['choose_plan'], "purchase"),
             (STATES['choose_plan'], INTENTS['confusion']): (STATES['sales_query'], "Oh, let me clarify the plans."),
             (STATES['choose_plan'], INTENTS['affirm']): (STATES['choose_plan'], "Great! But you still have to choose a plan."),
             (STATES['choose_plan'], INTENTS['indicate_plan']): (STATES['confirm_plan'], "Just to confirm, your plan is XXX."),
@@ -356,12 +359,6 @@ class Customer:
 
     def get_accounts(self):
         return self.accounts
-
-def read_json(json_filename):
-    with open(json_filename, 'r') as f:
-        data = json.loads(f.read())
-    return data
-
 
 
 

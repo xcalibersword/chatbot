@@ -75,5 +75,27 @@
         "db_report_issue" : [
             "issue","problem"
         ]
+    },
+    "reply_db":{
+        "r_ask_name" : [
+            "我是回音机器人",
+            "他们叫我王俊杰！",
+            "我名回音，姓机器人"
+        ],
+        "r_greet" : [
+            "你好！","你好 :)","Hello！"
+        ],
+        "r_sales_query" : [
+            "好的，那么我就跟亲介绍一下..... 你对我们的产品有兴趣吗？"
+        ],
+        "r_query" : [
+            "YOu have enquired!","Our products costs very little!","YAY"
+        ],
+        "r_purchase" : [
+            "Please choose a plan: Plan A, Plan B or Plan C"
+        ],
+        "r_goodbye" : [
+            "再见!!","Byebye!","Hope to see you again! :)"
+        ]
     }
 }
