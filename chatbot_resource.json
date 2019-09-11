@@ -116,6 +116,10 @@
         "p_03": {
             "price": 9001,
             "desc": "Extremely comprehensive plan C. C for full Coverage"
+        },
+        "ERR":{
+            "price":0,
+            "desc": "Something went wrong"
         }
     }
 }
