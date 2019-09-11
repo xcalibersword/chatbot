@@ -45,10 +45,25 @@ def format_text(text):
         text = text.replace(pair[0],pair[1])
     return text
 
+def parse_plan_selection(msg):
+    msg = msg.replace("plan", "")
+    msg = msg.replace(" ", "")
+    selection = "ERR"
+    print("m",msg)
+    if re.fullmatch('a|1', msg):
+        selection = "p_01"
+    elif re.fullmatch('b|2', msg):
+        selection = "p_02"
+    elif re.fullmatch('c|3', msg):
+        selection = "p_03"
+
+    return selection
+
 # Big Chatbot class
 class Chatbot():
-    INTENTS, STATES, MATCH_DB, REPLY_DB = ({},{},{},{})
+    INTENTS, STATES, MATCH_DB, REPLY_DB, ALL_PRODUCTS = ({},{},{},{},{})
     def __init__(self,json_data):
+        self.PREV_REPLY_FLAG = "prev_state_message"
         self.init_bot(json_data)
 
     def init_bot(self,jdata):
@@ -62,6 +77,7 @@ class Chatbot():
         STATES = jdata["states"]
         MATCH_DB = jdata["match_db"]
         REPLY_DB = jdata["reply_db"]
+        ALL_PRODUCTS = jdata['products']
         return
 
     def start(self):
@@ -83,31 +99,57 @@ class Chatbot():
         print(reply)
         return
 
-    def get_reply_to_msg(self, chat, msg):
-        GENERAL_INTENT_LIST = self.GENERAL_INTENT_LIST
-        POLICY_RULES = self.POLICY_RULES
-        RECORDING_STATES = self.RECORDING_STATES
-        REPLY_DATABASE = self.REPLY_DATABASE
-        SPECIAL_INTENT_LIST = self.SPECIAL_INTENT_LIST
-        STATIC_INTENTS = self.STATIC_INTENTS
-        UNIVERSAL_INTENTS = self.UNIVERSAL_INTENTS
 
+    def generate_reply(self, reply_key, chat):
+        REPLY_DATABASE = self.REPLY_DATABASE
+        CONTEXT_REPLY_STATES = self.CONTEXT_REPLY_STATES
         def get_reply_list(rkey):
             reply_list = REPLY_DATABASE[rkey]
             return reply_list
 
-        def generate_reply(reply_key):
-            if not reply_key:
-                return DEFAULT_CONFUSED
+        if reply_key == self.PREV_REPLY_FLAG:
+            return chat.pop_prev_msg()
 
-            if reply_key in REPLY_DATABASE:
-                r_list = get_reply_list(reply_key)
-                replytext = rand_response(r_list)
-                return replytext
+        if not reply_key:
+            return DEFAULT_CONFUSED
 
-            # Since reply_key are strings, this works for a fixed response.
-            # TODO: Convert all replies to dictionaries
-            return reply_key
+        curr_state = chat.get_state()
+        if curr_state in CONTEXT_REPLY_STATES:
+            context_info = chat.get_selection()
+            print("ctxt",context_info)
+            msg_template = reply_key # TODO have proper message template lookups instead of hardcoded reply key
+            # construct message
+            replytext = msg_template.format(context_info)
+            # print("replytxt", replytext)  
+            return replytext
+
+        if reply_key in REPLY_DATABASE:
+            r_list = get_reply_list(reply_key)
+            replytext = rand_response(r_list)
+            return replytext
+
+        # Since reply_key are strings, this works for a fixed response.
+        # TODO: Convert all replies to dictionaries
+        return reply_key
+    
+    def process_intent(self, intent, msg):
+        SPECIAL_PARSE_INTENTS = self.SPECIAL_PARSE_INTENTS
+        if intent in SPECIAL_PARSE_INTENTS:
+            callback = SPECIAL_PARSE_INTENTS[intent]
+            print("callback",callback)
+            select = callback(msg)
+            return select 
+
+        return -1
+
+    def get_reply_to_msg(self, chat, msg):
+        GENERAL_INTENT_LIST = self.GENERAL_INTENT_LIST
+        POLICY_RULES = self.POLICY_RULES
+        RECORDING_STATES = self.RECORDING_STATES
+        SPECIAL_INTENT_LIST = self.SPECIAL_INTENT_LIST
+        STATIC_INTENTS = self.STATIC_INTENTS
+        UNIVERSAL_INTENTS = self.UNIVERSAL_INTENTS
+
 
         def get_intent_from_db(msg, intent_db_list, exact=False):
             for intent_db in intent_db_list:
@@ -117,6 +159,7 @@ class Chatbot():
                     return intent
             return False
 
+        # Special intent match exact?
         def get_special_intent(state, msg):
             def get_sil_state(e):
                 return e[0]
@@ -125,15 +168,15 @@ class Chatbot():
             for entry in SPECIAL_INTENT_LIST:
                 s_db_list = get_sil_pairlist(entry)
                 if state == get_sil_state(entry):
-                    return get_intent_from_db(msg,s_db_list)
+                    return get_intent_from_db(msg,s_db_list,exact = True)
 
         def get_general_intent(msg):
             # Global reference to GENERAL_INTENT_LIST
             return get_intent_from_db(msg,GENERAL_INTENT_LIST)
 
-
         # Overall function
         def message_to_intent(curr_state,msg):
+            select = -1
             # RECORD MSG
             if curr_state in RECORDING_STATES:
                 record_msg(msg)
@@ -144,6 +187,7 @@ class Chatbot():
             if not intent:
                 intent = get_general_intent(p_msg)
             print("Intent is:",intent,"\n")
+
             return intent
 
         ### INTENT ###
@@ -183,23 +227,34 @@ class Chatbot():
 
         curr_state = chat.get_state()
         intent = message_to_intent(curr_state, msg)
+        select = self.process_intent(intent, msg)
+        if not isinstance(select, int):
+            chat.set_selection(select)
+
         # print("intent",intent)
         new_state, reply_key = intent_to_reply(curr_state, intent)
-        reply = generate_reply(reply_key)
-        self.update_chat(chat, new_state, reply)
+        reply = self.generate_reply(reply_key,chat)
+
+        # TODO: Better software engine practice
+        self.change_chat_state(chat, new_state)
+        chat.set_prev_msg(reply)
+
         # reply = reply_key
         
-        return reply
+        return (reply, curr_state)
 
     def change_chat_state(self, chat, new_state, selection = -1):
         if new_state == self.PREV_STATE_FLAG:
             new_state = chat.get_prev_state()
+
         if not isinstance(selection,int):
+            chat.set_selection(selection)
 
         chat.change_state(new_state)
         
     def init_mappings(self):
         # These dicts can only be built AFTER resources are initalized 
+        self.PREV_STATE_FLAG = STATES["PREV_STATE"]
 
         self.REPLY_DATABASE = {}
         REPLY_DB_LIST = ["greet", "purchase", "goodbye", "sales_query", "ask_name", "sales_pitch"]
@@ -212,8 +267,8 @@ class Chatbot():
         self.UNIVERSAL_INTENTS = {
             INTENTS['purchase']: (STATES['choose_plan'], "purchase"),
             INTENTS['sales_query']: (STATES['sales_query'], "sales_query"),
-            INTENTS['report_issue']: (STATES['log_issue'], "Please state your issue")
-            INTENTS['deny']: (STATES['PREV_STATE'],"prev_state_msg")
+            INTENTS['report_issue']: (STATES['log_issue'], "Please state your issue"),
+            INTENTS['deny']: (STATES['PREV_STATE'], self.PREV_REPLY_FLAG)
         }
 
         self.STATIC_INTENTS = {
@@ -221,25 +276,20 @@ class Chatbot():
             INTENTS['ask_name']: 'ask_name',
         }
 
-    # KIV for lookup
-    # MASTER_INTENT_DICT = {
-    #     (INTENTS['greet'],db_greetings),
-    #     (INTENTS['affirm'],db_affirm),
-    #     (INTENTS['deny'],db_deny),
-    #     (INTENTS['indicate_plan'],db_indicate_plan),
-    #     (INTENTS['purchase'],db_purchase),
-    #     (INTENTS['gen_query'],db_gen_query),
-    #     (INTENTS['sales_query'], db_sales_query),
-    #     (INTENTS['pay_query'], db_pay_query),
-    #     (INTENTS['goodbye'],db_goodbye),
-    #     (INTENTS['ask_name'],db_ask_name),
-    #     (INTENTS['report_issue'],db_report_issue),
-    # }
-
         # List for lookup purposes
         self.RECORDING_STATES = [
             STATES['log_issue'],
         ]
+
+        self.CONTEXT_REPLY_STATES = [
+            
+            STATES["confirm_plan"],
+            STATES["payment"]
+        ]
+
+        self.SPECIAL_PARSE_INTENTS = {
+            INTENTS['indicate_plan']: parse_plan_selection
+        }
 
         self.GENERAL_INTENT_LIST = []
         GEN_INTENT_LIST_KEYS = ["greet", "ask_name", "affirm", "deny", "purchase", "gen_query", "sales_query", "pay_query","report_issue","goodbye"]
@@ -248,26 +298,12 @@ class Chatbot():
             # Append as a tuple
             self.GENERAL_INTENT_LIST.append((INTENTS[k],MATCH_DB[dbk]))
 
-        # self.MASTER_INTENT_LIST = [
-        #     (INTENTS['greet'],db_greetings),
-        #     (INTENTS['affirm'],db_affirm),
-        #     (INTENTS['deny'],db_deny),
-        #     (INTENTS['indicate_plan'],db_indicate_plan),
-        #     (INTENTS['purchase'],db_purchase),
-        #     (INTENTS['gen_query'],db_gen_query),
-        #     (INTENTS['sales_query'], db_sales_query),
-        #     (INTENTS['pay_query'], db_pay_query),
-        #     (INTENTS['goodbye'],db_goodbye),
-        #     (INTENTS['ask_name'],db_ask_name),
-        #     (INTENTS['report_issue'],db_report_issue),
-        # ]
-
-
         # Contextual Intents
         # key: state, val: list of intents
+        # As opposed to general intents, these special intents are only looked for when in certain states
         self.SPECIAL_INTENT_LIST = [
             (STATES['gen_query'],[(INTENTS['indicate_query'], MATCH_DB["db_gen_query"])]),
-            (STATES['choose_plan'],[(INTENTS['indicate_plan'],MATCH_DB["db_indicate_plan"])])
+            (STATES['choose_plan'],[(INTENTS['indicate_plan'], MATCH_DB["db_indicate_plan"])])
         ]
 
         ### POLICIES ###
@@ -282,8 +318,8 @@ class Chatbot():
             (STATES['init_sale'], INTENTS['affirm']): (STATES['choose_plan'], "purchase"),
             (STATES['choose_plan'], INTENTS['confusion']): (STATES['sales_query'], "Oh, let me clarify the plans."),
             (STATES['choose_plan'], INTENTS['affirm']): (STATES['choose_plan'], "Great! But you still have to choose a plan."),
-            (STATES['choose_plan'], INTENTS['indicate_plan']): (STATES['confirm_plan'], "Just to confirm, your plan is XXX."),
-            (STATES['confirm_plan'], INTENTS['affirm']): (STATES['payment'], "That will be $100!"),
+            (STATES['choose_plan'], INTENTS['indicate_plan']): (STATES['confirm_plan'], "Just to confirm, your have selected is {0}. \n Description:\n{1}"),
+            (STATES['confirm_plan'], INTENTS['affirm']): (STATES['payment'], "That will be ${0}!"),
             (STATES['payment'], INTENTS['affirm']): (STATES['finish_sale'], "Success! Thank you for using SHEBAO! Is there anything else I can help with?"),
             (STATES['finish_sale'], INTENTS['affirm']): (STATES['init'], "sales_pitch"),
             (STATES['finish_sale'], INTENTS['deny']): (STATES['goodbye'], "Bye! Hope to see you again soon!"),
@@ -291,8 +327,19 @@ class Chatbot():
             (STATES['sales_query'], INTENTS['goodbye']): (STATES['goodbye'], "WHY SIA"),
             (STATES['goodbye'], INTENTS['goodbye']): (STATES['goodbye'],"You already said bye")
         }
-
         return 
+
+
+# A product???
+class Product:
+    def __init__(self, name, info):
+        self.name = name
+        self.parse_info(info)
+
+    # info is in the form of a dict
+    def parse_info(self, info):
+        self.price = info["price"]
+        self.desc = info["desc"]
 
 
 # Try to have stateful changes
@@ -301,10 +348,20 @@ class Chat:
         self.customer = customer
         self.state = STATES['init']
         self.convo_history = convo_history
+        self.prev_messages = []
 
     def change_state(self,new_state):
+        print("changing to", new_state)
         self.prev_state = self.state
         self.state = new_state
+
+    def set_prev_msg(self, msg):
+        self.prev_messages.append(msg)
+    
+    def pop_prev_msg(self):
+        # TODO failsafe when empty?
+        indx = len(self.prev_messages) - 1
+        return self.prev_messages.pop(indx)
 
     def get_state(self):
         return self.state
@@ -315,11 +372,12 @@ class Chat:
     def set_selection(self,selection):
         self.selection = selection
     
-    def get_selection(self,selection):
-        return self.selection
+    def get_selection(self):
+        print("selcslad",self.selection)
+        return tuple(self.selection)
 
     def clear_selection(self):
-        self.selection = None
+        self.selection = False
 
     def get_previous_issues(self):
         return self.user.get_issues()
@@ -346,7 +404,17 @@ class Customer:
     def get_accounts(self):
         return self.accounts
 
+# Check if search allows trailing chars
+# E.g. plan alakazam = plan a
 
+# if __name__ == "__main__":
+#     def chk(inp):
+#         o = re.search("plan (a|b|c)",inp)
+#         print(o)
+#         return
+#     while 1:
+#         i = input()
+#         chk(i)
 
 
 if __name__ == "__main__":

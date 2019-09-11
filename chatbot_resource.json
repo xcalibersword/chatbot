@@ -16,8 +16,8 @@
         },
 
     "states": {
-        "init":200, 
-        "sales_query":211, 
+        "init":"200 init", 
+        "sales_query":"211 sq", 
         "pay_query":212,
         "gen_query":213,
         "confirm_query": 218,
@@ -70,7 +70,7 @@
         ],
 
         "db_indicate_plan" : [
-            "a", "b", "c","PRODUCT NAME"
+            "a", "b", "c", "plan (a|b|c)"
         ],
 
         "db_report_issue" : [
@@ -102,5 +102,20 @@
             "再见!!","Byebye!","Hope to see you again! :)"
         ]
         
+    },
+
+    "products":{
+        "p_01": {
+            "price": 100,
+            "desc": "Basic plan A"
+        },
+        "p_02": {
+            "price": 150,
+            "desc": "More advanced plan. Plan A + feature"
+        },
+        "p_03": {
+            "price": 9001,
+            "desc": "Extremely comprehensive plan C. C for full Coverage"
+        }
     }
 }
