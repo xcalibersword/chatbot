@@ -80,8 +80,10 @@ class Action:
     
     @classmethod
     def go_back(cls, prev_msg):
-        self.message = msg
-
+        act = cls()
+        act.message = msg
+        return act
+        
     def set_message(self, msg):
         self.message = msg
 
@@ -116,9 +118,6 @@ class Chat:
         self.prev_messages = []
         self.frame_history = [initial_state,]
     def change_state(self,new_state):
-        # If state never change, do nothing
-        if new_state == self.state or new_state == cbsv.PREV_STATE_FLAG():
-            return
         if DEBUG: print("changing to", new_state)
         self.frame_history.append(self.state)
         self.state = new_state
@@ -166,7 +165,6 @@ class Chat:
         print("going back")
 
     def update_chat(self, sip, selection):
-        print("changing state")
         if not isinstance(selection,int):
             self.set_selection(selection)
 

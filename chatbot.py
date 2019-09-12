@@ -181,7 +181,7 @@ class Chatbot():
         curr_state = chat.get_state()
         reply_key = getreplykey(curr_state, uds.intent, sip.get_state())
         
-        print("reply_key", reply_key)
+        print("reply_key <", reply_key,">")
 
         if curr_state in CONTEXT_REPLY_STATES:
             context_info = chat.get_selection()
@@ -247,7 +247,6 @@ class Chatbot():
                     assert isinstance(next_sip, SIP)
                     db = INTENT_LOOKUP_TABLE[intent]
                     if check_input_against_db(msg, db):
-                        print("got intent", intent)
                         return Understanding(intent, next_sip)
             return Understanding(False, SIP.same_state())
             
@@ -303,8 +302,8 @@ class Chatbot():
         reply = action.message
         chat.set_prev_msg(reply)
 
-        if DEBUG:
-            return (reply, chat.get_state())
+        # if DEBUG:
+        #     return (reply, chat.get_state())
 
         return reply
 
@@ -314,7 +313,7 @@ class Chatbot():
         
     def init_mappings(self):
         # These dicts can only be built AFTER resources are initalized 
-
+        if DEBUG: print("Initalizing mappings")
         # List for lookup purposes
         self.RECORDING_STATES = [
             STATES['log_issue'],
@@ -352,6 +351,7 @@ class Chatbot():
 
         self.SS_REPLY_KEY_LOOKUP = {
             STATES['init_sale']:"r_sales_intro",
+            STATES['ask_if_issue']:"r_ask_if_issue"
         }
 
         self.INTENT_REPLY_KEY_LOOKUP = {}
@@ -367,6 +367,7 @@ class Chatbot():
         # These policies are accessible from every state
         default_policy_set = [
             (INTENTS['greet'],SIP.same_state()),
+            (INTENTS['ask_name'],SIP.same_state()),
             (INTENTS['deny'], SIP.go_back_state()),
             (INTENTS['goodbye'], SIP(STATES["goodbye"])),
             (INTENTS['report_issue'], SIP(STATES['log_issue']))
@@ -377,6 +378,7 @@ class Chatbot():
         ### POLICIES ###
         self.POLICY_RULES = {
             STATES['init']: make_policy([
+                (INTENTS['deny'],SIP(STATES['init'])),
                 (INTENTS['greet'],SIP(STATES['init'])),
                 (INTENTS['gen_query'],SIP(STATES['confirm_query'])),
                 (INTENTS['purchase'], SIP(STATES['init_sale'])),
@@ -407,8 +409,13 @@ class Chatbot():
         }
 
         # Loop to make all policies
-        for state in list(STATES.keys()):
-            self.POLICY_RULES[state] = make_policy
+        existing = list(self.POLICY_RULES.keys())
+        for k in list(STATES.keys()):
+            state_value = STATES[k]
+            if state_value in existing:
+                continue
+            self.POLICY_RULES[state_value] = make_policy([])
+        # print("Policy keys",list(self.POLICY_RULES.keys()))
         
         # (STATES['sales_query'], INTENTS['purchase']), STATES['pay_query'],
         # (STATES['init_sale'], INTENTS['affirm']), STATES['choose_plan'],
@@ -510,7 +517,6 @@ class Info_Parser():
 
 
 if __name__ == "__main__":
-    print("Initializing...")
     # load json and print
     json_data = read_json("chatbot_resource.json")
     bot = Chatbot(json_data)
