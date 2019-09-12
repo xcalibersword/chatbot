@@ -6,6 +6,11 @@ from chatbot_supp import *
 
 DEBUG = 1
 
+def dict_lookup(key, dictionary):
+    if key in dictionary:
+        return dictionary[key]
+    return False
+
 # Functions that don't need other inits
 def rand_response(response_list):
     return random.choice(response_list)
@@ -14,16 +19,6 @@ def read_json(json_filename):
     with open(json_filename, 'r') as f:
         data = json.loads(f.read())
     return data
-
-# Default things
-
-pattern = "你还记得(.*)吗？"
-random_chat = [
-    "多说一点！",
-    "为什么你那么认为？"
-]
-# SALES_PITCH = "您好，欢迎光临唯洛社保，很高兴为您服务。本店现在可以代缴上海、北京、长沙、广州、苏州、杭州、成都的五险一金。请问需要代缴哪个城市的呢？需要从几月份开始代缴呢？注意：社保局要求已怀孕的客户（代缴后再怀孕的客户不受影响）和重大疾病或者慢性病状态客户，我司不能为其代缴社保，如有隐瞒恶意代缴的责任自负！请注意参保手续开始办理后，无法退款。"
-
 
 # This text replacer should be put in a class or smth
 SUB_LIST = [
@@ -127,39 +122,81 @@ class Chatbot():
         return
 
     # Generates a pure reply as in a text
-    def generate_reply(self, reply_key, chat):
-        REPLY_DATABASE = self.REPLY_DATABASE
+    # TODO: remove wrapper if uneccesary
+    def generate_reply(self, reply_key, info = []):
+    
+        def fetch_reply_text(r_key):
+            # Looks up the reply databases and returns a reply
+            if not r_key:
+                return cbsv.DEFAULT_CONFUSED()
+            if r_key in REPLY_DB:
+                r_list = REPLY_DB[r_key]
+                replytext = rand_response(r_list)
+                return replytext
+            return r_key
+
+        r_txt = fetch_reply_text(reply_key)
+    
+        final_reply = r_txt
+        # FORMAT MESSAGE HERE? USING INFO?
+        if len(info) > 0:
+            print(info)
+            name, price, desc = info # INFO UNPACKING
+            future_info = {"name":"name1","price":1234.50}
+            final_reply = r_txt.format(future_info) # TODO try using a dict
+
+        return final_reply
+            
+
+
+    # TODO: reimplement this
+    def decide_action(self, uds, chat):
         CONTEXT_REPLY_STATES = self.CONTEXT_REPLY_STATES
-        def get_reply_list(rkey):
-            reply_list = REPLY_DATABASE[rkey]
-            return reply_list
+        STS_REPLY_KEY_LOOKUP = self.STS_REPLY_KEY_LOOKUP
+        SS_REPLY_KEY_LOOKUP = self.SS_REPLY_KEY_LOOKUP
+        INTENT_REPLY_KEY_LOOKUP = self.INTENT_REPLY_KEY_LOOKUP
 
-        if reply_key == self.PREV_REPLY_FLAG:
-            return chat.pop_prev_msg()
+        def getreplykey(curr_state, intent, next_state):
+            context = (curr_state, next_state)
+            print("cstate, nstate",context)
+            # Specific state to state
+            rkey = dict_lookup (context, STS_REPLY_KEY_LOOKUP)
+            
+            # Single state
+            if not rkey:
+                rkey = dict_lookup (next_state, SS_REPLY_KEY_LOOKUP)
+            
+            # Intent
+            if not rkey:
+                rkey = dict_lookup(intent, INTENT_REPLY_KEY_LOOKUP)
 
-        if not reply_key:
-            return cbsv.DEFAULT_CONFUSED()
+            return rkey
+
+
+        sip = uds.get_sip()
+        if sip.is_go_back():
+            replytxt = chat.pop_prev_msg()
+            return action.go_back()
 
         curr_state = chat.get_state()
+        reply_key = getreplykey(curr_state, uds.intent, sip.get_state())
+        
+        print("reply_key", reply_key)
+
         if curr_state in CONTEXT_REPLY_STATES:
             context_info = chat.get_selection()
             if DEBUG: print("ctxt",context_info)
-            msg_template = reply_key # TODO have proper message template lookups instead of hardcoded reply key
-            # construct message
-            name, price, desc = context_info
+            # TODO have proper message template lookups instead of hardcoded reply key
+            msg = self.generate_reply(reply_key, context_info) 
             replytext = msg_template.format(name, desc, price)
             # print("replytxt", replytext)  
             return replytext
 
-        if reply_key in REPLY_DATABASE:
-            r_list = get_reply_list(reply_key)
-            replytext = rand_response(r_list)
-            return replytext
-
-        # Since reply_key are strings, this works for a fixed response.
-        # TODO: Convert all replies to dictionaries
-        return reply_key
+        replytxt = self.generate_reply(reply_key)
+        action = Action.reply(replytxt)
     
+        return action
+
     def process_intent(self, intent, msg):
         SPECIAL_PARSE_INTENTS = self.SPECIAL_PARSE_INTENTS
         if intent in SPECIAL_PARSE_INTENTS:
@@ -169,37 +206,15 @@ class Chatbot():
             return select 
 
         return -1
-
+    
     # Returns a text reply
     def respond_to_msg(self, chat, msg):
-        GENERAL_INTENT_LIST = self.GENERAL_INTENT_LIST
+        INTENT_LOOKUP_TABLE = self.INTENT_LOOKUP_TABLE
         POLICY_RULES = self.POLICY_RULES
         RECORDING_STATES = self.RECORDING_STATES
         SPECIAL_INTENT_LIST = self.SPECIAL_INTENT_LIST
-        STATIC_INTENTS = self.STATIC_INTENTS
-        UNIVERSAL_INTENTS = self.UNIVERSAL_INTENTS
-
-        curr_state = chat.get_state()
-        intent = message_to_intent(curr_state, msg)
-        select = self.process_intent(intent, msg)
-        if not isinstance(select, int):
-            chat.set_selection(select)
-
-        # print("intent",intent)
-        new_state, reply_key = intent_to_reply(curr_state, intent)
-
-        # TODO: Better software engine practice
-        # Change state first
-        self.change_chat_state(chat, new_state)
-        # Get reply
-        reply = self.generate_reply(reply_key,chat)
-        chat.set_prev_msg(reply)
-
-        if DEBUG:
-            return (reply, chat.get_state())
-
-        return reply
-
+        # STATIC_INTENTS = self.STATIC_INTENTS
+        # UNIVERSAL_INTENTS = self.UNIVERSAL_INTENTS
         def get_intent_from_db(msg, intent_db_list, exact=False):
             for intent_db in intent_db_list:
                 intent = intent_db[0]
@@ -223,89 +238,82 @@ class Chatbot():
             # Global reference to GENERAL_INTENT_LIST
             return get_intent_from_db(msg,GENERAL_INTENT_LIST)
 
-        # Overall function
-        def message_to_intent(curr_state,msg):
-            select = -1
+        # Returns an Understanding
+        def uds_from_policies(state, msg):
+            policy = POLICY_RULES[state]
+            for pol_lst in policy.get_policies():
+                for pair in pol_lst:
+                    intent, next_sip = pair
+                    assert isinstance(next_sip, SIP)
+                    db = INTENT_LOOKUP_TABLE[intent]
+                    if check_input_against_db(msg, db):
+                        print("got intent", intent)
+                        return Understanding(intent, next_sip)
+            return Understanding(False, SIP.same_state())
+            
+
+        def decipher_message(curr_state,msg):
             # RECORD MSG
             if curr_state in RECORDING_STATES:
                 record_msg(msg)
 
-            p_msg = format_text(msg)
-            # print("pmsg: <"+p_msg+">")
-            intent = get_special_intent(curr_state,p_msg)
-            if not intent:
-                intent = get_general_intent(p_msg)
-            
-            if DEBUG: print("Intent is:",intent,"\n")
+            f_msg = format_text(msg)
 
-            return intent
+            uds = uds_from_policies(curr_state,f_msg)
+                        
+            if DEBUG:
+                print("Intent is:{0}, Next state is {1}".format(uds.intent, uds.sip.get_state()))
+            
+            details = None # HEre is where we parse and add details?
+            uds.parse_details(details)
+            return uds
 
         ### INTENT ###
         # Checks message for db keywords
         # TODO: implement better word comprehension
-        def check_input_against_db(msg, db, exact):
+        def check_input_against_db(msg, db, exact = False):
             search_fn = lambda x,y: re.search(x,y)
             if exact:
                 search_fn = lambda x,y: re.fullmatch(x,y)
+            
             match = False
-
             for keyword in db:
                 match = search_fn(keyword,msg)
                 if match:
                     break
             return match
 
-        def intent_to_reply(state, intent):
-            state_n_reply = check_policies(state,intent)
-            if not state_n_reply:
-                return (state, False)
-            return state_n_reply
+        curr_state = chat.get_state()
+        curr_uds = decipher_message(curr_state, msg)
+        intent = curr_uds.intent
 
-        # Returns next state and reply_key
-        def check_policies(curr_state, intent):
-            pr_key = (curr_state,intent)
-            if pr_key in POLICY_RULES:
-                return POLICY_RULES[pr_key]
-            if intent in UNIVERSAL_INTENTS:
-                # Changes state no matter where you are
-                return UNIVERSAL_INTENTS[intent]
-            if intent in STATIC_INTENTS:
-                # State doesnt change
-                rep_key = STATIC_INTENTS[intent]
-                return (curr_state,rep_key)
-            return False
+        # PROCESS INTENT SHOULD BE FROM A SEPERATE CLASS
+        select = self.process_intent(intent, msg)
 
-    def change_chat_state(self, chat, new_state, selection = -1):
+        # print("intent",intent)
+        packet = curr_uds.get_sip()
+
+        # TODO: Better software engine practice
+        action = self.decide_action(curr_uds, chat)
+
+        # Change state of chat
+        self.change_chat_state(chat, packet, select)
+        
+        # Get reply        
+        reply = action.message
+        chat.set_prev_msg(reply)
+
+        if DEBUG:
+            return (reply, chat.get_state())
+
+        return reply
+
+    def change_chat_state(self, chat, sip, selection = -1):
         # Go to previous state
-        if new_state == cbsv.PREV_STATE_FLAG():
-            new_state = chat.get_prev_state()
-
-        if not isinstance(selection,int):
-            chat.set_selection(selection)
-
-        chat.change_state(new_state)
+        chat.update_chat(sip, selection)
         
     def init_mappings(self):
         # These dicts can only be built AFTER resources are initalized 
-        self.REPLY_DATABASE = {}
-        REPLY_DB_LIST = ["greet", "purchase", "goodbye", "sales_query", "ask_name", "sales_pitch"]
-        for k in REPLY_DB_LIST:
-            dbk = "r_" + k
-            # Append as a tuple
-            self.REPLY_DATABASE[k] = REPLY_DB[dbk]
-
-        # Changes state no matter what current state is
-        self.UNIVERSAL_INTENTS = {
-            INTENTS['purchase']: (STATES['choose_plan'], "purchase"),
-            INTENTS['sales_query']: (STATES['sales_query'], "sales_query"),
-            INTENTS['report_issue']: (STATES['log_issue'], "Please state your issue"),
-            INTENTS['deny']: (STATES['PREV_STATE'], self.PREV_REPLY_FLAG)
-        }
-
-        self.STATIC_INTENTS = {
-            INTENTS['greet']: 'greet',
-            INTENTS['ask_name']: 'ask_name',
-        }
 
         # List for lookup purposes
         self.RECORDING_STATES = [
@@ -313,7 +321,6 @@ class Chatbot():
         ]
 
         self.CONTEXT_REPLY_STATES = [
-            
             STATES["confirm_plan"],
             STATES["payment"]
         ]
@@ -322,12 +329,11 @@ class Chatbot():
             INTENTS['indicate_plan']: parse_plan_selection
         }
 
-        self.GENERAL_INTENT_LIST = []
-        GEN_INTENT_LIST_KEYS = ["greet", "ask_name", "affirm", "deny", "purchase", "gen_query", "sales_query", "pay_query","report_issue","goodbye"]
-        for k in GEN_INTENT_LIST_KEYS:
-            dbk = "db_" + k
-            # Append as a tuple
-            self.GENERAL_INTENT_LIST.append((INTENTS[k],MATCH_DB[dbk]))
+        self.INTENT_LOOKUP_TABLE = {}
+        for k in list(MATCH_DB.keys()):
+            look_key = k[3:]
+            kv = INTENTS[look_key]
+            self.INTENT_LOOKUP_TABLE[kv] = MATCH_DB[k]
 
         # Contextual Intents
         # key: state, val: list of intents
@@ -337,32 +343,159 @@ class Chatbot():
             (STATES['choose_plan'],[(INTENTS['indicate_plan'], MATCH_DB["db_indicate_plan"])])
         ]
 
+        self.STS_REPLY_KEY_LOOKUP = {
+            (STATES["init_sale"], STATES["choose_plan"]): "r_list_plans",
+            (STATES['choose_plan'], STATES['confirm_plan']): "r_confirm_plan",
+            (STATES['confirm_plan'], STATES['payment']): "r_confirm_price",
+            (STATES['payment'], STATES['finish_sale']): "r_sale_done"
+        }
+
+        self.SS_REPLY_KEY_LOOKUP = {
+            STATES['init_sale']:"r_sales_intro",
+        }
+
+        self.INTENT_REPLY_KEY_LOOKUP = {}
+        gen_reply_list = ["ask_name", "greet", "goodbye"]
+        for i in gen_reply_list:
+            intent = INTENTS[i]
+            dbk = "r_"+str(i)
+            self.INTENT_REPLY_KEY_LOOKUP[intent] = dbk
+    
+        # Changes state no matter what current state is
+        # INTENTS['report_issue']: (STATES['log_issue'], "Please state your issue")
+
+        # These policies are accessible from every state
+        default_policy_set = [
+            (INTENTS['greet'],SIP.same_state()),
+            (INTENTS['deny'], SIP.go_back_state()),
+            (INTENTS['goodbye'], SIP(STATES["goodbye"])),
+            (INTENTS['report_issue'], SIP(STATES['log_issue']))
+        ]
+
+        make_policy = lambda s_ints: Policy(default_policy_set,s_ints)
+
         ### POLICIES ###
         self.POLICY_RULES = {
-            (STATES['init'], INTENTS['greet']): (STATES['init'], "sales_pitch"),
-            (STATES['init'], INTENTS['gen_query']) : (STATES['confirm_query'], "您要问什么呢？"),
-            (STATES['init'], INTENTS['purchase']): (STATES['init_sale'], "sales_query"),
-            (STATES['init'], INTENTS['pay_query']): (STATES['pay_query'], "好的，那么"),
-            (STATES['init'], INTENTS['goodbye']): (STATES['goodbye'], "BYE BYE"),
-            (STATES['sales_query'], INTENTS['purchase']): (STATES['pay_query'], "好的，那么"),
-            (STATES['sales_query'], INTENTS['goodbye']): (STATES['goodbye'], "WHY SIA"),
-            (STATES['init_sale'], INTENTS['affirm']): (STATES['choose_plan'], "purchase"),
-            (STATES['choose_plan'], INTENTS['confusion']): (STATES['sales_query'], "Oh, let me clarify the plans."),
-            (STATES['choose_plan'], INTENTS['affirm']): (STATES['choose_plan'], "Great! But you still have to choose a plan."),
-            (STATES['choose_plan'], INTENTS['indicate_plan']): (STATES['confirm_plan'], "Just to confirm, your have selected is {0}.\n Description:\n{1}"),
-            (STATES['confirm_plan'], INTENTS['affirm']): (STATES['payment'], "That will be ${2}!"),
-            (STATES['payment'], INTENTS['affirm']): (STATES['finish_sale'], "Success! Thank you for using SHEBAO! Is there anything else I can help with?"),
-            (STATES['finish_sale'], INTENTS['affirm']): (STATES['init'], "sales_pitch"),
-            (STATES['finish_sale'], INTENTS['deny']): (STATES['goodbye'], "Bye! Hope to see you again soon!"),
-            (STATES['finish_sale'], INTENTS['goodbye']): (STATES['goodbye'], "Bye! Hope to see you again soon!"),
-            (STATES['sales_query'], INTENTS['goodbye']): (STATES['goodbye'], "WHY SIA"),
-            (STATES['goodbye'], INTENTS['goodbye']): (STATES['goodbye'],"You already said bye")
+            STATES['init']: make_policy([
+                (INTENTS['greet'],SIP(STATES['init'])),
+                (INTENTS['gen_query'],SIP(STATES['confirm_query'])),
+                (INTENTS['purchase'], SIP(STATES['init_sale'])),
+                (INTENTS['pay_query'], SIP(STATES['pay_query'])),
+                (INTENTS['sales_query'], SIP(STATES['sales_query']))
+                ]
+            ),
+            STATES['init_sale']: make_policy([
+                (INTENTS['affirm'], SIP(STATES['choose_plan'])),
+                (INTENTS['deny'], SIP(STATES['ask_if_issue']))
+                ]
+            ),
+            STATES['choose_plan']: make_policy([
+                (INTENTS['indicate_plan'], SIP(STATES['confirm_plan'])),
+                (INTENTS['deny'], SIP(STATES['ask_if_issue']))
+                ]
+            ),
+            STATES['confirm_plan']: make_policy([
+                (INTENTS['affirm'], SIP(STATES['payment'])),
+                (INTENTS['deny'], SIP(STATES['ask_if_issue']))
+                ]
+            ),
+            STATES['payment']: make_policy([
+                (INTENTS['affirm'], SIP(STATES['finish_sale'])),
+                (INTENTS['deny'], SIP(STATES['ask_if_issue']))
+                ]
+            )
         }
+
+        # Loop to make all policies
+        for state in list(STATES.keys()):
+            self.POLICY_RULES[state] = make_policy
+        
+        # (STATES['sales_query'], INTENTS['purchase']), STATES['pay_query'],
+        # (STATES['init_sale'], INTENTS['affirm']), STATES['choose_plan'],
+        # (STATES['choose_plan'], INTENTS['confusion']), STATES['sales_query'],
+        # (STATES['choose_plan'], INTENTS['affirm']), STATES['choose_plan']),
+        # (STATES['choose_plan'], INTENTS['indicate_plan']), STATES['confirm_plan'],
+        # (STATES['confirm_plan'], INTENTS['affirm']), STATES['payment'],
+        # (STATES['payment'], INTENTS['affirm']), STATES['finish_sale'],
+        # (STATES['finish_sale'], INTENTS['affirm']), STATES['init']),
+        # (STATES['finish_sale'], INTENTS['deny']), STATES['goodbye']),
+        # (STATES['finish_sale'], INTENTS['goodbye']), STATES['goodbye'],
+        # (STATES['sales_query'], INTENTS['goodbye']), STATES['goodbye']
+
+        # self.POLICY_RULES = {
+        #     (STATES['init'], INTENTS['greet']): STATES['init'],
+        #     (STATES['init'], INTENTS['gen_query']) : STATES['confirm_query'],
+        #     (STATES['init'], INTENTS['purchase']): STATES['init_sale'],
+        #     (STATES['init'], INTENTS['pay_query']): STATES['pay_query'],
+        #     (STATES['init'], INTENTS['goodbye']): STATES['goodbye'],
+        #     (STATES['sales_query'], INTENTS['purchase']): STATES['pay_query'],
+        #     (STATES['init_sale'], INTENTS['affirm']): STATES['choose_plan'],
+        #     (STATES['choose_plan'], INTENTS['confusion']): STATES['sales_query'],
+        #     (STATES['choose_plan'], INTENTS['affirm']): STATES['choose_plan']),
+        #     (STATES['choose_plan'], INTENTS['indicate_plan']): STATES['confirm_plan'],
+        #     (STATES['confirm_plan'], INTENTS['affirm']): STATES['payment'],
+        #     (STATES['payment'], INTENTS['affirm']): STATES['finish_sale'],
+        #     (STATES['finish_sale'], INTENTS['affirm']): STATES['init']),
+        #     (STATES['finish_sale'], INTENTS['deny']): STATES['goodbye']),
+        #     (STATES['finish_sale'], INTENTS['goodbye']): STATES['goodbye'],
+        #     (STATES['sales_query'], INTENTS['goodbye']): STATES['goodbye']
+        # }
+
         return 
 
+class Policy():
+    def __init__(self, g_intents, s_intents = []):
+        # self.state_name = state_name
+        self.g_intents = g_intents
+        self.s_intents = s_intents
+
+    def get_g_intents(self):
+        return self.g_intents
+    def get_s_intents(self):
+        print("s_intents", s_intents)
+        return self.s_intents
+
+    def get_policies(self):
+        return [self.s_intents, self.g_intents]
+
+    
+class Info_Parser():
+    cities = ["上海","北京","深圳","上海","上海","上海","杭州","广州"]
+    def __init__(self):
+        pass
+
+    # Returns a dict of info
+    def parse(self, text):
+        out = {"city":"", "date":""}
+        city = parse_city(text)
+        data = parse_date(text)
 
 
+    def parse_date(self, text):
+        # day
+        day = re.search("?日",text)
+        # month
+        mth = re.searc("?月")
+        # year
+        yr = re.search("?年")
+        out = (day, mth, yr)
+        print(out)
+        return out
 
+    def parse_city(self, text):
+        for i in range(len(text)):
+            substring = text[i:i+1]
+            if substring in cities:
+                return substring
+        return ""
+
+# TODO: Maybe have a ReplyGenerator object so I can remove it from Chatbot?
+
+
+# EXTENSIONS:
+# Looking at a deeper history rather than just the previous state. LOC: decide_action
+
+# TESTING REGEX
 # Check if search allows trailing chars
 # E.g. plan alakazam = plan a
 
