@@ -1,9 +1,10 @@
 import random
 import re
 import json
+import cbsv
 from chatbot_supp import *
 
-DEBUG = 0
+DEBUG = 1
 
 # Functions that don't need other inits
 def rand_response(response_list):
@@ -15,7 +16,7 @@ def read_json(json_filename):
     return data
 
 # Default things
-DEFAULT_CONFUSED = "不好意思，我听不懂"
+
 pattern = "你还记得(.*)吗？"
 random_chat = [
     "多说一点！",
@@ -116,11 +117,12 @@ class Chatbot():
         self.chats[chatID] = newchat
         return
 
-    def new_message(self,chatID,msg):
+    def recv_new_message(self,chatID,msg):
+        # Create a new chat if never chat before
         if not chatID in self.chats:
             self.make_new_chat(chatID)
         curr_chat = self.chats[chatID]
-        reply = self.get_reply_to_msg(curr_chat,msg)
+        reply = self.respond_to_msg(curr_chat,msg)
         print(reply)
         return
 
@@ -136,7 +138,7 @@ class Chatbot():
             return chat.pop_prev_msg()
 
         if not reply_key:
-            return DEFAULT_CONFUSED
+            return cbsv.DEFAULT_CONFUSED()
 
         curr_state = chat.get_state()
         if curr_state in CONTEXT_REPLY_STATES:
@@ -169,7 +171,7 @@ class Chatbot():
         return -1
 
     # Returns a text reply
-    def get_reply_to_msg(self, chat, msg):
+    def respond_to_msg(self, chat, msg):
         GENERAL_INTENT_LIST = self.GENERAL_INTENT_LIST
         POLICY_RULES = self.POLICY_RULES
         RECORDING_STATES = self.RECORDING_STATES
@@ -177,6 +179,26 @@ class Chatbot():
         STATIC_INTENTS = self.STATIC_INTENTS
         UNIVERSAL_INTENTS = self.UNIVERSAL_INTENTS
 
+        curr_state = chat.get_state()
+        intent = message_to_intent(curr_state, msg)
+        select = self.process_intent(intent, msg)
+        if not isinstance(select, int):
+            chat.set_selection(select)
+
+        # print("intent",intent)
+        new_state, reply_key = intent_to_reply(curr_state, intent)
+
+        # TODO: Better software engine practice
+        # Change state first
+        self.change_chat_state(chat, new_state)
+        # Get reply
+        reply = self.generate_reply(reply_key,chat)
+        chat.set_prev_msg(reply)
+
+        if DEBUG:
+            return (reply, chat.get_state())
+
+        return reply
 
         def get_intent_from_db(msg, intent_db_list, exact=False):
             for intent_db in intent_db_list:
@@ -253,31 +275,9 @@ class Chatbot():
                 return (curr_state,rep_key)
             return False
 
-        curr_state = chat.get_state()
-        intent = message_to_intent(curr_state, msg)
-        select = self.process_intent(intent, msg)
-        if not isinstance(select, int):
-            chat.set_selection(select)
-
-        # print("intent",intent)
-        new_state, reply_key = intent_to_reply(curr_state, intent)
-
-        # TODO: Better software engine practice
-        # Change state
-        self.change_chat_state(chat, new_state)
-        # Get reply
-        reply = self.generate_reply(reply_key,chat)
-        chat.set_prev_msg(reply)
-
-        if DEBUG:
-            return (reply, curr_state)
-
-        return reply
-
     def change_chat_state(self, chat, new_state, selection = -1):
-
         # Go to previous state
-        if new_state == self.PREV_STATE_FLAG:
+        if new_state == cbsv.PREV_STATE_FLAG():
             new_state = chat.get_prev_state()
 
         if not isinstance(selection,int):
@@ -287,8 +287,6 @@ class Chatbot():
         
     def init_mappings(self):
         # These dicts can only be built AFTER resources are initalized 
-        self.PREV_STATE_FLAG = STATES["PREV_STATE"]
-
         self.REPLY_DATABASE = {}
         REPLY_DB_LIST = ["greet", "purchase", "goodbye", "sales_query", "ask_name", "sales_pitch"]
         for k in REPLY_DB_LIST:
@@ -386,4 +384,4 @@ if __name__ == "__main__":
     bot.start()
     while 1:
         incoming_msg = input()
-        bot.new_message("MyUserId",incoming_msg)
+        bot.recv_new_message("MyUserId",incoming_msg)
