@@ -83,7 +83,7 @@ class Action:
         act = cls()
         act.message = msg
         return act
-        
+
     def set_message(self, msg):
         self.message = msg
 
@@ -177,11 +177,27 @@ class Chat:
         new_state = sip.get_state()
         self.change_state(new_state) 
 
-        
-        
+class Policy():
+    def __init__(self, g_intents, s_intents = []):
+        # self.state_name = state_name
+        self.g_intents = g_intents
+        self.s_intents = s_intents
+
+    def get_g_intents(self):
+        return self.g_intents
+    def get_s_intents(self):
+        print("s_intents", s_intents)
+        return self.s_intents
+
+    def get_policies(self):
+        return [self.s_intents, self.g_intents]
+
+CITIES = cbsv.CHINA_CITIES()
 class Customer:
     def __init__(self, userID, accounts = -1, issues = -1):
         self.userID = userID
+        self.city = ""
+        self.start_date = ""
         if isinstance(issues,int): 
             self.accounts = [] 
         else: 
@@ -190,6 +206,10 @@ class Customer:
             self.issues_list = []
         else:
             self.issues_list = issues
+        
+    def record_city(self,city):
+        assert city in CITIES
+        self.city = city
 
     def add_issue(self, issue):
         self.issues_list.append(issue)

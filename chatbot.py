@@ -82,9 +82,11 @@ def parse_plan_selection(msg):
 # Big Chatbot class
 class Chatbot():
     INTENTS, STATES, MATCH_DB, REPLY_DB, ALL_PRODUCTS = ({},{},{},{},{})
-    def __init__(self,json_data):
+    def __init__(self,json_data,vault):
         self.PREV_REPLY_FLAG = "prev_state_message"
+        self.vault = vault
         self.init_bot(json_data)
+        
 
     def init_bot(self,jdata):
         self.init_json_info(jdata)
@@ -139,11 +141,12 @@ class Chatbot():
     
         final_reply = r_txt
         # FORMAT MESSAGE HERE? USING INFO?
-        if len(info) > 0:
-            print(info)
-            name, price, desc = info # INFO UNPACKING
-            future_info = {"name":"name1","price":1234.50}
-            final_reply = r_txt.format(future_info) # TODO try using a dict
+        if isinstance(info, dict):
+            print("current info",info)
+            # name, price, desc = info # INFO UNPACKING
+            # future_info = {"name":"name1","price":1234.50}
+            # r_txt will reference dictionary key entries
+            final_reply = r_txt.format(info)
 
         return final_reply
             
@@ -184,7 +187,8 @@ class Chatbot():
         print("reply_key <", reply_key,">")
 
         if curr_state in CONTEXT_REPLY_STATES:
-            context_info = chat.get_selection()
+            query_keyword = "上海"
+            context_info = self.vault.lookup(query_keyword)
             if DEBUG: print("ctxt",context_info)
             # TODO have proper message template lookups instead of hardcoded reply key
             msg = self.generate_reply(reply_key, context_info) 
@@ -367,6 +371,7 @@ class Chatbot():
         # These policies are accessible from every state
         default_policy_set = [
             (INTENTS['greet'],SIP.same_state()),
+            (INTENTS['provide_location'],SIP(same_state)),
             (INTENTS['ask_name'],SIP.same_state()),
             (INTENTS['deny'], SIP.go_back_state()),
             (INTENTS['goodbye'], SIP(STATES["goodbye"])),
@@ -450,22 +455,28 @@ class Chatbot():
 
         return 
 
-class Policy():
-    def __init__(self, g_intents, s_intents = []):
-        # self.state_name = state_name
-        self.g_intents = g_intents
-        self.s_intents = s_intents
-
-    def get_g_intents(self):
-        return self.g_intents
-    def get_s_intents(self):
-        print("s_intents", s_intents)
-        return self.s_intents
-
-    def get_policies(self):
-        return [self.s_intents, self.g_intents]
-
     
+class Info_Vault():
+    def __init__(self, json_data):
+        self.plans = json_data["plans"]
+        self.city_keys = list(self.plans.keys())
+        self.other_keys = ["asd"]
+    # General query
+    def lookup(self, q):
+        if q in city_keys:
+            return lookup_city(q)
+        if q in other_keys:
+            return lookup_other(q)
+        return False
+        
+    def lookup_city(self, city):
+        if city in self.city_keys:
+            return self.plans[city]
+
+    def lookup_other(self, thing):
+        if thing in self.other_keys:
+            return 1
+
 class Info_Parser():
     cities = ["上海","北京","深圳","上海","上海","上海","杭州","广州"]
     def __init__(self):
@@ -519,7 +530,8 @@ class Info_Parser():
 if __name__ == "__main__":
     # load json and print
     json_data = read_json("chatbot_resource.json")
-    bot = Chatbot(json_data)
+    vault = Info_Vault(json_data)
+    bot = Chatbot(json_data,vault)
     bot.start()
     while 1:
         incoming_msg = input()

@@ -5,7 +5,7 @@
         "ask_name":101,
         "indicate_plan":1701,
         "indicate_query":1702,
-        "provide_info": 121,
+        "provide_location": 121,
         "sales_query":111,
         "pay_query":112,
         "gen_query":113,
@@ -93,6 +93,9 @@
             "What's wrong?",
             "有事吗？"
         ],
+        "r_req_location":[
+            "亲，您是需要缴纳哪个城市的社保呢？"
+        ],
         "r_greet" : [
             "你好！","你好 :)","Hello！"
         ],
@@ -114,12 +117,43 @@
         "r_list_plans" : [
             "Please choose a plan: Plan A, Plan B or Plan C", "Please choose a plan: INFO GOES HERE"
         ],
+        "r_state_details": [
+            "目前{city}社保按照最低基数{base_amt}，缴纳{payment}；服务费{svc_fee}元每月，首次参保额外收取{opening_fee}元开户费。"
+        ],
+        "r_how_check_shebao_status":[
+            "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能） http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp"
+        ],
         "r_goodbye" : [
             "再见!!","Byebye!","Hope to see you again! :)"
         ]
         
     },
-
+    "plans":{
+        "sh":{
+            "base_amt":4927,
+            "payment":1937,
+            "svc_fee":40,
+            "opening_fee":50
+        },
+        "上海":{
+            "base_amt":4927,
+            "payment":1937,
+            "svc_fee":40,
+            "opening_fee":50
+        },
+        "北京":{
+            "base_amt":1337,
+            "payment":2050,
+            "svc_fee":100,
+            "opening_fee":40
+        },
+        "深圳":{
+            "base_amt":2335,
+            "payment":2050,
+            "svc_fee":100,
+            "opening_fee":40
+        }
+    },
     "products":{
         "p_01": {
             "price": 100,
