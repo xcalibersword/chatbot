@@ -1,6 +1,7 @@
 import random
 import re
 import json
+from chatbot_supp import *
 
 DEBUG = 0
 
@@ -110,7 +111,8 @@ class Chatbot():
 
     def make_new_chat(self,chatID):
         # inital issues = {}
-        newchat = Chat(chatID, {})
+        initial_state = STATES["init"]
+        newchat = Chat(chatID, {},initial_state)
         self.chats[chatID] = newchat
         return
 
@@ -349,7 +351,7 @@ class Chatbot():
             (STATES['init_sale'], INTENTS['affirm']): (STATES['choose_plan'], "purchase"),
             (STATES['choose_plan'], INTENTS['confusion']): (STATES['sales_query'], "Oh, let me clarify the plans."),
             (STATES['choose_plan'], INTENTS['affirm']): (STATES['choose_plan'], "Great! But you still have to choose a plan."),
-            (STATES['choose_plan'], INTENTS['indicate_plan']): (STATES['confirm_plan'], "Just to confirm, your have selected is {0}. \n Description:\n{1}"),
+            (STATES['choose_plan'], INTENTS['indicate_plan']): (STATES['confirm_plan'], "Just to confirm, your have selected is {0}.\n Description:\n{1}"),
             (STATES['confirm_plan'], INTENTS['affirm']): (STATES['payment'], "That will be ${2}!"),
             (STATES['payment'], INTENTS['affirm']): (STATES['finish_sale'], "Success! Thank you for using SHEBAO! Is there anything else I can help with?"),
             (STATES['finish_sale'], INTENTS['affirm']): (STATES['init'], "sales_pitch"),
@@ -361,78 +363,7 @@ class Chatbot():
         return 
 
 
-# A product???
-class Product:
-    def __init__(self, name, info):
-        self.name = name
-        self.parse_info(info)
 
-    # info is in the form of a dict
-    def parse_info(self, info):
-        self.price = info["price"]
-        self.desc = info["desc"]
-
-
-# Try to have stateful changes
-class Chat:
-    def __init__(self,customer,convo_history):
-        self.customer = customer
-        self.state = STATES['init']
-        self.convo_history = convo_history
-        self.prev_messages = []
-
-    def change_state(self,new_state):
-        if DEBUG: print("changing to", new_state)
-        self.prev_state = self.state
-        self.state = new_state
-
-    def set_prev_msg(self, msg):
-        self.prev_messages.append(msg)
-    
-    def pop_prev_msg(self):
-        # TODO failsafe when empty?
-        indx = len(self.prev_messages) - 1
-        return self.prev_messages.pop(indx)
-
-    def get_state(self):
-        return self.state
-
-    def get_prev_state(self):
-        return self.prev_state
-
-    def set_selection(self,selection):
-        self.selection = selection
-    
-    def get_selection(self):
-        return self.selection
-
-    def clear_selection(self):
-        self.selection = False
-
-    def get_previous_issues(self):
-        return self.user.get_issues()
-
-class Customer:
-    def __init__(self, userID, accounts = -1, issues = -1):
-        self.userID = userID
-        if isinstance(issues,int): 
-            self.accounts = [] 
-        else: 
-            self.accounts = accounts
-        if isinstance(issues,int):
-            self.issues_list = []
-        else:
-            self.issues_list = issues
-
-    def add_issue(self, issue):
-        self.issues_list.append(issue)
-        # Check for duplicates?
-
-    def get_issues(self):
-        return self.issues_list
-
-    def get_accounts(self):
-        return self.accounts
 
 # Check if search allows trailing chars
 # E.g. plan alakazam = plan a
