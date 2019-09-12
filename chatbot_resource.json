@@ -1,27 +1,30 @@
+
 {
     "intents": {
         "greet":100,
-        "affirm":191,
         "ask_name":101,
         "indicate_plan":1701,
         "indicate_query":1702,
-        "deny":192,
-        "confusion":193,
+        "provide_info": 121,
         "sales_query":111,
         "pay_query":112,
         "gen_query":113,
         "report_issue":151,
         "purchase":180,
+        "affirm":191,
+        "deny":192,
+        "confusion":193,
         "goodbye":199
         },
 
     "states": {
         "init":"200 init", 
-        "sales_query":"211 sq", 
-        "pay_query":212,
+        "ask_if_issue": "251 whats wrong",
+        "sales_query":"211 saleq", 
+        "pay_query":"212 pay q",
         "gen_query":213,
         "confirm_query": 218,
-        "ask_location":221,
+        "recv_info":"221 recv info",
         "log_issue":251,
         "recommend":271,
         "init_sale":280,
@@ -30,7 +33,7 @@
         "payment":283,
         "finish_sale":289,
         "goodbye": 209,
-        "PREV_STATE": 299
+        "PREV_STATE": "299 PREV_STATE"
         },
 
     "match_db": {
@@ -89,14 +92,23 @@
         "r_greet" : [
             "你好！","你好 :)","Hello！"
         ],
-        "r_sales_query" : [
+        "r_sales_intro" : [
             "好的，那么我就跟亲介绍一下..... 你对我们的产品有兴趣吗？"
+        ],
+        "r_confirm_plan" : [
+            "Confirm plan {name}？"
+        ],
+        "r_confirm_price" : [
+            "Plan {name} will cost ${price}. Is this ok?"
         ],
         "r_query" : [
             "YOu have enquired!","Our products costs very little!","YAY"
         ],
-        "r_purchase" : [
-            "Please choose a plan: Plan A, Plan B or Plan C"
+        "r_sale_done" : [
+            "Success! Thank you very much for shopping at SHEBAO!"
+        ],
+        "r_list_plans" : [
+            "Please choose a plan: Plan A, Plan B or Plan C", "Please choose a plan: INFO GOES HERE"
         ],
         "r_goodbye" : [
             "再见!!","Byebye!","Hope to see you again! :)"

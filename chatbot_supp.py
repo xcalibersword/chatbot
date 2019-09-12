@@ -5,31 +5,95 @@ DEBUG = 1
 
 # Have a message class? Or some sort of flag for messages. Indicate state-changing messages.
 
-# A packet that has info about state and message
-# State-Message Packet
+
 PREV_STATE_F = "299 PREV_STATE"
 PREV_STATE_MSG = "prev_state_msg"
-class SMP:
-    def __init__(self, msg, state):
-        self.msg = msg
+
+# A packet that has info about state and has constructors for set states like go_back
+# State Info Packet
+class SIP:
+    def __init__(self, state, cs = True):
         self.state = state
-        self.stateChange = True
+        self.state_change = cs
         self.backtrack = False
+        self.go_back = False
 
     def set_backtrack(self):
         self.backtrack = True
-        self.stateChange = True #?
 
     def set_actions(self, action, pending_act = None):
         self.action = action
         self.pending_act = pending_act
 
+    def get_state(self):
+        return self.state
+
+    @classmethod
+    def same_state(cls):
+        obj = cls("same_state", cs=False)
+        return obj
+ 
     @classmethod
     def go_back_state(cls):
-        obj = cls(PREV_STATE_MSG, PREV_STATE_F)
-        obj.backtrack = True
-        obj.stateChange = False
+        obj = cls(PREV_STATE_F, cs=False)
+        obj.set_backtrack()
+        obj.go_back = True
         return obj
+    def is_same_state(self):
+        return not self.state_change
+    def is_go_back(self):
+        return self.go_back == True
+
+# A vehicle to house intent and details from the message
+class Understanding:
+    def __init__(self, intent, sip):
+        self.intent = intent
+        self.sip = sip
+        self.details = None
+
+    def parse_details(self, info):
+        self.location = ""
+        self.date = ""
+        self.info = info
+
+    def get_intent(self):
+        return self.intent
+    
+    def get_sip(self):
+        return self.sip
+
+    def set_intent(self, i):
+        self.intent = i
+
+# Action that includes string for replies
+class Action:
+    def __init__(self):
+        self.message = ""
+        self.log_data_bool = False
+        self.extra_info = []
+
+    @classmethod
+    def reply(cls, msg):
+        act = cls()
+        act.set_message(msg)
+        return act
+    
+    @classmethod
+    def go_back(cls, prev_msg):
+        self.message = msg
+
+    def set_message(self, msg):
+        self.message = msg
+
+    def log_data(self, data):
+        self.log_data_bool = True
+    
+    def has_data(self):
+        return self.log_data_bool
+
+    def set_details(self, d):
+        self.details = d
+        
 
 # A product???
 class Product:
@@ -98,6 +162,25 @@ class Chat:
     def get_previous_issues(self):
         return self.user.get_issues()
 
+    def go_back(self):
+        print("going back")
+
+    def update_chat(self, sip, selection):
+        print("changing state")
+        if not isinstance(selection,int):
+            self.set_selection(selection)
+
+        if sip.is_go_back():
+            self.go_back()
+
+        elif sip.is_same_state():
+            return
+        
+        new_state = sip.get_state()
+        self.change_state(new_state) 
+
+        
+        
 class Customer:
     def __init__(self, userID, accounts = -1, issues = -1):
         self.userID = userID
