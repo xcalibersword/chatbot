@@ -2,6 +2,9 @@
 
 import re
 
+def INITAL_STATE():
+    return "200 init"
+
 def DEFAULT_CONFUSED():
     return "不好意思，我听不懂"
 

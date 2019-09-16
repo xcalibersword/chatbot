@@ -3,6 +3,7 @@ import re
 import json
 import cbsv
 from chatbot_supp import *
+from chatclass import *
 
 DEBUG = 1
 
@@ -10,10 +11,6 @@ def dict_lookup(key, dictionary):
     if key in dictionary:
         return dictionary[key]
     return False
-
-# Functions that don't need other inits
-def rand_response(response_list):
-    return random.choice(response_list)
 
 def read_json(json_filename):
     with open(json_filename, 'r') as f:
@@ -79,82 +76,159 @@ def parse_plan_selection(msg):
 
     return s_data
 
+def init_replygen(jdata):
+    INTENTS = jdata["intents"]
+    STATES = jdata["states"]
+    REPLY_DB = jdata["reply_db"]
+
+    STS_REPLY_KEY_LOOKUP = {
+        (STATES["init_sale"], STATES["choose_plan"]): "r_list_plans",
+        (STATES['choose_plan'], STATES['confirm_plan']): "r_confirm_plan",
+        (STATES['confirm_plan'], STATES['payment']): "r_confirm_price",
+        (STATES['payment'], STATES['finish_sale']): "r_sale_done"
+    }
+
+    SS_REPLY_KEY_LOOKUP = {
+        STATES['init_sale']:"r_sales_intro",
+        STATES['ask_if_issue']:"r_ask_if_issue"
+    }
+
+    INTENT_REPLY_KEY_LOOKUP = {}
+    gen_reply_list = ["ask_name", "greet", "goodbye"]
+    for i in gen_reply_list:
+        intent = INTENTS[i]
+        dbk = "r_"+str(i)
+        INTENT_REPLY_KEY_LOOKUP[intent] = dbk
+    rkey_dbs = {}
+    rkey_dbs["s2s"] = STS_REPLY_KEY_LOOKUP
+    rkey_dbs["ss"] = SS_REPLY_KEY_LOOKUP
+    rkey_dbs["intent"] = INTENT_REPLY_KEY_LOOKUP
+    
+    return ReplyGenerator(REPLY_DB, rkey_dbs)
+
+def init_policykeeper(jdata):
+    INTENTS = jdata["intents"]
+    STATES = jdata["states"]
+    MATCH_DB = jdata["match_db"]
+
+    ### POLICIES ###
+
+    default_policy_set = [
+        (INTENTS['greet'],SIP.same_state()),
+        (INTENTS['ask_name'],SIP.same_state()),
+        (INTENTS['deny'], SIP.go_back_state()),
+        (INTENTS['goodbye'], SIP(STATES["goodbye"])),
+        (INTENTS['report_issue'], SIP(STATES['log_issue']))
+    ]
+    make_policy = lambda s_ints: Policy(default_policy_set,s_ints)
+
+    POLICY_RULES = {
+        STATES['init']: make_policy([
+            (INTENTS['deny'],SIP(STATES['init'])),
+            (INTENTS['greet'],SIP(STATES['init'])),
+            (INTENTS['gen_query'],SIP(STATES['confirm_query'])),
+            (INTENTS['purchase'], SIP(STATES['init_sale'])),
+            (INTENTS['pay_query'], SIP(STATES['pay_query'])),
+            (INTENTS['sales_query'], SIP(STATES['sales_query']))
+            ]
+        ),
+        STATES['init_sale']: make_policy([
+            (INTENTS['affirm'], SIP(STATES['choose_plan'])),
+            (INTENTS['deny'], SIP(STATES['ask_if_issue']))
+            ]
+        ),
+        STATES['choose_plan']: make_policy([
+            (INTENTS['indicate_plan'], SIP(STATES['confirm_plan'])),
+            (INTENTS['deny'], SIP(STATES['ask_if_issue']))
+            ]
+        ),
+        STATES['confirm_plan']: make_policy([
+            (INTENTS['affirm'], SIP(STATES['payment'])),
+            (INTENTS['deny'], SIP(STATES['ask_if_issue']))
+            ]
+        ),
+        STATES['payment']: make_policy([
+            (INTENTS['affirm'], SIP(STATES['finish_sale'])),
+            (INTENTS['deny'], SIP(STATES['ask_if_issue']))
+            ]
+        )
+    }
+
+    # Loop to make all policies
+    existing = list(POLICY_RULES.keys())
+    for k in list(STATES.keys()):
+        state_value = STATES[k]
+        if state_value in existing:
+            continue # Don't overwrite existing policy lookup values
+        POLICY_RULES[state_value] = make_policy([])
+
+
+    INTENT_LOOKUP_TABLE = {}
+    for k in list(MATCH_DB.keys()):
+        look_key = k[3:]
+        kv = INTENTS[look_key]
+        INTENT_LOOKUP_TABLE[kv] = MATCH_DB[k]
+
+    return PolicyKeeper(POLICY_RULES, INTENT_LOOKUP_TABLE)
+
+
+def master_initalize(jdata):
+    # INTENTS = jdata["intents"]
+    # STATES = jdata["states"]
+    # MATCH_DB = jdata["match_db"]
+    components = {}
+    components["replygen"] = init_replygen(jdata)
+    components["pkeeper"] = init_policykeeper(jdata)
+    components["gatedstates"] = {} # Might replace this with a flag in the json
+    return components
 
 # Big Chatbot class
 class Chatbot():
     INTENTS, STATES, MATCH_DB, REPLY_DB, ALL_PRODUCTS = ({},{},{},{},{})
-    def __init__(self,json_data,vault, infoparser):
+    def __init__(self, vault, infoparser, comps):
         self.PREV_REPLY_FLAG = "prev_state_message"
         self.vault = vault
-        self.init_bot(json_data)
-        self.iparser = infoparser
-        
-
-    def init_bot(self,jdata):
-        self.init_json_info(jdata)
-        self.init_mappings()
-        return
-
-    def init_json_info(self, jdata):
-        global INTENTS, STATES, MATCH_DB, REPLY_DB    
-        INTENTS = jdata["intents"]
-        STATES = jdata["states"]
-        MATCH_DB = jdata["match_db"]
-        REPLY_DB = jdata["reply_db"]
-        ALL_PRODUCTS = jdata['products']
-        return
+        self.ip = infoparser
+        self.pk = comps['pkeeper']
+        self.rg = comps['replygen']
+        self.gs = comps['gatedstates']
+    
+    def make_new_chatmgr(self, chat):
+        return ChatManager(chat, self.ip, self.pk, self.rg, self.gs)
 
     def start(self):
         print("Hello, I am a bot!")
-        self.chats = {}
+        self.chat_dict = {}
         return
 
     def make_new_chat(self,chatID):
         # inital issues = {}
-        initial_state = STATES["init"]
-        newchat = Chat(chatID, {},initial_state)
-        self.chats[chatID] = newchat
+        chat_hist = {}
+        newchat = Chat(chatID, chat_hist)
+        new_manager = self.make_new_chatmgr(newchat)
+        self.chat_dict[chatID] = new_manager
         return
+
+    def clean_message(self, rawtext):
+        cln_txt = format_text(rawtext)
+        return cln_txt
 
     def recv_new_message(self,chatID,msg):
         # Create a new chat if never chat before
-        if not chatID in self.chats:
+        if not chatID in self.chat_dict:
             self.make_new_chat(chatID)
-        curr_chat = self.chats[chatID]
-        reply = self.respond_to_msg(curr_chat,msg)
+        # curr_chat = self.chats[chatID]
+        # reply = self.respond_to_msg(curr_chat,msg)
+        f_msg = self.clean_message(msg)
+        curr_chat_mgr = self.chat_dict[chatID]
+        reply = curr_chat_mgr.respond_to_message(f_msg)
         print(reply)
         return
 
-    # Generates a pure reply as in a text
-    # TODO: remove wrapper if uneccesary
-    def generate_reply(self, reply_key, info = []):
-        # Takes in reply_key
-        # Looks up the reply databases and returns a reply
-        def fetch_reply_text(r_key):
-            if not r_key:
-                return cbsv.DEFAULT_CONFUSED()
-            if r_key in REPLY_DB:
-                r_list = REPLY_DB[r_key]
-                replytext = rand_response(r_list)
-                return replytext
-            return r_key
-
-        r_txt = fetch_reply_text(reply_key)
-    
-        final_reply = r_txt
-        # FORMAT MESSAGE HERE? USING INFO?
-        if isinstance(info, dict):
-            print("current info",info)
-            # name, price, desc = info # INFO UNPACKING
-            # future_info = {"name":"name1","price":1234.50}
-            # r_txt will reference dictionary key entries
-            final_reply = r_txt.format(info)
-
-        return final_reply
 
     # TODO: reimplement this
+    # REMOVED
     def decide_action(self, uds, chat):
-        CONTEXT_REPLY_STATES = self.CONTEXT_REPLY_STATES
         STS_REPLY_KEY_LOOKUP = self.STS_REPLY_KEY_LOOKUP
         SS_REPLY_KEY_LOOKUP = self.SS_REPLY_KEY_LOOKUP
         INTENT_REPLY_KEY_LOOKUP = self.INTENT_REPLY_KEY_LOOKUP
@@ -179,27 +253,13 @@ class Chatbot():
         if sip.is_go_back():
             replytxt = chat.pop_prev_msg()
             return action.go_back()
-
-        if chat.is_expecting_detail():
-            deets = uds.get_details()
-            outcome = chat.log_detail(deets)
-            if 
-
+            
+        # Somehow have a callback for changing chat state.
 
         curr_state = chat.get_state()
         reply_key = getreplykey(curr_state, uds.intent, sip.get_state())
         
         print("reply_key <", reply_key,">")
-
-        if curr_state in CONTEXT_REPLY_STATES:
-            query_keyword = "上海"
-            context_info = self.vault.lookup(query_keyword)
-            if DEBUG: print("ctxt",context_info)
-            # TODO have proper message template lookups instead of hardcoded reply key
-            msg = self.generate_reply(reply_key, context_info) 
-            replytext = msg_template.format(name, desc, price)
-            # print("replytxt", replytext)  
-            return replytext
 
         replytxt = self.generate_reply(reply_key)
         action = Action.reply(replytxt)
@@ -216,32 +276,6 @@ class Chatbot():
 
         return -1
     
-    # Returns an Understanding
-    def decipher_message(self,curr_state,msg):
-        # Returns an Understanding minus details
-        def uds_from_policies(state, msg):
-            policy = self.POLICY_RULES[state]
-            for pol_lst in policy.get_policies():
-                for pair in pol_lst:
-                    intent, next_sip = pair
-                    assert isinstance(next_sip, SIP)
-                    keyword_db = self.INTENT_LOOKUP_TABLE[intent]
-                    if cbsv.check_input_against_db(msg, keyword_db):
-                        return Understanding(intent, next_sip)
-            return Understanding(False, SIP.same_state())
-        
-        f_msg = format_text(msg)
-        uds = uds_from_policies(curr_state,f_msg)
-
-        # Adds details
-        details = self.iparser.parse(msg)
-        uds.set_details(details)
-                    
-        if DEBUG:
-            print("Intent is:{0}, Next state is {1}".format(uds.intent, uds.sip.get_state()))
-        
-        return uds
-
     # Returns a text reply
     def respond_to_msg(self, chat, msg):
         INTENT_LOOKUP_TABLE = self.INTENT_LOOKUP_TABLE
@@ -278,9 +312,6 @@ class Chatbot():
         curr_uds = self.decipher_message(curr_state, msg)
         intent = curr_uds.intent
 
-        # PROCESS INTENT SHOULD BE FROM A SEPERATE CLASS
-        select = self.process_intent(intent, msg)
-
         # print("intent",intent)
         packet = curr_uds.get_sip()
 
@@ -299,9 +330,9 @@ class Chatbot():
 
         return reply
 
-    def change_chat_state(self, chat, sip, selection = -1):
+    def change_chat_state(self, chatmgr, sip, selection = -1):
         # Go to previous state
-        chat.update_chat(sip, selection)
+        chat.update_chat(sip)
         
     def init_mappings(self):
         # These dicts can only be built AFTER resources are initalized 
@@ -311,20 +342,9 @@ class Chatbot():
             STATES['log_issue'],
         ]
 
-        self.CONTEXT_REPLY_STATES = [
-            STATES["confirm_plan"],
-            STATES["payment"]
-        ]
-
         self.SPECIAL_PARSE_INTENTS = {
             INTENTS['indicate_plan']: parse_plan_selection
         }
-
-        self.INTENT_LOOKUP_TABLE = {}
-        for k in list(MATCH_DB.keys()):
-            look_key = k[3:]
-            kv = INTENTS[look_key]
-            self.INTENT_LOOKUP_TABLE[kv] = MATCH_DB[k]
 
         # Contextual Intents
         # key: state, val: list of intents
@@ -411,37 +431,6 @@ class Chatbot():
                 continue
             self.POLICY_RULES[state_value] = make_policy([])
         # print("Policy keys",list(self.POLICY_RULES.keys()))
-        
-        # (STATES['sales_query'], INTENTS['purchase']), STATES['pay_query'],
-        # (STATES['init_sale'], INTENTS['affirm']), STATES['choose_plan'],
-        # (STATES['choose_plan'], INTENTS['confusion']), STATES['sales_query'],
-        # (STATES['choose_plan'], INTENTS['affirm']), STATES['choose_plan']),
-        # (STATES['choose_plan'], INTENTS['indicate_plan']), STATES['confirm_plan'],
-        # (STATES['confirm_plan'], INTENTS['affirm']), STATES['payment'],
-        # (STATES['payment'], INTENTS['affirm']), STATES['finish_sale'],
-        # (STATES['finish_sale'], INTENTS['affirm']), STATES['init']),
-        # (STATES['finish_sale'], INTENTS['deny']), STATES['goodbye']),
-        # (STATES['finish_sale'], INTENTS['goodbye']), STATES['goodbye'],
-        # (STATES['sales_query'], INTENTS['goodbye']), STATES['goodbye']
-
-        # self.POLICY_RULES = {
-        #     (STATES['init'], INTENTS['greet']): STATES['init'],
-        #     (STATES['init'], INTENTS['gen_query']) : STATES['confirm_query'],
-        #     (STATES['init'], INTENTS['purchase']): STATES['init_sale'],
-        #     (STATES['init'], INTENTS['pay_query']): STATES['pay_query'],
-        #     (STATES['init'], INTENTS['goodbye']): STATES['goodbye'],
-        #     (STATES['sales_query'], INTENTS['purchase']): STATES['pay_query'],
-        #     (STATES['init_sale'], INTENTS['affirm']): STATES['choose_plan'],
-        #     (STATES['choose_plan'], INTENTS['confusion']): STATES['sales_query'],
-        #     (STATES['choose_plan'], INTENTS['affirm']): STATES['choose_plan']),
-        #     (STATES['choose_plan'], INTENTS['indicate_plan']): STATES['confirm_plan'],
-        #     (STATES['confirm_plan'], INTENTS['affirm']): STATES['payment'],
-        #     (STATES['payment'], INTENTS['affirm']): STATES['finish_sale'],
-        #     (STATES['finish_sale'], INTENTS['affirm']): STATES['init']),
-        #     (STATES['finish_sale'], INTENTS['deny']): STATES['goodbye']),
-        #     (STATES['finish_sale'], INTENTS['goodbye']): STATES['goodbye'],
-        #     (STATES['sales_query'], INTENTS['goodbye']): STATES['goodbye']
-        # }
 
         return 
 
@@ -481,8 +470,9 @@ if __name__ == "__main__":
     # load json and print
     json_data = read_json("chatbot_resource.json")
     vault = Info_Vault(json_data)
-    parser = Info_Parser()
-    bot = Chatbot(json_data,vault,parser)
+    parser = InfoParser()
+    components = master_initalize(json_data)
+    bot = Chatbot(vault,parser,components)
     bot.start()
     while 1:
         incoming_msg = input()
