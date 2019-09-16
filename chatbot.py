@@ -79,6 +79,7 @@ def parse_plan_selection(msg):
 
     return s_data
 
+
 # Big Chatbot class
 class Chatbot():
     INTENTS, STATES, MATCH_DB, REPLY_DB, ALL_PRODUCTS = ({},{},{},{},{})
@@ -162,11 +163,11 @@ class Chatbot():
             context = (curr_state, next_state)
             print("cstate, nstate",context)
             # Specific state to state
-            rkey = dict_lookup (context, STS_REPLY_KEY_LOOKUP)
+            rkey = dict_lookup(context, STS_REPLY_KEY_LOOKUP)
             
             # Single state
             if not rkey:
-                rkey = dict_lookup (next_state, SS_REPLY_KEY_LOOKUP)
+                rkey = dict_lookup(next_state, SS_REPLY_KEY_LOOKUP)
             
             # Intent
             if not rkey:
@@ -174,11 +175,16 @@ class Chatbot():
 
             return rkey
 
-
         sip = uds.get_sip()
         if sip.is_go_back():
             replytxt = chat.pop_prev_msg()
             return action.go_back()
+
+        if chat.is_expecting_detail():
+            deets = uds.get_details()
+            outcome = chat.log_detail(deets)
+            if 
+
 
         curr_state = chat.get_state()
         reply_key = getreplykey(curr_state, uds.intent, sip.get_state())
@@ -210,19 +216,45 @@ class Chatbot():
 
         return -1
     
+    # Returns an Understanding
+    def decipher_message(self,curr_state,msg):
+        # Returns an Understanding minus details
+        def uds_from_policies(state, msg):
+            policy = self.POLICY_RULES[state]
+            for pol_lst in policy.get_policies():
+                for pair in pol_lst:
+                    intent, next_sip = pair
+                    assert isinstance(next_sip, SIP)
+                    keyword_db = self.INTENT_LOOKUP_TABLE[intent]
+                    if cbsv.check_input_against_db(msg, keyword_db):
+                        return Understanding(intent, next_sip)
+            return Understanding(False, SIP.same_state())
+        
+        f_msg = format_text(msg)
+        uds = uds_from_policies(curr_state,f_msg)
+
+        # Adds details
+        details = self.iparser.parse(msg)
+        uds.set_details(details)
+                    
+        if DEBUG:
+            print("Intent is:{0}, Next state is {1}".format(uds.intent, uds.sip.get_state()))
+        
+        return uds
+
     # Returns a text reply
     def respond_to_msg(self, chat, msg):
         INTENT_LOOKUP_TABLE = self.INTENT_LOOKUP_TABLE
-        POLICY_RULES = self.POLICY_RULES
-        RECORDING_STATES = self.RECORDING_STATES
+        RECORDING_STATES = self.RECORDING_STATES # EXISTS BUT NOT USED RN
         SPECIAL_INTENT_LIST = self.SPECIAL_INTENT_LIST
+
         # STATIC_INTENTS = self.STATIC_INTENTS
         # UNIVERSAL_INTENTS = self.UNIVERSAL_INTENTS
         def get_intent_from_db(msg, intent_db_list, exact=False):
             for intent_db in intent_db_list:
                 intent = intent_db[0]
                 regex_db = intent_db[1]
-                if check_input_against_db(msg,regex_db,exact):
+                if cbsv.check_input_against_db(msg,regex_db,exact):
                     return intent
             return False
 
@@ -236,57 +268,14 @@ class Chatbot():
                 s_db_list = get_sil_pairlist(entry)
                 if state == get_sil_state(entry):
                     return get_intent_from_db(msg,s_db_list,exact = True)
-
-        def get_general_intent(msg):
-            # Global reference to GENERAL_INTENT_LIST
-            return get_intent_from_db(msg,GENERAL_INTENT_LIST)
-
-        # Returns an Understanding
-        def uds_from_policies(state, msg):
-            policy = POLICY_RULES[state]
-            for pol_lst in policy.get_policies():
-                for pair in pol_lst:
-                    intent, next_sip = pair
-                    assert isinstance(next_sip, SIP)
-                    db = INTENT_LOOKUP_TABLE[intent]
-                    if check_input_against_db(msg, db):
-                        return Understanding(intent, next_sip)
-            return Understanding(False, SIP.same_state())
-            
-
-        def decipher_message(curr_state,msg):
-            # RECORD MSG
-            if curr_state in RECORDING_STATES:
-                record_msg(msg)
-
-            f_msg = format_text(msg)
-
-            uds = uds_from_policies(curr_state,f_msg)
-                        
-            if DEBUG:
-                print("Intent is:{0}, Next state is {1}".format(uds.intent, uds.sip.get_state()))
-            
-            details = None # HEre is where we parse and add details?
-            uds.parse_details(details)
-            return uds
+                
 
         ### INTENT ###
         # Checks message for db keywords
         # TODO: implement better word comprehension
-        def check_input_against_db(msg, db, exact = False):
-            search_fn = lambda x,y: re.search(x,y)
-            if exact:
-                search_fn = lambda x,y: re.fullmatch(x,y)
-            
-            match = False
-            for keyword in db:
-                match = search_fn(keyword,msg)
-                if match:
-                    break
-            return match
 
         curr_state = chat.get_state()
-        curr_uds = decipher_message(curr_state, msg)
+        curr_uds = self.decipher_message(curr_state, msg)
         intent = curr_uds.intent
 
         # PROCESS INTENT SHOULD BE FROM A SEPERATE CLASS
@@ -370,12 +359,14 @@ class Chatbot():
         # These policies are accessible from every state
         default_policy_set = [
             (INTENTS['greet'],SIP.same_state()),
-            (INTENTS['provide_location'],SIP(same_state)),
             (INTENTS['ask_name'],SIP.same_state()),
             (INTENTS['deny'], SIP.go_back_state()),
             (INTENTS['goodbye'], SIP(STATES["goodbye"])),
             (INTENTS['report_issue'], SIP(STATES['log_issue']))
         ]
+
+        # (INTENTS['provide_info'],SIP.same_state()),
+
 
         make_policy = lambda s_ints: Policy(default_policy_set,s_ints)
 

@@ -1,4 +1,5 @@
 import cbsv
+import re
 
 DEBUG = 1
 
@@ -39,10 +40,23 @@ class SIP:
         obj.set_backtrack()
         obj.go_back = True
         return obj
+
     def is_same_state(self):
         return not self.state_change
+
+    # For cases when a state requires some intermediate step
+    # Once the current stage is done, we immediately go to the pstate
+    # How do we store this pstate?
+    def set_pending_state(self,nstate, pstate):
+        self.pstate = pstate
+        self.state = nstate
+
+
     def is_go_back(self):
         return self.go_back == True
+
+    def toString(self):
+        return ("State",self.state,"cs",self.state_change,"backtrack",self.backtrack)
 
 # A vehicle to house intent and details from the message
 class Understanding:
@@ -51,9 +65,11 @@ class Understanding:
         self.sip = sip
         self.details = {}
 
-    def parse_details(self, d):
-        self.location = ""
+    def set_details(self, d):
         self.details = d
+    
+    def get_details(self):
+        return self.details
 
     def get_intent(self):
         return self.intent
@@ -64,12 +80,15 @@ class Understanding:
     def set_intent(self, i):
         self.intent = i
 
+    def printout(self):
+        print("Intent",self.intent, "SIP", self.sip.toString(), "details", self.details)
+
 # Action that includes string for replies
 class Action:
     def __init__(self):
         self.message = ""
         self.log_data_bool = False
-        self.extra_info = []
+        self.data = []
 
     @classmethod
     def reply(cls, msg):
@@ -87,6 +106,7 @@ class Action:
         self.message = msg
 
     def log_data(self, data):
+        self.data = data
         self.log_data_bool = True
     
     def has_data(self):
@@ -116,6 +136,36 @@ class Chat:
         self.convo_history = convo_history
         self.prev_messages = []
         self.frame_history = [initial_state,]
+        self.info = {}
+        self._has_info = False
+        self.bool_expecting_detail = False
+
+    ## Commonly called methods
+    # Updates chat info
+    def update_chat(self, sip, selection):
+        if not isinstance(selection,int):
+            self.set_selection(selection)
+
+        if sip.is_go_back():
+            self.go_back()
+
+        elif sip.is_same_state():
+            return
+        
+        new_state = sip.get_state()
+        self.change_state(new_state)
+
+    def pop_prev_msg(self):
+        # TODO failsafe when empty?
+        # Need to get the previous previous message
+        if len(self.prev_messages) < 2:
+            return self.prev_messages[-1]
+        if self.firstpop: 
+            self.prev_messages.pop(-1)
+            self.firstpop = False
+        return self.prev_messages.pop(-1)
+    
+    # Internal methods
     def change_state(self,new_state):
         if DEBUG: print("changing to", new_state)
         self.frame_history.append(self.state)
@@ -128,16 +178,6 @@ class Chat:
         self.prev_messages.append(msg)
         self.firstpop = True
     
-    def pop_prev_msg(self):
-        # TODO failsafe when empty?
-        # Need to get the previous previous message
-        if len(self.prev_messages) < 2:
-            return self.prev_messages[-1]
-        if self.firstpop: 
-            self.prev_messages.pop(-1)
-            self.firstpop = False
-        return self.prev_messages.pop(-1)
-
     def get_state(self):
         return self.state
 
@@ -148,33 +188,60 @@ class Chat:
         #     self.frame_history.pop(-1)
         return self.frame_history.pop(-1)
 
-    def set_selection(self,selection):
-        self.selection = selection
+    # Check if info dict has this key
+    def has_info(self, key):
+        return key in self.info
     
-    def get_selection(self):
-        return self.selection
+    def get_info(self, key):
+        return self.info[key]
 
-    def clear_selection(self):
-        self.selection = False
+    ## Detail stuff
+    # Bool
+    def is_expecting_detail(self):
+        return self.bool_expecting_detail
 
+    # Set the key to listen out for
+    def set_expect_detail(self, detail):
+        self.bool_expecting_detail = True
+        self.req_detail = detail
+    
+    def clear_expect_detail(self):
+        self.bool_expecting_detail = False
+        self.req_detail = ""
+
+    # Getter
+    def get_req_detail(self):
+        return self.req_detail
+
+    # Add info to the current db
+    def log_detail(self, info):
+        rd = self.get_req_detail()
+        if rd in info:
+            deet = info[rd]
+            if len(deet) > 0:
+                self.info[rd] = info[rd]
+                self.clear_expect_detail()
+                return True
+        return False
+
+    ## Database interaction?
     def get_previous_issues(self):
         return self.user.get_issues()
 
+    def record_to_database(self):
+        # write info
+        
+        # write issues
+
+        return
+
     def go_back(self):
         print("going back")
+ 
 
-    def update_chat(self, sip, selection):
-        if not isinstance(selection,int):
-            self.set_selection(selection)
-
-        if sip.is_go_back():
-            self.go_back()
-
-        elif sip.is_same_state():
-            return
-        
-        new_state = sip.get_state()
-        self.change_state(new_state) 
+    # Pending State
+    def set_pending_state(self, state):
+        self.pending_state = state
 
 class Policy():
     def __init__(self, g_intents, s_intents = []):
@@ -222,40 +289,42 @@ class Customer:
 
 # Takes in a message and returns some info (if any)
 class Info_Parser():
-    cities = ["上海","北京","深圳","上海","上海","上海","杭州","广州"]
+    cities = ["上海","北京","深圳","杭州","广州", "上海", "成都", "shanghai", "beijing"]
+    digits = "[零一二三四五六七八九十|0-9]"
     def __init__(self):
-        self.ctlist = self.get_city_list()
+        self.ctlist = self.list_to_reList(self.cities)
 
     # Returns a dict of info
     def parse(self, text):
-        city = parse_city(text)
-        date = parse_date(text)
+        empty = {"city":"", "dates":""}
+        city = self.parse_city(text)
+        date = self.parse_date(text)
         out = {"city":city, "dates":date}
-        print(out)
+        if not out == empty: print(out)
         return out
 
-    def get_city_list(self):
+    def list_to_reList(self, lst):
         re_list = ""
-        for cty in cities:
-            re_list = re_list + cty + "|"
+        for e in lst:
+            re_list = re_list + e + "|"
         re_list = re_list[:-1] # Remove last char
 
         return re_list
 
     def parse_date(self, text):
-        day, mth, yr = "","",""
-        # day
-        m_day = re.search("[^ ]+(?=日)",text)
-        if m_day:
-            day = m_day.group[0]
-        # month
-        m_mth = re.search("[^ ]+(?=月)",text)
-        if m_mth:
-            mth = m_mth.group[0]
-        # year
-        m_yr = re.search("[^ ]+(?=年)",text)
-        if m_yr:
-            yr = m_yr.group[0]
+        # Returns a "" if not found
+        def date_re_search(keyword):
+            result = ""
+            # "[^ ]+(?=日)"
+            search_terms = self.digits + "+(?=" + keyword + ")"
+            m = re.search(search_terms,text)
+            if m:
+                result = m.group(0)
+            return result
+        
+        day = date_re_search("日")
+        mth = date_re_search("月")
+        yr = date_re_search("年")
 
         out = (day, mth, yr)
         return out
@@ -264,10 +333,20 @@ class Info_Parser():
         out = ""
         m_city = re.search(self.ctlist,text)
         if m_city:
-            out = m_city.group[0]
+            out = m_city.group(0)
 
     #     for i in range(len(text)):
     #         substring = text[i:i+1]
     #         if substring in cities:
     #             return substring
         return out
+
+    def cn_to_integer(self, digit):
+        SHI = "十"
+        zw_num = ['零','一','二','三','四','五','六','七','八','九']
+        conv = digit
+        for i in range(len(zw_num)):
+            conv.replace(zw_num,i)
+        if SHI in digit:
+            return digit.index(SHI)
+        return conv

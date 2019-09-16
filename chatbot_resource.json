@@ -5,7 +5,6 @@
         "ask_name":101,
         "indicate_plan":1701,
         "indicate_query":1702,
-        "provide_location": 121,
         "sales_query":111,
         "pay_query":112,
         "gen_query":113,
@@ -69,7 +68,7 @@
         ],
 
         "db_sales_query" : [
-            "sales query","ask about your product"
+            "sales query","ask about your product", "缴纳"
         ],
 
         "db_indicate_plan" : [
@@ -113,6 +112,9 @@
         ],
         "r_sale_done" : [
             "Success! Thank you very much for shopping at SHEBAO!"
+        ],
+        "r_req_info_again" : [
+            "亲 先别急 我要先拿亲的信息后才谈别的事"
         ],
         "r_list_plans" : [
             "Please choose a plan: Plan A, Plan B or Plan C", "Please choose a plan: INFO GOES HERE"
