@@ -62,6 +62,11 @@ class Understanding:
         self.sip = sip
         self.details = {}
 
+    @classmethod
+    def make_null(cls):
+        n = cls(False, SIP.same_state())
+        return n
+
     def set_details(self, d):
         self.details = d
     
@@ -83,7 +88,7 @@ class Understanding:
         self.intent = i
 
     def printout(self):
-        print("Intent",self.intent, "SIP", self.sip.toString(), "details", self.details)
+        print("UNDERSTANDING PRINTOUT: Intent: ",self.intent, " SIP: ", self.sip.toString(), " details: ", self.details)
 
 # Action that includes string for replies
 class Action:

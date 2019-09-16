@@ -22,7 +22,7 @@ class ChatManager:
         self.GATED_STATES = gated_states
 
         # Internal properties
-        self.state_history = []
+        self.state_history = [self.state,]
         self.clear_expect_detail()
 
     # Big method.
@@ -31,6 +31,7 @@ class ChatManager:
         # Parse the message and get an understanding
         full_uds = self._parse_message_overall(msg)
 
+        full_uds.printout()
         # Digest and internalize the new info
         final_uds = self._digest_uds(full_uds)
 
@@ -62,8 +63,8 @@ class ChatManager:
     def _fetch_reply(self,uds):
         curr_state = self._get_state()
         intent = uds.get_intent()
-        next_state = uds.get_sip().get_state()
-        return self.replygen.get_reply(curr_state, next_state, intent)
+        prev_state = self.get_prev_state()
+        return self.replygen.get_reply(prev_state, curr_state, intent)
 
     def _parse_message_details(self, msg):
         # Adds details
@@ -108,11 +109,11 @@ class ChatManager:
         # Update State (may depend on details so this is 2nd)
 
         if sip.is_go_back():
-            self.go_back()
-            return
+            self.go_back_a_state()
+            return uds
 
         elif sip.is_same_state():
-            return
+            return uds
         
         # Modify if needed
         new_sip = self._gatekeep_sip(sip)
@@ -140,10 +141,12 @@ class ChatManager:
 
     def go_back_a_state(self):
         prev_state = self.state_history.pop(-1)
-        chat.set_state(prev_state)
-
+        
     def _get_state(self):
         return self.state
+
+    def get_prev_state(self):
+        return self.state_history[-1]
 
     ## Detail stuff
     # Bool
@@ -165,7 +168,6 @@ class ChatManager:
     
     def push_detail_to_chat(self, d):
         return self.chat.log_details(d)
-
 
 # Keeps policies
 # Also deciphers messages
@@ -190,7 +192,7 @@ class PolicyKeeper:
                     keyword_db = self.INTENT_LOOKUP_TABLE[intent]
                     if cbsv.check_input_against_db(msg, keyword_db):
                         return Understanding(intent, next_sip)
-            return Understanding(False, SIP.same_state())
+            return Understanding.make_null()
         
         uds = uds_from_policies(curr_state,msg)
 
@@ -203,26 +205,30 @@ class ReplyGenerator:
         self.rkey_dbs = rkey_dbs
 
     # OVERALL METHOD
-    def get_reply(self, curr_state, next_state, intent, info = -1):
-        rkey = self.getreplykey(curr_state, intent, next_state)
+    def get_reply(self, prev_state, curr_state, intent, info = -1):
+        rkey = self.getreplykey(prev_state, intent, curr_state)
         reply = self.generate_reply_message(rkey, info)
         return reply
 
-    def getreplykey(self,curr_state, intent, next_state):
+    def getreplykey(self,prev_state, intent, curr_state):
         def dict_lookup(key, dictionary):
             if key in dictionary:
                 return dictionary[key]
             return False
 
-        context = (curr_state, next_state)
-        print("cstate, nstate",context)
+        context = (prev_state, curr_state)
+        print("prev state, nxt state",context)
         
         # Specific state to state
         rkey = dict_lookup(context, self.rkey_dbs["s2s"])
-        
+        if rkey:
+            print("found in s2s")
+            return rkey
+
         # Single state
         if not rkey:
-            rkey = dict_lookup(next_state, self.rkey_dbs["ss"])
+            print("found in 1s")
+            rkey = dict_lookup(curr_state, self.rkey_dbs["ss"])
         
         # Intent
         if not rkey:
