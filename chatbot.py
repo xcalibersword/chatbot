@@ -109,6 +109,8 @@ def init_replygen(jdata):
 def init_policykeeper(jdata):
     INTENTS = jdata["intents"]
     STATES = jdata["states"]
+    MATCH_DB = jdata["match_db"]
+
     ### POLICIES ###
 
     default_policy_set = [
@@ -174,23 +176,25 @@ def master_initalize(jdata):
     # INTENTS = jdata["intents"]
     # STATES = jdata["states"]
     # MATCH_DB = jdata["match_db"]
-
+    components = {}
     components["replygen"] = init_replygen(jdata)
     components["pkeeper"] = init_policykeeper(jdata)
+    components["gatedstates"] = {} # Might replace this with a flag in the json
     return components
 
 # Big Chatbot class
 class Chatbot():
     INTENTS, STATES, MATCH_DB, REPLY_DB, ALL_PRODUCTS = ({},{},{},{},{})
-    def __init__(self, vault, infoparser, components):
+    def __init__(self, vault, infoparser, comps):
         self.PREV_REPLY_FLAG = "prev_state_message"
         self.vault = vault
-        self.pkeeper = pkeeper
-        self.replygen = replygen
-        self.gs = gs
+        self.ip = infoparser
+        self.pk = comps['pkeeper']
+        self.rg = comps['replygen']
+        self.gs = comps['gatedstates']
     
     def make_new_chatmgr(self, chat):
-        return ChatManager(chat, self.pkeeper, self.replygen, self.gs)
+        return ChatManager(chat, self.ip, self.pk, self.rg, self.gs)
 
     def start(self):
         print("Hello, I am a bot!")
@@ -199,9 +203,10 @@ class Chatbot():
 
     def make_new_chat(self,chatID):
         # inital issues = {}
-        initial_state = STATES["init"]
-        newchat = Chat(chatID, {},initial_state)
-        self.chat_dict[chatID] = self.make_new_chatmgr(newchat)
+        chat_hist = {}
+        newchat = Chat(chatID, chat_hist)
+        new_manager = self.make_new_chatmgr(newchat)
+        self.chat_dict[chatID] = new_manager
         return
 
     def clean_message(self, rawtext):
@@ -216,7 +221,7 @@ class Chatbot():
         # reply = self.respond_to_msg(curr_chat,msg)
         f_msg = self.clean_message(msg)
         curr_chat_mgr = self.chat_dict[chatID]
-        reply = chat_manager.respond_to_message(f_msg)
+        reply = curr_chat_mgr.respond_to_message(f_msg)
         print(reply)
         return
 
@@ -271,7 +276,6 @@ class Chatbot():
 
         return -1
     
-
     # Returns a text reply
     def respond_to_msg(self, chat, msg):
         INTENT_LOOKUP_TABLE = self.INTENT_LOOKUP_TABLE
@@ -468,7 +472,7 @@ if __name__ == "__main__":
     vault = Info_Vault(json_data)
     parser = InfoParser()
     components = master_initalize(json_data)
-    bot = Chatbot(json_data,vault,parser,components)
+    bot = Chatbot(vault,parser,components)
     bot.start()
     while 1:
         incoming_msg = input()

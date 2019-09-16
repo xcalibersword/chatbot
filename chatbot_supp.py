@@ -49,7 +49,6 @@ class SIP:
         self.pstate = pstate
         self.state = nstate
 
-
     def is_go_back(self):
         return self.go_back == True
 
@@ -71,7 +70,12 @@ class Understanding:
 
     def get_intent(self):
         return self.intent
-    
+
+    def copy_swap_sip(self,new_sip):
+        new = Understanding(self.intent, new_sip)
+        new.set_details(self.get_details())
+        return new
+
     def get_sip(self):
         return self.sip
 
