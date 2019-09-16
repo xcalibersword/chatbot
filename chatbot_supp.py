@@ -49,12 +49,11 @@ class Understanding:
     def __init__(self, intent, sip):
         self.intent = intent
         self.sip = sip
-        self.details = None
+        self.details = {}
 
-    def parse_details(self, info):
+    def parse_details(self, d):
         self.location = ""
-        self.date = ""
-        self.info = info
+        self.details = d
 
     def get_intent(self):
         return self.intent
@@ -220,3 +219,55 @@ class Customer:
 
     def get_accounts(self):
         return self.accounts
+
+# Takes in a message and returns some info (if any)
+class Info_Parser():
+    cities = ["上海","北京","深圳","上海","上海","上海","杭州","广州"]
+    def __init__(self):
+        self.ctlist = self.get_city_list()
+
+    # Returns a dict of info
+    def parse(self, text):
+        city = parse_city(text)
+        date = parse_date(text)
+        out = {"city":city, "dates":date}
+        print(out)
+        return out
+
+    def get_city_list(self):
+        re_list = ""
+        for cty in cities:
+            re_list = re_list + cty + "|"
+        re_list = re_list[:-1] # Remove last char
+
+        return re_list
+
+    def parse_date(self, text):
+        day, mth, yr = "","",""
+        # day
+        m_day = re.search("[^ ]+(?=日)",text)
+        if m_day:
+            day = m_day.group[0]
+        # month
+        m_mth = re.search("[^ ]+(?=月)",text)
+        if m_mth:
+            mth = m_mth.group[0]
+        # year
+        m_yr = re.search("[^ ]+(?=年)",text)
+        if m_yr:
+            yr = m_yr.group[0]
+
+        out = (day, mth, yr)
+        return out
+
+    def parse_city(self, text):
+        out = ""
+        m_city = re.search(self.ctlist,text)
+        if m_city:
+            out = m_city.group[0]
+
+    #     for i in range(len(text)):
+    #         substring = text[i:i+1]
+    #         if substring in cities:
+    #             return substring
+        return out

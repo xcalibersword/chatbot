@@ -1,3 +1,4 @@
+import re
 
 def DEFAULT_CONFUSED():
     return "不好意思，我听不懂"
@@ -19,3 +20,20 @@ if __name__ == "__main__":
     }
 
     print(list(k.keys()))
+
+
+
+# TESTING REGEX
+# Check if search allows trailing chars
+# E.g. plan alakazam = plan a
+
+if __name__ == "__main__":
+    def chk(inp):
+        mtch = re.search("[^ ]+(?=day)",inp)
+        if mtch:
+            print(mtch)
+            print(mtch.group(0))    
+        return
+    while 1:
+        i = input()
+        chk(i)

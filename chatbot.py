@@ -82,10 +82,11 @@ def parse_plan_selection(msg):
 # Big Chatbot class
 class Chatbot():
     INTENTS, STATES, MATCH_DB, REPLY_DB, ALL_PRODUCTS = ({},{},{},{},{})
-    def __init__(self,json_data,vault):
+    def __init__(self,json_data,vault, infoparser):
         self.PREV_REPLY_FLAG = "prev_state_message"
         self.vault = vault
         self.init_bot(json_data)
+        self.iparser = infoparser
         
 
     def init_bot(self,jdata):
@@ -126,9 +127,9 @@ class Chatbot():
     # Generates a pure reply as in a text
     # TODO: remove wrapper if uneccesary
     def generate_reply(self, reply_key, info = []):
-    
+        # Takes in reply_key
+        # Looks up the reply databases and returns a reply
         def fetch_reply_text(r_key):
-            # Looks up the reply databases and returns a reply
             if not r_key:
                 return cbsv.DEFAULT_CONFUSED()
             if r_key in REPLY_DB:
@@ -149,8 +150,6 @@ class Chatbot():
             final_reply = r_txt.format(info)
 
         return final_reply
-            
-
 
     # TODO: reimplement this
     def decide_action(self, uds, chat):
@@ -477,35 +476,7 @@ class Info_Vault():
         if thing in self.other_keys:
             return 1
 
-class Info_Parser():
-    cities = ["上海","北京","深圳","上海","上海","上海","杭州","广州"]
-    def __init__(self):
-        pass
 
-    # Returns a dict of info
-    def parse(self, text):
-        out = {"city":"", "date":""}
-        city = parse_city(text)
-        data = parse_date(text)
-
-
-    def parse_date(self, text):
-        # day
-        day = re.search("?日",text)
-        # month
-        mth = re.searc("?月")
-        # year
-        yr = re.search("?年")
-        out = (day, mth, yr)
-        print(out)
-        return out
-
-    def parse_city(self, text):
-        for i in range(len(text)):
-            substring = text[i:i+1]
-            if substring in cities:
-                return substring
-        return ""
 
 # TODO: Maybe have a ReplyGenerator object so I can remove it from Chatbot?
 
@@ -513,25 +484,14 @@ class Info_Parser():
 # EXTENSIONS:
 # Looking at a deeper history rather than just the previous state. LOC: decide_action
 
-# TESTING REGEX
-# Check if search allows trailing chars
-# E.g. plan alakazam = plan a
-
-# if __name__ == "__main__":
-#     def chk(inp):
-#         o = re.search("plan (a|b|c)",inp)
-#         print(o)
-#         return
-#     while 1:
-#         i = input()
-#         chk(i)
 
 
 if __name__ == "__main__":
     # load json and print
     json_data = read_json("chatbot_resource.json")
     vault = Info_Vault(json_data)
-    bot = Chatbot(json_data,vault)
+    parser = Info_Parser()
+    bot = Chatbot(json_data,vault,parser)
     bot.start()
     while 1:
         incoming_msg = input()
