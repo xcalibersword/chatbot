@@ -5,8 +5,6 @@ DEBUG = 1
 
 
 # Have a message class? Or some sort of flag for messages. Indicate state-changing messages.
-
-
 PREV_STATE_F = "299 PREV_STATE"
 PREV_STATE_MSG = "prev_state_msg"
 
@@ -127,121 +125,7 @@ class Product:
         self.price = info["price"]
         self.desc = info["desc"]
 
-# Try to have stateful changes
-# frame = (state, message)
-class Chat:
-    def __init__(self,customer,convo_history,initial_state):
-        self.customer = customer
-        self.state = initial_state
-        self.convo_history = convo_history
-        self.prev_messages = []
-        self.frame_history = [initial_state,]
-        self.info = {}
-        self._has_info = False
-        self.bool_expecting_detail = False
 
-    ## Commonly called methods
-    # Updates chat info
-    def update_chat(self, sip, selection):
-        if not isinstance(selection,int):
-            self.set_selection(selection)
-
-        if sip.is_go_back():
-            self.go_back()
-
-        elif sip.is_same_state():
-            return
-        
-        new_state = sip.get_state()
-        self.change_state(new_state)
-
-    def pop_prev_msg(self):
-        # TODO failsafe when empty?
-        # Need to get the previous previous message
-        if len(self.prev_messages) < 2:
-            return self.prev_messages[-1]
-        if self.firstpop: 
-            self.prev_messages.pop(-1)
-            self.firstpop = False
-        return self.prev_messages.pop(-1)
-    
-    # Internal methods
-    def change_state(self,new_state):
-        if DEBUG: print("changing to", new_state)
-        self.frame_history.append(self.state)
-        self.state = new_state
-        self.first_state_pop = True
-
-    def set_prev_msg(self, msg):
-        if msg == cbsv.DEFAULT_CONFUSED():
-            return
-        self.prev_messages.append(msg)
-        self.firstpop = True
-    
-    def get_state(self):
-        return self.state
-
-    def get_prev_state(self):
-        if len(self.frame_history) < 1:
-            return frame_history[-1]
-        #     self.first_state_pop = False
-        #     self.frame_history.pop(-1)
-        return self.frame_history.pop(-1)
-
-    # Check if info dict has this key
-    def has_info(self, key):
-        return key in self.info
-    
-    def get_info(self, key):
-        return self.info[key]
-
-    ## Detail stuff
-    # Bool
-    def is_expecting_detail(self):
-        return self.bool_expecting_detail
-
-    # Set the key to listen out for
-    def set_expect_detail(self, detail):
-        self.bool_expecting_detail = True
-        self.req_detail = detail
-    
-    def clear_expect_detail(self):
-        self.bool_expecting_detail = False
-        self.req_detail = ""
-
-    # Getter
-    def get_req_detail(self):
-        return self.req_detail
-
-    # Add info to the current db
-    def log_detail(self, info):
-        rd = self.get_req_detail()
-        if rd in info:
-            deet = info[rd]
-            if len(deet) > 0:
-                self.info[rd] = info[rd]
-                self.clear_expect_detail()
-                return True
-        return False
-
-    ## Database interaction?
-    def get_previous_issues(self):
-        return self.user.get_issues()
-
-    def record_to_database(self):
-        # write info
-        
-        # write issues
-
-        return
-
-    def go_back(self):
-        print("going back")
- 
-
-    # Pending State
-    def set_pending_state(self, state):
-        self.pending_state = state
 
 class Policy():
     def __init__(self, g_intents, s_intents = []):
@@ -251,11 +135,12 @@ class Policy():
 
     def get_g_intents(self):
         return self.g_intents
+
     def get_s_intents(self):
         print("s_intents", s_intents)
         return self.s_intents
 
-    def get_policies(self):
+    def get_intents(self):
         return [self.s_intents, self.g_intents]
 
 CITIES = cbsv.CHINA_CITIES()
@@ -288,7 +173,7 @@ class Customer:
         return self.accounts
 
 # Takes in a message and returns some info (if any)
-class Info_Parser():
+class InfoParser():
     cities = ["上海","北京","深圳","杭州","广州", "上海", "成都", "shanghai", "beijing"]
     digits = "[零一二三四五六七八九十|0-9]"
     def __init__(self):

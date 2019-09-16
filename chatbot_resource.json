@@ -80,54 +80,99 @@
         ]
     },
     "reply_db":{
-        "r_sales_pitch":[
+        "r_sales_pitch":{
+            "context_flag": 0,
+            "text" :[
             "您好，欢迎光临唯洛社保，很高兴为您服务。本店现在可以代缴上海、北京、长沙、广州、苏州、杭州、成都的五险一金。请问需要代缴哪个城市的呢？需要从几月份开始代缴呢？注意：社保局要求已怀孕的客户（代缴后再怀孕的客户不受影响）和重大疾病或者慢性病状态客户，我司不能为其代缴社保，如有隐瞒恶意代缴的责任自负！请注意参保手续开始办理后，无法退款。"
-        ],
-        "r_ask_name" : [
+            ]
+        },
+        "r_ask_name" : {
+            "context_flag": 0,
+            "text" :[
             "我是回音机器人",
             "他们叫我王俊杰！",
             "我名回音，姓机器人"
-        ],
-        "r_ask_if_issue":[
+            ]
+        },
+        "r_ask_if_issue":{
+            "context_flag": 0,
+            "text" :[
             "What's wrong?",
             "有事吗？"
-        ],
-        "r_req_location":[
+            ]
+        },
+        "r_req_location":{
+            "context_flag": 0,
+            "text" :[
             "亲，您是需要缴纳哪个城市的社保呢？"
-        ],
-        "r_greet" : [
+            ]
+        },
+        "r_greet" : {
+            "context_flag": 0,
+            "text" :[
             "你好！","你好 :)","Hello！"
-        ],
-        "r_sales_intro" : [
-            "好的，那么我就跟亲介绍一下..... 你对我们的产品有兴趣吗？"
-        ],
-        "r_confirm_plan" : [
+            ]
+        },
+        "r_sales_intro" : {
+            "context_flag": 0,
+            "text" : [
+                "好的，那么我就跟亲介绍一下..... 你对我们的产品有兴趣吗？"
+            ]
+        },
+        "r_confirm_plan" : {
+            "context_flag" : 1,
+            "text": [
             "Confirm plan {name}？"
-        ],
-        "r_confirm_price" : [
+            ]
+        },
+        "r_confirm_price" : {
+            "context_flag": 1,
+            "text" :[
             "Plan {name} will cost ${price}. Is this ok?"
-        ],
-        "r_query" : [
+            ]
+        },
+        "r_query" : {
+            "context_flag": 0,
+            "text" :[
             "YOu have enquired!","Our products costs very little!","YAY"
-        ],
-        "r_sale_done" : [
+            ]
+        },
+        "r_sale_done" : {
+            "context_flag": 0,
+            "text" :[
             "Success! Thank you very much for shopping at SHEBAO!"
-        ],
-        "r_req_info_again" : [
+            ]
+        },
+        "r_req_info_again" : {
+            "context_flag": 0,
+            "text" : [
             "亲 先别急 我要先拿亲的信息后才谈别的事"
-        ],
-        "r_list_plans" : [
+            ]
+        },
+        "r_list_plans" : {
+            "context_flag": 0,
+            "text" :[
             "Please choose a plan: Plan A, Plan B or Plan C", "Please choose a plan: INFO GOES HERE"
-        ],
-        "r_state_details": [
+            ]
+        },
+        "r_state_details": {
+            "context_flag": 1,
+            "text" : [
             "目前{city}社保按照最低基数{base_amt}，缴纳{payment}；服务费{svc_fee}元每月，首次参保额外收取{opening_fee}元开户费。"
-        ],
-        "r_how_check_shebao_status":[
+            ]
+        },
+        "r_how_check_shebao_status":{
+            "context_flag": 0,
+            "text" :[
             "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能） http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp"
-        ],
-        "r_goodbye" : [
+            ]
+        },
+        "r_goodbye" : {
+            "context_flag": 0,
+            "text" :[
             "再见!!","Byebye!","Hope to see you again! :)"
-        ]
+            ]
+        }
         
     },
     "plans":{
