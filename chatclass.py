@@ -32,19 +32,21 @@ class ChatManager:
     # Big method.
     # Takes in a message, returns a text reply.
     def respond_to_message(self, msg):
+        print("\n") # For clarity in terminal
+
         # Parse the message and get an understanding
         full_uds = self._parse_message_overall(msg)
-
         # Digest and internalize the new info
         final_uds = self._digest_uds(full_uds)
-
         # Request a reply text
         reply = self._fetch_reply(final_uds)
 
         if DEBUG:
             final_uds.printout()
-    
+
+        self._record_messages_in_chat(msg,reply)
         return reply
+
 
     # Takes in message text, returns a full understanding
     def _parse_message_overall(self,msg):
@@ -122,7 +124,7 @@ class ChatManager:
         curr_info = self._get_current_info()
         passed, next_sip = sip.try_gate(curr_info)
         # print("sip", sip.toString(), "nextsip", next_sip.toString())
-        print("Gatekeep outcome",passed)
+        if DEBUG: print("Gatekeep outcome",passed)
         if passed:
             return self.get_forward_state(sip)
 
@@ -146,7 +148,7 @@ class ChatManager:
     def get_forward_state(self, sip):
         # If pending, return pending state
         if self._has_pending_state():
-            print("!!! Attempting to move forward to: ",self.pending_state.toString())
+            if DEBUG: print("!!! Attempting to move forward to: ",self.pending_state.toString())
             sipval = self.pending_state
             self._clear_pending_state()
             return sipval
@@ -157,7 +159,7 @@ class ChatManager:
         if DEBUG: print("changing state to", new_state)
         
         if self.state == new_state:
-            print("Same state detected", new_state)
+            if DEBUG: print("Same state detected", new_state)
             return
         self.state_history.append(self.state)
         self.state = new_state
@@ -188,7 +190,10 @@ class ChatManager:
     ## Detail stuff
     # Bool
     def push_detail_to_dm(self, d):
-        return self.dmanager.log_detail(d,1)
+        return self.dmanager.log_detail(d)
+
+    def _record_messages_in_chat(self,recv, sent):
+        self.chat.record_messages(recv,sent)
 
 # Keeps policies
 # Also deciphers messages
@@ -197,9 +202,9 @@ class PolicyKeeper:
         self.POLICY_RULES = policy_rules
         self.INTENT_LOOKUP_TABLE = intent_table
 
+    # Right now just a wrapper for decipher message
     def get_understanding(self, curr_state, msg):
         uds = self.decipher_message(curr_state, msg)
-
         return uds
 
     def decipher_message(self,curr_state,msg):
@@ -322,14 +327,21 @@ class ReplyGenerator:
         return final_msg
 
 
-# Deals only with text and info (city, date)
-# Does not deal with state
+# Deals only with text
+# Does not deal with state or information
 class Chat:
     def __init__(self,customer, convo_history = {}):
         self.customer = customer
-        self.curr_chatlog = []
+        self.curr_chatlog = {}
         self.convo_history = convo_history
+        self.convo_index = 0
         self.info = {}
+
+    # Records conversation
+    def record_messages(self, recieved, sent):
+        curr_chatlog[self.convo_index] = recieved
+        curr_chatlog[self.convo_index+1] = sent
+        self.convo_index = self.convo_index + 2
 
     ## Commonly called methods
     def pop_prev_msg(self):
@@ -363,4 +375,9 @@ class Chat:
         
         # write issues
 
+        # write chatlog
+
         return
+
+    def get_chatlog(self):
+        return self.curr_chatlog
