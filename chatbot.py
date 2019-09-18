@@ -2,6 +2,7 @@ import random
 import re
 import json
 import cbsv
+import signal
 from chatbot_supp import *
 from chatclass import *
 
@@ -198,6 +199,7 @@ def master_initalize(jdata):
 
 # Big Chatbot class
 class Chatbot():
+    timeout = 10
     def __init__(self, infoparser, comps):
         self.PREV_REPLY_FLAG = "prev_state_message"
         self.dm = comps['dmanager']
@@ -211,7 +213,21 @@ class Chatbot():
     def start(self):
         print("Hello, I am a bot!")
         self.chat_dict = {}
+        self.chat_timestamps = {}
+        # Set an alarm
+        self.set_backup_alarm()
         return
+
+    def set_backup_alarm(self):
+        signal.signal(signal.SIGALRM, self.backup_chats)
+        signal.alarm(self.timeout)
+
+    def backup_chats(self, signum, frame):
+        signal.alarm(0)
+        print("BACKING UP CHAT","signum",signum)
+        for c in list(self.chat_dict.keys()):
+            self.chat_dict[c].backup_chat()
+        self.set_backup_alarm()
 
     def make_new_chat(self,chatID):
         # inital issues = {}
@@ -229,7 +245,6 @@ class Chatbot():
         # Create a new chat if never chat before
         if not chatID in self.chat_dict:
             self.make_new_chat(chatID)
-
         curr_chat_mgr = self.chat_dict[chatID]
         # curr_chat = self.chats[chatID]
         # reply = self.respond_to_msg(curr_chat,msg)

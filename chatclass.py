@@ -78,10 +78,7 @@ class ChatManager:
             sssip = SIP(curr_state_obj)
             return sssip
 
-        # print("INITIAL UDS:\n")
-        # uds.printout()
-        # print("\n")
-
+        # Unpack
         deets = uds.get_details()
         sip = uds.get_sip()
 
@@ -93,9 +90,8 @@ class ChatManager:
             self.go_back_a_state()
             return uds
 
-        print("Current state", self.state)
         if sip.is_same_state():
-            print("SAME STATE FLAGGED")
+            if DEBUG: print("SAME STATE FLAGGED")
             sip = same_state_SIP()
         
         new_sip = self._gatekeep_sip(sip)
@@ -172,6 +168,7 @@ class ChatManager:
         self.push_detail_to_dm(required_info)
         return
 
+    # UNUSED
     def go_back_a_state(self):
         prev_state = self.state_history.pop(-1)
         
@@ -188,12 +185,14 @@ class ChatManager:
         return self.state_history[-1]
 
     ## Detail stuff
-    # Bool
     def push_detail_to_dm(self, d):
         return self.dmanager.log_detail(d)
 
     def _record_messages_in_chat(self,recv, sent):
         self.chat.record_messages(recv,sent)
+    
+    def backup_chat(self):
+        self.chat.record_to_database()
 
 # Keeps policies
 # Also deciphers messages
@@ -330,8 +329,8 @@ class ReplyGenerator:
 # Deals only with text
 # Does not deal with state or information
 class Chat:
-    def __init__(self,customer, convo_history = {}):
-        self.customer = customer
+    def __init__(self,customerID, convo_history = {}):
+        self.customerID = customerID
         self.curr_chatlog = {}
         self.convo_history = convo_history
         self.convo_index = 0
@@ -339,8 +338,8 @@ class Chat:
 
     # Records conversation
     def record_messages(self, recieved, sent):
-        curr_chatlog[self.convo_index] = recieved
-        curr_chatlog[self.convo_index+1] = sent
+        self.curr_chatlog[self.convo_index] = recieved
+        self.curr_chatlog[self.convo_index+1] = sent
         self.convo_index = self.convo_index + 2
 
     ## Commonly called methods
@@ -370,13 +369,15 @@ class Chat:
 
     # Writes to a file eventually
     def record_to_database(self):
-        # filepath = dir + UNIQUE_ID
+        dir = ""
+        filepath = dir + self.customerID + ".json"
+
         # write info
         
         # write issues
 
         # write chatlog
-
+        cbsv.dump_to_json(filepath,self.get_chatlog(),1)
         return
 
     def get_chatlog(self):

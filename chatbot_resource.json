@@ -179,7 +179,7 @@
         "r_greet" : {
             "context_flag": 0,
             "text" :[
-            "你好 :) {dates}","Hello"
+            "你好 :) {dates}","Hello!!"
             ]
         },
         "r_sales_intro" : {

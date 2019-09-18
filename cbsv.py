@@ -1,6 +1,7 @@
 # ChatBot Supporting Variables (and functions)
 
 import re
+import json
 
 def INITAL_STATE():
     return {"key": "200 init", "gated": False, "req_info": ""}
@@ -62,6 +63,12 @@ def check_input_against_db(msg, db, exact = False):
             break
     return match
 
+def dump_to_json(filename, data, DEBUG = 0):
+    with open(filename,'w') as f:
+        json.dump(data, f, indent = 4, ensure_ascii=False)
+    
+    if DEBUG:
+        print("Finished writing to " + str(filename))
 
 if __name__ == "__main__":
 
