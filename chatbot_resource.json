@@ -226,14 +226,14 @@
         },
         "r_list_plans" : {
             "context_flag": 0,
-            "text" :[
-            "Please choose a plan: Plan A, Plan B or Plan C", "Please choose a plan: INFO GOES HERE"
+            "text":[
+                "(DEPRECATED) PLEASE CHOOSE A PLAN"
             ]
         },
         "r_state_details": {
             "context_flag": 1,
             "text" : [
-            "目前{city}社保按照最低基数{base_amt}，缴纳{payment}；服务费{svc_fee}元每月，首次参保额外收取{opening_fee}元开户费。"
+            "目前{city}社保按照最低基数{city_info[base_amt]}，缴纳{city_info[payment]}；服务费{city_info[svc_fee]}元每月，首次参保额外收取{city_info[opening_fee]}元开户费。"
             ]
         },
         "r_how_check_shebao_status":{

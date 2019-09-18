@@ -51,7 +51,7 @@ class SIP:
     def try_gate(self, info):
         print("Trying gate with info:",info, "required:",self.state_reqs)
         if not self.is_gated():
-            return (True, 0)
+            return (True, SIP.goto_pending_state())
 
         failed_reqs = self.state_reqs
         for i in info:
@@ -63,7 +63,7 @@ class SIP:
             collect_SIP = self.build_info_SIP(failed_reqs)
             return (False, collect_SIP)
 
-        return (True, 0)
+        return (True, SIP.goto_pending_state())
 
     @classmethod
     def same_state(cls):
@@ -95,7 +95,7 @@ class SIP:
             "gated": True,
             "req_info": info
         }
-        o = cls(info_gather_state)
+        o = cls(info_gather_state, cs=False)
         return o
 
     def is_go_back(self):
@@ -264,7 +264,7 @@ class InfoParser():
         city = self.parse_city(text)
         date = self.parse_date(text)
         out = {"city":city, "dates":date}
-        
+
         return out
 
     def list_to_regexList(self, lst):

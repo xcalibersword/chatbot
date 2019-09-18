@@ -5,6 +5,8 @@ import cbsv
 import string
 from chatbot_supp import *
 
+DEBUG = 0
+
 # The problem of gated states.
 # Some states need certain things in order to proceed. E.g.
 # Quotation: Needs location
@@ -68,11 +70,15 @@ class ChatManager:
     # Process, gatekeep then internalize changes
     # Results in change in chat details and change in state
     def _digest_uds(self, uds):
-        def _return_same_state():
+        def same_state_SIP():
             print("self state for same state call:", self.state)
             curr_state_obj = self._get_curr_state()
-            new_sip = SIP(curr_state_obj)
-            return uds.copy_swap_sip(new_sip)
+            sssip = SIP(curr_state_obj)
+            return sssip
+
+        # print("INITIAL UDS:\n")
+        # uds.printout()
+        # print("\n")
 
         deets = uds.get_details()
         sip = uds.get_sip()
@@ -85,14 +91,16 @@ class ChatManager:
             self.go_back_a_state()
             return uds
 
-        # Modify if needed
+        print("Current state", self.state)
+        if sip.is_same_state():
+            print("SAME STATE FLAGGED")
+            sip = same_state_SIP()
+        
         new_sip = self._gatekeep_sip(sip)
-
-        if new_sip.is_same_state():
-            return _return_same_state()
-
+        
+        # Also updates requirements!!
         self._update_state_from_sip(new_sip)
-
+        
         # Modified copy of original
         final_uds = uds.copy_swap_sip(new_sip)
         return final_uds
@@ -113,8 +121,10 @@ class ChatManager:
     def _gatekeep_sip(self, sip):
         curr_info = self._get_current_info()
         passed, next_sip = sip.try_gate(curr_info)
+        # print("sip", sip.toString(), "nextsip", next_sip.toString())
+        print("Gatekeep outcome",passed)
         if passed:
-            return self.move_state_forward(sip)
+            return self.get_forward_state(sip)
 
         else:
             self.set_pending_state(sip)
@@ -127,11 +137,16 @@ class ChatManager:
         self.pending_state = ""
 
     def set_pending_state(self, pstate):
+        if self._has_pending_state():
+            if DEBUG: print("Existing pending state detected")
+            return
+        print("!!!! setting pending state to:",pstate.toString())
         self.pending_state = pstate
 
-    def move_state_forward(self, sip):
+    def get_forward_state(self, sip):
         # If pending, return pending state
         if self._has_pending_state():
+            print("!!! Attempting to move forward to: ",self.pending_state.toString())
             sipval = self.pending_state
             self._clear_pending_state()
             return sipval
@@ -139,18 +154,20 @@ class ChatManager:
 
     ## Internal State management
     def _change_state(self,new_state):
-        if DEBUG: print("changing to", new_state)
+        if DEBUG: print("changing state to", new_state)
+        
         if self.state == new_state:
-            print("Eh why same state", new_state)
+            print("Same state detected", new_state)
+            return
         self.state_history.append(self.state)
         self.state = new_state
 
     def _update_state_from_sip(self, sip):
         new_state = sip.get_state_obj()
         self._change_state(new_state)
-        
-        print("Updating from this sip",sip.toString())
+        print("Updating state from this sip",sip.toString())
         required_info = {"requested_info":sip.get_requirements()}
+        self.push_detail_to_dm(required_info)
         return
 
     def go_back_a_state(self):
@@ -230,7 +247,7 @@ class DetailManager:
         return out
 
     def fetch_chat_info(self):
-        return self.chat_info
+        return self.chat_prov_info
 
     def check_info_keys(self):
         return list(self.chat_info.keys())

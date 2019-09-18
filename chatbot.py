@@ -87,7 +87,7 @@ def init_replygen(jdata):
     }
 
     SS_REPLY_KEY_LOOKUP = {
-        STATE_KEYS["choose_plan"]: "r_list_plans",
+        STATE_KEYS["choose_plan"]: "r_state_details",
         STATE_KEYS['confirm_plan']: "r_confirm_plan",
         STATE_KEYS['payment']: "r_confirm_price",
         STATE_KEYS['finish_sale']: "r_sale_done",
