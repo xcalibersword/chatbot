@@ -14,13 +14,13 @@ from chatbot_supp import *
 # Gatekeeps for states
 # STATE MANAGER
 class ChatManager:
-    def __init__(self, chat, iparser, pkeeper, replygen, gated_states):
+    def __init__(self, chat, iparser, pkeeper, replygen, dmanager):
         self.state = cbsv.INITAL_STATE()
         self.chat = chat
         self.iparser = iparser
         self.pkeeper = pkeeper
         self.replygen = replygen
-        self.GATED_STATES = gated_states
+        self.dmanager = dmanager
 
         # Internal properties
         self.state_history = [self.state,]
@@ -33,7 +33,6 @@ class ChatManager:
         # Parse the message and get an understanding
         full_uds = self._parse_message_overall(msg)
 
-        full_uds.printout()
         # Digest and internalize the new info
         final_uds = self._digest_uds(full_uds)
 
@@ -58,8 +57,8 @@ class ChatManager:
 
     # Gets the next state according to policy
     def _fetch_understanding(self, msg):
-        curr_state = self._get_state()
-        return self.pkeeper.get_understanding(curr_state, msg)
+        curr_state_key = self._get_curr_state_key()
+        return self.pkeeper.get_understanding(curr_state_key, msg)
 
     def _parse_message_details(self, msg):
         # Adds details
@@ -69,26 +68,30 @@ class ChatManager:
     # Process, gatekeep then internalize changes
     # Results in change in chat details and change in state
     def _digest_uds(self, uds):
+        def _return_same_state():
+            print("self state for same state call:", self.state)
+            curr_state_obj = self._get_curr_state()
+            new_sip = SIP(curr_state_obj)
+            return uds.copy_swap_sip(new_sip)
+
         deets = uds.get_details()
         sip = uds.get_sip()
 
         # Update details
-        self.push_detail_to_chat(deets)
+        self.push_detail_to_dm(deets)
 
         # Update State (may depend on details so this is 2nd)
         if sip.is_go_back():
             self.go_back_a_state()
             return uds
 
-  
-        
         # Modify if needed
         new_sip = self._gatekeep_sip(sip)
 
-        self._update_state_from_sip(new_sip)
-
         if new_sip.is_same_state():
-            return uds
+            return _return_same_state()
+
+        self._update_state_from_sip(new_sip)
 
         # Modified copy of original
         final_uds = uds.copy_swap_sip(new_sip)
@@ -96,15 +99,19 @@ class ChatManager:
 
     # Ask replygen for a reply
     def _fetch_reply(self,uds):
-        information = self.chat.get_all_info()
-        curr_state = self._get_state()
+        information = self._get_current_info()
+        curr_state = self._get_curr_state_key()
         intent = uds.get_intent()
-        prev_state = self.get_prev_state()
+        prev_state = self._get_prev_state_key()
         return self.replygen.get_reply(prev_state, curr_state, intent, information)
+
+    # Asks dmanager for info
+    def _get_current_info(self):
+        return self.dmanager.fetch_info()
 
     # Returns the next uds. Final
     def _gatekeep_sip(self, sip):
-        curr_info = self.chat.check_info_keys()
+        curr_info = self._get_current_info()
         passed, next_sip = sip.try_gate(curr_info)
         if passed:
             return self.move_state_forward(sip)
@@ -139,27 +146,32 @@ class ChatManager:
         self.state = new_state
 
     def _update_state_from_sip(self, sip):
-        new_state = sip.get_state_key()
+        new_state = sip.get_state_obj()
         self._change_state(new_state)
         
         print("Updating from this sip",sip.toString())
         required_info = {"requested_info":sip.get_requirements()}
-        self.push_detail_to_chat(required_info)
         return
 
     def go_back_a_state(self):
         prev_state = self.state_history.pop(-1)
         
-    def _get_state(self):
+    def _get_curr_state(self):
         return self.state
 
-    def get_prev_state(self):
+    def _get_curr_state_key(self):
+        return cbsv.getstatekey(self.state)
+
+    def _get_prev_state_key(self):
+        return cbsv.getstatekey(self._get_prev_state())
+
+    def _get_prev_state(self):
         return self.state_history[-1]
 
     ## Detail stuff
     # Bool
-    def push_detail_to_chat(self, d):
-        return self.chat.log_details(d,1)
+    def push_detail_to_dm(self, d):
+        return self.dmanager.log_detail(d,1)
 
 # Keeps policies
 # Also deciphers messages
@@ -190,6 +202,44 @@ class PolicyKeeper:
 
         return uds
 
+# MANAGES DETAILS (previously held by Chat)
+class DetailManager:
+    def __init__(self, info_vault):
+        self.vault = info_vault
+        self.chat_prov_info = {}
+
+    def log_detail(self, new_info, DEBUG = 0):
+        if DEBUG: print("Logging", new_info)
+        for d in new_info:
+            deet = new_info[d]
+            # Check to make sure its not empty
+            if len(deet) > 0:
+                self.chat_prov_info[d] = new_info[d]
+        return
+
+    # Called to get a dict of all info
+    def fetch_info(self):
+        out = {}
+        out.update(self.chat_prov_info)
+
+        # Add City info lookup
+        if cbsv.CITY() in self.chat_prov_info:
+            cityname = self.chat_prov_info[cbsv.CITY()]
+            out["city_info"] = self.vault.lookup_city(cityname)
+        
+        return out
+
+    def fetch_chat_info(self):
+        return self.chat_info
+
+    def check_info_keys(self):
+        return list(self.chat_info.keys())
+
+    def dump_to_chat(self, chat):
+        # Is this bad OOP?
+        chat.recv_info_dump(self.chat_prov_info)
+
+
 # Generates reply text based on current state info
 class ReplyGenerator:
     def __init__(self, replyDB, rkey_dbs):
@@ -210,8 +260,6 @@ class ReplyGenerator:
             return False
 
         context = (prev_state, curr_state)
-        print("prev state, nxt state",context)
-        
         # Specific state to state
         rkey = dict_lookup(context, self.rkey_dbs["s2s"])
         if rkey:
@@ -220,7 +268,7 @@ class ReplyGenerator:
 
         # Single state
         if not rkey:
-            print("found in 1s")
+            print("found in s1")
             rkey = dict_lookup(curr_state, self.rkey_dbs["ss"])
         
         # Intent
@@ -283,27 +331,9 @@ class Chat:
         self.prev_messages.append(msg)
         self.firstpop = True
     
-    # Returns a list of keys from the info dict
-    def check_info_keys(self):
-        return list(self.info.keys())
-
-    # Check if info dict has this key
-    def has_info(self, key):
-        return key in self.info
-    
-    def get_all_info(self):
-        return self.info
-
-    # Add info to the current dict
-    def log_details(self, new_info, DEBUG = 0):
-        if DEBUG: print("Logging", new_info)
-        for d in new_info:
-            deet = new_info[d]
-            # Check to make sure its not empty
-            if len(deet) > 0:
-                self.info[d] = new_info[d]
-            
-        return
+    def recv_info_dump(self, new_info):
+        print("Updating...",new_info)
+        self.info.update(new_info)
 
     ## Database interaction?
     def get_previous_issues(self):

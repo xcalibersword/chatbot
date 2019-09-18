@@ -258,7 +258,7 @@
     },
 
     "plans":{
-        "sh":{
+        "shanghai":{
             "base_amt":4927,
             "payment":1937,
             "svc_fee":40,

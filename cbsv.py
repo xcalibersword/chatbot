@@ -3,7 +3,7 @@
 import re
 
 def INITAL_STATE():
-    return "200 init"
+    return {"key": "200 init", "gated": False, "req_info": ""}
 
 def DEFAULT_CONFUSED():
     return "不好意思，我听不懂"
@@ -27,6 +27,13 @@ def state_key_dict(states):
     for k in ks:
         out[k] = states[k]["key"]
     return out
+
+def getstatekey(state):
+    # print("SSAD",state)
+    return state["key"]
+
+def CITY():
+    return "city"
 
 def check_contain_zw(check_str):
     for ch in check_str:

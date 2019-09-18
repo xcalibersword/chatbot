@@ -230,6 +230,27 @@ class Customer:
     def get_accounts(self):
         return self.accounts
 
+class Info_Vault():
+    def __init__(self, json_data):
+        self.plans = json_data["plans"]
+        self.city_keys = list(self.plans.keys())
+        self.other_keys = ["asd"]
+    # General query
+    def lookup(self, q):
+        if q in city_keys:
+            return lookup_city(q)
+        if q in other_keys:
+            return lookup_other(q)
+        return False
+        
+    def lookup_city(self, city):
+        if city in self.city_keys:
+            return self.plans[city]
+
+    def lookup_other(self, thing):
+        if thing in self.other_keys:
+            return 1
+
 # Takes in a message and returns some info (if any)
 class InfoParser():
     cities = ["上海","北京","深圳","杭州","广州", "上海", "成都", "shanghai", "beijing"]
@@ -243,7 +264,7 @@ class InfoParser():
         city = self.parse_city(text)
         date = self.parse_date(text)
         out = {"city":city, "dates":date}
-        if not out == empty: print(out)
+        
         return out
 
     def list_to_regexList(self, lst):

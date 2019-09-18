@@ -90,7 +90,7 @@ def init_replygen(jdata):
         STATE_KEYS["choose_plan"]: "r_list_plans",
         STATE_KEYS['confirm_plan']: "r_confirm_plan",
         STATE_KEYS['payment']: "r_confirm_price",
-        STATE_KEYS['finish_sale'], "r_sale_done"
+        STATE_KEYS['finish_sale']: "r_sale_done",
         STATE_KEYS['recv_info']: "r_req_info",
         STATE_KEYS['init_sale']: "r_sales_intro",
         STATE_KEYS['ask_if_issue']: "r_ask_if_issue"
@@ -118,7 +118,7 @@ def init_policykeeper(jdata):
     ### POLICIES ###
 
     default_policy_set = [
-        (INTENTS['greet'],SIP.same_state()),
+        (INTENTS['greet'], SIP.same_state()),
         (INTENTS['ask_name'],SIP.same_state()),
         (INTENTS['deny'], SIP.go_back_state()),
         (INTENTS['goodbye'], SIP(STATES["goodbye"])),
@@ -182,6 +182,10 @@ def init_policykeeper(jdata):
     return PolicyKeeper(POLICY_RULES, INTENT_LOOKUP_TABLE)
 
 
+def init_detailmanager(jdata):
+    vault = Info_Vault(jdata)
+    return DetailManager(vault)
+
 def master_initalize(jdata):
     # INTENTS = jdata["intents"]
     # STATE_KEYS = jdata["state_keys"]
@@ -189,22 +193,20 @@ def master_initalize(jdata):
     components = {}
     components["replygen"] = init_replygen(jdata)
     components["pkeeper"] = init_policykeeper(jdata)
-    components["gatedstate_keys"] = {} # Might replace this with a flag in the json
+    components["dmanager"] = init_detailmanager(jdata)
     return components
 
 # Big Chatbot class
 class Chatbot():
-    INTENTS, STATE_KEYS, MATCH_DB, REPLY_DB, ALL_PRODUCTS = ({},{},{},{},{})
-    def __init__(self, vault, infoparser, comps):
+    def __init__(self, infoparser, comps):
         self.PREV_REPLY_FLAG = "prev_state_message"
-        self.vault = vault
+        self.dm = comps['dmanager']
         self.ip = infoparser
         self.pk = comps['pkeeper']
         self.rg = comps['replygen']
-        self.gs = comps['gatedstate_keys']
     
     def make_new_chatmgr(self, chat):
-        return ChatManager(chat, self.ip, self.pk, self.rg, self.gs)
+        return ChatManager(chat, self.ip, self.pk, self.rg, self.dm)
 
     def start(self):
         print("Hello, I am a bot!")
@@ -236,27 +238,6 @@ class Chatbot():
         print(reply)
         return
 
-    
-class Info_Vault():
-    def __init__(self, json_data):
-        self.plans = json_data["plans"]
-        self.city_keys = list(self.plans.keys())
-        self.other_keys = ["asd"]
-    # General query
-    def lookup(self, q):
-        if q in city_keys:
-            return lookup_city(q)
-        if q in other_keys:
-            return lookup_other(q)
-        return False
-        
-    def lookup_city(self, city):
-        if city in self.city_keys:
-            return self.plans[city]
-
-    def lookup_other(self, thing):
-        if thing in self.other_keys:
-            return 1
 
 
 
@@ -271,10 +252,9 @@ class Info_Vault():
 if __name__ == "__main__":
     # load json and print
     json_data = read_json("chatbot_resource.json")
-    vault = Info_Vault(json_data)
     parser = InfoParser()
     components = master_initalize(json_data)
-    bot = Chatbot(vault,parser,components)
+    bot = Chatbot(parser,components)
     bot.start()
     while 1:
         incoming_msg = input()
