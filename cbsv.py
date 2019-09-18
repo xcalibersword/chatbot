@@ -12,8 +12,21 @@ def PREV_STATE_FLAG():
     return "299 PREV_STATE"
 
 def CHINA_CITIES():
-    cities = ["上海","北京","深圳","上海","上海","上海","杭州","广州"]
+    cities = ["上海","北京","深圳","杭州","广州", "上海", "成都", "shanghai", "beijing"]
     return cities
+
+def DIGITS():
+    return "[零一二三四五六七八九十|0-9]"
+
+def INFO_GATHER_STATE_KEY():
+    return "221 recv info"
+
+def state_key_dict(states):
+    ks = states.keys()
+    out = {}
+    for k in ks:
+        out[k] = states[k]["key"]
+    return out
 
 def check_contain_zw(check_str):
     for ch in check_str:
@@ -21,6 +34,14 @@ def check_contain_zw(check_str):
             return True
         else:
             return False
+
+def list_to_regexList(lst):
+        re_list = ""
+        for e in lst:
+            re_list = re_list + e + "|"
+        re_list = re_list[:-1] # Remove last char
+
+        return re_list
 
 def check_input_against_db(msg, db, exact = False):
     search_fn = lambda x,y: re.search(x,y)

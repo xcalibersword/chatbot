@@ -2,6 +2,7 @@
 import re
 import random
 import cbsv
+import string
 from chatbot_supp import *
 
 # The problem of gated states.
@@ -23,7 +24,8 @@ class ChatManager:
 
         # Internal properties
         self.state_history = [self.state,]
-        self.clear_expect_detail()
+        # self.clear_expect_detail()
+        self._clear_pending_state()
 
     # Big method.
     # Takes in a message, returns a text reply.
@@ -39,7 +41,7 @@ class ChatManager:
         reply = self._fetch_reply(final_uds)
 
         if DEBUG:
-            print("Intent is:{0}, Next state is {1}".format(final_uds.intent, final_uds.sip.get_state()))
+            final_uds.printout()
     
         return reply
 
@@ -59,43 +61,11 @@ class ChatManager:
         curr_state = self._get_state()
         return self.pkeeper.get_understanding(curr_state, msg)
 
-    # Ask replygen for a reply
-    def _fetch_reply(self,uds):
-        curr_state = self._get_state()
-        intent = uds.get_intent()
-        prev_state = self.get_prev_state()
-        return self.replygen.get_reply(prev_state, curr_state, intent)
-
     def _parse_message_details(self, msg):
         # Adds details
         details = self.iparser.parse(msg)
         return details
-
-    def _pending_detail_outcome(self):
-        requirement = self.get_req_detail()
-        if self.chat.has_info(requirement):
-            return SIP(self.pending_state)
-        else:
-            return SIP.same_state()
-
-    # Returns the next uds. Final
-    def _gatekeep_sip(self, sip):
-        if self.is_expecting_detail():
-            return self._pending_detail_outcome()
-            
-        proposed_next = sip.get_state()
-        
-        # Check gate
-        if proposed_next in self.GATED_STATES:
-            requirement = self.GATED_STATES[proposed_next]
-
-            # Req not satisfied
-            if True:
-                return SIP.same_state()
-
-        # If nothing wrong, return the original
-        return sip 
-
+    
     # Process, gatekeep then internalize changes
     # Results in change in chat details and change in state
     def _digest_uds(self, uds):
@@ -103,41 +73,79 @@ class ChatManager:
         sip = uds.get_sip()
 
         # Update details
-        if self.is_expecting_detail():
-            self.push_detail_to_chat(deets)
+        self.push_detail_to_chat(deets)
 
         # Update State (may depend on details so this is 2nd)
-
         if sip.is_go_back():
             self.go_back_a_state()
             return uds
 
-        elif sip.is_same_state():
-            return uds
+  
         
         # Modify if needed
         new_sip = self._gatekeep_sip(sip)
+
         self._update_state_from_sip(new_sip)
 
-        # Copy of original
+        if new_sip.is_same_state():
+            return uds
+
+        # Modified copy of original
         final_uds = uds.copy_swap_sip(new_sip)
         return final_uds
 
-    def _update_state_from_sip(self, sip):
-        new_state = sip.get_state()
-        self._change_state(new_state)
-        return
+    # Ask replygen for a reply
+    def _fetch_reply(self,uds):
+        information = self.chat.get_all_info()
+        curr_state = self._get_state()
+        intent = uds.get_intent()
+        prev_state = self.get_prev_state()
+        return self.replygen.get_reply(prev_state, curr_state, intent, information)
 
-    ## Internal State management
+    # Returns the next uds. Final
+    def _gatekeep_sip(self, sip):
+        curr_info = self.chat.check_info_keys()
+        passed, next_sip = sip.try_gate(curr_info)
+        if passed:
+            return self.move_state_forward(sip)
+
+        else:
+            self.set_pending_state(sip)
+            return next_sip   # Return the custom made info state
+
+    def _has_pending_state(self):
+        return not self.pending_state == ""
+
+    def _clear_pending_state(self):
+        self.pending_state = ""
+
     def set_pending_state(self, pstate):
         self.pending_state = pstate
 
+    def move_state_forward(self, sip):
+        # If pending, return pending state
+        if self._has_pending_state():
+            sipval = self.pending_state
+            self._clear_pending_state()
+            return sipval
+        return sip
+
+    ## Internal State management
     def _change_state(self,new_state):
         if DEBUG: print("changing to", new_state)
         if self.state == new_state:
             print("Eh why same state", new_state)
         self.state_history.append(self.state)
         self.state = new_state
+
+    def _update_state_from_sip(self, sip):
+        new_state = sip.get_state_key()
+        self._change_state(new_state)
+        
+        print("Updating from this sip",sip.toString())
+        required_info = {"requested_info":sip.get_requirements()}
+        self.push_detail_to_chat(required_info)
+        return
 
     def go_back_a_state(self):
         prev_state = self.state_history.pop(-1)
@@ -150,24 +158,8 @@ class ChatManager:
 
     ## Detail stuff
     # Bool
-    def is_expecting_detail(self):
-        return self.bool_expecting_detail
-
-    # Set the key to listen out for
-    def set_expect_detail(self, detail):
-        self.bool_expecting_detail = True
-        self.req_detail = detail
-    
-    def clear_expect_detail(self):
-        self.bool_expecting_detail = False
-        self.req_detail = ""
-
-    # Getter
-    def get_req_detail(self):
-        return self.req_detail
-    
     def push_detail_to_chat(self, d):
-        return self.chat.log_details(d)
+        return self.chat.log_details(d,1)
 
 # Keeps policies
 # Also deciphers messages
@@ -203,6 +195,7 @@ class ReplyGenerator:
     def __init__(self, replyDB, rkey_dbs):
         self.replyDB = replyDB
         self.rkey_dbs = rkey_dbs
+        self.formatter = string.Formatter()
 
     # OVERALL METHOD
     def get_reply(self, prev_state, curr_state, intent, info = -1):
@@ -242,6 +235,7 @@ class ReplyGenerator:
 
         if not r_key:
             return cbsv.DEFAULT_CONFUSED()
+            
         if r_key in self.replyDB:
             r_list = self.replyDB[r_key]["text"]
             replytext = rand_response(r_list)
@@ -251,10 +245,14 @@ class ReplyGenerator:
     # Generates a pure reply
     def generate_reply_message(self, reply_key, info):
         reply_template = self.fetch_reply_text(reply_key)
+        print("template",reply_template)
         final_msg = reply_template
         if isinstance(info, dict):
             print("current info",info)
-            final_msg = reply_template.format(info)
+            ikeys = list(info.keys())
+            # final_msg = self.formatter.vformat(reply_template, ikeys, info)
+            # final_msg = reply_template%(info)
+            final_msg = reply_template.format(**info)
 
         return final_msg
 
@@ -285,22 +283,27 @@ class Chat:
         self.prev_messages.append(msg)
         self.firstpop = True
     
+    # Returns a list of keys from the info dict
+    def check_info_keys(self):
+        return list(self.info.keys())
 
     # Check if info dict has this key
     def has_info(self, key):
         return key in self.info
     
-    def get_info(self, key):
-        return self.info[key]
+    def get_all_info(self):
+        return self.info
 
     # Add info to the current dict
-    def log_details(self, info):
-        for d in info:
-            deet = info[d]
+    def log_details(self, new_info, DEBUG = 0):
+        if DEBUG: print("Logging", new_info)
+        for d in new_info:
+            deet = new_info[d]
+            # Check to make sure its not empty
             if len(deet) > 0:
-                self.info[rd] = info[rd]
-                return True
-        return False
+                self.info[d] = new_info[d]
+            
+        return
 
     ## Database interaction?
     def get_previous_issues(self):

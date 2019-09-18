@@ -1,0 +1,150 @@
+{
+    "init": {
+        "key": {
+            "key": "200 init",
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "ask_if_issue": {
+        "key": {
+            "key": "251 whats wrong",
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "sales_query": {
+        "key": {
+            "key": "211 saleq",
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "pay_query": {
+        "key": {
+            "key": "212 pay q",
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "gen_query": {
+        "key": {
+            "key": 213,
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "confirm_query": {
+        "key": {
+            "key": 218,
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "recv_info": {
+        "key": {
+            "key": "221 recv info",
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "log_issue": {
+        "key": {
+            "key": 251,
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "recommend": {
+        "key": {
+            "key": 271,
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "init_sale": {
+        "key": {
+            "key": 280,
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "choose_plan": {
+        "key": {
+            "key": 281,
+            "gated": true,
+            "req_info": [
+                "location"
+            ]
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "confirm_plan": {
+        "key": {
+            "key": 282,
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "payment": {
+        "key": {
+            "key": 283,
+            "gated": true,
+            "req_info": [
+                "payment_info"
+            ]
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "finish_sale": {
+        "key": {
+            "key": 289,
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "goodbye": {
+        "key": {
+            "key": 209,
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    },
+    "PREV_STATE": {
+        "key": {
+            "key": "299 PREV_STATE",
+            "gated": false,
+            "req_info": ""
+        },
+        "gated": false,
+        "req_info": ""
+    }
+}

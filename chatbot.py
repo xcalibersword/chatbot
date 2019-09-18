@@ -78,19 +78,22 @@ def parse_plan_selection(msg):
 
 def init_replygen(jdata):
     INTENTS = jdata["intents"]
-    STATES = jdata["states"]
+    STATE_KEYS = cbsv.state_key_dict(jdata["states"])
     REPLY_DB = jdata["reply_db"]
 
+    # Actually empty but I'm leaving a template here
     STS_REPLY_KEY_LOOKUP = {
-        (STATES["init_sale"], STATES["choose_plan"]): "r_list_plans",
-        (STATES['choose_plan'], STATES['confirm_plan']): "r_confirm_plan",
-        (STATES['confirm_plan'], STATES['payment']): "r_confirm_price",
-        (STATES['payment'], STATES['finish_sale']): "r_sale_done"
+        (STATE_KEYS['payment'], STATE_KEYS['finish_sale']): "r_sale_done"
     }
 
     SS_REPLY_KEY_LOOKUP = {
-        STATES['init_sale']:"r_sales_intro",
-        STATES['ask_if_issue']:"r_ask_if_issue"
+        STATE_KEYS["choose_plan"]: "r_list_plans",
+        STATE_KEYS['confirm_plan']: "r_confirm_plan",
+        STATE_KEYS['payment']: "r_confirm_price",
+        STATE_KEYS['finish_sale'], "r_sale_done"
+        STATE_KEYS['recv_info']: "r_req_info",
+        STATE_KEYS['init_sale']: "r_sales_intro",
+        STATE_KEYS['ask_if_issue']: "r_ask_if_issue"
     }
 
     INTENT_REPLY_KEY_LOOKUP = {}
@@ -109,6 +112,7 @@ def init_replygen(jdata):
 def init_policykeeper(jdata):
     INTENTS = jdata["intents"]
     STATES = jdata["states"]
+    STATE_KEYS = cbsv.state_key_dict(jdata["states"])
     MATCH_DB = jdata["match_db"]
 
     ### POLICIES ###
@@ -124,7 +128,7 @@ def init_policykeeper(jdata):
     make_policy = lambda s_ints: Policy(default_policy_set,s_ints)
 
     POLICY_RULES = {
-        STATES['init']: make_policy([
+        STATE_KEYS['init']: make_policy([
             (INTENTS['deny'],SIP(STATES['init'])),
             (INTENTS['greet'],SIP(STATES['init'])),
             (INTENTS['gen_query'],SIP(STATES['confirm_query'])),
@@ -133,27 +137,27 @@ def init_policykeeper(jdata):
             (INTENTS['sales_query'], SIP(STATES['sales_query']))
             ]
         ),
-        STATES['init_sale']: make_policy([
+        STATE_KEYS['init_sale']: make_policy([
             (INTENTS['affirm'], SIP(STATES['choose_plan'])),
             (INTENTS['deny'], SIP(STATES['ask_if_issue']))
             ]
         ),
-        STATES['choose_plan']: make_policy([
+        STATE_KEYS['choose_plan']: make_policy([
             (INTENTS['indicate_plan'], SIP(STATES['confirm_plan'])),
             (INTENTS['deny'], SIP(STATES['ask_if_issue']))
             ]
         ),
-        STATES['confirm_plan']: make_policy([
+        STATE_KEYS['confirm_plan']: make_policy([
             (INTENTS['affirm'], SIP(STATES['payment'])),
             (INTENTS['deny'], SIP(STATES['ask_if_issue']))
             ]
         ),
-        STATES['ask_if_issue']: make_policy([
+        STATE_KEYS['ask_if_issue']: make_policy([
             (INTENTS['affirm'], SIP(STATES['log_issue'])),
-            (INTENTS['deny'], SIP.goto_pending())
+            (INTENTS['deny'], SIP.goto_pending_state())
             ]
         ),
-        STATES['payment']: make_policy([
+        STATE_KEYS['payment']: make_policy([
             (INTENTS['affirm'], SIP(STATES['finish_sale'])),
             (INTENTS['deny'], SIP(STATES['ask_if_issue']))
             ]
@@ -163,7 +167,7 @@ def init_policykeeper(jdata):
     # Loop to make all policies
     existing = list(POLICY_RULES.keys())
     for k in list(STATES.keys()):
-        state_value = STATES[k]
+        state_value = STATES[k]["key"]
         if state_value in existing:
             continue # Don't overwrite existing policy lookup values
         POLICY_RULES[state_value] = make_policy([])
@@ -180,24 +184,24 @@ def init_policykeeper(jdata):
 
 def master_initalize(jdata):
     # INTENTS = jdata["intents"]
-    # STATES = jdata["states"]
+    # STATE_KEYS = jdata["state_keys"]
     # MATCH_DB = jdata["match_db"]
     components = {}
     components["replygen"] = init_replygen(jdata)
     components["pkeeper"] = init_policykeeper(jdata)
-    components["gatedstates"] = {} # Might replace this with a flag in the json
+    components["gatedstate_keys"] = {} # Might replace this with a flag in the json
     return components
 
 # Big Chatbot class
 class Chatbot():
-    INTENTS, STATES, MATCH_DB, REPLY_DB, ALL_PRODUCTS = ({},{},{},{},{})
+    INTENTS, STATE_KEYS, MATCH_DB, REPLY_DB, ALL_PRODUCTS = ({},{},{},{},{})
     def __init__(self, vault, infoparser, comps):
         self.PREV_REPLY_FLAG = "prev_state_message"
         self.vault = vault
         self.ip = infoparser
         self.pk = comps['pkeeper']
         self.rg = comps['replygen']
-        self.gs = comps['gatedstates']
+        self.gs = comps['gatedstate_keys']
     
     def make_new_chatmgr(self, chat):
         return ChatManager(chat, self.ip, self.pk, self.rg, self.gs)

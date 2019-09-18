@@ -5,17 +5,26 @@ DEBUG = 1
 
 
 # Have a message class? Or some sort of flag for messages. Indicate state-changing messages.
-PREV_STATE_F = "299 PREV_STATE"
-PREV_STATE_MSG = "prev_state_msg"
+PREV_STATE_F = {"key":"299 PREV_STATE", "gated": False}
+PENDING_STATE_F = {"key":"PENDING_STATE", "gated": False}
+SAME_STATE_F = {"key":"same_state","gated":False}
 
 # A packet that has info about state and has constructors for set states like go_back
 # State Info Packet
 class SIP:
     def __init__(self, state, cs = True):
-        self.state = state
+        self.parse_state(state)
         self.state_change = cs
         self.backtrack = False
         self.go_back = False
+
+    def parse_state(self, state):
+        self.state_obj = state
+        self.state_key = state["key"]
+        self.gated_bool = state["gated"]
+        self.state_reqs = ""
+        if state["gated"]: self.state_reqs = state["req_info"]
+        self.pending_state = ""
 
     def set_backtrack(self):
         self.backtrack = True
@@ -24,12 +33,41 @@ class SIP:
         self.action = action
         self.pending_act = pending_act
 
-    def get_state(self):
-        return self.state
+    def get_state_key(self):
+        return self.state_key
+    
+    def get_state_obj(self):
+        return self.state_obj
+
+    def is_gated(self):
+        return self.gated_bool
+
+    # Returns a list of requirements
+    def get_requirements(self):
+        return self.state_reqs
+
+    # If pass, returns True, None
+    # If fail, returns False, (Next state)
+    def try_gate(self, info):
+        print("Trying gate with info:",info, "required:",self.state_reqs)
+        if not self.is_gated():
+            return (True, 0)
+
+        failed_reqs = self.state_reqs
+        for i in info:
+            if i in failed_reqs:
+                failed_reqs.remove(i)
+        
+        if DEBUG: print("failedreqs",failed_reqs)
+        if len(failed_reqs) > 0:
+            collect_SIP = self.build_info_SIP(failed_reqs)
+            return (False, collect_SIP)
+
+        return (True, 0)
 
     @classmethod
     def same_state(cls):
-        obj = cls("same_state", cs=False)
+        obj = cls(SAME_STATE_F, cs=False)
         return obj
  
     @classmethod
@@ -40,8 +78,8 @@ class SIP:
         return obj
     
     @classmethod
-     def goto_pending_state(cls):
-         obj = cls("PENDING_STATE", cs=False)
+    def goto_pending_state(cls):
+         obj = cls(PENDING_STATE_F, cs=False)
          return obj
 
     def is_same_state(self):
@@ -50,17 +88,21 @@ class SIP:
     # For cases when a state requires some intermediate step
     # Once the current stage is done, we immediately go to the pstate
     # How do we store this pstate?
-    def set_pending_state(self,nstate, pstate):
-        self.pstate = pstate
-        self.state = nstate
-
-   
+    @classmethod
+    def build_info_SIP(cls, info):
+        info_gather_state = {
+            "key": cbsv.INFO_GATHER_STATE_KEY(),
+            "gated": True,
+            "req_info": info
+        }
+        o = cls(info_gather_state)
+        return o
 
     def is_go_back(self):
         return self.go_back == True
 
     def toString(self):
-        return ("State",self.state,"cs",self.state_change,"backtrack",self.backtrack)
+        return ("State obj",self.state_obj,"cs",self.state_change,"backtrack ",self.backtrack," reqs ",self.state_reqs)
 
 # A vehicle to house intent and details from the message
 class Understanding:
@@ -193,7 +235,7 @@ class InfoParser():
     cities = ["上海","北京","深圳","杭州","广州", "上海", "成都", "shanghai", "beijing"]
     digits = "[零一二三四五六七八九十|0-9]"
     def __init__(self):
-        self.ctlist = self.list_to_reList(self.cities)
+        self.ctlist = self.list_to_regexList(self.cities)
 
     # Returns a dict of info
     def parse(self, text):
@@ -204,12 +246,11 @@ class InfoParser():
         if not out == empty: print(out)
         return out
 
-    def list_to_reList(self, lst):
+    def list_to_regexList(self, lst):
         re_list = ""
         for e in lst:
             re_list = re_list + e + "|"
-        re_list = re_list[:-1] # Remove last char
-
+        re_list = re_list[:-1] # Remove last char "|"
         return re_list
 
     def parse_date(self, text):

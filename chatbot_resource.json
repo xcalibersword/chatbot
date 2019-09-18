@@ -18,23 +18,87 @@
         },
 
     "states": {
-        "init":"200 init", 
-        "ask_if_issue": "251 whats wrong",
-        "sales_query":"211 saleq", 
-        "pay_query":"212 pay q",
-        "gen_query":213,
-        "confirm_query": 218,
-        "recv_info":"221 recv info",
-        "log_issue":251,
-        "recommend":271,
-        "init_sale":280,
-        "choose_plan":281,
-        "confirm_plan":282,
-        "payment":283,
-        "finish_sale":289,
-        "goodbye": 209,
-        "PREV_STATE": "299 PREV_STATE"
+        "init": {
+            "key": "200 init",
+            "gated": false,
+            "req_info": ""
         },
+        "ask_if_issue": {
+            "key": "251 whats wrong",
+            "gated": false,
+            "req_info": ""
+        },
+        "sales_query": {
+            "key": "211 saleq",
+            "gated": false,
+            "req_info": ""
+        },
+        "pay_query": {
+            "key": "212 pay q",
+            "gated": false,
+            "req_info": ""
+        },
+        "gen_query": {
+            "key": 213,
+            "gated": false,
+            "req_info": ""
+        },
+        "confirm_query": {
+            "key": 218,
+            "gated": false,
+            "req_info": ""
+        },
+        "recv_info": {
+            "key": "221 recv info",
+            "gated": false,
+            "req_info": ""
+        },
+        "log_issue": {
+            "key": 251,
+            "gated": false,
+            "req_info": ""
+        },
+        "recommend": {
+            "key": 271,
+            "gated": false,
+            "req_info": ""
+        },
+        "init_sale": {
+            "key": 280,
+            "gated": false,
+            "req_info": ""
+        },
+        "choose_plan": {
+            "key": 281,
+            "gated": true,
+            "req_info": ["city"]
+        },
+        "confirm_plan": {
+            "key": 282,
+            "gated": false,
+            "req_info": ""
+        },
+        "payment": {
+            "key": 283,
+            "gated": true,
+            "req_info": ["payment_info"]
+        },
+        "finish_sale": {
+            "key": 289,
+            "gated": false,
+            "req_info": ""
+        },
+        "goodbye": {
+            "key": 209,
+            "gated": false,
+            "req_info": ""
+        },
+        "PREV_STATE": {
+            "key": "299 PREV_STATE",
+            "gated": false,
+            "req_info": ""
+        }
+    },
 
     "match_db": {
         "db_goodbye": [
@@ -83,6 +147,7 @@
             "resetchat"
         ]
     },
+
     "reply_db":{
         "r_sales_pitch":{
             "context_flag": 0,
@@ -114,7 +179,7 @@
         "r_greet" : {
             "context_flag": 0,
             "text" :[
-            "你好！","你好 :)","Hello！"
+            "你好 :) {dates}","Hello"
             ]
         },
         "r_sales_intro" : {
@@ -145,6 +210,12 @@
             "context_flag": 0,
             "text" :[
             "Success! Thank you very much for shopping at SHEBAO!"
+            ]
+        },
+        "r_req_info" : {
+            "context_flag": 1,
+            "text" : [
+            "亲,请提供你的{requested_info}"
             ]
         },
         "r_req_info_again" : {
@@ -185,6 +256,7 @@
         }
         
     },
+
     "plans":{
         "sh":{
             "base_amt":4927,
