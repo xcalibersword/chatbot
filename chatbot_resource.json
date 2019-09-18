@@ -13,7 +13,8 @@
         "affirm":191,
         "deny":192,
         "confusion":193,
-        "goodbye":199
+        "goodbye":199,
+        "reset_chat": 12345
         },
 
     "states": {
@@ -77,6 +78,9 @@
 
         "db_report_issue" : [
             "issue","problem"
+        ],
+        "db_reset_chat": [
+            "resetchat"
         ]
     },
     "reply_db":{
@@ -165,6 +169,12 @@
             "context_flag": 0,
             "text" :[
             "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能） http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp"
+            ]
+        },
+        "r_log_issue":{
+            "context_flag": 0,
+            "text" :[
+            "Please state your issue"
             ]
         },
         "r_goodbye" : {

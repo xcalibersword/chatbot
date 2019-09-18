@@ -38,6 +38,11 @@ class SIP:
         obj.set_backtrack()
         obj.go_back = True
         return obj
+    
+    @classmethod
+     def goto_pending_state(cls):
+         obj = cls("PENDING_STATE", cs=False)
+         return obj
 
     def is_same_state(self):
         return not self.state_change
@@ -48,6 +53,8 @@ class SIP:
     def set_pending_state(self,nstate, pstate):
         self.pstate = pstate
         self.state = nstate
+
+   
 
     def is_go_back(self):
         return self.go_back == True
