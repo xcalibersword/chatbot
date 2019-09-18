@@ -255,15 +255,20 @@ class Info_Vault():
 class InfoParser():
     cities = ["上海","北京","深圳","杭州","广州", "上海", "成都", "shanghai", "beijing"]
     digits = "[零一二三四五六七八九十|0-9]"
+    payments = ["支付","微信","alipay","wechat"]
     def __init__(self):
         self.ctlist = self.list_to_regexList(self.cities)
+        self.paymnt_list = self.list_to_regexList(self.payments)
 
     # Returns a dict of info
     def parse(self, text):
-        empty = {"city":"", "dates":""}
-        city = self.parse_city(text)
-        date = self.parse_date(text)
-        out = {"city":city, "dates":date}
+        out = {}
+        city = {"city":self.parse_city(text)}
+        date = {"dates":self.parse_date(text)}
+        payment = {"payment_method":self.parse_payment(text)}
+        out.update(city)
+        out.update(date)
+        out.update(payment)
 
         return out
 
@@ -303,6 +308,14 @@ class InfoParser():
     #         if substring in cities:
     #             return substring
         return out
+
+    def parse_payment(self, text):
+        out = ""
+        m_pay = re.search(self.paymnt_list,text)
+        if m_pay:
+            out = m_pay.group(0)
+        return out
+
 
     def cn_to_integer(self, digit):
         SHI = "十"

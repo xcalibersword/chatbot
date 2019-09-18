@@ -87,7 +87,7 @@ def init_replygen(jdata):
     }
 
     SS_REPLY_KEY_LOOKUP = {
-        STATE_KEYS["choose_plan"]: "r_state_details",
+        STATE_KEYS["propose_plan"]: "r_state_details",
         STATE_KEYS['confirm_plan']: "r_confirm_plan",
         STATE_KEYS['payment']: "r_confirm_price",
         STATE_KEYS['finish_sale']: "r_sale_done",
@@ -138,12 +138,12 @@ def init_policykeeper(jdata):
             ]
         ),
         STATE_KEYS['init_sale']: make_policy([
-            (INTENTS['affirm'], SIP(STATES['choose_plan'])),
+            (INTENTS['affirm'], SIP(STATES['propose_plan'])),
             (INTENTS['deny'], SIP(STATES['ask_if_issue']))
             ]
         ),
-        STATE_KEYS['choose_plan']: make_policy([
-            (INTENTS['indicate_plan'], SIP(STATES['confirm_plan'])),
+        STATE_KEYS['propose_plan']: make_policy([
+            (INTENTS['affirm'], SIP(STATES['confirm_plan'])),
             (INTENTS['deny'], SIP(STATES['ask_if_issue']))
             ]
         ),

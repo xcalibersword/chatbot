@@ -68,7 +68,7 @@
             "gated": false,
             "req_info": ""
         },
-        "choose_plan": {
+        "propose_plan": {
             "key": 281,
             "gated": true,
             "req_info": ["city"]
@@ -81,7 +81,7 @@
         "payment": {
             "key": 283,
             "gated": true,
-            "req_info": ["payment_info"]
+            "req_info": ["payment_method"]
         },
         "finish_sale": {
             "key": 289,
@@ -191,13 +191,13 @@
         "r_confirm_plan" : {
             "context_flag" : 1,
             "text": [
-            "Confirm plan {name}？"
+            "Confirm plan for {city}？"
             ]
         },
         "r_confirm_price" : {
             "context_flag": 1,
             "text" :[
-            "Plan {name} will cost ${price}. Is this ok?"
+            "The plan for {city} will cost ${city_info[payment]}. Is this ok?"
             ]
         },
         "r_query" : {
