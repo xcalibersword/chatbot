@@ -41,7 +41,8 @@ def format_text(text):
 # Big Chatbot class
 class Chatbot():
     timeout = 20
-    def __init__(self, comps):
+    def __init__(self):
+        comps = master_initalize()
         self.PREV_REPLY_FLAG = "prev_state_message"
         self.dm = comps['dmanager']
         self.ip = comps['iparser']
@@ -101,8 +102,7 @@ class Chatbot():
         # reply = self.respond_to_msg(curr_chat,msg)
         f_msg = self.clean_message(msg)
         reply = curr_chat_mgr.respond_to_message(f_msg)
-        print(reply)
-        return
+        return reply
 
 
 
@@ -112,8 +112,7 @@ class Chatbot():
 
 if __name__ == "__main__":
     # load json and print
-    components = master_initalize()
-    bot = Chatbot(components)
+    bot = Chatbot()
     bot.start()
     while 1:
         incoming_msg = input()
