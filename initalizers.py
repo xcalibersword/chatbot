@@ -1,6 +1,6 @@
 import json
 from chatbot_supp import SIP, Policy, InfoVault, InfoParser
-from chatclass import DetailManager, ReplyGenerator
+from chatclass import DetailManager, ReplyGenerator, PolicyKeeper
 
 def read_json(json_filename):
     with open(json_filename, 'r') as f:
@@ -17,7 +17,7 @@ def state_key_dict(states):
 
 def init_replygen(jdata):
     INTENTS = jdata["intents"]
-    STATE_KEYS = cbsv.state_key_dict(jdata["states"])
+    STATE_KEYS = state_key_dict(jdata["states"])
     REPLY_DB = jdata["reply_db"]
 
     # Actually empty but I'm leaving a template here
@@ -63,7 +63,7 @@ def init_policykeeper(jdata):
         (INTENTS['sales_query'],SIP.same_state()),
         (INTENTS['deny'], SIP.go_back_state()),
         (INTENTS['goodbye'], SIP(STATES["goodbye"])),
-        (INTENTS['report_issue'], SIP(STATES['log_issue']),pocket_state = True),
+        (INTENTS['report_issue'], SIP(STATES['log_issue'], pocket_state = True)),
         (INTENTS['reset_chat'], SIP(STATES['init']))
     ]
     make_policy = lambda s_ints: Policy(default_policy_set,s_ints)
