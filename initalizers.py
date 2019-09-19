@@ -1,4 +1,5 @@
 import json
+import os
 from chatbot_supp import SIP, Policy, InfoVault, InfoParser
 from chatclass import DetailManager, ReplyGenerator, PolicyKeeper
 
@@ -134,8 +135,12 @@ def master_initalize(filename = ""):
     # INTENTS = jdata["intents"]
     # STATE_KEYS = jdata["state_keys"]
     # MATCH_DB = jdata["match_db"]
+    direct = os.getcwd()
+    absdirect = "/Users/davidgoh/Desktop/chatbot"
     if filename == "":
-        filename = "chatbot_resource.json"
+        filename = absdirect + "/"+ "chatbot_resource.json"
+
+    print("reading from ",filename)
     jdata = read_json(filename)
 
     components = {}

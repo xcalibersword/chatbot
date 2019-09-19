@@ -1,22 +1,15 @@
-from chatbot.py import Chatbot
-import http.server
-import socketserver
+import sys
+from chatbot import Chatbot
 
-class ChatbotRequestHandler(http.server.BaseHTTPRequestHandler):
-    def __init__(self):
-        self.chatbot = Chatbot()
-        self.chatbot.start()
 
-    def handle(self):
-        print("IM HANDLING IT")
-        return
-        
+print("STARTING")
+a = sys.argv[1]
+rep = "Recieved " + a
+print(rep)
+sys.stdout.flush()
 
 if __name__ == "__main__":
     bot = Chatbot()
     bot.start()
-    while 1:
-        incoming_msg = input()
-        bot.recv_new_message("MyUserId",incoming_msg)
 
 

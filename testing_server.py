@@ -49,5 +49,4 @@ def run_server(PORT):
 
 # Run here
 if __name__ == "__main__":
-    p = 8888
-    run_server(p)
+    
