@@ -12,11 +12,12 @@ SAME_STATE_F = {"key":"same_state","gated":False}
 # A packet that has info about state and has constructors for set states like go_back
 # State Info Packet
 class SIP:
-    def __init__(self, state, cs = True):
+    def __init__(self, state, cs = True, pocket_state = False):
         self.parse_state(state)
         self.state_change = cs
         self.backtrack = False
         self.go_back = False
+        self.pocket_state = pocket_state
 
     def parse_state(self, state):
         self.state_obj = state
@@ -84,6 +85,9 @@ class SIP:
 
     def is_same_state(self):
         return not self.state_change
+
+    def is_pocket_state(self):
+        return self.pocket_state
 
     # For cases when a state requires some intermediate step
     # Once the current stage is done, we immediately go to the pstate
@@ -230,7 +234,7 @@ class Customer:
     def get_accounts(self):
         return self.accounts
 
-class Info_Vault():
+class InfoVault():
     def __init__(self, json_data):
         self.plans = json_data["plans"]
         self.city_keys = list(self.plans.keys())
@@ -253,10 +257,11 @@ class Info_Vault():
 
 # Takes in a message and returns some info (if any)
 class InfoParser():
-    cities = ["上海","北京","深圳","杭州","广州", "上海", "成都", "shanghai", "beijing"]
-    digits = "[零一二三四五六七八九十|0-9]"
-    payments = ["支付","微信","alipay","wechat"]
-    def __init__(self):
+    def __init__(self, json_dict):
+        self.cities = json_dict["cities"]
+        self.payments = json_dict["payments"]
+        self.digits = cbsv.DIGITS()
+
         self.ctlist = self.list_to_regexList(self.cities)
         self.paymnt_list = self.list_to_regexList(self.payments)
 

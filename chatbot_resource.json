@@ -121,7 +121,7 @@
         ],
 
         "db_gen_query" : [
-            "请问","想问","问一下","ask"
+            "请问","想问","问一下","ask", "怎么"
         ],
 
         "db_purchase" : [
@@ -242,6 +242,12 @@
             "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能） http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp"
             ]
         },
+        "r_pay_query":{
+            "context_flag":0,
+            "text" :[
+                "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠，不会断缴"
+            ]
+        },
         "r_log_issue":{
             "context_flag": 0,
             "text" :[
@@ -300,5 +306,9 @@
             "price":0,
             "desc": "Something went wrong"
         }
+    },
+    "info_parser": {
+        "cities": ["上海","北京","深圳","杭州","广州", "上海", "成都", "shanghai", "beijing"],
+        "payments": ["支付","微信","alipay","wechat", "weixin", "zhifu", "zhifubao"]
     }
 }

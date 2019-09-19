@@ -16,6 +16,7 @@ def CHINA_CITIES():
     cities = ["上海","北京","深圳","杭州","广州", "上海", "成都", "shanghai", "beijing"]
     return cities
 
+# Digits in regex form
 def DIGITS():
     return "[零一二三四五六七八九十|0-9]"
 
