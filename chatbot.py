@@ -53,10 +53,10 @@ class Chatbot():
         return ChatManager(chat, self.ip, self.pk, self.rg, self.dm)
 
     def start(self):
-        print("Hello, I am a bot!")
         self.chat_dict = {}
         self.chat_timestamps = {}
         self.triggered = False
+        print("Hello, I am a bot!")
 
         return
 
@@ -114,6 +114,7 @@ if __name__ == "__main__":
     # load json and print
     bot = Chatbot()
     bot.start()
-    while 1:
+    # while 1:
+    if 1:
         incoming_msg = input()
         bot.recv_new_message("MyUserId",incoming_msg)
