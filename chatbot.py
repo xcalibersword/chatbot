@@ -92,7 +92,7 @@ class Chatbot():
         cln_txt = format_text(rawtext)
         return cln_txt
 
-    def recv_new_message(self,chatID,msg):
+    def get_bot_reply(self,chatID,msg):
         self.trigger_backup()
         # Create a new chat if never chat before
         if not chatID in self.chat_dict:
@@ -117,4 +117,4 @@ if __name__ == "__main__":
     # while 1:
     if 1:
         incoming_msg = input()
-        bot.recv_new_message("MyUserId",incoming_msg)
+        bot.get_bot_reply("MyUserId",incoming_msg)
