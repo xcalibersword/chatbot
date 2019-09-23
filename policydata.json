@@ -1,4 +1,5 @@
 {
+    "COMMENT":"File to decide state transition logic termed policies",
     "policy_rules":{
         "default":[
             ["greet", "SAME_STATE"],
@@ -12,7 +13,7 @@
         "init": [
             ["deny", "init"],
             ["greet", "init"],
-            ["purchase"]
+            ["purchase", "init_sale"]
         ],
         "init_sale": [
             ["affirm", "propose_plan"],

@@ -9,8 +9,8 @@ PREV_STATE_F = {"key":"299 PREV_STATE", "gated": False}
 PENDING_STATE_F = {"key":"PENDING_STATE", "gated": False}
 SAME_STATE_F = {"key":"same_state","gated":False}
 
+# SIP = State Info Packet
 # A packet that has info about state and has constructors for set states like go_back
-# State Info Packet
 class SIP:
     def __init__(self, state, cs = True, pocket_state = False):
         self.parse_state(state)
@@ -47,7 +47,7 @@ class SIP:
     def get_requirements(self):
         return self.state_reqs
 
-    # If pass, returns True, None
+    # If pass, returns True, (Pending state)
     # If fail, returns False, (Next state)
     def try_gate(self, info):
         print("Trying gate with info:",info, "required:",self.state_reqs)
@@ -59,7 +59,7 @@ class SIP:
             if i in failed_reqs:
                 failed_reqs.remove(i)
         
-        if DEBUG: print("failedreqs",failed_reqs)
+        if DEBUG: print("failed gate reqs:",failed_reqs)
         if len(failed_reqs) > 0:
             collect_SIP = self.build_info_SIP(failed_reqs)
             return (False, collect_SIP)
@@ -108,7 +108,8 @@ class SIP:
     def toString(self):
         return ("State obj",self.state_obj,"cs",self.state_change,"backtrack ",self.backtrack," reqs ",self.state_reqs)
 
-# A vehicle to house intent and details from the message
+# A vehicle to house SIP, intent and details.
+# TODO: Clean up usages of Understanding
 class Understanding:
     def __init__(self, intent, sip):
         self.intent = intent
@@ -176,19 +177,6 @@ class Action:
         self.details = d
         
 
-# A product???
-class Product:
-    def __init__(self, name, info):
-        self.name = name
-        self.parse_info(info)
-
-    # info is in the form of a dict
-    def parse_info(self, info):
-        self.price = info["price"]
-        self.desc = info["desc"]
-
-
-
 class Policy():
     def __init__(self, g_intents, s_intents = []):
         # self.state_name = state_name
@@ -234,6 +222,7 @@ class Customer:
     def get_accounts(self):
         return self.accounts
 
+# Globally accessed object. Singleton but not really cuz it needs to be initalized
 class InfoVault():
     def __init__(self, json_data):
         self.plans = json_data["plans"]
@@ -256,6 +245,7 @@ class InfoVault():
             return 1
 
 # Takes in a message and returns some info (if any)
+# Thing to note about re.search is that only the first match is pulled.
 class InfoParser():
     def __init__(self, json_dict):
         self.cities = json_dict["cities"]
@@ -308,10 +298,6 @@ class InfoParser():
         if m_city:
             out = m_city.group(0)
 
-    #     for i in range(len(text)):
-    #         substring = text[i:i+1]
-    #         if substring in cities:
-    #             return substring
         return out
 
     def parse_payment(self, text):

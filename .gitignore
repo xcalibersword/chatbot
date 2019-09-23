@@ -318,3 +318,5 @@ testing_server/node_modules/ipaddr.js/lib/ipaddr.js
 testing_server/node_modules/
 
 venv/
+
+dump.json

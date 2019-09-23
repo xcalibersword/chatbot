@@ -1,6 +1,6 @@
 import json
 
-# Automatically does things like format json info
+# Working file to automatically do things like format json info
 
 def read_json(json_filename):
     with open(json_filename, 'r') as f:

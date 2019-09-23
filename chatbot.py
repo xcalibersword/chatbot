@@ -9,6 +9,17 @@ from chatclass import *
 
 DEBUG = 1
 
+# The main file that ties everything together.
+# This is more or less the API center with the all important method: "get_bot_reply"
+# Calls all the supporting functions from chatclass and chatbot_supp and initalizers
+
+# Required libraries: 
+# None right now
+
+# Server libraries:
+# - socketio
+# - aiohttp
+
 def dict_lookup(key, dictionary):
     if key in dictionary:
         return dictionary[key]
@@ -98,6 +109,7 @@ class Chatbot():
         if not chatID in self.chat_dict:
             self.make_new_chat(chatID)
         curr_chat_mgr = self.chat_dict[chatID]
+        print("Current chat manager is for", chatID)
         # curr_chat = self.chats[chatID]
         # reply = self.respond_to_msg(curr_chat,msg)
         f_msg = self.clean_message(msg)

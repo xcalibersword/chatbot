@@ -22,7 +22,7 @@ class ChatManager:
         self.iparser = iparser
         self.pkeeper = pkeeper
         self.replygen = replygen
-        self.dmanager = dmanager
+        self.dmanager = dmanager.get_copy()
 
         # Internal properties
         self.state_history = [self.state,]
@@ -260,6 +260,9 @@ class DetailManager:
         # Is this bad OOP?
         chat.recv_info_dump(self.chat_prov_info)
 
+    def get_copy(self):
+        clonetrooper = DetailManager(self.vault)
+        return clonetrooper
 
 # Generates reply text based on current state info
 class ReplyGenerator:
@@ -372,10 +375,8 @@ class Chat:
         dir = ""
         filepath = dir + self.customerID + ".json"
 
-        # write info
-        
+        # write info        
         # write issues
-
         # write chatlog
         cbsv.dump_to_json(filepath,self.get_chatlog(),1)
         return

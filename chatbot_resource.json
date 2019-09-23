@@ -270,6 +270,12 @@
             "svc_fee":40,
             "opening_fee":50
         },
+        "beijing":{
+            "base_amt":1337,
+            "payment":2050,
+            "svc_fee":100,
+            "opening_fee":40
+        },
         "上海":{
             "base_amt":4927,
             "payment":1937,
@@ -286,6 +292,24 @@
             "base_amt":2335,
             "payment":2050,
             "svc_fee":100,
+            "opening_fee":40
+        },
+        "杭州": {
+            "base_amt":1100,
+            "payment":11,
+            "svc_fee":5,
+            "opening_fee":40
+        },
+        "广州":{
+            "base_amt":1200,
+            "payment":11,
+            "svc_fee":5,
+            "opening_fee":40
+        },
+        "成都":{
+            "base_amt":1300,
+            "payment":4050,
+            "svc_fee":20,
             "opening_fee":40
         }
     },
@@ -308,7 +332,7 @@
         }
     },
     "info_parser": {
-        "cities": ["上海","北京","深圳","杭州","广州", "上海", "成都", "shanghai", "beijing"],
+        "cities": ["上海","北京","深圳","杭州","广州", "成都", "shanghai", "beijing"],
         "payments": ["支付","微信","alipay","wechat", "weixin", "zhifu", "zhifubao"]
     },
     "policy_data_location": "policydata.json"

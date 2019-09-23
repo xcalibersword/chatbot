@@ -1,16 +1,12 @@
 import sys
 import socketio
-import requests
-# import subprocess as sp
 from aiohttp import web
 from chatbot import Chatbot
 
-chatbot_api_PORT = 8881
-chatbot_api_url = "localhost:"+str(chatbot_api_PORT)
-static_files = {"/":{"filename":"index.html"}}
+# This file opens a server that is a front for the chatbot. 
+# Right now it defaults to localhost:8080 due to aiohttp
 
 sio = socketio.AsyncServer()
-# app = socketio.ASGIApp(sio, static_files=static_files)
 app = web.Application() # This is implicitly an aiohttp apparently
 sio.attach(app)
 
@@ -19,9 +15,12 @@ def init_chatbot():
     bot.start()
     return bot
 
+def robotify(msg):
+    return "<机器人>:" + str(msg)
+
 def get_bot_reply(bot, cid, message):
     replytext = bot.get_bot_reply(cid,message)
-    reply = "<机器人>:" + replytext
+    reply = robotify(replytext)
     return reply
 
 def display_own_message(msg):
@@ -36,9 +35,11 @@ def index(request):
 
 @sio.event
 async def connect(sid, environ):
+    sio.enter_room(sid, sid) # Take a client and put them into a room that is their socket ID
     print("A connection!")
     print("Contacted by someone at", sid)
-    await sio.emit('message', "Greetings!")
+    greet = robotify("Greetings!")
+    await sio.emit('message', greet, room=sid)
 
 @sio.event
 async def disconnect(sid):
@@ -46,10 +47,10 @@ async def disconnect(sid):
 
 @sio.on('chat')
 async def chat_message(sid, msg):
-    await sio.emit('message',display_own_message(msg))
-    print("Messaged recieved from",sid)
+    await sio.emit('message',display_own_message(msg),room=sid)
+    print("Recieved from",sid,"Content:",msg)
     reply = get_bot_reply(bot, sid, msg)
-    await sio.emit('message', reply)
+    await sio.emit('message', reply, room=sid)
 
 app.router.add_get('/', index)
 
