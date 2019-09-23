@@ -1,0 +1,40 @@
+{
+    "policy_rules":{
+        "default":[
+            ["greet", "SAME_STATE"],
+            ["ask_name", "SAME_STATE"],
+            ["pay_query", "SAME_STATE"],
+            ["sales_query", "SAME_STATE"],
+            ["deny", "GO_BACK_STATE"],
+            ["goodbye", "goodbye"],
+            ["reset_chat", "init"]
+        ],
+        "init": [
+            ["deny", "init"],
+            ["greet", "init"],
+            ["purchase"]
+        ],
+        "init_sale": [
+            ["affirm", "propose_plan"],
+            ["deny", "ask_if_issue"]
+        ],
+        "propose_plan": [
+            ["affirm", "confirm_plan"],
+            ["deny", "ask_if_issue"]
+        ],
+        "confirm_plan": [
+            ["affirm", "payment"],
+            ["deny", "ask_if_issue"]
+        ],
+        "payment": [
+            ["affirm", "finish_sale"],
+            ["deny", "ask_if_issue"]
+
+        ],
+        "ask_if_issue": [
+            ["affirm", "log_issue"],
+            ["deny", "EXIT_POCKET_STATE"]
+        ]      
+    }
+
+}

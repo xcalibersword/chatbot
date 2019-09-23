@@ -49,14 +49,15 @@ def init_replygen(jdata):
     
     return ReplyGenerator(REPLY_DB, rkey_dbs)
 
-def init_policykeeper(jdata):
+def init_policykeeper(jdata, pdata):
     INTENTS = jdata["intents"]
     STATES = jdata["states"]
     STATE_KEYS = state_key_dict(jdata["states"])
     MATCH_DB = jdata["match_db"]
 
-    ### POLICIES ###
 
+
+    ### POLICIES ###
     default_policy_set = [
         (INTENTS['greet'], SIP.same_state()),
         (INTENTS['ask_name'],SIP.same_state()),
@@ -136,16 +137,18 @@ def master_initalize(filename = ""):
     # STATE_KEYS = jdata["state_keys"]
     # MATCH_DB = jdata["match_db"]
     direct = os.getcwd()
-    absdirect = "/Users/davidgoh/Desktop/chatbot"
+    absdirect = "/Users/davidgoh/Desktop/chatbot/"
     if filename == "":
-        filename = absdirect + "/"+ "chatbot_resource.json"
+        filename = absdirect + "chatbot_resource.json"
 
     print("reading from ",filename)
     jdata = read_json(filename)
+    pr_filepath = absdirect + jdata["policy_data_location"]
+    pdata = read_json(pr_filepath)
 
     components = {}
     components["replygen"] = init_replygen(jdata)
-    components["pkeeper"] = init_policykeeper(jdata)
+    components["pkeeper"] = init_policykeeper(jdata,pdata)
     components["dmanager"] = init_detailmanager(jdata)
     components["iparser"] = init_infoparser(jdata)
     return components
