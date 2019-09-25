@@ -7,12 +7,15 @@ from initalizers import master_initalize
 from chatbot_supp import *
 from chatclass import *
 
-DEBUG = 1
+DEBUG = 0
 
 # The main file that ties everything together.
 # This is more or less the API center with the all important method: "get_bot_reply"
-# Calls all the supporting functions from chatclass and chatbot_supp and initalizers
+# To initalize the bot:
+    # bot = Chatbot()
+    # bot.start()
 
+# Calls all the supporting functions from chatclass and chatbot_supp and initalizers
 # Required libraries: 
 # None right now
 
@@ -20,10 +23,8 @@ DEBUG = 1
 # - socketio
 # - aiohttp
 
-def dict_lookup(key, dictionary):
-    if key in dictionary:
-        return dictionary[key]
-    return False
+# EXTENSIONS:
+# Looking at a deeper history rather than just the previous state. LOC: decide_action
 
 # This text replacer should be put in a class or smth
 SUB_LIST = [
@@ -65,10 +66,8 @@ class Chatbot():
 
     def start(self):
         self.chat_dict = {}
-        self.chat_timestamps = {}
         self.triggered = False
-        print("Hello, I am a bot!")
-
+        print("SHEBAO chatbot started!")
         return
 
     def trigger_backup(self):
@@ -92,7 +91,6 @@ class Chatbot():
         self.set_backup_alarm()
 
     def make_new_chat(self,chatID):
-        # inital issues = {}
         chat_hist = {}
         newchat = Chat(chatID, chat_hist)
         new_manager = self.make_new_chatmgr(newchat)
@@ -109,21 +107,13 @@ class Chatbot():
         if not chatID in self.chat_dict:
             self.make_new_chat(chatID)
         curr_chat_mgr = self.chat_dict[chatID]
-        print("Current chat manager is for", chatID)
-        # curr_chat = self.chats[chatID]
-        # reply = self.respond_to_msg(curr_chat,msg)
+        if DEBUG: print("Current chat manager is for", chatID)
         f_msg = self.clean_message(msg)
         reply = curr_chat_mgr.respond_to_message(f_msg)
         return reply
 
-
-
-# EXTENSIONS:
-# Looking at a deeper history rather than just the previous state. LOC: decide_action
-
-
 if __name__ == "__main__":
-    # load json and print
+    # Local running
     bot = Chatbot()
     bot.start()
     # while 1:

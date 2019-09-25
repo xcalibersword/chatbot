@@ -45,7 +45,7 @@ def init_replygen(jdata):
             # Make sure the reply database has the key
             INTENT_REPLY_KEY_LOOKUP[intent] = dbk
         else:
-            print("No reply db found for", i)
+            print("<init replygen> No reply db found for", i)
     rkey_dbs = {}
     rkey_dbs["s2s"] = STS_REPLY_KEY_LOOKUP
     rkey_dbs["ss"] = SS_REPLY_KEY_LOOKUP
@@ -134,7 +134,7 @@ def master_initalize(filename = ""):
     if filename == "":
         filename = os.path.join(direct,"chatbot_resource.json")
 
-    print("reading from ",filename)
+    print("<master initalize> reading from ",filename)
     jdata = read_json(filename)
     pr_filepath = os.path.join(direct,jdata["policy_data_location"])
     pdata = read_json(pr_filepath)

@@ -329,8 +329,31 @@
         }
     },
     "info_parser": {
-        "cities": ["上海","北京","深圳","杭州","广州", "成都", "shanghai", "beijing"],
-        "payments": ["支付","微信","alipay","wechat", "weixin", "zhifu", "zhifubao"]
+        "cities": {
+            "values": ["上海","北京","深圳","杭州","广州", "成都", "shanghai", "beijing"]
+        },
+        "payments": {
+            "values": ["支付","微信","alipay","wechat", "weixin", "zhifu", "zhifubao"]
+        },
+        "shop": {
+            "values":["唯洛店"]
+        }
+    },
+    "forms": {
+        "shebao": {
+            "req_info":[
+                "city",
+                "val_shebao",
+                "val_gongjijin",
+                "val_monthlyfee",
+                "shop",
+                "date_shebaostart",
+                "date_gongjijinstart",
+                "bool_gongjijin",
+                "bool_gongzi",
+                "bool_firsttime"
+            ]
+        }
     },
     "policy_data_location": "policydata.json"
 }

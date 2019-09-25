@@ -255,8 +255,8 @@ class InfoVault():
 # Thing to note about re.search is that only the first match is pulled.
 class InfoParser():
     def __init__(self, json_dict):
-        self.cities = json_dict["cities"]
-        self.payments = json_dict["payments"]
+        self.cities = json_dict["cities"]["values"]
+        self.payments = json_dict["payments"]["values"]
         self.digits = cbsv.DIGITS()
 
         self.ctlist = self.list_to_regexList(self.cities)
@@ -274,6 +274,7 @@ class InfoParser():
 
         return out
 
+    # Converts a python array to a string delimited by the '|' character
     def list_to_regexList(self, lst):
         re_list = ""
         for e in lst:

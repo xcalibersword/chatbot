@@ -322,3 +322,5 @@ venv/
 dump.json
 
 chatlogs/
+
+__pycache__/

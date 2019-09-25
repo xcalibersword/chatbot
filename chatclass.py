@@ -39,12 +39,9 @@ class ChatManager:
         # Parse the message and get an understanding
         full_uds = self._parse_message_overall(msg)
         # Digest and internalize the new info
-        final_uds = self._digest_uds(full_uds)
+        intent = self._digest_uds(full_uds)
         # Request a reply text
-        reply = self._fetch_reply(final_uds)
-
-        if DEBUG:
-            final_uds.printout()
+        reply = self._fetch_reply(intent)
 
         self._record_messages_in_chat(msg,reply)
         return reply
@@ -73,6 +70,7 @@ class ChatManager:
     
     # Process, gatekeep then internalize changes
     # Results in change in chat details and change in state
+    # Returns an intent 
     def _digest_uds(self, uds):
         def same_state_SIP():
             print("self state for same state call:", self.state)
@@ -83,6 +81,7 @@ class ChatManager:
         # Unpack
         deets = uds.get_details()
         sip = uds.get_sip()
+        final_intent = uds.get_intent()
 
         # Update details
         self.push_detail_to_dm(deets)
@@ -90,7 +89,7 @@ class ChatManager:
         # Update State (may depend on details so this is 2nd)
         if sip.is_go_back():
             self.go_back_a_state()
-            return uds
+            return final_intent
 
         if sip.is_same_state():
             if DEBUG: print("SAME STATE FLAGGED")
@@ -101,15 +100,19 @@ class ChatManager:
         # Also updates requirements!!
         self._update_state_from_sip(new_sip)
         
+        # Below might be deprecated
+
         # Modified copy of original
         final_uds = uds.copy_swap_sip(new_sip)
-        return final_uds
+        if DEBUG:
+            final_uds.printout()
+
+        return final_intent
 
     # Ask replygen for a reply
-    def _fetch_reply(self,uds):
+    def _fetch_reply(self,intent):
         information = self._get_current_info()
         curr_state = self._get_curr_state_key()
-        intent = uds.get_intent()
         prev_state = self._get_prev_state_key()
         return self.replygen.get_reply(prev_state, curr_state, intent, information)
 
@@ -140,7 +143,7 @@ class ChatManager:
         if self._has_pending_state():
             if DEBUG: print("Existing pending state detected")
             return
-        print("!!!! setting pending state to:",pstate.toString())
+        print("!!! Setting pending state to:",pstate.toString())
         self.pending_state = pstate
 
     def get_forward_state(self, sip):
@@ -173,7 +176,8 @@ class ChatManager:
     # UNUSED
     def go_back_a_state(self):
         prev_state = self.state_history.pop(-1)
-        
+        self.state = prev_state
+
     def _get_curr_state(self):
         return self.state
 
