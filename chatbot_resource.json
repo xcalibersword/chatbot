@@ -3,11 +3,11 @@
     "intents": {
         "greet":100,
         "ask_name":101,
-        "indicate_plan":1701,
         "indicate_query":1702,
         "sales_query":111,
         "pay_query":112,
         "gen_query":113,
+        "how_check_shebao_status": 114,
         "report_issue":151,
         "purchase":180,
         "affirm":191,
@@ -124,12 +124,12 @@
             "who u","what is your name", "who are you","你的名字是什么","你叫什么","你叫什么名"
         ],
 
-        "db_affirm": [
-            "yes","好","好的","可以","是的","有","没问题","确定", "ok"
-        ],
-
         "db_deny": [
             "不好","不可以","不是","没有","没问题","不确定","no","not ok"
+        ],
+
+        "db_affirm": [
+            "yes","好","有","是","没问题","确定", "ok", "好的","可以","是的"
         ],
 
         "db_greet" : [
@@ -149,15 +149,14 @@
         ],
 
         "db_sales_query" : [
-            "sales query","ask about your product", "缴纳"
-        ],
-
-        "db_indicate_plan" : [
-            "a", "b", "c", "plan (a|b|c)"
+            "sales query","ask about your product"
         ],
 
         "db_report_issue" : [
             "issue","problem"
+        ],
+        "db_how_check_shebao_status": [
+            "查询社保资格", "查询缴纳", "缴纳怎么查询", "how do i check shebao status", "how check shebao"
         ],
         "db_reset_chat": [
             "resetchat"
@@ -165,7 +164,7 @@
     },
 
     "reply_db":{
-        "r_sales_pitch":{
+        "r_opening_message":{
             "context_flag": 0,
             "text" :[
             "您好，欢迎光临唯洛社保，很高兴为您服务。本店现在可以代缴上海、北京、长沙、广州、苏州、杭州、成都的五险一金。请问需要代缴哪个城市的呢？需要从几月份开始代缴呢？注意：社保局要求已怀孕的客户（代缴后再怀孕的客户不受影响）和重大疾病或者慢性病状态客户，我司不能为其代缴社保，如有隐瞒恶意代缴的责任自负！请注意参保手续开始办理后，无法退款。"
@@ -195,31 +194,31 @@
         "r_greet" : {
             "context_flag": 0,
             "text" :[
-            "你好 :) {dates}","Hello!!"
+            "你好 :)","Hello!!"
             ]
         },
         "r_sales_intro" : {
             "context_flag": 0,
             "text" : [
-                "好的，那么我就跟亲介绍一下..... 你对我们的产品有兴趣吗？"
+                "好的，那么我就跟亲介绍一下..... 你对我们的宝贝有兴趣吗？"
             ]
         },
         "r_confirm_plan" : {
             "context_flag" : 1,
             "text": [
-            "Confirm plan for {city}？"
+            "确认要{city}的宝贝？"
             ]
         },
         "r_confirm_price" : {
             "context_flag": 1,
             "text" :[
-            "The plan for {city} will cost ${city_info[payment]}. Is this ok?"
+            "你{city}的宝贝一共要付{city_info[payment]}块，好么？"
             ]
         },
         "r_query" : {
             "context_flag": 0,
             "text" :[
-            "YOu have enquired!","Our products costs very little!","YAY"
+            "You have enquired"
             ]
         },
         "r_sale_done" : {
@@ -238,12 +237,6 @@
             "context_flag": 0,
             "text" : [
             "亲 先别急 我要先拿亲的信息后才谈别的事"
-            ]
-        },
-        "r_list_plans" : {
-            "context_flag": 0,
-            "text":[
-                "(DEPRECATED) PLEASE CHOOSE A PLAN"
             ]
         },
         "r_state_details": {
@@ -274,6 +267,12 @@
             "context_flag": 0,
             "text" :[
             "再见!!","Byebye!","Hope to see you again! :)"
+            ]
+        },
+        "r_reset_chat" : {
+            "context_flag": 0,
+            "text" :[
+            "CHAT HAS BEEN RESET"
             ]
         }
         
@@ -327,24 +326,6 @@
             "payment":4050,
             "svc_fee":20,
             "opening_fee":40
-        }
-    },
-    "products":{
-        "p_01": {
-            "price": 100,
-            "desc": "Basic plan A"
-        },
-        "p_02": {
-            "price": 150,
-            "desc": "More advanced plan. Plan A + feature"
-        },
-        "p_03": {
-            "price": 9001,
-            "desc": "Extremely comprehensive plan C. C for full Coverage"
-        },
-        "ERR":{
-            "price":0,
-            "desc": "Something went wrong"
         }
     },
     "info_parser": {

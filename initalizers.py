@@ -21,7 +21,7 @@ def init_replygen(jdata):
     STATE_KEYS = state_key_dict(jdata["states"])
     REPLY_DB = jdata["reply_db"]
 
-    # Actually empty but I'm leaving a template here
+    # Actually STS is not used by anything but I'm leaving a template here
     STS_REPLY_KEY_LOOKUP = {
         (STATE_KEYS['payment'], STATE_KEYS['finish_sale']): "r_sale_done"
     }
@@ -37,11 +37,15 @@ def init_replygen(jdata):
     }
 
     INTENT_REPLY_KEY_LOOKUP = {}
-    gen_reply_list = ["ask_name", "greet", "goodbye"]
-    for i in gen_reply_list:
+    intent_keys = list(INTENTS.keys())
+    for i in intent_keys:
         intent = INTENTS[i]
         dbk = "r_"+str(i)
-        INTENT_REPLY_KEY_LOOKUP[intent] = dbk
+        if dbk in REPLY_DB:
+            # Make sure the reply database has the key
+            INTENT_REPLY_KEY_LOOKUP[intent] = dbk
+        else:
+            print("No reply db found for", i)
     rkey_dbs = {}
     rkey_dbs["s2s"] = STS_REPLY_KEY_LOOKUP
     rkey_dbs["ss"] = SS_REPLY_KEY_LOOKUP
@@ -108,7 +112,7 @@ def init_policykeeper(jdata, pdata):
 
     INTENT_LOOKUP_TABLE = {}
     for k in list(MATCH_DB.keys()):
-        look_key = k[3:]
+        look_key = k.split("db_")[1] # Ignore first 3 characters
         kv = INTENTS[look_key]
         INTENT_LOOKUP_TABLE[kv] = MATCH_DB[k]
 

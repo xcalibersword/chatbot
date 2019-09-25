@@ -7,6 +7,7 @@
             ["pay_query", "SAME_STATE"],
             ["sales_query", "SAME_STATE"],
             ["deny", "GO_BACK_STATE"],
+            ["how_check_shebao_status", "SAME_STATE"],
             ["goodbye", "goodbye"],
             ["report_issue", "log_issue"],
             ["reset_chat", "init"]

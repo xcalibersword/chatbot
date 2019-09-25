@@ -289,12 +289,12 @@ class ReplyGenerator:
         # Specific state to state
         rkey = dict_lookup(context, self.rkey_dbs["s2s"])
         if rkey:
-            print("found in s2s")
+            if DEBUG: print("found in s2s")
             return rkey
 
         # Single state
         if not rkey:
-            print("found in s1")
+            if DEBUG: print("found in s1")
             rkey = dict_lookup(curr_state, self.rkey_dbs["ss"])
         
         # Intent
@@ -319,17 +319,16 @@ class ReplyGenerator:
     # Generates a pure reply
     def generate_reply_message(self, reply_key, info):
         reply_template = self.fetch_reply_text(reply_key)
-        print("template",reply_template)
+        if DEBUG: print("template",reply_template)
         final_msg = reply_template
         if isinstance(info, dict):
-            print("current info",info)
+            if DEBUG: print("current info",info)
             ikeys = list(info.keys())
             # final_msg = self.formatter.vformat(reply_template, ikeys, info)
             # final_msg = reply_template%(info)
             final_msg = reply_template.format(**info)
 
         return final_msg
-
 
 # Deals only with text
 # Does not deal with state or information
@@ -369,7 +368,7 @@ class Chat:
         self.firstpop = True
     
     def recv_info_dump(self, new_info):
-        print("Updating...",new_info)
+        print("Recieved info dump...",new_info)
         self.info.update(new_info)
 
     ## Database interaction?
@@ -380,7 +379,7 @@ class Chat:
     def record_to_database(self):
         direct = os.getcwd()
         if not os.path.isdir(os.path.join(direct,"chatlogs")):
-            print("Creating chatlogs folder...")
+            if DEBUG: print("Creating chatlogs folder...")
             os.mkdir(os.path.join(direct,"chatlogs")) # If no folder, make a folder
         filepath = os.path.join(direct,"chatlogs/" + self.customerID + ".json")
 
