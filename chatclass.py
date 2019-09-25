@@ -3,6 +3,7 @@ import re
 import random
 import cbsv
 import string
+from datetime import datetime
 from chatbot_supp import *
 
 DEBUG = 0
@@ -341,11 +342,12 @@ class Chat:
 
     # Records conversation
     def record_messages(self, recieved, sent):
-        user = "用户"
-        human = lambda user, m: user + ": " + m
-        robotify = lambda x: "机器人: " + x
-        self.curr_chatlog[self.convo_index] = recieved
-        self.curr_chatlog[self.convo_index+1] = sent
+        dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        username = "用户"
+        humanify = lambda user, m: dt+ " > " + user + ": " + m
+        robotify = lambda x: dt + " > " + "机器人: " + x
+        self.curr_chatlog[self.convo_index] = humanify(username, recieved)
+        self.curr_chatlog[self.convo_index+1] = robotify(sent)
         self.convo_index = self.convo_index + 2
 
     ## Commonly called methods

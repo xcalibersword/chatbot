@@ -87,6 +87,14 @@ def init_policykeeper(jdata, pdata):
             tuplelist.append(create_policy_tuple(pair))
         POLICY_RULES[STATE_KEYS[state_key]] = make_policy(tuplelist)
 
+    # Loop to make all policies for those without specific paths
+    existing = list(POLICY_RULES.keys())
+    for k in list(STATES.keys()):
+        state_value = STATES[k]["key"]
+        if state_value in existing:
+            continue # Don't overwrite existing policy lookup values
+        POLICY_RULES[state_value] = make_policy([])
+        
     ### POLICIES ###
     # default_policy_set = [
     #     (INTENTS['greet'], SIP.same_state()),
@@ -136,13 +144,8 @@ def init_policykeeper(jdata, pdata):
     #     )
     # }
 
-    # Loop to make all policies
-    # existing = list(POLICY_RULES.keys())
-    # for k in list(STATES.keys()):
-    #     state_value = STATES[k]["key"]
-    #     if state_value in existing:
-    #         continue # Don't overwrite existing policy lookup values
-    #     POLICY_RULES[state_value] = make_policy([])
+
+    
 
 
     INTENT_LOOKUP_TABLE = {}

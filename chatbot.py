@@ -51,7 +51,7 @@ def format_text(text):
 
 # Big Chatbot class
 class Chatbot():
-    timeout = 20
+    timeout = 15
     def __init__(self):
         comps = master_initalize()
         self.PREV_REPLY_FLAG = "prev_state_message"
@@ -73,8 +73,8 @@ class Chatbot():
 
     def trigger_backup(self):
         if not self.triggered:
-            self.set_backup_alarm()
             self.triggered = True
+            self.set_backup_alarm()
 
     def set_backup_alarm(self):
         if not self.triggered:
@@ -86,9 +86,9 @@ class Chatbot():
 
     def backup_chats(self):
         if DEBUG: print("Backing up chat...")
-        self.triggered = False
         for c in list(self.chat_dict.keys()):
             self.chat_dict[c].backup_chat()
+        self.triggered = False
         self.set_backup_alarm()
 
     def make_new_chat(self,chatID):
