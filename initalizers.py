@@ -4,8 +4,8 @@ from chatbot_supp import SIP, Policy, InfoVault, InfoParser
 from chatclass import DetailManager, ReplyGenerator, PolicyKeeper
 
 def read_json(json_filename):
-    with open(json_filename, 'r') as f:
-        data = json.loads(f.read())
+    with open(json_filename, 'r',encoding="utf-8") as f:
+        data = json.loads(f.read(),encoding="utf-8")
     return data
 
 # Converts a dict of states to a dict of state keys
@@ -166,13 +166,12 @@ def master_initalize(filename = ""):
     # STATE_KEYS = jdata["state_keys"]
     # MATCH_DB = jdata["match_db"]
     direct = os.getcwd()
-    absdirect = "/Users/davidgoh/Desktop/chatbot/"
     if filename == "":
-        filename = absdirect + "chatbot_resource.json"
+        filename = os.path.join(direct,"chatbot_resource.json")
 
     print("reading from ",filename)
     jdata = read_json(filename)
-    pr_filepath = absdirect + jdata["policy_data_location"]
+    pr_filepath = os.path.join(direct,jdata["policy_data_location"])
     pdata = read_json(pr_filepath)
 
     components = {}
