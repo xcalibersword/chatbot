@@ -3,6 +3,7 @@ import re
 import random
 import cbsv
 import string
+import os
 from datetime import datetime
 from chatbot_supp import *
 
@@ -377,8 +378,11 @@ class Chat:
 
     # Writes to a file eventually
     def record_to_database(self):
-        dir = ""
-        filepath = dir + self.customerID + ".json"
+        direct = os.getcwd()
+        if not os.path.isdir(os.path.join(direct,"chatlogs")):
+            print("Creating chatlogs folder...")
+            os.mkdir(os.path.join(direct,"chatlogs")) # If no folder, make a folder
+        filepath = os.path.join(direct,"chatlogs/" + self.customerID + ".json")
 
         # write info        
         # write issues

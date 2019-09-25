@@ -320,3 +320,5 @@ testing_server/node_modules/
 venv/
 
 dump.json
+
+chatlogs/

@@ -8,12 +8,14 @@
             ["sales_query", "SAME_STATE"],
             ["deny", "GO_BACK_STATE"],
             ["goodbye", "goodbye"],
+            ["report_issue", "log_issue"],
             ["reset_chat", "init"]
         ],
         "init": [
             ["deny", "init"],
             ["greet", "init"],
-            ["purchase", "init_sale"]
+            ["purchase", "init_sale"],
+            ["sales_query", "sales_query"]
         ],
         "init_sale": [
             ["affirm", "propose_plan"],

@@ -94,18 +94,6 @@ def init_policykeeper(jdata, pdata):
         if state_value in existing:
             continue # Don't overwrite existing policy lookup values
         POLICY_RULES[state_value] = make_policy([])
-        
-    ### POLICIES ###
-    # default_policy_set = [
-    #     (INTENTS['greet'], SIP.same_state()),
-    #     (INTENTS['ask_name'],SIP.same_state()),
-    #     (INTENTS['pay_query'],SIP.same_state()),
-    #     (INTENTS['sales_query'],SIP.same_state()),
-    #     (INTENTS['deny'], SIP.go_back_state()),
-    #     (INTENTS['goodbye'], SIP(STATES["goodbye"])),
-    #     (INTENTS['report_issue'], SIP(STATES['log_issue']),
-    #     (INTENTS['reset_chat'], SIP(STATES['init']))
-    # ]
 
     # POLICY_RULES = {
     #     STATE_KEYS['init']: make_policy([
@@ -116,37 +104,7 @@ def init_policykeeper(jdata, pdata):
     #         (INTENTS['pay_query'], SIP(STATES['pay_query'])),
     #         (INTENTS['sales_query'], SIP(STATES['sales_query']))
     #         ]
-    #     ),
-    #     STATE_KEYS['init_sale']: make_policy([
-    #         (INTENTS['affirm'], SIP(STATES['propose_plan'])),
-    #         (INTENTS['deny'], SIP(STATES['ask_if_issue']))
-    #         ]
-    #     ),
-    #     STATE_KEYS['propose_plan']: make_policy([
-    #         (INTENTS['affirm'], SIP(STATES['confirm_plan'])),
-    #         (INTENTS['deny'], SIP(STATES['ask_if_issue']))
-    #         ]
-    #     ),
-    #     STATE_KEYS['confirm_plan']: make_policy([
-    #         (INTENTS['affirm'], SIP(STATES['payment'])),
-    #         (INTENTS['deny'], SIP(STATES['ask_if_issue']))
-    #         ]
-    #     ),
-    #     STATE_KEYS['ask_if_issue']: make_policy([
-    #         (INTENTS['affirm'], SIP(STATES['log_issue'])),
-    #         (INTENTS['deny'], SIP.goto_pending_state())
-    #         ]
-    #     ),
-    #     STATE_KEYS['payment']: make_policy([
-    #         (INTENTS['affirm'], SIP(STATES['finish_sale'])),
-    #         (INTENTS['deny'], SIP(STATES['ask_if_issue']))
-    #         ]
-    #     )
     # }
-
-
-    
-
 
     INTENT_LOOKUP_TABLE = {}
     for k in list(MATCH_DB.keys()):
