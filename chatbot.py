@@ -80,7 +80,7 @@ class Chatbot():
         if not self.triggered:
             # No need for backup when no new messages
             return
-        if DEBUG: print("Set an alarm for",self.timeout,"s")
+        if DEBUG: print("Scheduled an event in",self.timeout,"s")
         timer = threading.Timer(self.timeout, self.backup_chats)
         timer.start()
 

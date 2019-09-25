@@ -341,6 +341,9 @@ class Chat:
 
     # Records conversation
     def record_messages(self, recieved, sent):
+        user = "用户"
+        human = lambda user, m: user + ": " + m
+        robotify = lambda x: "机器人: " + x
         self.curr_chatlog[self.convo_index] = recieved
         self.curr_chatlog[self.convo_index+1] = sent
         self.convo_index = self.convo_index + 2
