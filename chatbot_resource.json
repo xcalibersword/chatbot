@@ -21,81 +21,97 @@
         "init": {
             "key": "200 init",
             "gated": false,
+            "pocket_state": false,
             "req_info": ""
         },
         "ask_if_issue": {
             "key": "251 whats wrong",
             "gated": false,
+            "pocket_state": true,
             "req_info": ""
         },
         "sales_query": {
             "key": "211 saleq",
             "gated": false,
+            "pocket_state": false,
             "req_info": ""
         },
         "pay_query": {
             "key": "212 pay q",
             "gated": false,
+            "pocket_state": false,
             "req_info": ""
         },
         "gen_query": {
             "key": 213,
             "gated": false,
+            "pocket_state": false,
             "req_info": ""
         },
         "confirm_query": {
             "key": 218,
             "gated": false,
+            "pocket_state": false,
             "req_info": ""
         },
         "recv_info": {
             "key": "221 recv info",
             "gated": false,
+            "pocket_state": false,
             "req_info": ""
         },
         "log_issue": {
             "key": 251,
             "gated": false,
+            "pocket_state": true,
             "req_info": ""
         },
         "recommend": {
             "key": 271,
             "gated": false,
+            "pocket_state": false,
             "req_info": ""
         },
         "init_sale": {
             "key": 280,
             "gated": false,
+            "pocket_state": false,
             "req_info": ""
         },
         "propose_plan": {
             "key": 281,
             "gated": true,
+            "pocket_state": false,
             "req_info": ["city"]
         },
         "confirm_plan": {
             "key": 282,
             "gated": false,
+            "pocket_state": false,
             "req_info": ""
         },
         "payment": {
             "key": 283,
             "gated": true,
+            "pocket_state": false,
             "req_info": ["payment_method"]
         },
         "finish_sale": {
             "key": 289,
             "gated": false,
+            "pocket_state": false,
             "req_info": ""
         },
         "goodbye": {
             "key": 209,
             "gated": false,
+            "pocket_state": false,
             "req_info": ""
         },
         "PREV_STATE": {
             "key": "299 PREV_STATE",
             "gated": false,
+            "pocket_state": false,
             "req_info": ""
         }
     },

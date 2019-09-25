@@ -36,6 +36,21 @@
             ["affirm", "log_issue"],
             ["deny", "EXIT_POCKET_STATE"]
         ]      
+    },
+    "forms":{
+        "form_shebao":{
+            "date":"startdate_shebao",
+            "number":"base_amt_shebao"
+        },
+        "form_gongjijin":{
+            "date":"startdate_gongjijin",
+            "number": "base_amt_gongjijin"
+        },
+        "form_firsttime":{
+            "yesno":"firsttime"
+        },
+        "form_salary":{
+            "yesno":"salary"
+        }
     }
-
 }

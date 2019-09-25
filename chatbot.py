@@ -2,7 +2,7 @@ import random
 import re
 import json
 import cbsv
-import signal
+import threading
 from initalizers import master_initalize
 from chatbot_supp import *
 from chatclass import *
@@ -80,13 +80,13 @@ class Chatbot():
         if not self.triggered:
             # No need for backup when no new messages
             return
-        signal.signal(signal.SIGALRM, self.backup_chats)
-        signal.alarm(self.timeout)
+        if DEBUG: print("Set an alarm for",self.timeout,"s")
+        timer = threading.Timer(self.timeout, self.backup_chats)
+        timer.start()
 
-    def backup_chats(self, signum, frame):
+    def backup_chats(self):
+        if DEBUG: print("Backing up chat...")
         self.triggered = False
-        signal.alarm(0)
-        print("BACKING UP CHAT","signum",signum)
         for c in list(self.chat_dict.keys()):
             self.chat_dict[c].backup_chat()
         self.set_backup_alarm()
@@ -129,4 +129,5 @@ if __name__ == "__main__":
     # while 1:
     if 1:
         incoming_msg = input()
-        bot.get_bot_reply("MyUserId",incoming_msg)
+        reply = bot.get_bot_reply("MyUserId",incoming_msg)
+        print(reply)

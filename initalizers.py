@@ -55,65 +55,94 @@ def init_policykeeper(jdata, pdata):
     STATE_KEYS = state_key_dict(jdata["states"])
     MATCH_DB = jdata["match_db"]
 
+    # In: list of [current_state, destination]
+    def create_policy_tuple(pair):
+        state, destination = pair
+        if destination == "SAME_STATE":
+            target_state = SIP.same_state()
+        elif destination == "GO_BACK_STATE":
+            target_state = SIP.go_back_state()
+        elif destination == "EXIT_POCKET_STATE":
+            target_state = SIP.exit_pocket()
+        else:
+            target_state = SIP(STATES[destination])
 
+        return (INTENTS[state], target_state)
+        
+    policy_rules = pdata["policy_rules"] # This is true for now. Might change
+    policy_states = list(policy_rules.keys())
+    policy_states.remove("default")
 
-    ### POLICIES ###
-    default_policy_set = [
-        (INTENTS['greet'], SIP.same_state()),
-        (INTENTS['ask_name'],SIP.same_state()),
-        (INTENTS['pay_query'],SIP.same_state()),
-        (INTENTS['sales_query'],SIP.same_state()),
-        (INTENTS['deny'], SIP.go_back_state()),
-        (INTENTS['goodbye'], SIP(STATES["goodbye"])),
-        (INTENTS['report_issue'], SIP(STATES['log_issue'], pocket_state = True)),
-        (INTENTS['reset_chat'], SIP(STATES['init']))
-    ]
+    default_policy_set = []
+    for pair in policy_rules["default"]:
+        pol = create_policy_tuple(pair)
+        default_policy_set.append(pol)
+
     make_policy = lambda s_ints: Policy(default_policy_set,s_ints)
 
-    POLICY_RULES = {
-        STATE_KEYS['init']: make_policy([
-            (INTENTS['deny'],SIP(STATES['init'])),
-            (INTENTS['greet'],SIP(STATES['init'])),
-            (INTENTS['gen_query'],SIP(STATES['confirm_query'])),
-            (INTENTS['purchase'], SIP(STATES['init_sale'])),
-            (INTENTS['pay_query'], SIP(STATES['pay_query'])),
-            (INTENTS['sales_query'], SIP(STATES['sales_query']))
-            ]
-        ),
-        STATE_KEYS['init_sale']: make_policy([
-            (INTENTS['affirm'], SIP(STATES['propose_plan'])),
-            (INTENTS['deny'], SIP(STATES['ask_if_issue']))
-            ]
-        ),
-        STATE_KEYS['propose_plan']: make_policy([
-            (INTENTS['affirm'], SIP(STATES['confirm_plan'])),
-            (INTENTS['deny'], SIP(STATES['ask_if_issue']))
-            ]
-        ),
-        STATE_KEYS['confirm_plan']: make_policy([
-            (INTENTS['affirm'], SIP(STATES['payment'])),
-            (INTENTS['deny'], SIP(STATES['ask_if_issue']))
-            ]
-        ),
-        STATE_KEYS['ask_if_issue']: make_policy([
-            (INTENTS['affirm'], SIP(STATES['log_issue'])),
-            (INTENTS['deny'], SIP.goto_pending_state())
-            ]
-        ),
-        STATE_KEYS['payment']: make_policy([
-            (INTENTS['affirm'], SIP(STATES['finish_sale'])),
-            (INTENTS['deny'], SIP(STATES['ask_if_issue']))
-            ]
-        )
-    }
+    POLICY_RULES = {}
+    for state_key in policy_states:
+        tuplelist = []
+        for pair in policy_rules[state_key]:
+            tuplelist.append(create_policy_tuple(pair))
+        POLICY_RULES[STATE_KEYS[state_key]] = make_policy(tuplelist)
+
+    ### POLICIES ###
+    # default_policy_set = [
+    #     (INTENTS['greet'], SIP.same_state()),
+    #     (INTENTS['ask_name'],SIP.same_state()),
+    #     (INTENTS['pay_query'],SIP.same_state()),
+    #     (INTENTS['sales_query'],SIP.same_state()),
+    #     (INTENTS['deny'], SIP.go_back_state()),
+    #     (INTENTS['goodbye'], SIP(STATES["goodbye"])),
+    #     (INTENTS['report_issue'], SIP(STATES['log_issue']),
+    #     (INTENTS['reset_chat'], SIP(STATES['init']))
+    # ]
+
+    # POLICY_RULES = {
+    #     STATE_KEYS['init']: make_policy([
+    #         (INTENTS['deny'],SIP(STATES['init'])),
+    #         (INTENTS['greet'],SIP(STATES['init'])),
+    #         (INTENTS['gen_query'],SIP(STATES['confirm_query'])),
+    #         (INTENTS['purchase'], SIP(STATES['init_sale'])),
+    #         (INTENTS['pay_query'], SIP(STATES['pay_query'])),
+    #         (INTENTS['sales_query'], SIP(STATES['sales_query']))
+    #         ]
+    #     ),
+    #     STATE_KEYS['init_sale']: make_policy([
+    #         (INTENTS['affirm'], SIP(STATES['propose_plan'])),
+    #         (INTENTS['deny'], SIP(STATES['ask_if_issue']))
+    #         ]
+    #     ),
+    #     STATE_KEYS['propose_plan']: make_policy([
+    #         (INTENTS['affirm'], SIP(STATES['confirm_plan'])),
+    #         (INTENTS['deny'], SIP(STATES['ask_if_issue']))
+    #         ]
+    #     ),
+    #     STATE_KEYS['confirm_plan']: make_policy([
+    #         (INTENTS['affirm'], SIP(STATES['payment'])),
+    #         (INTENTS['deny'], SIP(STATES['ask_if_issue']))
+    #         ]
+    #     ),
+    #     STATE_KEYS['ask_if_issue']: make_policy([
+    #         (INTENTS['affirm'], SIP(STATES['log_issue'])),
+    #         (INTENTS['deny'], SIP.goto_pending_state())
+    #         ]
+    #     ),
+    #     STATE_KEYS['payment']: make_policy([
+    #         (INTENTS['affirm'], SIP(STATES['finish_sale'])),
+    #         (INTENTS['deny'], SIP(STATES['ask_if_issue']))
+    #         ]
+    #     )
+    # }
 
     # Loop to make all policies
-    existing = list(POLICY_RULES.keys())
-    for k in list(STATES.keys()):
-        state_value = STATES[k]["key"]
-        if state_value in existing:
-            continue # Don't overwrite existing policy lookup values
-        POLICY_RULES[state_value] = make_policy([])
+    # existing = list(POLICY_RULES.keys())
+    # for k in list(STATES.keys()):
+    #     state_value = STATES[k]["key"]
+    #     if state_value in existing:
+    #         continue # Don't overwrite existing policy lookup values
+    #     POLICY_RULES[state_value] = make_policy([])
 
 
     INTENT_LOOKUP_TABLE = {}

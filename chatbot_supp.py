@@ -82,6 +82,13 @@ class SIP:
     def goto_pending_state(cls):
          obj = cls(PENDING_STATE_F, cs=False)
          return obj
+    
+    @classmethod
+    def exit_pocket(cls):
+        # TODO this
+        obj = cls(PREV_STATE_F, cs=False)
+        return obj
+
 
     def is_same_state(self):
         return not self.state_change
@@ -307,13 +314,42 @@ class InfoParser():
             out = m_pay.group(0)
         return out
 
-
-    def cn_to_integer(self, digit):
+    @classmethod
+    def cn_to_integer(self, msg):
         SHI = "十"
         zw_num = ['零','一','二','三','四','五','六','七','八','九']
-        conv = digit
-        for i in range(len(zw_num)):
-            conv.replace(zw_num,i)
-        if SHI in digit:
-            return digit.index(SHI)
-        return conv
+        def get_decimal(haoma):
+            return str(zw_num.index(haoma))
+        output = msg
+        j = 0
+        for i in range(len(msg)):
+            if msg[i] == SHI:
+                # Tens digit
+                rest = output[j+1:] if j+1 < len(output) else ""
+                output = output[:j] + "0" + rest
+                
+                if not msg[i-1] in zw_num:
+                    # If standalone
+                    rest = output[j:]
+                    output = output[:j] + "1" + rest
+                    j+=1
+                
+                if i+1 < len(msg):
+                    # If have ones digit, replace zerp with ones digit
+                    if msg[i+1] in zw_num:
+                        rest = output[j+1:] if j+1 < len(output) else ""
+                        output = output[:j] + rest
+            j += 1
+        # Mass replace digits
+        for haoma in zw_num:
+            output = output.replace(haoma, get_decimal(haoma))
+
+        return output
+
+# 八十一
+
+if __name__ == "__main__":
+    print("Number Converter On!")
+    while 1:
+        test = input()
+        print("converted:",InfoParser.cn_to_integer(test))

@@ -1,0 +1,17 @@
+Rasa policies look like this:
+
+Understanding:
+    Intent: order_pizza
+    Entities: 
+        size: large
+        toppings: pineapple
+
+Actions are determined through a probablistic AI
+Actions:
+    utter_menu
+    send_food_order
+    make_reservation
+
+For business purposes, use a Form to collect information
+Form:
+    
