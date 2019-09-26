@@ -79,7 +79,7 @@
             "req_info": ""
         },
         "propose_plan": {
-            "key": 281,
+            "key": "281 propose plan",
             "gated": true,
             "pocket_state": false,
             "req_info": ["city"]
@@ -121,7 +121,7 @@
             "再见", "bye", "goodbye"
         ],
         "db_ask_name": [
-            "who u","what is your name", "who are you","你的名字是什么","你叫什么","你叫什么名"
+            "who u","what is your name", "who are you","你的名字是什么","你叫什么","你叫什么名", "你是谁"
         ],
 
         "db_deny": [
@@ -129,7 +129,7 @@
         ],
 
         "db_affirm": [
-            "yes","好","有","是","没问题","确定", "ok", "好的","可以","是的"
+            "yes","(?<!不)好","(?<!没)有","(?<!不)是","没问题","(?<!不)确定", "ok", "(?<!不)好的","(?<!不)可以","是的"
         ],
 
         "db_greet" : [
@@ -140,16 +140,16 @@
             "请问","想问","问一下","ask", "怎么"
         ],
 
-        "db_purchase" : [
-            "buy", "我要买"
+        "db_sales_query" : [
+            "how does this work", "流程是怎么样的", "sales query"
         ],
 
         "db_pay_query" : [
             "pay","付钱"
         ],
 
-        "db_sales_query" : [
-            "sales query","ask about your product"
+        "db_purchase" : [
+            "社保", "社保怎么缴纳", "buy"
         ],
 
         "db_report_issue" : [
@@ -159,7 +159,7 @@
             "查询社保资格", "查询缴纳", "缴纳怎么查询", "how do i check shebao status", "how check shebao"
         ],
         "db_reset_chat": [
-            "resetchat"
+            "resetchat1"
         ]
     },
 

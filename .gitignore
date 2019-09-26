@@ -324,3 +324,5 @@ dump.json
 chatlogs/
 
 __pycache__/
+
+oddjob.py

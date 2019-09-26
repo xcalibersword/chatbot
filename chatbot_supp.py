@@ -20,11 +20,11 @@ class SIP:
         self.pocket_state = pocket_state
 
     def parse_state(self, state):
-        self.state_obj = state
-        self.state_key = state["key"]
-        self.gated_bool = state["gated"]
+        self.state_obj = state.copy() # states are dicts
+        self.state_key = self.state_obj["key"]
+        self.gated_bool = self.state_obj["gated"]
         self.state_reqs = ""
-        if state["gated"]: self.state_reqs = state["req_info"]
+        if self.state_obj["gated"]: self.state_reqs = self.state_obj["req_info"]
         self.pending_state = ""
 
     def set_backtrack(self):
@@ -50,10 +50,10 @@ class SIP:
     # If pass, returns True, (Pending state)
     # If fail, returns False, (Next state)
     def try_gate(self, info):
-        print("Trying gate with info:",info, "required:",self.state_reqs)
         if not self.is_gated():
             return (True, SIP.goto_pending_state())
 
+        print("Trying gate with info:",info, "required:",self.state_reqs)
         failed_reqs = self.state_reqs
         for i in info:
             if i in failed_reqs:

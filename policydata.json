@@ -5,7 +5,7 @@
             ["greet", "SAME_STATE"],
             ["ask_name", "SAME_STATE"],
             ["pay_query", "SAME_STATE"],
-            ["sales_query", "SAME_STATE"],
+            ["sales_query", "init_sale"],
             ["deny", "GO_BACK_STATE"],
             ["how_check_shebao_status", "SAME_STATE"],
             ["goodbye", "goodbye"],
@@ -15,12 +15,13 @@
         "init": [
             ["deny", "init"],
             ["greet", "init"],
-            ["purchase", "init_sale"],
-            ["sales_query", "sales_query"]
+            ["sales_query", "init_sale"],
+            ["purchase", "propose_plan"]
         ],
         "init_sale": [
             ["affirm", "propose_plan"],
-            ["deny", "ask_if_issue"]
+            ["deny", "ask_if_issue"],
+            ["purchase", "propose_plan"]
         ],
         "propose_plan": [
             ["affirm", "confirm_plan"],
