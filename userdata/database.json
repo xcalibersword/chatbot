@@ -9,12 +9,8 @@
         ],
         "payment_method": "weixin"
     },
-    "50b78d97e7954be59a5ce5d892c8c5cb": {
-        "dates": [
-            "",
-            "",
-            ""
-        ],
-        "city": "beijing"
+    "c0447ad131d44f39b0871f7cc65be2ce": {
+        "city": "上海",
+        "首次": "yes"
     }
 }

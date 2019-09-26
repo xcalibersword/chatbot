@@ -1,19 +1,19 @@
 
 {
     "intents": {
-        "greet":100,
-        "ask_name":101,
+        "greet":"greetings",
+        "ask_name":"ask_for_name",
         "indicate_query":1702,
         "sales_query":111,
         "pay_query":112,
         "gen_query":113,
-        "how_check_shebao_status": 114,
+        "how_check_shebao_status": "questions_how_check_shebao",
         "report_issue":151,
-        "purchase":180,
-        "affirm":191,
-        "deny":192,
+        "purchase": "purchase",
+        "affirm":"affirmation",
+        "deny":"denial",
         "confusion":193,
-        "goodbye":199,
+        "goodbye":"goodbyes",
         "reset_chat": 12345
         },
 
@@ -82,7 +82,7 @@
             "key": "281 propose plan",
             "gated": true,
             "pocket_state": false,
-            "req_info": ["city"]
+            "req_info": [["city","city"]]
         },
         "confirm_plan": {
             "key": 282,
@@ -94,7 +94,7 @@
             "key": 283,
             "gated": true,
             "pocket_state": false,
-            "req_info": ["payment_method"]
+            "req_info": [["首次","yesno"]]
         },
         "finish_sale": {
             "key": 289,
@@ -133,7 +133,7 @@
         ],
 
         "db_greet" : [
-            "你好","hello","你好早","早安","下午好","午安","晚上好","您好", "hi"
+            "你好","hello","你好早","早安","下午好","午安","晚上好","您好", "hi", "在吗", "喂"
         ],
 
         "db_gen_query" : [
@@ -194,7 +194,7 @@
         "r_greet" : {
             "context_flag": 0,
             "text" :[
-            "你好 :)","Hello!!"
+            "你好! 有什么能帮助您的", "Hello! 有什么能帮助您的"
             ]
         },
         "r_sales_intro" : {
@@ -224,7 +224,7 @@
         "r_sale_done" : {
             "context_flag": 0,
             "text" :[
-            "Success! Thank you very much for shopping at SHEBAO!"
+                "好的。直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
             ]
         },
         "r_req_info" : {
@@ -279,18 +279,6 @@
     },
 
     "plans":{
-        "shanghai":{
-            "base_amt":4927,
-            "payment":1937,
-            "svc_fee":40,
-            "opening_fee":50
-        },
-        "beijing":{
-            "base_amt":1337,
-            "payment":2050,
-            "svc_fee":100,
-            "opening_fee":40
-        },
         "上海":{
             "base_amt":4927,
             "payment":1937,
@@ -301,42 +289,57 @@
             "base_amt":1337,
             "payment":2050,
             "svc_fee":100,
-            "opening_fee":40
+            "opening_fee":50
         },
         "深圳":{
             "base_amt":2335,
             "payment":2050,
             "svc_fee":100,
-            "opening_fee":40
+            "opening_fee":50
         },
         "杭州": {
             "base_amt":1100,
             "payment":11,
             "svc_fee":5,
-            "opening_fee":40
+            "opening_fee":50
         },
         "广州":{
             "base_amt":1200,
             "payment":11,
             "svc_fee":5,
-            "opening_fee":40
+            "opening_fee":50
         },
         "成都":{
             "base_amt":1300,
             "payment":4050,
             "svc_fee":20,
-            "opening_fee":40
+            "opening_fee":50
+        }
+    },
+    "formulae":{
+        "shebao":{
+            "add":["base_amt", "payment", "svc_fee","opening_fee"]
         }
     },
     "info_parser": {
-        "cities": {
-            "values": ["上海","北京","深圳","杭州","广州", "成都", "shanghai", "beijing"]
+        "city": {
+            "上海": ["上海", "shanghai"],
+            "北京": ["北京", "beijing"],
+            "深圳": ["shenzhen","深圳"],
+            "广州": ["广州", "guangzhou"],
+            "杭州": ["杭州","suzhou"],
+            "成都": ["成都", "chengdu"]
         },
-        "payments": {
-            "values": ["支付","微信","alipay","wechat", "weixin", "zhifu", "zhifubao"]
+        "payment_info": {
+            "支付": ["支付", "alipay", "zhifu", "zhifubao"],
+            "微信": ["微信","wechat", "weixin","vxin"]
+        },
+        "yesno": {
+            "yes": ["yes", "(?<!没)有", "(?<!不)是", "(?<!不)对"],
+            "no": ["no","nope","不是","没有", "不"]
         },
         "shop": {
-            "values":["唯洛店"]
+            "唯洛店":["唯洛店"]
         }
     },
     "forms": {

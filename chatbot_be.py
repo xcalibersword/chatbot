@@ -9,7 +9,7 @@ DEBUG = 1
 
 class DatabaseRunner():
     def __init__(self):
-        self.backup_delay = 30
+        self.backup_delay = 60
         self.timer_on = False
         
         base_directry = os.getcwd()
@@ -32,15 +32,23 @@ class DatabaseRunner():
         backuptimer.start()
 
     def write_to_db(self, chatid, info):
+        if not chatid in self.database:
+            # Create empty entry for new user
+            self.database[user] = {}
+            
         # Write to a dict that will later be pushed to the db
         self.database[chatid].update(info)
 
         # Set timer to write
         self.trigger_backup()
-        print("CALLED WRITE TO DB")
 
     def _true_write_to_db(self):
         if DEBUG: print("Writing userinfo to database")
+        def destroy_empty_records():
+            for user in list(self.database.keys()):
+                if self.database[user] == {}:
+                    self.database.pop(user)
+        destroy_empty_records()
         dump_to_json(self.dbfilepath, self.database)
         self.timer_on = False
 

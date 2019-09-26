@@ -23,8 +23,8 @@ class SIP:
         self.state_obj = state.copy() # states are dicts
         self.state_key = self.state_obj["key"]
         self.gated_bool = self.state_obj["gated"]
-        self.state_reqs = []
-        if self.state_obj["gated"]: self.state_reqs = self.state_obj["req_info"]
+        self.state_slots = []
+        if self.state_obj["gated"]: self.state_slots = self.state_obj["req_info"]
         self.pending_state = ""
 
     def set_backtrack(self):
@@ -43,28 +43,9 @@ class SIP:
     def is_gated(self):
         return self.gated_bool
 
-    # Returns a list of requirements
-    def get_requirements(self):
-        return self.state_reqs.copy()
-
-    # If pass, returns True, (Pending state)
-    # If fail, returns False, (Next state)
-    def try_gate(self, info):
-        if not self.is_gated():
-            return (True, SIP.goto_pending_state())
-
-        print("Trying gate with info:",info, "required:",self.get_requirements())
-        failed_reqs = self.get_requirements()
-        for i in info:
-            if i in failed_reqs:
-                failed_reqs.remove(i)
-        
-        if DEBUG: print("failed gate reqs:",failed_reqs)
-        if len(failed_reqs) > 0:
-            collect_SIP = self.build_info_SIP(failed_reqs)
-            return (False, collect_SIP)
-
-        return (True, SIP.goto_pending_state())
+    # Returns a list of lists [name, type]
+    def get_slots(self):
+        return self.state_slots.copy()
 
     @classmethod
     def same_state(cls):
@@ -99,21 +80,81 @@ class SIP:
     # For cases when a state requires some intermediate step
     # Once the current stage is done, we immediately go to the pstate
     # How do we store this pstate?
-    @classmethod
-    def build_info_SIP(cls, info):
-        info_gather_state = {
-            "key": cbsv.INFO_GATHER_STATE_KEY(),
-            "gated": True,
-            "req_info": info
-        }
-        o = cls(info_gather_state, cs=False)
-        return o
+
 
     def is_go_back(self):
         return self.go_back == True
 
     def toString(self):
-        return ("State obj",self.state_obj,"cs",self.state_change,"backtrack ",self.backtrack," reqs ",self.state_reqs)
+        return ("State obj",self.state_obj,"cs",self.state_change,"backtrack ",self.backtrack," slots ",self.state_slots)
+
+class ReqGatekeeper:
+    def __init__(self):
+        self.requirements = []
+        self.slots = []
+        self.gate_closed = False
+
+    def open_gate(self):
+        self.gate_closed = False
+        self.slots = []
+        self.requirements = []
+
+    def close_gate(self):
+        self.gate_closed = True
+
+    def get_slots(self):
+        return self.slots.copy()
+
+    def is_gated(self):
+        return self.gate_closed
+
+    def get_requirements(self):
+        return self.requirements.copy()
+
+    def scan_SIP(self, sip):
+        def mine_reqs(slots):
+            def getname(s):
+                return s[0]
+            reqlist = []
+            for slot in self.get_slots():
+                reqlist.append(getname(slot))
+            print("get_requirements returning", reqlist)
+            return reqlist  
+        
+        if sip.is_gated():
+            self.close_gate()
+            self.slots = sip.get_slots()
+            self.requirements = mine_reqs(self.slots)    
+
+    # If pass, returns True, (Pending state)
+    # If fail, returns False, (Next state)
+    def try_gate(self, info):
+        if not self.gate_closed:
+            return (True, SIP.goto_pending_state())
+
+        print("Trying gate with info:",info, "required:",self.get_requirements())
+        unfilled_slots = self.get_slots()
+        for catgry in list(info.keys()):
+            for s in unfilled_slots:
+                if catgry == s[0]:
+                    unfilled_slots.remove(s)
+        
+        if DEBUG: print("unfilled_slots:",unfilled_slots)
+        if len(unfilled_slots) > 0:
+            collect_SIP = self.build_info_SIP(unfilled_slots)
+            return (False, collect_SIP)
+        self.open_gate()
+        return (True, SIP.goto_pending_state())
+
+    def build_info_SIP(self, req_slots):
+        info_gather_state = {
+            "key": cbsv.INFO_GATHER_STATE_KEY(),
+            "gated": True,
+            "req_info": req_slots
+        }
+        out = SIP(info_gather_state, cs=False)
+        return out
+        
 
 # A vehicle to house SIP, intent and details.
 # TODO: Clean up usages of Understanding
@@ -129,10 +170,11 @@ class Understanding:
         return n
 
     def set_details(self, d):
+        print("UDS Details set",d)
         self.details = d
     
     def get_details(self):
-        return self.details
+        return self.details.copy()
 
     def get_intent(self):
         return self.intent
@@ -144,6 +186,9 @@ class Understanding:
 
     def get_sip(self):
         return self.sip
+    
+    def get_sip_slots(self):
+        return self.sip.get_slots()
 
     def set_intent(self, i):
         self.intent = i
@@ -255,23 +300,66 @@ class InfoVault():
 # Thing to note about re.search is that only the first match is pulled.
 class InfoParser():
     def __init__(self, json_dict):
-        self.cities = json_dict["cities"]["values"]
-        self.payments = json_dict["payments"]["values"]
         self.digits = cbsv.DIGITS()
 
-        self.ctlist = self.list_to_regexList(self.cities)
-        self.paymnt_list = self.list_to_regexList(self.payments)
+        self.regexDB = {}
+        self._build_regex_DB(json_dict)
+
+    def _build_regex_DB(self, jdata):
+        for catkey in list(jdata.keys()):
+            self.regexDB[catkey] = {}
+            category = jdata[catkey]
+            for value in list(category.keys()):
+                termlist = category[value]
+                regexlist = self.list_to_regexList(termlist)
+                self.regexDB[catkey][value] = regexlist
 
     # Returns a dict of info
-    def parse(self, text):
+    def _default_parse(self, text):
+        # Default parser
         out = {}
-        city = {"city":self.parse_city(text)}
-        date = {"dates":self.parse_date(text)}
-        payment = {"payment_method":self.parse_payment(text)}
-        out.update(city)
-        out.update(date)
-        out.update(payment)
+        cityentry = {"city":self.get_category_value(text,"city")}
+        out.update(cityentry)
+        return out
 
+    # Get the value in the text related to the specified category
+    # Enumerated by dictionary key
+    # Returns a pure value
+    def get_category_value(self, text, category):
+        if not category in self.regexDB:
+            print("No such category:{}".format(category))
+            return {category: ""}
+        print("CATEGORIES",category)
+        catDB = self.regexDB[category]
+        value = ""
+        found = False
+        vals = list(catDB.keys())
+        for v in vals:
+            reDB = catDB[v]
+            m = re.search(reDB, text)
+            if m:
+                if found:
+                    print("Double value. Prev:", value, ", Current:",v)
+                token = m.group(0)
+                value = v
+                found = True
+                print("Found a ", category, ":", v)
+        
+        return value
+
+    def parse(self, text, slots):
+        if len(slots) < 1:
+            out = self._default_parse(text)
+
+        else:
+            # slotted parse
+            out = {}
+            for slot in slots:
+                slotname, catgry = slot
+                entry = {slotname: self.get_category_value(text, catgry)}
+                out.update(entry)
+
+        # update uds
         return out
 
     # Converts a python array to a string delimited by the '|' character
@@ -298,21 +386,6 @@ class InfoParser():
         yr = date_re_search("年")
 
         out = (day, mth, yr)
-        return out
-
-    def parse_city(self, text):
-        out = ""
-        m_city = re.search(self.ctlist,text)
-        if m_city:
-            out = m_city.group(0)
-
-        return out
-
-    def parse_payment(self, text):
-        out = ""
-        m_pay = re.search(self.paymnt_list,text)
-        if m_pay:
-            out = m_pay.group(0)
         return out
 
     @classmethod

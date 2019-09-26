@@ -26,6 +26,7 @@ class ChatManager:
         self.pkeeper = pkeeper
         self.replygen = replygen
         self.dmanager = dmanager.clone(self.chatID)
+        self.gatekeeper = ReqGatekeeper()
 
         # Internal properties
         self.state_history = [self.state,]
@@ -52,10 +53,11 @@ class ChatManager:
     def _parse_message_overall(self,msg):
         # Inital understanding
         uds = self._fetch_understanding(msg)
-
+        print("Initial UDS:")
+        uds.printout()
+        self.gatekeeper.scan_SIP(uds.get_sip())
         # Add mined details
-        deets = self._parse_message_details(msg)
-        uds.set_details(deets)
+        self._parse_message_details(msg)
 
         return uds
 
@@ -65,9 +67,11 @@ class ChatManager:
         return self.pkeeper.get_understanding(curr_state_key, msg)
 
     def _parse_message_details(self, msg):
+        slots = self.gatekeeper.get_slots()
         # Adds details
-        details = self.iparser.parse(msg)
-        return details
+        details = self.iparser.parse(msg, slots)
+        self.push_detail_to_dm(details)
+        return
     
     # Process, gatekeep then internalize changes
     # Results in change in chat details and change in state
@@ -79,13 +83,8 @@ class ChatManager:
             sssip = SIP(curr_state_obj)
             return sssip
 
-        # Unpack
-        deets = uds.get_details()
         sip = uds.get_sip()
         final_intent = uds.get_intent()
-
-        # Update details
-        self.push_detail_to_dm(deets)
 
         # Update State (may depend on details so this is 2nd)
         if sip.is_go_back():
@@ -95,19 +94,12 @@ class ChatManager:
         if sip.is_same_state():
             if DEBUG: print("SAME STATE FLAGGED")
             sip = same_state_SIP()
-        
+    
         new_sip = self._gatekeep_sip(sip)
         
         # Also updates requirements!!
         self._update_state_from_sip(new_sip)
         
-        # Below might be deprecated
-
-        # Modified copy of original
-        final_uds = uds.copy_swap_sip(new_sip)
-        if DEBUG:
-            final_uds.printout()
-
         return final_intent
 
     # Ask replygen for a reply
@@ -124,9 +116,14 @@ class ChatManager:
     # Returns the next uds. Final
     def _gatekeep_sip(self, sip):
         curr_info = self._get_current_info()
-        passed, next_sip = sip.try_gate(curr_info)
+        # print("Current info:",curr_info)
+        passed, next_sip = self.gatekeeper.try_gate(curr_info)
+
+        # Update DM
+        self.push_req_info_to_dm()
+
         # print("sip", sip.toString(), "nextsip", next_sip.toString())
-        if DEBUG: print("Gatekeep outcome",passed)
+        if DEBUG: print("Gate passed:",passed)
         if passed:
             return self.get_forward_state(sip)
 
@@ -169,11 +166,14 @@ class ChatManager:
     def _update_state_from_sip(self, sip):
         new_state = sip.get_state_obj()
         self._change_state(new_state)
-        print("Updating state from this sip",sip.toString())
-        required_info = {"requested_info":sip.get_requirements()}
-        self.push_detail_to_dm(required_info)
+        print("Updating state from this sip", sip.toString())
         return
 
+    def push_req_info_to_dm(self):
+        if self.gatekeeper.is_gated():
+            reqs = self.gatekeeper.get_requirements()
+            required_info = {"requested_info": reqs}
+            self.push_detail_to_dm(required_info)
     # UNUSED
     def go_back_a_state(self):
         prev_state = self.state_history.pop(-1)
