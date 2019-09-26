@@ -2,7 +2,7 @@
 
 import os
 import threading
-from cbsv import read_json, dump_to_json
+from cbsv import read_json, dump_to_json, check_file_exists
 
 dbfolder = "userdata"
 DEBUG = 1
@@ -16,6 +16,9 @@ class DatabaseRunner():
         dbfilename = "database.json"
         self.dbfilepath = os.path.join(base_directry,dbfolder,dbfilename)
         if DEBUG: print("Loading info from", self.dbfilepath)
+        if not check_file_exists(self.dbfilepath):
+            print("Creating empty database file")
+            dump_to_json(self.dbfilepath,{}) # Create an empty file
         self.database = read_json(self.dbfilepath)
 
     def fetch_user_info(self, user):
@@ -35,7 +38,7 @@ class DatabaseRunner():
         if not chatid in self.database:
             # Create empty entry for new user
             self.database[user] = {}
-            
+
         # Write to a dict that will later be pushed to the db
         self.database[chatid].update(info)
 

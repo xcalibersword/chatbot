@@ -79,6 +79,9 @@ def read_json(json_filename):
         data = json.loads(f.read(),encoding="utf-8")
     return data
 
+def check_file_exists(filepath):
+    return os.path.isfile(filepath)
+
 if __name__ == "__main__":
 
     k = {
