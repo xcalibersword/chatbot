@@ -21,10 +21,11 @@ class ChatManager:
     def __init__(self, chat, iparser, pkeeper, replygen, dmanager):
         self.state = cbsv.INITAL_STATE()
         self.chat = chat
+        self.chatID = self.chat.getID()
         self.iparser = iparser
         self.pkeeper = pkeeper
         self.replygen = replygen
-        self.dmanager = dmanager.get_copy()
+        self.dmanager = dmanager.clone(self.chatID)
 
         # Internal properties
         self.state_history = [self.state,]
@@ -230,21 +231,43 @@ class PolicyKeeper:
         return uds
 
 # MANAGES DETAILS (previously held by Chat)
+# TODO: Differentiate between contextual chat info and user info
 class DetailManager:
     def __init__(self, info_vault):
         self.vault = info_vault
         self.chat_prov_info = {}
+        self.dbr = {"dummy"}
+        self.dbrset = False
+        self.chatID = "PLACEHOLDER_USERID"
+
+    def set_runner(self, runner):
+        self.dbr = runner
+        self.dbrset = True
+
+    def _set_chatID(self, chatID):
+        self.chatID = chatID
 
     def log_detail(self, new_info, DEBUG = 0):
         if DEBUG: print("Logging", new_info)
         for d in new_info:
             deet = new_info[d]
             # Check to make sure its not empty
-            if len(deet) > 0:
+            if not deet == "":
                 self.chat_prov_info[d] = new_info[d]
+
+        self.write_info_to_db() #TESTING
         return
 
-    # Called to get a dict of all info
+    # Info without vault
+    def get_user_info(self):
+        not_user_info = ["requested_info"]
+        dic = self.chat_prov_info.copy()
+        for i in not_user_info:
+            if i in dic: 
+                dic.pop(i)
+        return dic
+
+    # Called to get chat info + vault info
     def fetch_info(self):
         out = {}
         out.update(self.chat_prov_info)
@@ -256,19 +279,25 @@ class DetailManager:
         
         return out
 
-    def fetch_chat_info(self):
-        return self.chat_prov_info
+    def check_info_keys(self, k):
+        return k in list(self.chat_info.keys())
 
-    def check_info_keys(self):
-        return list(self.chat_info.keys())
-
-    def dump_to_chat(self, chat):
-        # Is this bad OOP?
-        chat.recv_info_dump(self.chat_prov_info)
-
-    def get_copy(self):
+    def clone(self, chatID):
+        # This is called during the creation of a new chat
+        if not self.dbrset:
+            raise Exception("DatabaseRunner not initalized for DetailManager!")
         clonetrooper = DetailManager(self.vault)
+        clonetrooper._set_chatID(chatID)
+        clonetrooper.set_runner(self.dbr)
+        prev_info = self.dbr.fetch_user_info(chatID)
+        clonetrooper.log_detail(prev_info)
         return clonetrooper
+
+    def write_info_to_db(self):
+        if not self.dbrset:
+            raise Exception("DatabaseRunner not initalized for DetailManager!")
+        chatid = self.chatID
+        self.dbr.write_to_db(chatid, self.get_user_info())
 
 # Generates reply text based on current state info
 class ReplyGenerator:
@@ -337,13 +366,15 @@ class ReplyGenerator:
 # Deals only with text
 # Does not deal with state or information
 class Chat:
-    def __init__(self,customerID, convo_history = {}):
-        self.customerID = customerID
+    def __init__(self,chatID, convo_history = {}):
+        self.chatID = chatID
         self.curr_chatlog = {}
         self.convo_history = convo_history
         self.convo_index = 0
-        self.info = {}
+        # self.info = {}
 
+    def getID(self):
+        return self.chatID
     # Records conversation
     def record_messages(self, recieved, sent):
         dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -371,9 +402,9 @@ class Chat:
         self.prev_messages.append(msg)
         self.firstpop = True
     
-    def recv_info_dump(self, new_info):
-        print("Recieved info dump...",new_info)
-        self.info.update(new_info)
+    # def recv_info_dump(self, new_info):
+    #     print("Recieved info dump...",new_info)
+    #     self.info.update(new_info)
 
     ## Database interaction?
     def get_previous_issues(self):
@@ -385,7 +416,7 @@ class Chat:
         if not os.path.isdir(os.path.join(direct,"chatlogs")):
             if DEBUG: print("Creating chatlogs folder...")
             os.mkdir(os.path.join(direct,"chatlogs")) # If no folder, make a folder
-        filepath = os.path.join(direct,"chatlogs/" + self.customerID + ".json")
+        filepath = os.path.join(direct,"chatlogs/" + self.chatID + ".json")
 
         # write info        
         # write issues

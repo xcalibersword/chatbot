@@ -52,12 +52,20 @@ async def connect(sid, environ):
 async def disconnect(sid):
     print('disconnect', sid)
 
+idmap = {}
+
 @sio.on('chat')
 async def chat_message(sid, msg):
     await sio.emit('message',display_own_message(msg),room=sid)
-    print("Recieved from",sid,"Content:",msg)
-    reply = get_bot_reply(bot, sid, msg)
-    await sio.emit('message', reply, room=sid)
+    if "!setid " in msg:
+        userid = msg.split(" ")[1]
+        idmap[sid] = userid
+        await sio.emit('message', "ID set to: " + userid, room=sid)
+    else:
+        uid = idmap[sid] if sid in idmap else sid
+        print("Recieved from",uid,"Content:",msg)
+        reply = get_bot_reply(bot, uid, msg)
+        await sio.emit('message', reply, room=sid)
 
 app.router.add_get('/', index)
 

@@ -1,0 +1,20 @@
+{
+    "user1": {
+        "city": "上海",
+        "firsttime": false,
+        "dates": [
+            "",
+            "",
+            ""
+        ],
+        "payment_method": "weixin"
+    },
+    "50b78d97e7954be59a5ce5d892c8c5cb": {
+        "dates": [
+            "",
+            "",
+            ""
+        ],
+        "city": "beijing"
+    }
+}

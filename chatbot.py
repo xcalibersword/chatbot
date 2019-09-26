@@ -1,11 +1,10 @@
-import random
 import re
-import json
 import cbsv
 import threading
 from initalizers import master_initalize
 from chatbot_supp import *
 from chatclass import *
+from chatbot_be import DatabaseRunner
 
 DEBUG = 0
 
@@ -54,19 +53,25 @@ def format_text(text):
 class Chatbot():
     timeout = 15
     def __init__(self):
-        comps = master_initalize()
         self.PREV_REPLY_FLAG = "prev_state_message"
+        self.chat_dict = {}
+        self.triggered = False
+    
+    def _fetch_user_DB_info(self, user):
+        return self.dbr.fetch_user_info(user)
+
+    def make_new_chatmgr(self, chat):
+        makeCM = lambda c: ChatManager(c, self.ip, self.pk, self.rg, self.dm)
+        return makeCM(chat)
+
+    def start(self):
+        comps = master_initalize()
         self.dm = comps['dmanager']
         self.ip = comps['iparser']
         self.pk = comps['pkeeper']
         self.rg = comps['replygen']
-    
-    def make_new_chatmgr(self, chat):
-        return ChatManager(chat, self.ip, self.pk, self.rg, self.dm)
-
-    def start(self):
-        self.chat_dict = {}
-        self.triggered = False
+        self.dbr = DatabaseRunner()
+        self.dm.set_runner(self.dbr)
         print("SHEBAO chatbot started!")
         return
 
@@ -91,6 +96,7 @@ class Chatbot():
         self.set_backup_alarm()
 
     def make_new_chat(self,chatID):
+        # Looks in the database for existing info
         chat_hist = {}
         newchat = Chat(chatID, chat_hist)
         new_manager = self.make_new_chatmgr(newchat)

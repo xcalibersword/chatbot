@@ -65,11 +65,19 @@ def check_input_against_db(msg, db, exact = False):
     return match
 
 def dump_to_json(filename, data, DEBUG = 0):
-    with open(filename,'w') as f:
-        json.dump(data, f, indent = 4, ensure_ascii=False)
+    try:
+        with open(filename,'w') as f:
+            json.dump(data, f, indent = 4, ensure_ascii=False)
+    except FileNotFoundError as fnf_error:
+        print(fnf_error)
     
     if DEBUG:
         print("Finished writing to " + str(filename))
+
+def read_json(json_filename):
+    with open(json_filename, 'r',encoding="utf-8") as f:
+        data = json.loads(f.read(),encoding="utf-8")
+    return data
 
 if __name__ == "__main__":
 

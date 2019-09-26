@@ -1,12 +1,8 @@
 import json
 import os
+from cbsv import read_json
 from chatbot_supp import SIP, Policy, InfoVault, InfoParser
 from chatclass import DetailManager, ReplyGenerator, PolicyKeeper
-
-def read_json(json_filename):
-    with open(json_filename, 'r',encoding="utf-8") as f:
-        data = json.loads(f.read(),encoding="utf-8")
-    return data
 
 # Converts a dict of states to a dict of state keys
 def state_key_dict(states):
