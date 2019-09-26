@@ -23,7 +23,7 @@ class SIP:
         self.state_obj = state.copy() # states are dicts
         self.state_key = self.state_obj["key"]
         self.gated_bool = self.state_obj["gated"]
-        self.state_reqs = ""
+        self.state_reqs = []
         if self.state_obj["gated"]: self.state_reqs = self.state_obj["req_info"]
         self.pending_state = ""
 
@@ -45,7 +45,7 @@ class SIP:
 
     # Returns a list of requirements
     def get_requirements(self):
-        return self.state_reqs
+        return self.state_reqs.copy()
 
     # If pass, returns True, (Pending state)
     # If fail, returns False, (Next state)
@@ -53,8 +53,8 @@ class SIP:
         if not self.is_gated():
             return (True, SIP.goto_pending_state())
 
-        print("Trying gate with info:",info, "required:",self.state_reqs)
-        failed_reqs = self.state_reqs
+        print("Trying gate with info:",info, "required:",self.get_requirements())
+        failed_reqs = self.get_requirements()
         for i in info:
             if i in failed_reqs:
                 failed_reqs.remove(i)
