@@ -82,7 +82,7 @@
             "key": "281 propose plan",
             "gated": true,
             "pocket_state": false,
-            "req_info": [["city","city"]]
+            "req_info": [["city","city"],["首次","yesno"]]
         },
         "confirm_plan": {
             "key": 282,
@@ -230,7 +230,7 @@
         "r_req_info" : {
             "context_flag": 1,
             "text" : [
-            "亲,请提供你的{requested_info}"
+            "亲,{requested_info}"
             ]
         },
         "r_req_info_again" : {
@@ -335,8 +335,8 @@
             "微信": ["微信","wechat", "weixin","vxin"]
         },
         "yesno": {
-            "yes": ["yes", "(?<!没)有", "(?<!不)是", "(?<!不)对"],
-            "no": ["no","nope","不是","没有", "不"]
+            "是": ["yes", "(?<!没)有", "(?<!不)是", "(?<!不)对"],
+            "不是": ["no","nope","不是","没有", "不"]
         },
         "shop": {
             "唯洛店":["唯洛店"]

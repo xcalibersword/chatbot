@@ -356,10 +356,21 @@ class ReplyGenerator:
         final_msg = reply_template
         if isinstance(info, dict):
             if DEBUG: print("current info",info)
-            ikeys = list(info.keys())
+            msginfo = info.copy()
+            if "requested_info" in msginfo:
+                rlist = msginfo["requested_info"]
+                crafted_msg = ""
+                # TODO Another mapping for this
+                if "city" in rlist:
+                    crafted_msg = crafted_msg + "您是哪个城市呢 "
+                if "首次" in rlist:
+                    crafted_msg = crafted_msg + "是首次吗 "
+
+                msginfo["requested_info"] = crafted_msg
+
             # final_msg = self.formatter.vformat(reply_template, ikeys, info)
             # final_msg = reply_template%(info)
-            final_msg = reply_template.format(**info)
+            final_msg = reply_template.format(**msginfo)
 
         return final_msg
 
