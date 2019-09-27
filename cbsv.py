@@ -66,8 +66,8 @@ def check_input_against_db(msg, db, exact = False):
 
 def dump_to_json(filename, data, DEBUG = 0):
     try:
-        with open(filename,'w') as f:
-            json.dump(data, f, indent = 4, ensure_ascii=False)
+        with open(filename,'w', encoding='utf8') as f:
+            json.dump(data, f, indent = 4)
     except FileNotFoundError as fnf_error:
         print(fnf_error)
     
