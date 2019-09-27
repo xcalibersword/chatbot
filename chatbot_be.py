@@ -37,7 +37,7 @@ class DatabaseRunner():
     def write_to_db(self, chatid, info):
         if not chatid in self.database:
             # Create empty entry for new user
-            self.database[user] = {}
+            self.database[chatid] = {}
 
         # Write to a dict that will later be pushed to the db
         self.database[chatid].update(info)
