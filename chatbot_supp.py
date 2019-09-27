@@ -47,6 +47,10 @@ class SIP:
     def get_slots(self):
         return self.state_slots.copy()
 
+    # This is a repeated method 
+    def get_reqs(self):
+        return ReqGatekeeper.slots_to_reqs(self.state_slots)    
+
     @classmethod
     def same_state(cls):
         obj = cls(SAME_STATE_F, cs=False)
@@ -70,7 +74,6 @@ class SIP:
         obj = cls(PREV_STATE_F, cs=False)
         return obj
 
-
     def is_same_state(self):
         return not self.state_change
 
@@ -80,7 +83,6 @@ class SIP:
     # For cases when a state requires some intermediate step
     # Once the current stage is done, we immediately go to the pstate
     # How do we store this pstate?
-
 
     def is_go_back(self):
         return self.go_back == True
@@ -108,23 +110,24 @@ class ReqGatekeeper:
     def is_gated(self):
         return self.gate_closed
 
+    @classmethod
+    def slots_to_reqs(cls, slots):
+        def getname(s):
+            return s[0]
+        reqlist = []
+        for slot in slots.copy():
+            reqlist.append(getname(slot))
+        print("get_requirements returning", reqlist)
+        return reqlist  
+
     def get_requirements(self):
         return self.requirements.copy()
 
     def scan_SIP(self, sip):
-        def mine_reqs(slots):
-            def getname(s):
-                return s[0]
-            reqlist = []
-            for slot in self.get_slots():
-                reqlist.append(getname(slot))
-            print("get_requirements returning", reqlist)
-            return reqlist  
-        
         if sip.is_gated():
             self.close_gate()
             self.slots = sip.get_slots()
-            self.requirements = mine_reqs(self.slots)    
+            self.requirements = ReqGatekeeper.slots_to_reqs(self.slots)    
 
     # If pass, returns True, (Pending state)
     # If fail, returns False, (Next state)

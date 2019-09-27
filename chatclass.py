@@ -118,19 +118,19 @@ class ChatManager:
     def _gatekeep_sip(self, sip):
         curr_info = self._get_current_info()
         # print("Current info:",curr_info)
-        passed, next_sip = self.gatekeeper.try_gate(curr_info)
+        passed, constructed_sip = self.gatekeeper.try_gate(curr_info)
 
         # Update DM
-        self.push_req_info_to_dm()
+        self.push_req_info_to_dm(constructed_sip)
 
-        # print("sip", sip.toString(), "nextsip", next_sip.toString())
+        # print("sip", sip.toString(), "nextsip", constructed_sip.toString())
         if DEBUG: print("Gate passed:",passed)
         if passed:
             return self.get_forward_state(sip)
 
         else:
             self.set_pending_state(sip)
-            return next_sip   # Return the custom made info state
+            return constructed_sip   # Return the custom made info state
 
     def _has_pending_state(self):
         return not self.pending_state == ""
@@ -170,9 +170,9 @@ class ChatManager:
         print("Updating state from this sip", sip.toString())
         return
 
-    def push_req_info_to_dm(self):
-        if self.gatekeeper.is_gated():
-            reqs = self.gatekeeper.get_requirements()
+    def push_req_info_to_dm(self, sip):
+        if sip.is_gated():
+            reqs = sip.get_reqs()
             required_info = {"requested_info": reqs}
             self.push_detail_to_dm(required_info)
     # UNUSED
@@ -318,8 +318,7 @@ class ReplyGenerator:
             if key in dictionary:
                 return dictionary[key]
             return False
-            
-        DEBUG = 1
+
         context = (prev_state, curr_state_key)
         if DEBUG: print(curr_state_key)
         # Specific state to state
@@ -340,7 +339,7 @@ class ReplyGenerator:
                 if DEBUG: print("Reply found in intentlist")
 
         if DEBUG: print("rkey:",rkey)
-        DEBUG = 0
+        
         return rkey
 
     def fetch_reply_text(self,r_key):
