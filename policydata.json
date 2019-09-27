@@ -53,9 +53,6 @@
             ["deny", "EXIT_POCKET_STATE"]
         ]
     },
-    "replies": {
-
-    },
     "forms":{
         "form_shebao":{
             "date":"startdate_shebao",

@@ -150,10 +150,12 @@ class ReqGatekeeper:
         return (True, SIP.goto_pending_state())
 
     def build_info_SIP(self, req_slots):
+        # BUILD STATE OBJECT
         info_gather_state = {
             "key": cbsv.INFO_GATHER_STATE_KEY(),
             "gated": True,
-            "req_info": req_slots
+            "req_info": req_slots,
+            "replies": cbsv.INFO_GATHER_STATE_REPLIES()
         }
         out = SIP(info_gather_state, cs=False)
         return out
@@ -332,7 +334,7 @@ class InfoParser():
         if not category in self.regexDB:
             print("No such category:{}".format(category))
             return {category: ""}
-        print("CATEGORIES",category)
+        if DEBUG: print("CATEGORIES",category)
         catDB = self.regexDB[category]
         value = ""
         found = False

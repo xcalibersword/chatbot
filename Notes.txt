@@ -15,3 +15,11 @@ Actions:
 For business purposes, use a Form to collect information
 Form:
     
+
+
+REGEX:
+
+OR:         |
+ANY:        .
+0 or more:  *
+1 or more:  +

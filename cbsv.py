@@ -3,9 +3,6 @@ import os
 import re
 import json
 
-def INITAL_STATE():
-    return {"key": "200 init", "gated": False, "req_info": ""}
-
 def DEFAULT_CONFUSED():
     return "不好意思，我听不懂"
 
@@ -22,6 +19,9 @@ def DIGITS():
 
 def INFO_GATHER_STATE_KEY():
     return "221 recv info"
+
+def INFO_GATHER_STATE_REPLIES():
+    return ["亲,{requested_info}", "那么{requested_info}"]
 
 def state_key_dict(states):
     ks = states.keys()
@@ -67,7 +67,7 @@ def check_input_against_db(msg, db, exact = False):
 def dump_to_json(filename, data, DEBUG = 0):
     try:
         with open(filename,'w', encoding='utf8') as f:
-            json.dump(data, f, indent = 4)
+            json.dump(data, f, indent = 4, ensure_ascii=0)
     except FileNotFoundError as fnf_error:
         print(fnf_error)
     

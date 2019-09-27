@@ -19,7 +19,7 @@ DEBUG = 0
 # STATE MANAGER
 class ChatManager:
     def __init__(self, chat, iparser, pkeeper, replygen, dmanager):
-        self.state = cbsv.INITAL_STATE()
+        self.state = pkeeper.GET_INITIAL_STATE()
         self.chat = chat
         self.chatID = self.chat.getID()
         self.iparser = iparser
@@ -106,8 +106,8 @@ class ChatManager:
     # Ask replygen for a reply
     def _fetch_reply(self,intent):
         information = self._get_current_info()
-        curr_state = self._get_curr_state_key()
-        prev_state = self._get_prev_state_key()
+        curr_state = self._get_curr_state()
+        prev_state = self._get_prev_state()
         return self.replygen.get_reply(prev_state, curr_state, intent, information)
 
     # Asks dmanager for info
@@ -205,9 +205,23 @@ class ChatManager:
 # Keeps policies
 # Also deciphers messages
 class PolicyKeeper:
-    def __init__(self, policy_rules, intent_table):
+    def __init__(self, policy_rules, intent_table, state_lib):
         self.POLICY_RULES = policy_rules
         self.INTENT_LOOKUP_TABLE = intent_table
+        self.STATE_DICT = state_lib
+
+    def GET_INITIAL_STATE(self):
+        initstate = self.STATE_DICT['init']
+        return initstate
+
+    # NOT USED FOR NOW
+    def _get_state_replies(self, statekey):
+        if not statekey in self.STATE_DICT:
+            raise Exception("No such state as {}".format(statekey))
+            return False
+        state = self.STATE_DICT[statekey]
+        replies = state["replies"]
+        return replies
 
     # Right now just a wrapper for decipher message
     def get_understanding(self, curr_state, msg):
@@ -221,8 +235,9 @@ class PolicyKeeper:
             for in_lst in policy.get_intents():
                 for pair in in_lst:
                     intent, next_sip = pair
+                    intentkey = intent["key"]
                     assert isinstance(next_sip, SIP)
-                    keyword_db = self.INTENT_LOOKUP_TABLE[intent]
+                    keyword_db = self.INTENT_LOOKUP_TABLE[intentkey]
                     if cbsv.check_input_against_db(msg, keyword_db):
                         return Understanding(intent, next_sip)
             return Understanding.make_null()
@@ -302,47 +317,58 @@ class DetailManager:
 
 # Generates reply text based on current state info
 class ReplyGenerator:
-    def __init__(self, replyDB, rkey_dbs):
+    def __init__(self, replyDB):
         self.replyDB = replyDB
-        self.rkey_dbs = rkey_dbs
         self.formatter = string.Formatter()
 
     # OVERALL METHOD
     def get_reply(self, prev_state, curr_state, intent, info = -1):
-        rkey = self.getreplykey(prev_state, intent, curr_state)
-        reply = self.generate_reply_message(rkey, info)
+        rdb = self.getreplydb(prev_state, intent, curr_state)
+        reply = self.generate_reply_message(rdb, info)
+        # reply = self.generate_reply_message(rkey, info)
         return reply
 
-    def getreplykey(self,prev_state, intent, curr_state_key):
+    def getreplydb(self,prev_state, intent, curr_state):
         def dict_lookup(key, dictionary):
             if key in dictionary:
                 return dictionary[key]
             return False
+        def get_replylist(obj):
+            print("get replies from obj",obj) #DEBUG
+            return obj["replies"]
         LOCALDEBUG = 1
+        
         if LOCALDEBUG: DEBUG = 1
-        context = (prev_state, curr_state_key)
-        if DEBUG: print(curr_state_key)
+        print("csk", curr_state, "psk", prev_state)
+        context = (prev_state, curr_state)
+        intentkey = intent["key"]
+        if DEBUG: print(curr_state)
         # Specific state to state
-        rkey = dict_lookup(context, self.rkey_dbs["s2s"])
-        if rkey:
-            if DEBUG: print("Reply found in s2s")
-            
+        # rdb = dict_lookup(context, self.rkey_dbs["s2s"])
+        # if rkey:
+        #     if DEBUG: print("Reply found in s2s")
+        
         # Single state
-        if not rkey:
-            rkey = dict_lookup(curr_state_key, self.rkey_dbs["ss"])
-            if rkey:
+        rdb = []
+        if len(rdb) < 1:
+            rdb = get_replylist(curr_state)
+            if len(rdb) > 0:
                 if DEBUG: print("Reply found in s1")
         
+        if DEBUG: print("SS rdb:",rdb)
+
         # Intent
-        if not rkey:
-            rkey = dict_lookup(intent, self.rkey_dbs["intent"])
-            if rkey:
+        if len(rdb) < 1:
+            rdb = get_replylist(intent)
+            if len(rdb) > 0:
                 if DEBUG: print("Reply found in intentlist")
 
-        if DEBUG: print("rkey:",rkey)
+        if DEBUG: print("INT rdb:",rdb)
 
         if LOCALDEBUG: DEBUG = 0
-        return rkey
+        if len(rdb) < 1:
+            rdb = [cbsv.DEFAULT_CONFUSED()]
+        return rdb
 
     def fetch_reply_text(self,r_key):
         def rand_response(response_list):
@@ -358,8 +384,11 @@ class ReplyGenerator:
         return r_key
 
     # Generates a pure reply
-    def generate_reply_message(self, reply_key, info):
-        reply_template = self.fetch_reply_text(reply_key)
+    def generate_reply_message(self, rdb, info):
+        def rand_response(response_list):
+            return random.choice(response_list)
+
+        reply_template = random.choice(rdb)
         if DEBUG: print("template",reply_template)
         final_msg = reply_template
         if isinstance(info, dict):

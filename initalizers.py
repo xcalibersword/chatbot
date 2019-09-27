@@ -13,45 +13,39 @@ def state_key_dict(states):
     return out
 
 def init_replygen(jdata):
-    INTENTS = jdata["intents"]
-    STATE_KEYS = state_key_dict(jdata["states"])
     REPLY_DB = jdata["reply_db"]
+    # INTENTS = jdata["intents"]
+    # STATES = jdata["states"]
+    # STATE_KEYS = state_key_dict(STATES)
+
+    # # Works for both intents and states
+    # def get_replylist(someobj):
+    #     return someobj["replies"]
 
     # Actually STS is not used by anything but I'm leaving a template here
-    STS_REPLY_KEY_LOOKUP = {
-        (STATE_KEYS['payment'], STATE_KEYS['finish_sale']): "r_sale_done"
-    }
+    # STS_REPLY_KEY_LOOKUP = {
+    #     (STATE_KEYS['payment'], STATE_KEYS['finish_sale']): "r_sale_done"
+    # }
 
-    SS_REPLY_KEY_LOOKUP = {
-        STATE_KEYS["propose_plan"]: "r_state_details",
-        STATE_KEYS['confirm_plan']: "r_confirm_plan",
-        STATE_KEYS['payment']: "r_confirm_price",
-        STATE_KEYS['finish_sale']: "r_sale_done",
-        STATE_KEYS['recv_info']: "r_req_info",
-        STATE_KEYS['init_sale']: "r_sales_intro",
-        STATE_KEYS['ask_if_issue']: "r_ask_if_issue",
-        STATE_KEYS['finished_pai']: "r_pai_finished",
-        STATE_KEYS['inform_pai']: "r_how_to_pai",
-        STATE_KEYS['thankyou']: "r_thankyou"
+    # SS_REPLY_DBLOOKUP = {}
+    # for sk in list(STATES.keys()):
+    #     if len(get_replylist(STATES[sk])) > 0:
+    #         SS_REPLY_DBLOOKUP[sk] = get_replylist(STATES[sk])
 
-    }
-
-    INTENT_REPLY_KEY_LOOKUP = {}
-    intent_keys = list(INTENTS.keys())
-    for i in intent_keys:
-        intent = INTENTS[i]
-        dbk = "r_"+str(i)
-        if dbk in REPLY_DB:
-            # Make sure the reply database has the key
-            INTENT_REPLY_KEY_LOOKUP[intent] = dbk
-        else:
-            print("<init replygen> No reply db found for", i)
-    rkey_dbs = {}
-    rkey_dbs["s2s"] = STS_REPLY_KEY_LOOKUP
-    rkey_dbs["ss"] = SS_REPLY_KEY_LOOKUP
-    rkey_dbs["intent"] = INTENT_REPLY_KEY_LOOKUP
+    # INTENT_REPLY_DBLOOKUP = {}
+    # for ik in list(INTENTS.keys()):
+    #     if len(get_replylist(INTENTS[ik])) > 0:
+    #         INTENT_REPLY_DBLOOKUP[ik] = get_replylist(INTENTS[ik])
+    #     else:
+    #         print("<init replygen> No reply db found for", ik)
+            
+    # r_dbs = {}
+    # # r_dbs["s2s"] = STS_REPLY_KEY_LOOKUP
+    # r_dbs["ss"] = SS_REPLY_DBLOOKUP
+    # r_dbs["intent"] = INTENT_REPLY_DBLOOKUP
     
-    return ReplyGenerator(REPLY_DB, rkey_dbs)
+    # Everything above is not required anymore 
+    return ReplyGenerator(REPLY_DB)
 
 def init_policykeeper(jdata, pdata):
     INTENTS = jdata["intents"]
@@ -99,26 +93,13 @@ def init_policykeeper(jdata, pdata):
             continue # Don't overwrite existing policy lookup values
         POLICY_RULES[state_value] = make_policy([])
 
-    print(POLICY_RULES)
-
-    # POLICY_RULES = {
-    #     STATE_KEYS['init']: make_policy([
-    #         (INTENTS['deny'],SIP(STATES['init'])),
-    #         (INTENTS['greet'],SIP(STATES['init'])),
-    #         (INTENTS['gen_query'],SIP(STATES['confirm_query'])),
-    #         (INTENTS['purchase'], SIP(STATES['init_sale'])),
-    #         (INTENTS['pay_query'], SIP(STATES['pay_query'])),
-    #         (INTENTS['sales_query'], SIP(STATES['sales_query']))
-    #         ]
-    # }
-
     INTENT_LOOKUP_TABLE = {}
     for k in list(MATCH_DB.keys()):
         look_key = k.split("db_")[1] # Ignore first 3 characters
-        kv = INTENTS[look_key]
+        kv = INTENTS[look_key]["key"] #Need a hashable type
         INTENT_LOOKUP_TABLE[kv] = MATCH_DB[k]
 
-    return PolicyKeeper(POLICY_RULES, INTENT_LOOKUP_TABLE)
+    return PolicyKeeper(POLICY_RULES, INTENT_LOOKUP_TABLE, STATES)
 
 def init_infoparser(jdata):
     relevant = jdata["info_parser"]
