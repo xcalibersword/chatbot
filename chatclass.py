@@ -94,7 +94,8 @@ class ChatManager:
         if sip.is_same_state():
             if DEBUG: print("SAME STATE FLAGGED")
             sip = same_state_SIP()
-    
+
+        print("gatekeeping...")
         new_sip = self._gatekeep_sip(sip)
         
         # Also updates requirements!!
@@ -312,28 +313,34 @@ class ReplyGenerator:
         reply = self.generate_reply_message(rkey, info)
         return reply
 
-    def getreplykey(self,prev_state, intent, curr_state):
+    def getreplykey(self,prev_state, intent, curr_state_key):
         def dict_lookup(key, dictionary):
             if key in dictionary:
                 return dictionary[key]
             return False
-
-        context = (prev_state, curr_state)
+            
+        DEBUG = 1
+        context = (prev_state, curr_state_key)
+        if DEBUG: print(curr_state_key)
         # Specific state to state
         rkey = dict_lookup(context, self.rkey_dbs["s2s"])
         if rkey:
-            if DEBUG: print("found in s2s")
-            return rkey
-
+            if DEBUG: print("Reply found in s2s")
+            
         # Single state
         if not rkey:
-            if DEBUG: print("found in s1")
-            rkey = dict_lookup(curr_state, self.rkey_dbs["ss"])
+            rkey = dict_lookup(curr_state_key, self.rkey_dbs["ss"])
+            if rkey:
+                if DEBUG: print("Reply found in s1")
         
         # Intent
         if not rkey:
             rkey = dict_lookup(intent, self.rkey_dbs["intent"])
+            if rkey:
+                if DEBUG: print("Reply found in intentlist")
 
+        if DEBUG: print("rkey:",rkey)
+        DEBUG = 0
         return rkey
 
     def fetch_reply_text(self,r_key):
@@ -362,9 +369,11 @@ class ReplyGenerator:
                 crafted_msg = ""
                 # TODO Another mapping for this
                 if "city" in rlist:
-                    crafted_msg = crafted_msg + "您是哪个城市呢 "
+                    crafted_msg = crafted_msg + "您是哪个城市呢？ "
                 if "首次" in rlist:
-                    crafted_msg = crafted_msg + "是首次吗 "
+                    crafted_msg = crafted_msg + "是首次吗？ "
+                if "拍了" in rlist:
+                    crafted_msg = crafted_msg + "拍好了吗？"
 
                 msginfo["requested_info"] = crafted_msg
 

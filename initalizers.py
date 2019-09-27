@@ -29,7 +29,11 @@ def init_replygen(jdata):
         STATE_KEYS['finish_sale']: "r_sale_done",
         STATE_KEYS['recv_info']: "r_req_info",
         STATE_KEYS['init_sale']: "r_sales_intro",
-        STATE_KEYS['ask_if_issue']: "r_ask_if_issue"
+        STATE_KEYS['ask_if_issue']: "r_ask_if_issue",
+        STATE_KEYS['finished_pai']: "r_pai_finished",
+        STATE_KEYS['inform_pai']: "r_how_to_pai",
+        STATE_KEYS['thankyou']: "r_thankyou"
+
     }
 
     INTENT_REPLY_KEY_LOOKUP = {}

@@ -7,7 +7,10 @@
         "sales_query":111,
         "pay_query":112,
         "gen_query":113,
-        "how_check_shebao_status": "questions_how_check_shebao",
+        "how_check_shebao_status": "info_how_check_shebao",
+        "when_check_shebao_status":"info_when_check_shebao",
+        "how_to_pai": "info_how_to_pai",
+        "pai_finished": "pai_finished",
         "report_issue":151,
         "purchase": "purchase",
         "affirm":"affirmation",
@@ -113,6 +116,24 @@
             "gated": false,
             "pocket_state": false,
             "req_info": ""
+        },
+        "inform_pai":{
+            "key": "260 howto pai",
+            "gated": false,
+            "pocket_state": false,
+            "req_info": ""
+        },
+        "finished_pai":{
+            "key": "261 done pai",
+            "gated": true,
+            "pocket_state": false,
+            "req_info": [["拍了","yesno"]]
+        },
+        "thankyou":{
+            "key": "288 thanks",
+            "gated": false,
+            "pocket_state": false,
+            "req_info": ""
         }
     },
 
@@ -121,7 +142,7 @@
             "再见", "bye", "goodbye"
         ],
         "db_ask_name": [
-            "who u","what is your name", "who are you","你的名字是什么","你叫什么","你叫什么名", "你是谁"
+            "who u","what is your name", "who are you","(您|你)的名字是什么","(您|你)叫什么","(您|你)叫什么名", "(您|你)是谁"
         ],
 
         "db_deny": [
@@ -133,7 +154,7 @@
         ],
 
         "db_greet" : [
-            "你好","hello","你好早","早安","下午好","午安","晚上好","您好", "hi", "在吗", "喂"
+            "(你|您)好","hello","早","早安","下午好","午安","晚上好", "hi", "在吗", "喂", "有人不"
         ],
 
         "db_gen_query" : [
@@ -149,14 +170,23 @@
         ],
 
         "db_purchase" : [
-            "社保", "社保怎么缴纳", "buy"
+            "社保", "怎么缴纳", "buy", "代缴社保"
         ],
 
         "db_report_issue" : [
             "issue","problem"
         ],
+        "db_how_to_pai":[
+            "怎么拍"
+        ],
+        "db_when_check_shebao_status":[
+            "时候能查到"
+        ],
         "db_how_check_shebao_status": [
-            "查询社保资格", "查询缴纳", "缴纳怎么查询", "how do i check shebao status", "how check shebao"
+            "查询社保资格", "查询缴纳", "缴纳怎么查询", "how do i check shebao status", "how check shebao", "在哪里能查到"
+        ],
+        "db_pai_finished": [
+            "拍(+)了","拍好了", "已拍"
         ],
         "db_reset_chat": [
             "resetchat1"
@@ -194,13 +224,13 @@
         "r_greet" : {
             "context_flag": 0,
             "text" :[
-            "你好! 有什么能帮助您的", "Hello! 有什么能帮助您的"
+            "您好! 有什么能帮助您的", "Hello! 有什么能帮助您的"
             ]
         },
         "r_sales_intro" : {
             "context_flag": 0,
             "text" : [
-                "好的，那么我就跟亲介绍一下..... 你对我们的宝贝有兴趣吗？"
+                "好的，那么我就跟亲介绍一下..... 您对我们的宝贝有兴趣吗？"
             ]
         },
         "r_confirm_plan" : {
@@ -212,7 +242,7 @@
         "r_confirm_price" : {
             "context_flag": 1,
             "text" :[
-            "你{city}的宝贝一共要付{city_info[payment]}块，好么？"
+            "{city}的宝贝一共要付{city_info[payment]}块，好么？"
             ]
         },
         "r_query" : {
@@ -242,13 +272,31 @@
         "r_state_details": {
             "context_flag": 1,
             "text" : [
-            "目前{city}社保按照最低基数{city_info[base_amt]}，缴纳{city_info[payment]}；服务费{city_info[svc_fee]}元每月，首次参保额外收取{city_info[opening_fee]}元开户费。"
+                "目前{city}社保按照最低基数{city_info[base_amt]}，缴纳{city_info[payment]}；服务费{city_info[svc_fee]}元每月，首次参保额外收取{city_info[opening_fee]}元开户费。"
+            ]
+        },
+        "r_how_to_pai":{
+            "context_flag": 0,
+            "text" :[
+                "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
             ]
         },
         "r_how_check_shebao_status":{
             "context_flag": 0,
             "text" :[
-            "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能） http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp"
+                "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能） http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp"
+            ]
+        },
+        "r_when_check_shebao_status":{
+            "context_flag": 0,
+            "text" :[
+                "社保查询: \n次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费\n次次月15日可以在网上查询到实缴款;\n社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp\n公积金缴费查询：\n次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。"
+            ]
+        },
+        "r_pai_finished":{
+            "context_flag":0,
+            "text" :[
+                "两点注意：1.每个月的15号前，来淘宝缴费，不要更改淘宝ID和缴费基数 2.如果要停缴或者已入职新单位的，请通知我们。比如你6月份停缴，最晚在6月15号前通知我们，可以在小程序上提交终止服务的申请，或者拍下1元停缴宝贝、留言备注好退工日期，以防影响你下家单位交金；如不备注一律以我司办理为准，谢谢亲的配合。（PS. 只缴社保和公积金是没有个税记录的哦，如需要个税申报的麻烦联系客服办理哦）"
             ]
         },
         "r_pay_query":{
@@ -261,6 +309,12 @@
             "context_flag": 0,
             "text" :[
             "Please state your issue"
+            ]
+        },
+        "r_thankyou":{
+            "context_flag": 0,
+            "text" :[
+                "就这样了！谢谢亲的光临"
             ]
         },
         "r_goodbye" : {

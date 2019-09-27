@@ -6,8 +6,10 @@
             ["ask_name", "SAME_STATE"],
             ["pay_query", "SAME_STATE"],
             ["sales_query", "init_sale"],
-            ["deny", "GO_BACK_STATE"],
+            ["deny", "SAME_STATE"],
             ["how_check_shebao_status", "SAME_STATE"],
+            ["when_check_shebao_status", "SAME_STATE"],
+            ["how_to_pai","SAME_STATE"],
             ["goodbye", "goodbye"],
             ["report_issue", "log_issue"],
             ["reset_chat", "init"]
@@ -32,14 +34,25 @@
             ["deny", "ask_if_issue"]
         ],
         "payment": [
-            ["affirm", "finish_sale"],
+            ["affirm", "inform_pai"],
             ["deny", "ask_if_issue"]
-
+        ],
+        "inform_pai": [
+            ["affirm", "finished_pai"]
+        ],
+        "finished_pai": [
+            ["affirm", "thankyou"]
+        ],
+        "thankyou": [
+            ["affirm", "goodbye"]
         ],
         "ask_if_issue": [
             ["affirm", "log_issue"],
             ["deny", "EXIT_POCKET_STATE"]
-        ]      
+        ]
+    },
+    "replies": {
+
     },
     "forms":{
         "form_shebao":{
