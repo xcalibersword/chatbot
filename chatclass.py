@@ -276,7 +276,7 @@ class DetailManager:
 
     # Info without vault
     def get_user_info(self):
-        not_user_info = ["requested_info"]
+        not_user_info = ["requested_info", "paile","拍了"] #TODO find a proper way to store this info in JSON
         dic = self.chat_prov_info.copy()
         for i in not_user_info:
             if i in dic: 
@@ -325,7 +325,6 @@ class ReplyGenerator:
     def get_reply(self, prev_state, curr_state, intent, info = -1):
         rdb = self.getreplydb(prev_state, intent, curr_state)
         reply = self.generate_reply_message(rdb, info)
-        # reply = self.generate_reply_message(rkey, info)
         return reply
 
     def getreplydb(self,prev_state, intent, curr_state):
@@ -334,54 +333,37 @@ class ReplyGenerator:
                 return dictionary[key]
             return False
         def get_replylist(obj):
-            print("get replies from obj",obj) #DEBUG
+            if DEBUG: print("get replies from obj",obj)
             return obj["replies"]
-        LOCALDEBUG = 1
-        
-        if LOCALDEBUG: DEBUG = 1
-        print("csk", curr_state, "psk", prev_state)
+
         context = (prev_state, curr_state)
-        intentkey = intent["key"]
+    
+        LOCALDEBUG = 0
+        DEBUG = 1 if LOCALDEBUG else 0
+
+        if DEBUG: print("csk", curr_state, "psk", prev_state)
         if DEBUG: print(curr_state)
-        # Specific state to state
-        # rdb = dict_lookup(context, self.rkey_dbs["s2s"])
-        # if rkey:
-        #     if DEBUG: print("Reply found in s2s")
+
+        # <Specific state to state goes here> if needed
         
         # Single state
         rdb = []
         if len(rdb) < 1:
             rdb = get_replylist(curr_state)
-            if len(rdb) > 0:
-                if DEBUG: print("Reply found in s1")
         
         if DEBUG: print("SS rdb:",rdb)
 
         # Intent
         if len(rdb) < 1:
             rdb = get_replylist(intent)
-            if len(rdb) > 0:
-                if DEBUG: print("Reply found in intentlist")
 
         if DEBUG: print("INT rdb:",rdb)
 
         if LOCALDEBUG: DEBUG = 0
         if len(rdb) < 1:
-            rdb = [cbsv.DEFAULT_CONFUSED()]
+            rdb = [cbsv.DEFAULT_CONFUSED()] # TODO fix bad OOP
+
         return rdb
-
-    def fetch_reply_text(self,r_key):
-        def rand_response(response_list):
-            return random.choice(response_list)
-
-        if not r_key:
-            return cbsv.DEFAULT_CONFUSED()
-            
-        if r_key in self.replyDB:
-            r_list = self.replyDB[r_key]["text"]
-            replytext = rand_response(r_list)
-            return replytext
-        return r_key
 
     # Generates a pure reply
     def generate_reply_message(self, rdb, info):
@@ -397,7 +379,7 @@ class ReplyGenerator:
             if "requested_info" in msginfo:
                 rlist = msginfo["requested_info"]
                 crafted_msg = ""
-                # TODO Another mapping for this
+                # TODO Have a proper mapping for this
                 if "city" in rlist:
                     crafted_msg = crafted_msg + "您是哪个城市呢？ "
                 if "首次" in rlist:
@@ -407,8 +389,7 @@ class ReplyGenerator:
 
                 msginfo["requested_info"] = crafted_msg
 
-            # final_msg = self.formatter.vformat(reply_template, ikeys, info)
-            # final_msg = reply_template%(info)
+            # Uses kwargs to fill this space
             final_msg = reply_template.format(**msginfo)
 
         return final_msg
@@ -425,6 +406,7 @@ class Chat:
 
     def getID(self):
         return self.chatID
+
     # Records conversation
     def record_messages(self, recieved, sent):
         dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')

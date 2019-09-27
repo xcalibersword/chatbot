@@ -326,3 +326,5 @@ chatlogs/
 __pycache__/
 
 oddjob.py
+
+userdata/database.json
