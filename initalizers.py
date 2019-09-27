@@ -99,6 +99,8 @@ def init_policykeeper(jdata, pdata):
             continue # Don't overwrite existing policy lookup values
         POLICY_RULES[state_value] = make_policy([])
 
+    print(POLICY_RULES)
+
     # POLICY_RULES = {
     #     STATE_KEYS['init']: make_policy([
     #         (INTENTS['deny'],SIP(STATES['init'])),

@@ -318,7 +318,8 @@ class ReplyGenerator:
             if key in dictionary:
                 return dictionary[key]
             return False
-
+        LOCALDEBUG = 1
+        if LOCALDEBUG: DEBUG = 1
         context = (prev_state, curr_state_key)
         if DEBUG: print(curr_state_key)
         # Specific state to state
@@ -339,7 +340,8 @@ class ReplyGenerator:
                 if DEBUG: print("Reply found in intentlist")
 
         if DEBUG: print("rkey:",rkey)
-        
+
+        if LOCALDEBUG: DEBUG = 0
         return rkey
 
     def fetch_reply_text(self,r_key):

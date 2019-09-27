@@ -35,6 +35,8 @@
         ],
         "payment": [
             ["affirm", "inform_pai"],
+            ["pay_query", "inform_pai"],
+            ["sales_query", "inform_pai"],
             ["deny", "ask_if_issue"]
         ],
         "inform_pai": [

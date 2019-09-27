@@ -106,7 +106,7 @@
             "req_info": ""
         },
         "goodbye": {
-            "key": 209,
+            "key": "209 bye",
             "gated": false,
             "pocket_state": false,
             "req_info": ""
@@ -127,7 +127,7 @@
             "key": "261 done pai",
             "gated": true,
             "pocket_state": false,
-            "req_info": [["拍了","yesno"]]
+            "req_info": [["拍了","paile"]]
         },
         "thankyou":{
             "key": "288 thanks",
@@ -166,7 +166,7 @@
         ],
 
         "db_pay_query" : [
-            "pay","付钱"
+            "pay","付钱", "办理",""
         ],
 
         "db_purchase" : [
@@ -387,6 +387,9 @@
         "payment_info": {
             "支付": ["支付", "alipay", "zhifu", "zhifubao"],
             "微信": ["微信","wechat", "weixin","vxin"]
+        },
+        "paile":{
+            "拍好了": ["拍了", "好了", "拍好了"]
         },
         "yesno": {
             "是": ["yes", "(?<!没)有", "(?<!不)是", "(?<!不)对"],
