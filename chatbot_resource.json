@@ -163,7 +163,7 @@
             "pocket_state": false,
             "req_info": [["city","city"],["首次","shouci"]],
             "replies":[
-                "目前{city}社保按照最低基数{city_info[base_amt]}，缴纳{city_info[payment]}；服务费{city_info[svc_fee]}元每月，首次参保额外收取{city_info[opening_fee]}元开户费。"
+                "亲{首次}哦。那么目前{city}社保按照最低基数{city_info[base_amt]}，缴纳{city_info[payment]}；服务费{city_info[svc_fee]}元每月 {首次ext}。"
             ]
         },
         "confirm_plan": {
@@ -325,13 +325,13 @@
         },
         "杭州": {
             "base_amt":1100,
-            "payment":11,
+            "payment":1000,
             "svc_fee":5,
             "opening_fee":50
         },
         "广州":{
             "base_amt":1200,
-            "payment":11,
+            "payment":1000,
             "svc_fee":5,
             "opening_fee":50
         },

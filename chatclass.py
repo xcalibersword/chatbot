@@ -389,6 +389,11 @@ class ReplyGenerator:
 
                 msginfo["requested_info"] = crafted_msg
 
+            if "首次" in msginfo:
+                if msginfo["首次"] == "首次":
+                    msginfo["首次ext"] = "首次参保额外收取{city_info[opening_fee]}元开户费".format(**msginfo)
+                else:
+                    msginfo["首次ext"] = ""
             # Uses kwargs to fill this space
             final_msg = reply_template.format(**msginfo)
 
