@@ -1,125 +1,157 @@
-import threading,re
-from win32gui import *
-from chatbot import Chatbot
-from win32api import *
-import win32clipboard as w
+import re
+import csv
+import pandas as pd
 import time
-from jpype import *
+import os
 
-def find_handle():
-    #find all needed window handle
-    a = FindWindow("StandardFrame","tb584238398 - 接待中心")
-    aa = FindWindowEx(a, 0, "StandardWindow", "")
-    aaa = FindWindowEx(aa, 0, "StandardWindow", "")
-    aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
-    aaaa = FindWindowEx(aaa, 0, "SplitterBar", "")
+#help to extract the info from raw data into list
+class RawDataProcessor:
+    def __init__(self):
+        self.cso_list = []
+        self.cust_list = []
+        self.id_list = {}
+    
+    def storeConvo(self,convo,speaker,isCSO,store2id = True):
+        #print("Storing {0}: {1}".format(speaker,convo))
+        if store2id == True:
+            try:
+                self.id_list[speaker].append(convo)
+            except:
+                self.id_list[speaker] = [convo]
 
-    b = FindWindowEx(aaaa, 0, "StandardWindow", "")
-    bb = FindWindowEx(aaaa, b, "StandardWindow", "")
-    QN_input_hwnd = FindWindowEx(bb,0,"RichEditComponent", "")
+        if isCSO:
+            self.cso_list.append(convo)
+        else:
+            self.cust_list.append(convo)
 
-    c = FindWindowEx(b, 0, "PrivateWebCtrl", "")
-    cc = FindWindowEx(c,0,"Aef_WidgetWin_0","")
-    QN_output_hwnd = FindWindowEx(cc,0,"Aef_RenderWidgetHostHWND", "Chrome Legacy Window")
+    def stackConvo(self,convo,speaker,isCSO,store2id = True):
+        #print("Stacking {0}: {1}".format(speaker,convo))
+        if store2id == True:
+            self.id_list[speaker][-1] = self.id_list[speaker][-1] + " " + convo
 
-    QN_sendBut_hwnd = FindWindowEx(bb,0,"StandardButton", "发送")
+        if isCSO:
+            self.cso_list[-1] = self.cso_list[-1] + " " + convo
+        else:
+            self.cust_list[-1] = self.cust_list[-1] + " " + convo
 
-    return QN_input_hwnd,QN_output_hwnd,QN_sendBut_hwnd
+def filter_data(sent_list,w,pattern_timestamp):
+    prevs_id = ""
+    for sent in sent_list[7:-4]:
+        #print(sent)
+        if not sent == "\r\n": 
+            if sent[0] == '-':              
+                try:
+                    if (prevs_id == cust_id and startTalk == cust_id) or (prevs_id != cust_id and startTalk != cust_id):
+                        if prevs_id == cust_id:
+                            w.storeConvo("",cust_id,True,store2id=False)
+                        else:
+                            w.storeConvo("",cso_id,False,store2id=False)
+                except Exception:
+                    pass
 
-def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
-    #type text
-    SendMessage(QN_input_hwnd, 0x000C, 0, text)
-    #send text
-    SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
+                cust_id = re.sub('-*','',sent).replace("\r","").replace("\n","")
+                new_cso_convo_chat = True
+                new_cust_convo_chat = True
+            
+            elif re.match(cust_id,sent):
+                convo = re.sub(cust_id+pattern_timestamp,"",sent.replace("\r","").replace("\n",""))
+                #print("Getting {0}: {1}".format(cust_id,convo))
+                if new_cso_convo_chat and new_cust_convo_chat:
+                    startTalk = cust_id
+                if not cust_id == prevs_id or new_cust_convo_chat:
+                    w.storeConvo(convo,cust_id,False)
+                else:
+                    w.stackConvo(convo,cust_id,False)
 
-def check_new_message(userID,QN_output_hwnd):
-    print('Checking for new message...')
-    SetForegroundWindow(QN_output_hwnd)
-    #ctrl a
-    keybd_event(0x11, 0, 0, 0)
-    keybd_event(65, 0, 0, 0)
-    time.sleep(0.5)
-    keybd_event(0x11, 0, 2, 0)
-    keybd_event(65, 0, 2, 0)
-    #ctrl c
-    keybd_event(0x11, 0, 0, 0)
-    keybd_event(67, 0, 0, 0)
-    time.sleep(0.5)
-    keybd_event(0x11, 0, 2, 0)
-    keybd_event(67, 0, 2, 0)
+                prevs_id = cust_id
+                new_cust_convo_chat = False
+            
+            elif re.search(pattern_timestamp,sent):
+                cso_id = re.sub(pattern_timestamp+".*","",sent.replace("\r","").replace("\n",""))
+                convo = re.sub(cso_id+pattern_timestamp,"",sent.replace("\r","").replace("\n",""))
+                #print("Getting {0}: {1}".format(cso_id,convo))
+                if new_cso_convo_chat and new_cust_convo_chat:
+                    startTalk = cso_id
+                try:
+                    if prevs_id == cust_id or new_cso_convo_chat:
+                        w.storeConvo(convo,cso_id,True)
+                    else:
+                        w.stackConvo(convo,cso_id,True)
+                except Exception:
+                    pass
 
-    w.OpenClipboard()
-    raw_text = w.GetClipboardData()
-    w.CloseClipboard()
-    raw_text_list = raw_text.splitlines()
+                prevs_id = cso_id
+                new_cso_convo_chat = False
 
-    processed_text_list = []
-    for word in raw_text_list:
-        if word.strip() != "":
-            processed_text_list.append(word)
-
-    date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
-    user_pattern = re.compile(userID + r" \d*-\d*-\d* \d{2}:\d{2}:\d{2}")
-
-    count = 0
-    last_not_user_idx_list = []
-    last_user_idx = 0
-    cust_QN_ID = ""
-    for word in processed_text_list:
-        if date_time_pattern.search(word):
-            if not user_pattern.search(word):
-                last_not_user_idx_list.append(count)
-                cust_QN_ID = date_time_pattern.sub("",processed_text_list[last_not_user_idx_list[0]])
             else:
-                last_user_idx = count
-                last_not_user_idx_list.clear()      
-        count += 1
+                #print("{0}: {1}".format(prevs_id,convo))
+                if prevs_id == cust_id:
+                    isCSO = False
+                else:
+                    isCSO = True
+                w.stackConvo(sent,prevs_id,isCSO)
+    return w
 
-    unanswered_convo = []
-    if len(last_not_user_idx_list) > 0: 
-        if last_not_user_idx_list[-1] > last_user_idx:
-            print("message found!")
-            for line in processed_text_list[last_not_user_idx_list[0]:]:
-                if not date_time_pattern.search(line):
-                    unanswered_convo.append(line)
-                if unanswered_convo == []:
-                    print("emoji detected!")
-                    unanswered_convo.append(" ")
-                      
-    return unanswered_convo, cust_QN_ID
+pattern_timestamp = '[(][0-9-: ]*[): ]*'
+w = RawDataProcessor()
 
-def SeekNewMessage():
-    print("Finding new chat...")
-    # C:\Program Files\Java\jdk1.8.0_181\jre\bin\server\jvm.dll
-    print(getDefaultJVMPath())
-    startJVM(getDefaultJVMPath(), "-ea", r"C:\Users\Administrator\Desktop\code (unsorted)\BOT\Sikulix\sikulixapi.jar")
-    java.lang.System.out.println("hello world")
-    Screen = JClass("org.sikuli.script.Screen")
-    screen = Screen()
-    # r"F:\work\project\test\sikuli_test\imgs\Chrome.png" 你截取桌面上chrome图标的图片路径
-    screen.doubleClick(r"C:\Users\Administrator\Desktop\code (unsorted)\BOT\A.PNG")
-    shutdownJVM()
+for i in range(99):
+    i +=1
+    filePath = os.path.join(r"C:\Users\Administrator\Desktop\data (unsorted)\QianNiu_Conv_FanFan",str(i)) + ".txt"
+    with open(filePath,newline="\n",encoding="gbk") as f:
+        #print("Opening {}".format(filePath))
+        #time.sleep(3)
+        sent_list = f.readlines()
+    w = filter_data(sent_list,w,pattern_timestamp)
 
-def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot):
-    
-    message_list, custID = check_new_message(userID,text_out_hwnd)
-    query = "".join(message_list)
-    print(message_list,custID,query)
-    
-    if message_list == []:
-        SeekNewMessage()
-    else:
-        reply = bot.get_bot_reply(custID,query)
-        print(reply)
-        send_message_QN(reply,text_in_hwnd,button_hwnd)
-    timer = threading.Timer(2,main,[text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot])
-    timer.start()
+    # if i == 99:
+    #     for sent in sent_list:
+    #         print(sent)
+    #         time.sleep(1)
 
-if __name__ == "__main__":
-    text_in_hwnd,text_out_hwnd,button_hwnd = find_handle()
-    bot = Chatbot()
-    bot.start()
-    userID = "tb584238398"
+count = 1
+for q,a in zip(w.cso_list,w.cust_list):
+    count += 1
+    if count > 1100:
+        print("cso: {0} cust: {1}".format(q,a))
+        time.sleep(1)
 
-    main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot)
-    
+#save QA & ID to csv
+cso_dict = {}
+cust_dict = {}
+cso_dict["CSO"] = w.cso_list
+cust_dict["Customer"] = w.cust_list
+cso_df = pd.DataFrame(data = cso_dict)
+cust_df = pd.DataFrame(data = cust_dict)
+
+QA_df = pd.concat([cso_df,cust_df],ignore_index=True,axis=1)
+QA_df.to_csv(r"C:\Users\Administrator\Desktop\code (unsorted)\chatbot\data\raw_QA_list.csv",index=False,encoding="utf-8")
+
+#maybe error towards the end of the conversation and the loading of files not all loaded
+#file 99 for the cso and file 93 for the cust
+# prev_df = pd.DataFrame.from_dict(w.id_list,orient="index")
+# prev_df.transpose()
+# prev_df.to_csv(r"C:\Users\Administrator\Desktop\code (unsorted)\chatbot\data\raw_QA_list1.csv",index=False,encoding="utf-8")
+
+#funnel data (intents)
+intent = {
+    "greeting":[],
+    "clarify":[],
+    "bye":[],
+    "yes":[],
+    "no":[],
+    "others":[]
+}
+
+intent2idx = enumerate(intent.keys())
+
+#funnel data (slots)
+slot = {
+    "country.in":[],
+    "country.of":[],
+    "fee.for":[],
+    "fee.due":[],
+    "others":[]
+}
+
+slot2idx = enumerate(slot.keys())

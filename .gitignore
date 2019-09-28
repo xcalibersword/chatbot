@@ -328,3 +328,7 @@ __pycache__/
 oddjob.py
 
 userdata/database.json
+
+data/
+
+sikuliX/
