@@ -49,10 +49,7 @@
             ["affirm", "finished_pai"]
         ],
         "finished_pai": [
-            ["affirm", "thankyou"]
-        ],
-        "thankyou": [
-            ["affirm", "goodbye"]
+            ["affirm", "initplus"]
         ],
         "ask_if_issue": [
             ["affirm", "log_issue"],

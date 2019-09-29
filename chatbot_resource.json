@@ -5,14 +5,15 @@
             "key": "affirmation",
             "matchdb":[
                 "yes","(?<!(不|你|您))好","(?<!没)有((啊|哦)*)$","(?<!不)是","没问题","(?<!不)确定", "ok", "(?<!不)好的","(?<!不)可以","是的",
-                "哦"
+                "哦", "(?<!(不|没))对", "没错"
             ],
             "replies": []
         },
         "deny": {
             "key": "denial",
             "matchdb":[
-                "不好","不可以","不是","没有","没问题","不确定","no","not ok"
+                "不好","不可以","不是","没有","没问题","不确定","no","not ok",
+                "(?<=(不|没))对","没(?!错)"
             ],
             "replies": []
         },
@@ -72,6 +73,13 @@
                 "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料"
             ]
         },
+        "total_amt_query":{
+            "key": "116 total amt query (gated)",
+            "matchdb":[
+                "一共(.*)（付|缴纳|多少)"
+            ],
+            "replies": []
+        },
         "weixin_query": {
             "key": "115 weixin query (might be gated)",
             "matchdb":[
@@ -91,7 +99,7 @@
         "when_check_shebao_status": {
             "key": "info_when_check_shebao",
             "matchdb":[
-                "时候能查到"
+                "时(.*)能查到"
             ],
             "replies": [
                 "社保查询: \n次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费\n次次月15日可以在网上查询到实缴款;\n社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp\n公积金缴费查询：\n次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。"
@@ -116,7 +124,7 @@
         "purchase": {
             "key": "purchase",
             "matchdb":[
-                "社保", "怎么缴纳", "buy", "代缴社保"
+                "(交|付|代缴)社保", "怎么缴纳", "buy", "社保怎么(交|付|代缴)"
             ],
             "replies": []
         },
@@ -126,11 +134,20 @@
             "replies": []
         },
         "goodbye": {
-            "key": "goodbyes",
+            "key": "195 goodbyes",
             "matchdb":[
                 "再见", "bye", "goodbye"
             ],
             "replies": []
+        },
+        "thankyou":{
+            "key": "194 thankyou",
+            "matchdb":[
+              "谢谢", "谢了"  
+            ],
+            "replies": [
+                "不客气的亲"
+            ]
         },
         "reset_chat": {
             "key": 12345,
@@ -180,6 +197,13 @@
             "pocket_state": false,
             "req_info": "",
             "replies": []
+        },
+        "total_amt_query":{
+            "key": "216 total amt q",
+            "gated": true,
+            "pocket_state": true,
+            "req_info": [["city","city"]],
+            "replies": ["亲一共要付{city_info[total_amt]}"]
         },
         "gen_query": {
             "key": 213,
@@ -231,7 +255,7 @@
             "pocket_state": false,
             "req_info": [["city","city"],["首次","shouci"]],
             "replies":[
-                "亲{首次}哦。那么目前{city}社保按照最低基数{city_info[base_amt]}，缴纳{city_info[payment]}；服务费{city_info[svc_fee]}元每月 {首次ext}。"
+                "亲{首次}哦。那么目前{city}社保按照最低基数{city_info[jishu]}，缴纳{city_info[payment]}；服务费{city_info[svc_fee]}元每月 {city_info[首次ext]}。"
             ]
         },
         "confirm_plan": {
@@ -247,7 +271,7 @@
             "pocket_state": false,
             "req_info": [["首次","shouci"]],
             "replies":[
-                "{city}的宝贝一共要付{city_info[payment]}块，好么？"
+                "{city}的宝贝一共要付{city_info[calc_str]}，亲确认下哦"
             ]
         },
         "finish_sale": {
@@ -291,13 +315,6 @@
                 "两点注意：1.每个月的15号前，来淘宝缴费，不要更改淘宝ID和缴费基数 2.如果要停缴或者已入职新单位的，请通知我们。比如你6月份停缴，最晚在6月15号前通知我们，可以在小程序上提交终止服务的申请，或者拍下1元停缴宝贝、留言备注好退工日期，以防影响你下家单位交金；如不备注一律以我司办理为准，谢谢亲的配合。（PS. 只缴社保和公积金是没有个税记录的哦，如需要个税申报的麻烦联系客服办理哦）"
             ]
 
-        },
-        "thankyou":{
-            "key": "288 thanks",
-            "gated": false,
-            "pocket_state": false,
-            "req_info": "",
-            "replies":["就这样了！谢谢亲的光临"]
         }
     },
     "reply_db":{
@@ -317,45 +334,45 @@
 
     "plans":{
         "上海":{
-            "base_amt":4927,
-            "payment":1937,
+            "jishu":4927,
+            "payment":1937.7,
             "svc_fee":40,
-            "opening_fee":50
+            "shouci_fee":50
         },
         "北京":{
-            "base_amt":1337,
-            "payment":2050,
-            "svc_fee":100,
-            "opening_fee":50
+            "jishu":1337,
+            "payment":0,
+            "svc_fee":0,
+            "shouci_fee":50
         },
         "深圳":{
-            "base_amt":2335,
-            "payment":2050,
-            "svc_fee":100,
-            "opening_fee":50
+            "jishu":2335,
+            "payment":0,
+            "svc_fee":0,
+            "shouci_fee":50
         },
         "杭州": {
-            "base_amt":1100,
-            "payment":1000,
-            "svc_fee":5,
-            "opening_fee":50
+            "jishu":1100,
+            "payment":0,
+            "svc_fee":0,
+            "shouci_fee":50
         },
         "广州":{
-            "base_amt":1200,
-            "payment":1000,
-            "svc_fee":5,
-            "opening_fee":50
+            "jishu":1200,
+            "payment":0,
+            "svc_fee":0,
+            "shouci_fee":50
         },
         "成都":{
-            "base_amt":1300,
-            "payment":4050,
-            "svc_fee":20,
-            "opening_fee":50
+            "jishu":1300,
+            "payment":0,
+            "svc_fee":0,
+            "shouci_fee":50
         }
     },
     "formulae":{
         "shebao":{
-            "add":["base_amt", "payment", "svc_fee","opening_fee"]
+            "add":["jishu", "payment", "svc_fee","shouci_fee"]
         }
     },
     "info_parser": {
@@ -372,11 +389,11 @@
             "微信": ["微信","wechat", "weixin","vxin"]
         },
         "paile":{
-            "拍好了": ["拍了", "好了", "拍好了"]
+            "拍好了": ["拍了", "好了", "拍好了", "付(.*)(好|了)", "已付", "已拍"]
         },
         "shouci":{
-            "首次": ["yes", "(?<!不)是", "(?<!不)对", "没(.+)过", "(?<!不)(.*)首次"],
-            "不首次": ["no","nope","不是", "不", "(?<!没)(.+)过", "不(.*)首次"] 
+            "是首次": ["yes", "(?<!不)是", "(?<!不)对", "没(.+)过", "(?<!不)(.*)首次"],
+            "不是首次": ["no","nope","不是", "不", "(?<!没)(.+)过", "不(.*)首次"] 
         },
         "yesno": {
             "是": ["yes", "(?<!没)有", "(?<!不)是", "(?<!不)对"],

@@ -357,8 +357,61 @@ class ReplyGenerator:
     # OVERALL METHOD
     def get_reply(self, prev_state, curr_state, intent, ss, info = -1):
         rdb = self.getreplydb(prev_state, intent, curr_state, ss)
-        reply = self.generate_reply_message(rdb, info)
+        infoplus = self._enhance_info(info)
+        reply = self.generate_reply_message(rdb, infoplus)
         return reply
+
+    # Formats txts and calculates
+    def _enhance_info(self,info):
+        enhanced = info.copy()
+        if "requested_info" in enhanced:
+            rlist = enhanced["requested_info"]
+            
+            # Crafted message for info gathering
+            crafted_msg = ""
+            # TODO Have a proper mapping for thisa
+            if "city" in rlist:
+                crafted_msg = crafted_msg + "您是哪个城市呢？"
+            if "首次" in rlist:
+                crafted_msg = crafted_msg + "是首次吗？"
+            if "拍了" in rlist:
+                crafted_msg = crafted_msg + "拍好了吗？"
+
+            enhanced["requested_info"] = crafted_msg
+            
+
+            # Message extensions
+            if "首次" in enhanced and "city_info" in enhanced:
+                # Calculations
+                bool_shouci = (enhanced["首次"] == "是首次")
+                bool_gongjijin = False
+                ci = enhanced["city_info"]
+                total = 0
+                payment_base = ci["payment"]
+                total += payment_base
+                calcstr = "{} 应缴纳".format(payment_base)
+                svc_fee = ci["svc_fee"]
+                total += svc_fee
+                calcstr = calcstr + " + " + "{} 服务费".format(svc_fee)
+                if bool_shouci:
+                    shouci_fee = ci["shouci_fee"]
+                    total += shouci_fee
+                    calcstr = calcstr + " + " + "{} 开户费".format(shouci_fee)
+                if bool_gongjijin:
+                    total += 10000
+
+                ci["total_amt"] = total # Hopefully this is a pointer and not a copy
+
+                calcstr = calcstr + " = " + "{}块".format(total)
+                ci["calc_str"] = calcstr
+
+                if bool_shouci:
+                    ci["首次ext"] = "首次参保额外收取{city_info[shouci_fee]}元开户费".format(**enhanced)
+                else:
+                    ci["首次ext"] = ""
+            
+        return enhanced
+
 
     def getreplydb(self,prev_state, intent, curr_state, issamestate):
         def dict_lookup(key, dictionary):
@@ -410,27 +463,9 @@ class ReplyGenerator:
         final_msg = reply_template
         if isinstance(info, dict):
             if DEBUG: print("current info",info)
-            msginfo = info.copy()
-            if "requested_info" in msginfo:
-                rlist = msginfo["requested_info"]
-                crafted_msg = ""
-                # TODO Have a proper mapping for thisa
-                if "city" in rlist:
-                    crafted_msg = crafted_msg + "您是哪个城市呢？"
-                if "首次" in rlist:
-                    crafted_msg = crafted_msg + "是首次吗？"
-                if "拍了" in rlist:
-                    crafted_msg = crafted_msg + "拍好了吗？"
-
-                msginfo["requested_info"] = crafted_msg
-
-            if "首次" in msginfo and "city_info" in msginfo:
-                if msginfo["首次"] == "首次":
-                    msginfo["首次ext"] = "首次参保额外收取{city_info[opening_fee]}元开户费".format(**msginfo)
-                else:
-                    msginfo["首次ext"] = ""
+            
             # Uses kwargs to fill this space
-            final_msg = reply_template.format(**msginfo)
+            final_msg = reply_template.format(**info)
 
         return final_msg
 
