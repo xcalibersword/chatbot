@@ -1,16 +1,19 @@
-import re
-import csv
+import csv, time, os, re
 import pandas as pd
-import time
-import os
 
-#help to extract the info from raw data into list
+#Funnel for all forms of data to the different pipeline
 class RawDataProcessor:
-    def __init__(self):
+    def __init__(self,date_of_entry,data_path):
+        self.sentlist = []
         self.cso_list = []
         self.cust_list = []
         self.id_list = {}
-    
+        self.pattern_timestamp = '[(][0-9-: ]*[): ]*'
+        dirpath = os.getcwd()
+        savepath = os.path.join(str(dirpath),"data") + date_of_entry + ".csv"    
+        self.savepath = savepath
+        self.datapath = data_path
+
     def storeConvo(self,convo,speaker,isCSO,store2id = True):
         #print("Storing {0}: {1}".format(speaker,convo))
         if store2id == True:
@@ -26,95 +29,118 @@ class RawDataProcessor:
 
     def stackConvo(self,convo,speaker,isCSO,store2id = True):
         #print("Stacking {0}: {1}".format(speaker,convo))
-        if store2id == True:
-            self.id_list[speaker][-1] = self.id_list[speaker][-1] + " " + convo
+        try:
+            if store2id == True:
+                self.id_list[speaker][-1] = self.id_list[speaker][-1] + " " + convo
+        except Exception:
+            print(speaker,convo)
 
         if isCSO:
             self.cso_list[-1] = self.cso_list[-1] + " " + convo
         else:
             self.cust_list[-1] = self.cust_list[-1] + " " + convo
 
-def filter_data(sent_list,w,pattern_timestamp):
-    prevs_id = ""
-    for sent in sent_list[7:-4]:
-        #print(sent)
-        if not sent == "\r\n": 
-            if sent[0] == '-':              
-                try:
-                    if (prevs_id == cust_id and startTalk == cust_id) or (prevs_id != cust_id and startTalk != cust_id):
-                        if prevs_id == cust_id:
-                            w.storeConvo("",cust_id,True,store2id=False)
-                        else:
-                            w.storeConvo("",cso_id,False,store2id=False)
-                except Exception:
-                    pass
+    def loadQNtxt(self):
+        file_name_list = os.listdir(path=self.datapath)
+        for file_name in file_name_list:
+            filePath = os.path.join(self.datapath,file_name)
 
-                cust_id = re.sub('-*','',sent).replace("\r","").replace("\n","")
-                new_cso_convo_chat = True
-                new_cust_convo_chat = True
+            with open(filePath,encoding="gb18030") as f:
+                print("Loading {}".format(filePath))
+                temp_sent_list = f.readlines()
             
-            elif re.match(cust_id,sent):
-                convo = re.sub(cust_id+pattern_timestamp,"",sent.replace("\r","").replace("\n",""))
-                #print("Getting {0}: {1}".format(cust_id,convo))
-                if new_cso_convo_chat and new_cust_convo_chat:
-                    startTalk = cust_id
-                if not cust_id == prevs_id or new_cust_convo_chat:
-                    w.storeConvo(convo,cust_id,False)
-                else:
-                    w.stackConvo(convo,cust_id,False)
-
-                prevs_id = cust_id
-                new_cust_convo_chat = False
-            
-            elif re.search(pattern_timestamp,sent):
-                cso_id = re.sub(pattern_timestamp+".*","",sent.replace("\r","").replace("\n",""))
-                convo = re.sub(cso_id+pattern_timestamp,"",sent.replace("\r","").replace("\n",""))
-                #print("Getting {0}: {1}".format(cso_id,convo))
-                if new_cso_convo_chat and new_cust_convo_chat:
-                    startTalk = cso_id
-                try:
-                    if prevs_id == cust_id or new_cso_convo_chat:
-                        w.storeConvo(convo,cso_id,True)
-                    else:
-                        w.stackConvo(convo,cso_id,True)
-                except Exception:
-                    pass
-
-                prevs_id = cso_id
-                new_cso_convo_chat = False
-
+            if 'n' in file_name: 
+                for sent in temp_sent_list[7:-4]:
+                    sent = sent.strip()
+                    if not sent == '':
+                        self.sentlist.append(sent)
             else:
-                #print("{0}: {1}".format(prevs_id,convo))
+                for sent in temp_sent_list[7:]:
+                    sent = sent.strip()
+                    if not sent == '':
+                        self.sentlist.append(sent)
+    
+
+date_of_entry = "290919"        
+data_path = r"C:\Users\Administrator\Desktop\data (unsorted)\QianNiu_Conv_FanFan"
+w = RawDataProcessor(date_of_entry,data_path)
+w.loadQNtxt()
+
+prevs_id = ""
+for sent in w.sentlist:
+    if sent[0] == '-':       
+        try:
+            if prevs_id == startTalk:
                 if prevs_id == cust_id:
-                    isCSO = False
+                    w.storeConvo(" ",cust_id,True,store2id=False)
+                    #for q,a in zip(w.cso_list[-5:],w.cust_list[-5:]):
+                        #print("cso: {0} cust: {1}".format(q,a))
+                        #time.sleep(1)
                 else:
-                    isCSO = True
-                w.stackConvo(sent,prevs_id,isCSO)
-    return w
+                    #print("Start: {0}, Prevs: {1}".format(startTalk,prevs_id))       
+                    #print("padded cust")
+                    w.storeConvo(" ",cso_id,False,store2id=False)
+                    # for q,a in zip(w.cso_list[-5:],w.cust_list[-5:]):
+                    #     print("cso: {0} cust: {1}".format(q,a))
+                    #     time.sleep(1)
+        except Exception:
+            pass
 
-pattern_timestamp = '[(][0-9-: ]*[): ]*'
-w = RawDataProcessor()
+        cust_id = re.sub('-*','',sent).replace("\r","").replace("\n","")
+        new_cso_convo_chat = True
+        new_cust_convo_chat = True
+    
+    elif re.match(cust_id,sent):
+        convo = re.sub(cust_id+w.pattern_timestamp,"",sent.replace("\r","").replace("\n",""))
+        #print("Getting {0}: {1}".format(cust_id,convo))
+        if new_cso_convo_chat and new_cust_convo_chat:
+            startTalk = cust_id
+        try:
+            if not cust_id == prevs_id or new_cust_convo_chat:
+                w.storeConvo(convo,cust_id,False)
+            else:
+                w.stackConvo(convo,cust_id,False)
+        except Exception:
+            pass
 
-for i in range(99):
-    i +=1
-    filePath = os.path.join(r"C:\Users\Administrator\Desktop\data (unsorted)\QianNiu_Conv_FanFan",str(i)) + ".txt"
-    with open(filePath,newline="\n",encoding="gbk") as f:
-        #print("Opening {}".format(filePath))
-        #time.sleep(3)
-        sent_list = f.readlines()
-    w = filter_data(sent_list,w,pattern_timestamp)
+        prevs_id = cust_id
+        new_cust_convo_chat = False
+    
+    elif re.search(w.pattern_timestamp,sent):
+        cso_id = re.sub(w.pattern_timestamp+".*","",sent.replace("\r","").replace("\n",""))
+        convo = re.sub(cso_id+w.pattern_timestamp,"",sent.replace("\r","").replace("\n",""))
+        #print("Getting {0}: {1}".format(cso_id,convo))
+        if new_cso_convo_chat and new_cust_convo_chat:
+            startTalk = cso_id
+        try:
+            if cust_id == prevs_id or new_cso_convo_chat:
+                w.storeConvo(convo,cso_id,True)
+            else:
+                w.stackConvo(convo,cso_id,True)
+        except Exception:
+            pass
 
-    # if i == 99:
-    #     for sent in sent_list:
-    #         print(sent)
+        prevs_id = cso_id
+        new_cso_convo_chat = False
+
+    else:
+        #print("{0}: {1}".format(prevs_id,convo))
+        if prevs_id == cust_id:
+            isCSO = False
+        else:
+            isCSO = True
+        w.stackConvo(sent,prevs_id,isCSO)
+
+
+    # if i == 80:
+    #     # for sent in sent_list[7:]:
+    #     #     print(sent)
+    #     #     time.sleep(1)
+    #     for q,a in zip(w.cso_list[-8:],w.cust_list[-8:]):
+    #         print("cso: {0} cust: {1}".format(q,a))
     #         time.sleep(1)
 
-count = 1
-for q,a in zip(w.cso_list,w.cust_list):
-    count += 1
-    if count > 1100:
-        print("cso: {0} cust: {1}".format(q,a))
-        time.sleep(1)
+
 
 #save QA & ID to csv
 cso_dict = {}
@@ -127,8 +153,6 @@ cust_df = pd.DataFrame(data = cust_dict)
 QA_df = pd.concat([cso_df,cust_df],ignore_index=True,axis=1)
 QA_df.to_csv(r"C:\Users\Administrator\Desktop\code (unsorted)\chatbot\data\raw_QA_list.csv",index=False,encoding="utf-8")
 
-#maybe error towards the end of the conversation and the loading of files not all loaded
-#file 99 for the cso and file 93 for the cust
 # prev_df = pd.DataFrame.from_dict(w.id_list,orient="index")
 # prev_df.transpose()
 # prev_df.to_csv(r"C:\Users\Administrator\Desktop\code (unsorted)\chatbot\data\raw_QA_list1.csv",index=False,encoding="utf-8")
@@ -155,3 +179,6 @@ slot = {
 }
 
 slot2idx = enumerate(slot.keys())
+
+
+#stack problem
