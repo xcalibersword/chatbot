@@ -27,11 +27,12 @@ class ChatManager:
         self.replygen = replygen
         self.dmanager = dmanager.clone(self.chatID)
         self.gatekeeper = ReqGatekeeper()
+        self.samestateconv = False
 
         # Internal properties
         self.state_history = [self.state,]
         # self.clear_expect_detail()
-        self._clear_pending_state()
+        self._clear_pending_sip()
 
     # Big method.
     # Takes in a message, returns a text reply.
@@ -83,6 +84,7 @@ class ChatManager:
             sssip = SIP(curr_state_obj)
             return sssip
 
+        self.samestateconv = False
         sip = uds.get_sip()
         final_intent = uds.get_intent()
 
@@ -93,6 +95,7 @@ class ChatManager:
 
         if sip.is_same_state():
             if DEBUG: print("SAME STATE FLAGGED")
+            self.samestateconv = True
             sip = same_state_SIP()
 
         print("gatekeeping...")
@@ -108,7 +111,8 @@ class ChatManager:
         information = self._get_current_info()
         curr_state = self._get_curr_state()
         prev_state = self._get_prev_state()
-        return self.replygen.get_reply(prev_state, curr_state, intent, information)
+        ss = self.samestateconv
+        return self.replygen.get_reply(prev_state, curr_state, intent, ss, information)
 
     # Asks dmanager for info
     def _get_current_info(self):
@@ -118,44 +122,44 @@ class ChatManager:
     def _gatekeep_sip(self, sip):
         curr_info = self._get_current_info()
         # print("Current info:",curr_info)
-        passed, constructed_sip = self.gatekeeper.try_gate(curr_info)
+        required_slots = self.gatekeeper.try_gate(curr_info)
+
+        passed = (required_slots == []) #TODO fix bad SE
 
         # Update DM
-        self.push_req_info_to_dm(constructed_sip)
+        self.push_req_slots_to_dm(required_slots)
 
         # print("sip", sip.toString(), "nextsip", constructed_sip.toString())
         if DEBUG: print("Gate passed:",passed)
         if passed:
-            return self.get_forward_state(sip)
+            return self.get_forward_sip(sip)
 
         else:
-            self.set_pending_state(sip)
+            self._set_pending_sip(sip)
+            constructed_sip = self._make_info_sip(required_slots)
             return constructed_sip   # Return the custom made info state
 
-    def _has_pending_state(self):
-        return not self.pending_state == ""
+    def _has_pending_sip(self):
+        return not self.pending_sip == ""
 
-    def _clear_pending_state(self):
-        self.pending_state = ""
+    def _clear_pending_sip(self):
+        self.pending_sip = ""
 
-    def set_pending_state(self, pstate):
-        if self._has_pending_state():
-            if DEBUG: print("Existing pending state detected")
-            return
-        print("!!! Setting pending state to:",pstate.toString())
-        self.pending_state = pstate
+    def _make_info_sip(self, req_info):
+        con_sip = self.pkeeper.make_info_req_sip(req_info)
+        return con_sip
 
-    def get_forward_state(self, sip):
+    def get_forward_sip(self, sip):
         # If pending, return pending state
-        if self._has_pending_state():
-            if DEBUG: print("!!! Attempting to move forward to: ",self.pending_state.toString())
-            sipval = self.pending_state
-            self._clear_pending_state()
+        if self._has_pending_sip():
+            if DEBUG: print("!!! Attempting to move forward to: ",self.pending_sip.toString())
+            sipval = self.pending_sip
+            self._clear_pending_sip()
             return sipval
         return sip
 
     ## Internal State management
-    def _change_state(self,new_state):
+    def _change_state(self, new_state):
         if DEBUG: print("changing state to", new_state)
         
         if self.state == new_state:
@@ -170,15 +174,24 @@ class ChatManager:
         print("Updating state from this sip", sip.toString())
         return
 
-    def push_req_info_to_dm(self, sip):
-        if sip.is_gated():
-            reqs = sip.get_reqs()
-            required_info = {"requested_info": reqs}
-            self.push_detail_to_dm(required_info)
+    def push_req_slots_to_dm(self, required_slots):
+        if len(required_slots) > 0:
+            required_info = list(map(lambda x: x[0],required_slots)) # First element
+            print("pushinfotodm Reqinfo",required_info)
+            info_entry = {"requested_info": required_info}
+            self.push_detail_to_dm(info_entry)
     # UNUSED
     def go_back_a_state(self):
         prev_state = self.state_history.pop(-1)
         self.state = prev_state
+
+    def _set_pending_sip(self, sip):
+        if self._has_pending_sip():
+            if DEBUG: print("Existing pending state detected")
+            return
+
+        print("!!! Setting pending state to:",sip.toString())
+        self.pending_sip = sip
 
     def _get_curr_state(self):
         return self.state
@@ -205,14 +218,28 @@ class ChatManager:
 # Keeps policies
 # Also deciphers messages
 class PolicyKeeper:
-    def __init__(self, policy_rules, intent_table, state_lib):
+    def __init__(self, policy_rules, intent_dict, state_lib):
         self.POLICY_RULES = policy_rules
-        self.INTENT_LOOKUP_TABLE = intent_table
+        self.INTENT_DICT = intent_dict
         self.STATE_DICT = state_lib
 
     def GET_INITIAL_STATE(self):
         initstate = self.STATE_DICT['init']
         return initstate
+
+    def make_info_req_sip(self, req_info):
+        def set_info(state, info):
+            # Alters the state
+            assert state["gated"]
+            state["req_info"] = req_info
+
+        if len(req_info) < 1:
+            raise Exception("Tried to construct reqinfo SIP but required info is empty!")
+
+        ig_state = self.STATE_DICT["TMP_recv_info"].copy()
+        set_info(ig_state, req_info)
+        out = SIP(ig_state, cs=False)
+        return out
 
     # NOT USED FOR NOW
     def _get_state_replies(self, statekey):
@@ -229,15 +256,21 @@ class PolicyKeeper:
         return uds
 
     def decipher_message(self,curr_state,msg):
+        def get_intent_matchdb(intent):
+            if not "matchdb" in intent:
+                raise Exception("intent missing matchdb, {}".format(intent))
+            return intent["matchdb"]
+
         # Returns an Understanding minus details
         def uds_from_policies(state, msg):
+            print("uds from state:",state)
             policy = self.POLICY_RULES[state]
-            for in_lst in policy.get_intents():
-                for pair in in_lst:
+            print("asd", policy.get_intents())
+            for intent_lst in policy.get_intents():
+                for pair in intent_lst:
                     intent, next_sip = pair
-                    intentkey = intent["key"]
                     assert isinstance(next_sip, SIP)
-                    keyword_db = self.INTENT_LOOKUP_TABLE[intentkey]
+                    keyword_db = get_intent_matchdb(intent)
                     if cbsv.check_input_against_db(msg, keyword_db):
                         return Understanding(intent, next_sip)
             return Understanding.make_null()
@@ -322,18 +355,19 @@ class ReplyGenerator:
         self.formatter = string.Formatter()
 
     # OVERALL METHOD
-    def get_reply(self, prev_state, curr_state, intent, info = -1):
-        rdb = self.getreplydb(prev_state, intent, curr_state)
+    def get_reply(self, prev_state, curr_state, intent, ss, info = -1):
+        rdb = self.getreplydb(prev_state, intent, curr_state, ss)
         reply = self.generate_reply_message(rdb, info)
         return reply
 
-    def getreplydb(self,prev_state, intent, curr_state):
+    def getreplydb(self,prev_state, intent, curr_state, issamestate):
         def dict_lookup(key, dictionary):
             if key in dictionary:
                 return dictionary[key]
             return False
+
         def get_replylist(obj):
-            if DEBUG: print("get replies from obj",obj)
+            print("get replies from obj",obj)
             return obj["replies"]
 
         context = (prev_state, curr_state)
@@ -342,22 +376,23 @@ class ReplyGenerator:
         DEBUG = 1 if LOCALDEBUG else 0
 
         if DEBUG: print("csk", curr_state, "psk", prev_state)
-        if DEBUG: print(curr_state)
 
         # <Specific state to state goes here> if needed
-        
+        lookups = [intent, curr_state] if issamestate else [curr_state, intent]
+
         # Single state
         rdb = []
-        if len(rdb) < 1:
-            rdb = get_replylist(curr_state)
+        for obj in lookups:
+            if not obj:
+                # This is for when no intent
+                continue
+
+            if len(rdb) < 1:
+                rdb = get_replylist(obj)
         
-        if DEBUG: print("SS rdb:",rdb)
+        # if DEBUG: print("SS rdb:",rdb)
 
-        # Intent
-        if len(rdb) < 1:
-            rdb = get_replylist(intent)
-
-        if DEBUG: print("INT rdb:",rdb)
+        if DEBUG: print("rdb:",rdb)
 
         if LOCALDEBUG: DEBUG = 0
         if len(rdb) < 1:
@@ -379,17 +414,17 @@ class ReplyGenerator:
             if "requested_info" in msginfo:
                 rlist = msginfo["requested_info"]
                 crafted_msg = ""
-                # TODO Have a proper mapping for this
+                # TODO Have a proper mapping for thisa
                 if "city" in rlist:
-                    crafted_msg = crafted_msg + "您是哪个城市呢？ "
+                    crafted_msg = crafted_msg + "您是哪个城市呢？"
                 if "首次" in rlist:
-                    crafted_msg = crafted_msg + "是首次吗？ "
+                    crafted_msg = crafted_msg + "是首次吗？"
                 if "拍了" in rlist:
                     crafted_msg = crafted_msg + "拍好了吗？"
 
                 msginfo["requested_info"] = crafted_msg
 
-            if "首次" in msginfo:
+            if "首次" in msginfo and "city_info" in msginfo:
                 if msginfo["首次"] == "首次":
                     msginfo["首次ext"] = "首次参保额外收取{city_info[opening_fee]}元开户费".format(**msginfo)
                 else:

@@ -14,31 +14,19 @@ def state_key_dict(states):
 
 def init_replygen(jdata):
     REPLY_DB = jdata["reply_db"]
-    # INTENTS = jdata["intents"]
-    # STATES = jdata["states"]
-    # STATE_KEYS = state_key_dict(STATES)
-
-    # # Works for both intents and states
-    # def get_replylist(someobj):
-    #     return someobj["replies"]
 
     # Actually STS is not used by anything but I'm leaving a template here
     # STS_REPLY_KEY_LOOKUP = {
     #     (STATE_KEYS['payment'], STATE_KEYS['finish_sale']): "r_sale_done"
     # }
-
     # SS_REPLY_DBLOOKUP = {}
     # for sk in list(STATES.keys()):
     #     if len(get_replylist(STATES[sk])) > 0:
     #         SS_REPLY_DBLOOKUP[sk] = get_replylist(STATES[sk])
-
     # INTENT_REPLY_DBLOOKUP = {}
     # for ik in list(INTENTS.keys()):
     #     if len(get_replylist(INTENTS[ik])) > 0:
     #         INTENT_REPLY_DBLOOKUP[ik] = get_replylist(INTENTS[ik])
-    #     else:
-    #         print("<init replygen> No reply db found for", ik)
-            
     # r_dbs = {}
     # # r_dbs["s2s"] = STS_REPLY_KEY_LOOKUP
     # r_dbs["ss"] = SS_REPLY_DBLOOKUP
@@ -50,10 +38,10 @@ def init_replygen(jdata):
 def init_policykeeper(jdata, pdata):
     INTENTS = jdata["intents"]
     STATES = jdata["states"]
-    STATE_KEYS = state_key_dict(jdata["states"])
-    MATCH_DB = jdata["match_db"]
+    STATE_KEYS = state_key_dict(jdata["states"]) # state_index: state_key
 
     # In: list of [current_state, destination]
+    # To create the classmethod SIPs
     def create_policy_tuple(pair):
         state, destination = pair
         if destination == "SAME_STATE":
@@ -87,19 +75,14 @@ def init_policykeeper(jdata, pdata):
 
     # Loop to make all policies for those without specific paths
     existing = list(POLICY_RULES.keys())
-    for k in list(STATES.keys()):
-        state_value = STATES[k]["key"]
-        if state_value in existing:
+    for i in list(STATES.keys()):
+        k = STATE_KEYS[i]
+        # state_value = STATES[k]["key"]
+        if k in existing:
             continue # Don't overwrite existing policy lookup values
-        POLICY_RULES[state_value] = make_policy([])
+        POLICY_RULES[k] = make_policy([])
 
-    INTENT_LOOKUP_TABLE = {}
-    for k in list(MATCH_DB.keys()):
-        look_key = k.split("db_")[1] # Ignore first 3 characters
-        kv = INTENTS[look_key]["key"] #Need a hashable type
-        INTENT_LOOKUP_TABLE[kv] = MATCH_DB[k]
-
-    return PolicyKeeper(POLICY_RULES, INTENT_LOOKUP_TABLE, STATES)
+    return PolicyKeeper(POLICY_RULES, INTENTS, STATES)
 
 def init_infoparser(jdata):
     relevant = jdata["info_parser"]

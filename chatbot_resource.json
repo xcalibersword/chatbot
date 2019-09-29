@@ -1,8 +1,26 @@
 
 {
     "intents": {
+        "affirm": {
+            "key": "affirmation",
+            "matchdb":[
+                "yes","(?<!(不|你|您))好","(?<!没)有((啊|哦)*)$","(?<!不)是","没问题","(?<!不)确定", "ok", "(?<!不)好的","(?<!不)可以","是的",
+                "哦"
+            ],
+            "replies": []
+        },
+        "deny": {
+            "key": "denial",
+            "matchdb":[
+                "不好","不可以","不是","没有","没问题","不确定","no","not ok"
+            ],
+            "replies": []
+        },
         "greet": {
             "key": "greetings",
+            "matchdb":[
+                "(你|您)好","hello","早","早安","下午好","午安","晚上好", "hi", "在吗", "喂", "有人不"
+            ],
             "replies": [
                 "您好!",
                 "Hello!"
@@ -10,6 +28,9 @@
         },
         "ask_name": {
             "key": "ask_for_name",
+            "matchdb":[
+                "who u","what is your name", "who are you","(您|你)的名字是什么","(您|你)叫什么","(您|你)叫什么名", "(您|你)是谁"
+            ],
             "replies": [
                 "我是回音机器人",
                 "他们叫我王俊杰！",
@@ -18,78 +39,125 @@
         },
         "indicate_query": {
             "key": 1702,
+            "matchdb":[],
             "replies": []
         },
         "sales_query": {
             "key": 111,
+            "matchdb":[
+                "how does this work", "流程是怎么样的", "sales query"
+            ],
             "replies": []
         },
         "pay_query": {
             "key": "112 pay query",
-            "replies": []
+            "matchdb":[
+                "pay","付(款|钱)", "办理"
+            ],
+            "replies": ["直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"]
         },
         "gen_query": {
             "key": 113,
+            "matchdb":[
+                "请问","想问","问一下","ask", "怎么"
+            ],
             "replies": []
+        },
+        "resource_query": {
+            "key": "114 ziliao query",
+            "matchdb":[
+                "什么资料"
+            ],
+            "replies": [
+                "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料"
+            ]
+        },
+        "weixin_query": {
+            "key": "115 weixin query (might be gated)",
+            "matchdb":[
+                "微信(.*)吗","有微信"
+            ],
+            "replies": ["上海wei信号：iHR-7531，备注填写：店铺名称+上海+淘宝会员名"]
         },
         "how_check_shebao_status": {
             "key": "info_how_check_shebao",
+            "matchdb":[
+                "查询社保资格", "查询缴纳", "缴纳怎么查询", "how do i check shebao status", "how check shebao", "在哪里能查到"
+            ],
             "replies": [
                 "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能） http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp"
             ]
         },
         "when_check_shebao_status": {
             "key": "info_when_check_shebao",
+            "matchdb":[
+                "时候能查到"
+            ],
             "replies": [
                 "社保查询: \n次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费\n次次月15日可以在网上查询到实缴款;\n社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp\n公积金缴费查询：\n次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。"
             ]
         },
         "how_to_pai": {
             "key": "info_how_to_pai",
-            "replies": []
-        },
-        "pai_finished": {
-            "key": "pai_finished",
-            "replies": []
+            "matchdb":[
+                "怎么拍"
+            ],
+            "replies": [
+                "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
+            ]
         },
         "report_issue": {
             "key": 151,
+            "matchdb":[
+                "issue","problem","我有事"
+            ],
             "replies": []
         },
         "purchase": {
             "key": "purchase",
-            "replies": []
-        },
-        "affirm": {
-            "key": "affirmation",
-            "replies": []
-        },
-        "deny": {
-            "key": "denial",
+            "matchdb":[
+                "社保", "怎么缴纳", "buy", "代缴社保"
+            ],
             "replies": []
         },
         "confusion": {
             "key": 193,
+            "matchdb":[],
             "replies": []
         },
         "goodbye": {
             "key": "goodbyes",
+            "matchdb":[
+                "再见", "bye", "goodbye"
+            ],
             "replies": []
         },
         "reset_chat": {
             "key": 12345,
+            "matchdb":[
+                "resetchat1"
+            ],
             "replies": ["CHAT HAS BEEN RESET"]
         }
     },
     "states": {
         "init": {
-            "key": "200 init",
+            "key": "state_init",
             "gated": false,
             "pocket_state": false,
             "req_info": "",
             "replies": [                
                 "您好! 有什么能帮助您的", 
                 "Hello! 有什么能帮助您的"]
+        },
+        "initplus": {
+            "key": "state_init++",
+            "gated": false,
+            "pocket_state": false,
+            "req_info": "",
+            "replies": [                
+                "亲有别的事要问吗？"
+            ]
         },
         "ask_if_issue": {
             "key": "251 whats wrong",
@@ -127,12 +195,12 @@
             "req_info": "",
             "replies": []
         },
-        "recv_info": {
+        "TMP_recv_info": {
             "key": "221 recv info",
-            "gated": false,
+            "gated": true,
             "pocket_state": false,
             "req_info": "",
-            "replies": []
+            "replies": ["亲,{requested_info}"]
         },
         "log_issue": {
             "key": 251,
@@ -195,7 +263,7 @@
             "pocket_state": false,
             "req_info": "",
             "replies": [
-                "再见!","Byebye!","Hope to see you again! :)"
+                "好的，谢谢光临", "好的，欢迎使用淘宝"
             ]
         },
         "PREV_STATE": {
@@ -206,7 +274,7 @@
             "replies": []
         },
         "inform_pai":{
-            "key": "260 howto pai",
+            "key": "260 inform pai",
             "gated": false,
             "pocket_state": false,
             "req_info": "",
@@ -232,63 +300,6 @@
             "replies":["就这样了！谢谢亲的光临"]
         }
     },
-
-    "match_db": {
-        "db_goodbye": [
-            "再见", "bye", "goodbye"
-        ],
-        "db_ask_name": [
-            "who u","what is your name", "who are you","(您|你)的名字是什么","(您|你)叫什么","(您|你)叫什么名", "(您|你)是谁"
-        ],
-
-        "db_deny": [
-            "不好","不可以","不是","没有","没问题","不确定","no","not ok"
-        ],
-
-        "db_affirm": [
-            "yes","(?<!不)好","(?<!没)有","(?<!不)是","没问题","(?<!不)确定", "ok", "(?<!不)好的","(?<!不)可以","是的"
-        ],
-
-        "db_greet" : [
-            "(你|您)好","hello","早","早安","下午好","午安","晚上好", "hi", "在吗", "喂", "有人不"
-        ],
-
-        "db_gen_query" : [
-            "请问","想问","问一下","ask", "怎么"
-        ],
-
-        "db_sales_query" : [
-            "how does this work", "流程是怎么样的", "sales query"
-        ],
-
-        "db_pay_query" : [
-            "pay","付钱", "办理",""
-        ],
-
-        "db_purchase" : [
-            "社保", "怎么缴纳", "buy", "代缴社保"
-        ],
-
-        "db_report_issue" : [
-            "issue","problem"
-        ],
-        "db_how_to_pai":[
-            "怎么拍"
-        ],
-        "db_when_check_shebao_status":[
-            "时候能查到"
-        ],
-        "db_how_check_shebao_status": [
-            "查询社保资格", "查询缴纳", "缴纳怎么查询", "how do i check shebao status", "how check shebao", "在哪里能查到"
-        ],
-        "db_pai_finished": [
-            "拍(+)了","拍好了", "已拍"
-        ],
-        "db_reset_chat": [
-            "resetchat1"
-        ]
-    },
-
     "reply_db":{
         "r_opening_message":{
             "context_flag": 0,
@@ -365,7 +376,7 @@
         },
         "shouci":{
             "首次": ["yes", "(?<!不)是", "(?<!不)对", "没(.+)过", "(?<!不)(.*)首次"],
-            "不首次": ["no","nope","不是", "不", "(?<!没)(.+)过", "首次"] 
+            "不首次": ["no","nope","不是", "不", "(?<!没)(.+)过", "不(.*)首次"] 
         },
         "yesno": {
             "是": ["yes", "(?<!没)有", "(?<!不)是", "(?<!不)对"],
