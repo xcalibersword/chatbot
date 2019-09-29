@@ -19,7 +19,7 @@ DEBUG = 0
 # None right now
 
 # Server libraries:
-# - socketio
+# - python-socketio
 # - aiohttp
 
 # EXTENSIONS:

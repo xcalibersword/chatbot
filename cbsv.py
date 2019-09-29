@@ -20,8 +20,8 @@ def DIGITS():
 def INFO_GATHER_STATE_KEY():
     return "221 recv info"
 
-def INFO_GATHER_STATE_REPLIES():
-    return ["亲,{requested_info}", "那么{requested_info}"]
+# def INFO_GATHER_STATE_REPLIES():
+#     return 
 
 def state_key_dict(states):
     ks = states.keys()
@@ -75,9 +75,12 @@ def dump_to_json(filename, data, DEBUG = 0):
         print("Finished writing to " + str(filename))
 
 def read_json(json_filename):
-    with open(json_filename, 'r',encoding="utf-8") as f:
-        data = json.loads(f.read(),encoding="utf-8")
-    return data
+    try:
+        with open(json_filename, 'r',encoding="utf-8") as f:
+            data = json.loads(f.read(),encoding="utf-8")
+        return data
+    except Exception as e:
+        print("Exception opening{}".format(json_filename), e)
 
 def check_file_exists(filepath):
     return os.path.isfile(filepath)

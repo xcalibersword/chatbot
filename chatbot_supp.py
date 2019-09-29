@@ -133,7 +133,7 @@ class ReqGatekeeper:
     # If fail, returns False, (Next state)
     def try_gate(self, info):
         if not self.gate_closed:
-            return (True, SIP.goto_pending_state())
+            return []
 
         print("Trying gate with info:",info, "required:",self.get_requirements())
         unfilled_slots = self.get_slots()
@@ -143,22 +143,21 @@ class ReqGatekeeper:
                     unfilled_slots.remove(s)
         
         if DEBUG: print("unfilled_slots:",unfilled_slots)
-        if len(unfilled_slots) > 0:
-            collect_SIP = self.build_info_SIP(unfilled_slots)
-            return (False, collect_SIP)
-        self.open_gate()
-        return (True, SIP.goto_pending_state())
-
-    def build_info_SIP(self, req_slots):
-        # BUILD STATE OBJECT
-        info_gather_state = {
-            "key": cbsv.INFO_GATHER_STATE_KEY(),
-            "gated": True,
-            "req_info": req_slots,
-            "replies": cbsv.INFO_GATHER_STATE_REPLIES()
-        }
-        out = SIP(info_gather_state, cs=False)
-        return out
+        if len(unfilled_slots) == 0:
+            self.open_gate()
+        
+        return unfilled_slots
+        
+    # def build_info_SIP(self, req_slots):
+    #     # BUILD STATE OBJECT
+    #     info_gather_state = {
+    #         "key": cbsv.INFO_GATHER_STATE_KEY(),
+    #         "gated": True,
+    #         "req_info": req_slots,
+    #         "replies": cbsv.INFO_GATHER_STATE_REPLIES()
+    #     }
+    #     out = SIP(info_gather_state, cs=False)
+    #     return out
         
 
 # A vehicle to house SIP, intent and details.

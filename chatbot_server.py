@@ -27,13 +27,13 @@ bot = init_chatbot()
 def robotify(msg):
     return "<机器人>: " + str(msg)
 
+def display_own_message(msg):
+    return "<您>: " + str(msg)
+
 def get_bot_reply(bot, cid, message):
     replytext = bot.get_bot_reply(cid,message)
     reply = robotify(replytext)
     return reply
-
-def display_own_message(msg):
-    return "<您>: " + str(msg)
 
 def index(request):
     indexfilepath = 'testing_server/index.html'
@@ -43,7 +43,7 @@ def index(request):
 @sio.event
 async def connect(sid, environ):
     sio.enter_room(sid, sid) # Take a client and put them into a room that is their socket ID
-    print("####### New connection! #######")
+    print("############## New connection! ##############")
     print("Contacted by someone at", sid)
     greet = robotify(welcome_msg)
     await sio.emit('message', greet, room=sid)
