@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-import asyncio
+#import asyncio
 import sys
 import socketio
 from aiohttp import web
@@ -30,8 +30,20 @@ def robotify(msg):
 def display_own_message(msg):
     return "<您>: " + str(msg)
 
+def get_qingyunke(query):
+    url = "http://api.qingyunke.com/api.php?key=free&appid=0&msg="
+    #query = urllib.parse.urlencode(query)
+    resp = requests.get(url+query)
+    result_json = json.loads(resp.text)
+    return result_json['content']
+
 def get_bot_reply(bot, cid, message):
     replytext = bot.get_bot_reply(cid,message)
+    # if replytext == '不好意思，我听不懂':
+    #     if get_qingyunke(message) == None:
+    #         replytext = '我收到' + message
+    #     else:
+    #         replytext = get_qingyunke(message)
     reply = robotify(replytext)
     return reply
 
