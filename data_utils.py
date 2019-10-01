@@ -8,13 +8,12 @@ class RawDataProcessor:
         self.cso_list = []
         self.cust_list = []
         self.id_list = {}
-        self.pattern_timestamp = '[(]\d*-\d*-\d* \d*:\d*:\d*[)]:  '
+        
+        self.pattern_timestamp = '[(]\d*-\d*-\d* \d*:\d*:\d*[)]:'
         self.pattern_startline = '-{28}.*-{28}'
-        dirpath = os.getcwd()
-        self.savepath = os.path.join(str(dirpath),"data", "QA" + date_of_entry + ".csv")
-        self.cso_savepath = os.path.join(str(dirpath),"data", "CSO" + date_of_entry + ".csv")
-        self.cust_savepath = os.path.join(str(dirpath),"data", "CUST" + date_of_entry + ".csv")    
-        self.datapath = data_path
+
+        self.savepath = os.path.join(str(os.getcwd()),"data", "QA" + time.strftime(r'%Y-%m-%d', time.localtime(time.time())) + ".csv")
+        self.datapath = r"C:\Users\Administrator\Desktop\data (unsorted)\QianNiu_Conv_FanFan"
 
     def storeConvoID(self,convo,speaker):
         try:
@@ -33,9 +32,9 @@ class RawDataProcessor:
     
     def stackConvoQA(self,convo,isCSO):
         if isCSO:
-            self.cso_list[-1] = self.cso_list[-1] + " " + convo
+            self.cso_list[-1] = self.cso_list[-1] + "" + convo
         else:
-            self.cust_list[-1] = self.cust_list[-1] + " " + convo
+            self.cust_list[-1] = self.cust_list[-1] + "" + convo
 
     def loadQNtxt(self):
         file_name_list = os.listdir(path=self.datapath)
@@ -64,101 +63,81 @@ class RawDataProcessor:
                         #     break
                         self.sentlist.append(sent)
     
-
-date_of_entry = time.strftime(r'%Y-%m-%d', time.localtime(time.time())) 
-data_path = r"C:\Users\Administrator\Desktop\data (unsorted)\QianNiu_Conv_FanFan"
-w = RawDataProcessor(date_of_entry,data_path)
-w.loadQNtxt()
-
-prevs_id = ""
-startTalk = ""
-for sent in w.sentlist:
-    try:
-        print(w.pattern_timestamp,[sent],re.search(w.pattern_timestamp,sent))
-    except Exception:
-        print("no match")
-    if re.match(w.pattern_startline,sent):        
-        if not prevs_id == "" and not startTalk == "":
-            if prevs_id == cust_id and startTalk == cust_id:
-                w.storeConvoQA(" ",True)
-            elif not prevs_id == cust_id and not startTalk == cust_id:
-                w.storeConvoQA(" ",False)
-
-        #check data
-        # try:
-        #     if(len(w.cust_list) != len(w.cso_list)):
-        #         print(len(w.cust_list),len(w.cso_list))
-        #         for q,a in zip(w.cust_list[-1:],w.cso_list[-1:]):
-        #             print("{2}:{0} >>> {3}:{1}".format(q,a,cust_id,cso_id))
-        
-        # except Exception:
-        #     pass  
-        
-        cust_id = re.sub('-*','',sent)
-        new_cso_convo_chat = True
-        new_cust_convo_chat = True
+    def processQNdata(self):
         prevs_id = ""
-        startTalk = ""    
-    elif re.match(cust_id,sent):
-        convo = re.sub(cust_id+w.pattern_timestamp,"",sent)
-        w.storeConvoID(convo,cust_id)
-        if not cust_id == prevs_id:    
-            w.storeConvoQA(convo,False)
-        elif new_cust_convo_chat:
-            w.storeConvoQA(convo,False)
-        else:
-            w.stackConvoQA(convo,False)
+        startTalk = ""
+        for sent in w.sentlist:
+            if re.match(w.pattern_startline,sent):        
+                if not prevs_id == "" and not startTalk == "":
+                    if prevs_id == cust_id and startTalk == cust_id:
+                        w.storeConvoQA(" ",True)
+                    elif not prevs_id == cust_id and not startTalk == cust_id:
+                        w.storeConvoQA(" ",False)
+                cust_id = re.sub('-*','',sent)
+                new_cso_convo_chat = True
+                new_cust_convo_chat = True
+                prevs_id = ""
+                startTalk = ""    
+            elif re.match(cust_id,sent):
+                convo = re.sub(cust_id+w.pattern_timestamp,"",sent).strip()
+                w.storeConvoID(convo,cust_id)
+                if not cust_id == prevs_id:    
+                    w.storeConvoQA(convo,False)
+                elif new_cust_convo_chat:
+                    w.storeConvoQA(convo,False)
+                else:
+                    w.stackConvoQA(convo,False)
 
-        if new_cso_convo_chat and new_cust_convo_chat:
-            startTalk = cust_id
-        prevs_id = cust_id
-        new_cust_convo_chat = False
-        print(cust_id,convo)
-    #problem of cso_id in convo
-    elif re.search(w.pattern_timestamp,sent):
-        print("match CSO")
-        cso_id = re.sub(w.pattern_timestamp+".*","",sent)
-        convo = re.sub(cso_id+w.pattern_timestamp,"",sent)
-        w.storeConvoID(convo,cso_id)
-        if prevs_id == cust_id:
-            w.storeConvoQA(convo,True)
-        elif new_cso_convo_chat:
-            w.storeConvoQA(convo,True)
-        else:
-            w.stackConvoQA(convo,True) 
+                if new_cso_convo_chat and new_cust_convo_chat:
+                    startTalk = cust_id
+                prevs_id = cust_id
+                new_cust_convo_chat = False
+            elif re.search(w.pattern_timestamp,sent):
+                cso_id = re.sub(w.pattern_timestamp+".*","",sent)
+                convo = re.sub(cso_id+w.pattern_timestamp,"",sent).strip()
+                w.storeConvoID(convo,cso_id)
+                if prevs_id == cust_id:
+                    w.storeConvoQA(convo,True)
+                elif new_cso_convo_chat:
+                    w.storeConvoQA(convo,True)
+                else:
+                    w.stackConvoQA(convo,True) 
 
-        if new_cso_convo_chat and new_cust_convo_chat:
-            startTalk = cso_id
-        prevs_id = cso_id
-        new_cso_convo_chat = False
-        print(cso_id,convo)
-    else:
-        print("nonneee")
-        print(prevs_id,convo)
-        if prevs_id == cust_id:
-            isCSO = False
-        else:
-            isCSO = True
-        w.stackConvoQA(sent,isCSO)
-        w.stackConvoID(sent,prevs_id)
-        
-new_cso_list = [[sent] for sent in w.cso_list]
-cso_df = pd.DataFrame(columns=["CSO"],data=new_cso_list)
-cso_df.to_csv(w.cso_savepath,index=False,encoding="utf-8")
+                if new_cso_convo_chat and new_cust_convo_chat:
+                    startTalk = cso_id
+                prevs_id = cso_id
+                new_cso_convo_chat = False
+            else:
+                if prevs_id == cust_id:
+                    isCSO = False
+                else:
+                    isCSO = True
+                w.stackConvoQA(sent,isCSO)
+                w.stackConvoID(sent,prevs_id)
 
-new_cust_list = [[sent] for sent in w.cust_list]
-cust_df = pd.DataFrame(columns=["CUST"],data=new_cust_list)
-cust_df.to_csv(w.cust_savepath,index=False,encoding="utf-8")
+    def saveProcessed(self):
+        new_cso_list = [[sent] for sent in w.cso_list]
+        cso_df = pd.DataFrame(columns=["CSO"],data=new_cso_list)
+        new_cust_list = [[sent] for sent in w.cust_list]
+        cust_df = pd.DataFrame(columns=["CUST"],data=new_cust_list)
+        QA_df = pd.concat([cso_df,cust_df],ignore_index=True,axis=1)
+        QA_df.to_csv(w.savepath,index=False,encoding="utf-8")
 
-QA_df = pd.concat([cso_df,cust_df],ignore_index=True,axis=1)
-QA_df.to_csv(w.savepath,index=False,encoding="utf-8")
+        list_list_list = []
+        count = 0
+        for id_key,sent_list in w.id_list.items():
+            temp_df = pd.DataFrame(data=[[sent] for sent in sent_list])
+            list_list_list.append(temp_df)
+            temp_df.to_csv(r"C:\Users\Administrator\Desktop\code (unsorted)\chatbot\id_data\{}.csv".format(id_key),index=False,encoding="utf-8")
 
-list_list_list = []
-count = 0
-for id_key,sent_list in w.id_list.items():
-    temp_df = pd.DataFrame(data=[[sent] for sent in sent_list])
-    list_list_list.append(temp_df)
-    temp_df.to_csv(r"C:\Users\Administrator\Desktop\code (unsorted)\chatbot\id_data\{}.csv".format(id_key),index=False,encoding="utf-8")
+w = RawDataProcessor()
+w.loadQNtxt()
+w.processQNdata()
+#w.saveProcessed()
+
+query = w.cust_list
+
+
 
 #funnel data (intents)
 intent = {
@@ -182,6 +161,3 @@ slot = {
 }
 
 slot2idx = enumerate(slot.keys())
-
-
-#stack problem
