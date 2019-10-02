@@ -1,0 +1,14 @@
+{
+    "intent": 
+    {
+        "greet":[]
+    },
+    "slot":
+    {
+        "country.to":[]
+    },
+    "context":
+    {
+        "PER":[]
+    }
+}

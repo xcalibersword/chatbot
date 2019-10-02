@@ -130,6 +130,15 @@ class RawDataProcessor:
             list_list_list.append(temp_df)
             temp_df.to_csv(r"C:\Users\Administrator\Desktop\code (unsorted)\chatbot\id_data\{}.csv".format(id_key),index=False,encoding="utf-8")
 
+    def autoLabeler(self,template_dict,data_list):
+        pass
+
+    def word_embedding(self):
+        pass
+
+    def slot_gated_model(self):
+        pass
+
 w = RawDataProcessor()
 w.loadQNtxt()
 w.processQNdata()
