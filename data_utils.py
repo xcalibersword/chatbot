@@ -147,26 +147,3 @@ w.processQNdata()
 query = w.cust_list
 
 
-
-#funnel data (intents)
-intent = {
-    "greeting":[],
-    "clarify":[],
-    "bye":[],
-    "yes":[],
-    "no":[],
-    "others":[]
-}
-
-intent2idx = enumerate(intent.keys())
-
-#funnel data (slots)
-slot = {
-    "country.in":[],
-    "country.of":[],
-    "fee.for":[],
-    "fee.due":[],
-    "others":[]
-}
-
-slot2idx = enumerate(slot.keys())
