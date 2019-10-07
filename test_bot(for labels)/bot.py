@@ -1,78 +1,65 @@
-import json
-import os
+#handles the formatting of the incoming message and reply them
 
-def json_file_to_dict(path):
-    with open(path,'r') as f:
-        dict = json.load(fp=f)
-    return dict    
+import re
+from bot_brain import NLU
+from bot_policy import POLICY
+from bot_actions import ACTION
+from bot_state import STATE
+
+with open(r"D:\data (unsorted)\中文停用词.txt","r",encoding="utf-8") as f:
+    w = f.readlines()
+stopword_list = [word.strip() for word in w]
+#website,emoji,punctuation
+remove_pattern = [r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+",r"[[].*[]]",r"[ \\[ \\] \\^ \\-_*×――(^)（^）$%~!@#$…&%￥—+=<>《》!！??？:：•`·、。，；,.;\"‘’“”-]"]
+
+def clean_msg(msg,stopword_list,remove_pattern):
+    # for pattern in remove_pattern:
+    #     msg = re.sub(pattern,"",msg)
+    # for stopword in stopword_list:
+    #     msg = msg.replace(stopword,"")
+    return msg
 
 class Chatbot:
-    def __init__(self):
+    def __init__(self,user_id):
         self.name = "BOT"
-        self.nlu = json_file_to_dict(r"C:\Users\Administrator\Desktop\code (unsorted)\chatbot\test_bot(for labels)\preset\NLU.json")
-        self.template = json_file_to_dict(r"C:\Users\Administrator\Desktop\code (unsorted)\chatbot\test_bot(for labels)\preset\dialog_template.json")
-        self.cust_info = json_file_to_dict(r"C:\Users\Administrator\Desktop\code (unsorted)\chatbot\test_bot(for labels)\preset\customer_info.json")
-        self.company_info = json_file_to_dict(r"C:\Users\Administrator\Desktop\code (unsorted)\chatbot\test_bot(for labels)\preset\company_info.json")        
+        self.user = user_id
+        self.NLU = NLU()
+        self.POLICY = POLICY()
+        self.ACTION = ACTION()
 
-    def reply(self,user_id,query_list,reply_list):
+    def reply(self,query_list,reply_list):
         print("-"*10)
         for query in query_list:
-            print("{0}  >>>  {1}".format(user_id,query))
+            print("{0}  >>>  {1}".format(self.user,query))
         for reply in reply_list:
             print("{0}  >>>  {1}".format(self.name,reply))
         print("-"*10)    
     
-    def get_reply_list(self,user_id,msg_list):
+    def get_reply_list(self,msg_list):
         reply = []
         for msg in msg_list:
-            response = self.get_reply(user_id,msg)
+            response = self.get_reply(msg)
             if response["isImpt"]:
                 reply.append(response["msg"])
         if reply == []:
             reply = [response["msg"]]
         return reply
 
-    def get_reply(self,user_id,msg):
-
+    def get_reply(self,msg):
+        intent,context,slot = self.NLU.get_nlu(msg)
+        #reply = self.POLICY.get_action(intent,context,slot)
 
 
         reply = {"msg":"Hi!","isImpt": True}
         return reply
 
 if __name__ == "__main__":
-
-    bot = Chatbot()
-    print(bot.nlu)
-    print(bot.company_info)
-    print(bot.cust_info)
-    print(bot.template)
-    # while True:
-    #     user_id = input("User_id: ")
-    #     msg = input("Query: ")
-    #     msg = msg.split(" ")
-    #     reply = bot.get_reply_list(user_id,msg)
-    #     bot.reply(user_id,msg,reply)
-        
-"""
-intent
-    use pattern to match whole sentence
-    decide the next course of action
-
-action
-    has slot to fill
-    has context to fill
-    SQl query generated based on value of slot and context to generate the ideal response    
-
-Dialog manger
-Bot take in template, take in NLU json
-Use NLU json to identify the intent
-Pick up the template to use based on intent
-Fill the slot and context in the template
-Return the model answer
-
-
-NLU
-Take in Query
-Returns intent, slot and entity
-
-"""
+    while True:
+        user_id = input("User_id: ")
+        bot = Chatbot(user_id)
+        query = input("Query: ")
+        msg_list = query.split(" ")
+        clean_msg_list = [clean_msg(msg,stopword_list,remove_pattern) for msg in msg_list if not msg.strip() == ""]
+        reply = bot.get_reply_list(clean_msg_list)
+        bot.reply(clean_msg_list,reply)
+    

@@ -3,17 +3,17 @@ import pandas as pd
 
 #Funnel for all forms of data to the different pipeline
 class RawDataProcessor:
-    def __init__(self,date_of_entry,data_path):
+    def __init__(self):
         self.sentlist = []
         self.cso_list = []
         self.cust_list = []
         self.id_list = {}
         
-        self.pattern_timestamp = '[(]\d*-\d*-\d* \d*:\d*:\d*[)]:'
-        self.pattern_startline = '-{28}.*-{28}'
+        self.pattern_timestamp = r'[(]\d*-\d*-\d* \d*:\d*:\d*[)]:'
+        self.pattern_startline = r'-{28}.*-{28}'
 
         self.savepath = os.path.join(str(os.getcwd()),"data", "QA" + time.strftime(r'%Y-%m-%d', time.localtime(time.time())) + ".csv")
-        self.datapath = r"C:\Users\Administrator\Desktop\data (unsorted)\QianNiu_Conv_FanFan"
+        self.datapath = r"D:\data (unsorted)\QianNiu_Conv_FanFan"
 
     def storeConvoID(self,convo,speaker):
         try:
@@ -32,9 +32,9 @@ class RawDataProcessor:
     
     def stackConvoQA(self,convo,isCSO):
         if isCSO:
-            self.cso_list[-1] = self.cso_list[-1] + "" + convo
+            self.cso_list[-1] = self.cso_list[-1] + " " + convo
         else:
-            self.cust_list[-1] = self.cust_list[-1] + "" + convo
+            self.cust_list[-1] = self.cust_list[-1] + " " + convo
 
     def loadQNtxt(self):
         file_name_list = os.listdir(path=self.datapath)
@@ -124,11 +124,10 @@ class RawDataProcessor:
         QA_df.to_csv(w.savepath,index=False,encoding="utf-8")
 
         list_list_list = []
-        count = 0
         for id_key,sent_list in w.id_list.items():
             temp_df = pd.DataFrame(data=[[sent] for sent in sent_list])
             list_list_list.append(temp_df)
-            temp_df.to_csv(r"C:\Users\Administrator\Desktop\code (unsorted)\chatbot\id_data\{}.csv".format(id_key),index=False,encoding="utf-8")
+            temp_df.to_csv(r"D:\chatbot\id_data\{}.csv".format(id_key),index=False,encoding="utf-8")
 
     def autoLabeler(self,template_dict,data_list):
         pass
@@ -142,8 +141,21 @@ class RawDataProcessor:
 w = RawDataProcessor()
 w.loadQNtxt()
 w.processQNdata()
+
+
+
+
+
 #w.saveProcessed()
 
-query = w.cust_list
-
+# cust_query = []
+# for q in w.cust_list:
+#     query_list = q.split(" ")
+    
+#     for query in query_list:
+#         if query.strip() != "":
+#            cust_query.append(query)
+# custlist = [[sent] for sent in cust_query]
+# new_df = pd.DataFrame(data=custlist)
+# new_df.to_csv(r"D:\chatbot\data\a.csv",index=False,encoding="utf-8")
 
