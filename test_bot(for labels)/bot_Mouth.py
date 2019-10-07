@@ -1,10 +1,11 @@
 #handles the formatting of the incoming message and reply them
+#clean msg to remove stopword, punctuation, change from english to chinese, remove emoji, remove website, traditional to normal chinese
 
 import re
-from bot_brain import NLU
-from bot_policy import POLICY
-from bot_actions import ACTION
-from bot_state import STATE
+from bot_LeftBrain import NLU
+from bot_RightBrain import POLICY
+from bot_Arm import ACTION
+from bot_ShortTermMemory import STATE
 
 with open(r"D:\data (unsorted)\中文停用词.txt","r",encoding="utf-8") as f:
     w = f.readlines()

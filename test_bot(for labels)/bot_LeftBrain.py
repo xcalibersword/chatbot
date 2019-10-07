@@ -1,31 +1,40 @@
 #identify slot,intent and context of a given query
 #kiv context
 
+#need to solve issue of required slot not carrying forward to be filled and when does it reset
+#need to pass slot required around after replying
+
 import jieba
 import re
 
 intent_dict = {
-                "user.request.product_details":
-                {
-                    "pattern":r"(http://item[.]taobao[.]com/item[.]htm[?]id=\d+|[[]卡片[]])"
-                },
                 "user.greet":
                 {
                     "pattern":r"(你好|在吗|hi|hello|hey)"
                 },
                 "user.request.fee":
                 {
-                    "pattern":r"(怎么收费呢)",
+                    "pattern":r"(收费)",
                     "slot_required":["city","product","month","hasAcc"]
                 },
                 "user.affirm":
                 {
-                    "pattern":r"(有)"
+                    "pattern":r"(有|好的|没问题)"
                 },
                 "user.inform":
                 {
-                    "pattern":r"(有)"
+                    "pattern":r"(http://item[.]taobao[.]com/item[.]htm[?]id=\d+|[[]卡片[]]|上海|四月|上海户籍|最低标准)",
+                    "slot_required":["city","product","month","hasAcc","priceRange"]
+                },
+                "user.deny":
+                {
+                    "pattern":r"(没有)"
+                },
+                "user.request.procedure":
+                {
+                    "pattern":r"(准备什么资料)"
                 }
+
             }
 #r"\b()\b"
 slot_dict = {
@@ -46,6 +55,11 @@ slot_dict = {
                 {
                     "四月":r"(四月)",
                     "五月":r"(五月)"
+                },
+                "priceRange":
+                {
+                    "最高":r"(最高标准)",
+                    "最低":r"(最低标准)"
                 }
             }
 
@@ -80,6 +94,7 @@ class NLU():
             for k,v in self.slot[slot].items():
                 if re.search(v,msg):
                     slot_found[slot]=k
+                    break
                 else:
                     slot_found[slot]=""
         return slot_found

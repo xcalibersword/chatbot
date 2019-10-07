@@ -1,18 +1,5 @@
 #decide the state and action to be taken using all factors
 
-INIT = 0
-
-START = 1
-
-FILLING_SLOT = 2
-SLOT_FILLED = 3
-ANSWERED = 4
-
-CHANGE_TOPIC = 5
-
-TROLL = -2
-END = -1
-
 policy = {
     # "Example":
     # {
@@ -50,6 +37,35 @@ POLICY_RULES = {
     (INIT, "none"): (INIT, "I'm sorry - I'm not sure how to help you"),
     (CHOOSE_COFFEE, "none"): (CHOOSE_COFFEE, "I'm sorry - would you like Colombian or Kenyan?"),
 }
+
+INIT = 0
+IFHASACC = 1
+hasACC = 2
+noACC = 3
+
+ANSWERED = 4
+
+CHANGE_TOPIC = 5
+
+TROLL = -2
+END = -1
+
+
+request_fee_policy = {
+    (INIT,"user.request.fee"):(IFHASACC,"bot.request.hasAcc"),
+    (INIT,"none"):(),
+    (IFHASACC,"user.affirm"):(hasACC,),
+    (IFHASACC,"user.deny"):(noACC,),
+}
+    
+slot_filling_policy = {
+
+}
+    
+fallback_policy ={
+
+}
+
 
 class POLICY():
     def __init__(self):

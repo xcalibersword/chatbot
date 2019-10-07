@@ -13,3 +13,6 @@ data/
 sikuliX/
 
 id_data/
+test_NLU(intent-slot)/model/
+
+test_NLU(intent-slot)/vocab/
