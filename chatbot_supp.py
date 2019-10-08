@@ -183,6 +183,7 @@ class Understanding:
     def get_intent(self):
         return self.intent
 
+    # NOT BEING USED
     def copy_swap_sip(self,new_sip):
         new = Understanding(self.intent, new_sip)
         new.set_details(self.get_details())
