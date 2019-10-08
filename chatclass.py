@@ -14,12 +14,55 @@ DEBUG = 0
 # Quotation: Needs location
 # Payment: Needs payment details?
 
+# A conversation thread
+class ThreadTracker():
+    def __init__(default_state):
+        self.default_state = default_state
+        self.curr_thread = ConvoThread(initial_state)
+        self.threads = [self.curr_thread] # A stack of threads
+    
+    def spawn_thread(self, curr_state = self.default_state):
+        new = ConvoThread(curr_state)
+        self.threads.append(new)
+        self.curr_thread = self.threads[-1]
+    
+    def get_curr_state(self):
+        return curr_thread.get_state()
+
+    def end_thread(self):
+        if len(self.threads) > 1:
+            self.threads.pop(-1)
+            self.curr_thread = self.threads[-1]
+
+
+class ConvoThread:
+    def __init__(self, initial_state):
+        self.curr_state = initial_state
+        self.state_history = [self.curr_state]
+
+    def _is_same_state(self, ns):
+        return ns == self.curr_state
+
+    def update_state(self, new_state):
+        if not self._is_same_state(new_state):
+            self.state_history.append(curr_state)
+            self.curr_state = new_state
+        return
+
+    def get_prev_state(self):
+        return self.state_history[-1]
+
+    def get_state(self):
+        return self.curr_state
+
+
 # Controls state and details
 # Gatekeeps for states
 # STATE MANAGER
 class ChatManager:
     def __init__(self, chat, iparser, pkeeper, replygen, dmanager):
-        self.state = pkeeper.GET_INITIAL_STATE()
+        self.threadtracker = ThreadTracker(pkeeper.GET_INITIAL_STATE())
+        self.state = "None sir"
         self.chat = chat
         self.chatID = self.chat.getID()
         self.iparser = iparser
@@ -194,16 +237,10 @@ class ChatManager:
         self.pending_sip = sip
 
     def _get_curr_state(self):
-        return self.state
+        return self.threadtracker.get_curr_state()
 
     def _get_curr_state_key(self):
-        return cbsv.getstatekey(self.state)
-
-    def _get_prev_state_key(self):
-        return cbsv.getstatekey(self._get_prev_state())
-
-    def _get_prev_state(self):
-        return self.state_history[-1]
+        return cbsv.getstatekey(self._get_curr_state())
 
     ## Detail stuff
     def push_detail_to_dm(self, d):
