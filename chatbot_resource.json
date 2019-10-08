@@ -3,6 +3,8 @@
     "intents": {
         "affirm": {
             "key": "affirmation",
+            "default_set": false,
+            "default_target":"NA",
             "matchdb":[
                 "yes","(?<!(不|你|您))好","(?<!没)有((啊|哦)*)$","(?<!不)是","没问题","(?<!不)确定", "ok", "(?<!不)好的","(?<!不)可以","是的",
                 "哦", "(?<!(不|没))对", "没错"
@@ -11,6 +13,8 @@
         },
         "deny": {
             "key": "denial",
+            "default_set": false,
+            "default_target":"NA",
             "matchdb":[
                 "不好","不可以","不是","没有","没问题","不确定","no","not ok",
                 "(?<=(不|没))对","没(?!错)"
@@ -19,6 +23,8 @@
         },
         "greet": {
             "key": "greetings",
+            "default_set": true,
+            "default_target":"SAME_STATE",
             "matchdb":[
                 "(你|您)好","hello","早","早安","下午好","午安","晚上好", "hi", "在吗", "喂", "有人不"
             ],
@@ -29,6 +35,8 @@
         },
         "ask_name": {
             "key": "ask_for_name",
+            "default_set": true,
+            "default_target":"SAME_STATE",
             "matchdb":[
                 "who u","what is your name", "who are you","(您|你)的名字是什么","(您|你)叫什么","(您|你)叫什么名", "(您|你)是谁"
             ],
@@ -40,11 +48,15 @@
         },
         "indicate_query": {
             "key": 1702,
+            "default_set": true,
+            "default_target":"SAME_STATE",
             "matchdb":[],
             "replies": []
         },
         "sales_query": {
             "key": 111,
+            "default_set": true,
+            "default_target":"init_sale",
             "matchdb":[
                 "how does this work", "流程是怎么样的", "sales query"
             ],
@@ -52,6 +64,8 @@
         },
         "pay_query": {
             "key": "112 pay query",
+            "default_set": true,
+            "default_target":"SAME_STATE",
             "matchdb":[
                 "pay","付(款|钱)", "办理"
             ],
@@ -59,6 +73,8 @@
         },
         "gen_query": {
             "key": 113,
+            "default_set": true,
+            "default_target":"SAME_STATE",
             "matchdb":[
                 "请问","想问","问一下","ask", "怎么"
             ],
@@ -66,8 +82,10 @@
         },
         "resource_query": {
             "key": "114 ziliao query",
+            "default_set": true,
+            "default_target":"SAME_STATE",
             "matchdb":[
-                "什么资料"
+                "要(.*)(资料|材料)"
             ],
             "replies": [
                 "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料"
@@ -75,6 +93,8 @@
         },
         "total_amt_query":{
             "key": "116 total amt query (gated)",
+            "default_set": false,
+            "default_target":"NA",
             "matchdb":[
                 "一共(.*)（付|缴纳|多少)"
             ],
@@ -82,13 +102,17 @@
         },
         "weixin_query": {
             "key": "115 weixin query (might be gated)",
+            "default_set": true,
+            "default_target":"SAME_STATE",
             "matchdb":[
-                "微信(.*)吗","有微信"
+                "微信(.*)吗","(有|加)(.*)微信"
             ],
             "replies": ["上海wei信号：iHR-7531，备注填写：店铺名称+上海+淘宝会员名"]
         },
         "how_check_shebao_status": {
             "key": "info_how_check_shebao",
+            "default_set": true,
+            "default_target":"SAME_STATE",
             "matchdb":[
                 "查询社保资格", "查询缴纳", "缴纳怎么查询", "how do i check shebao status", "how check shebao", "在哪里能查到"
             ],
@@ -98,8 +122,10 @@
         },
         "when_check_shebao_status": {
             "key": "info_when_check_shebao",
+            "default_set": true,
+            "default_target":"SAME_STATE",
             "matchdb":[
-                "时(.*)能查到"
+                "(多久|时)(.*)能查到"
             ],
             "replies": [
                 "社保查询: \n次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费\n次次月15日可以在网上查询到实缴款;\n社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp\n公积金缴费查询：\n次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。"
@@ -107,8 +133,10 @@
         },
         "how_to_pai": {
             "key": "info_how_to_pai",
+            "default_set": true,
+            "default_target":"SAME_STATE",
             "matchdb":[
-                "怎么拍"
+                "流程","怎么(拍|付钱)","要做(啥|什么)"
             ],
             "replies": [
                 "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
@@ -116,6 +144,8 @@
         },
         "report_issue": {
             "key": 151,
+            "default_set": true,
+            "default_target":"log_issue",
             "matchdb":[
                 "issue","problem","我有事"
             ],
@@ -123,18 +153,24 @@
         },
         "purchase": {
             "key": "purchase",
+            "default_set": false,
+            "default_target":"NA",
             "matchdb":[
-                "(交|付|代缴)社保", "怎么缴纳", "buy", "社保怎么(交|付|代缴)"
+                "(交|付|代缴)社保", "怎么缴纳", "buy", "社保(.*)(交|付|代缴)"
             ],
             "replies": []
         },
         "confusion": {
             "key": 193,
+            "default_set": false,
+            "default_target":"NA",
             "matchdb":[],
             "replies": []
         },
         "goodbye": {
             "key": "195 goodbyes",
+            "default_set": true,
+            "default_target":"goodbye",
             "matchdb":[
                 "再见", "bye", "goodbye"
             ],
@@ -142,6 +178,8 @@
         },
         "thankyou":{
             "key": "194 thankyou",
+            "default_set": true,
+            "default_target":"SAME_STATE",
             "matchdb":[
               "谢谢", "谢了"  
             ],
@@ -151,6 +189,8 @@
         },
         "reset_chat": {
             "key": 12345,
+            "default_set": true,
+            "default_target":"init",
             "matchdb":[
                 "resetchat1"
             ],

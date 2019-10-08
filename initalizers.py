@@ -15,23 +15,6 @@ def state_key_dict(states):
 def init_replygen(jdata):
     REPLY_DB = jdata["reply_db"]
 
-    # Actually STS is not used by anything but I'm leaving a template here
-    # STS_REPLY_KEY_LOOKUP = {
-    #     (STATE_KEYS['payment'], STATE_KEYS['finish_sale']): "r_sale_done"
-    # }
-    # SS_REPLY_DBLOOKUP = {}
-    # for sk in list(STATES.keys()):
-    #     if len(get_replylist(STATES[sk])) > 0:
-    #         SS_REPLY_DBLOOKUP[sk] = get_replylist(STATES[sk])
-    # INTENT_REPLY_DBLOOKUP = {}
-    # for ik in list(INTENTS.keys()):
-    #     if len(get_replylist(INTENTS[ik])) > 0:
-    #         INTENT_REPLY_DBLOOKUP[ik] = get_replylist(INTENTS[ik])
-    # r_dbs = {}
-    # # r_dbs["s2s"] = STS_REPLY_KEY_LOOKUP
-    # r_dbs["ss"] = SS_REPLY_DBLOOKUP
-    # r_dbs["intent"] = INTENT_REPLY_DBLOOKUP
-    
     # Everything above is not required anymore 
     return ReplyGenerator(REPLY_DB)
 
@@ -40,10 +23,20 @@ def init_policykeeper(jdata, pdata):
     STATES = jdata["states"]
     STATE_KEYS = state_key_dict(jdata["states"]) # state_index: state_key
 
+    def in_default_set(intent):
+        return intent["default_set"]
+    
+    def default_target_state(intent):
+        return intent["default_target"]
+
     # In: list of [current_state, destination]
     # To create the classmethod SIPs
     def create_policy_tuple(pair):
         state, destination = pair
+        if len(destination) < 4:
+            name = INTENTS[state]["key"]
+            print("Warning! {} has bad destination: {}".format(name,destination))
+            return (INTENTS[state], SIP.same_state())
         if destination == "SAME_STATE":
             target_state = SIP.same_state()
         elif destination == "GO_BACK_STATE":
@@ -52,17 +45,27 @@ def init_policykeeper(jdata, pdata):
             target_state = SIP.exit_pocket()
         else:
             target_state = SIP(STATES[destination])
-
         return (INTENTS[state], target_state)
+
+    def make_default_policy_set(intents):
+        iks = list(intents.keys())
+        out = []
+        for intname in iks:
+            intnt = intents[intname]
+            if in_default_set(intnt):
+                target = default_target_state(intnt)
+                pair = (intname, target)
+                out.append(create_policy_tuple(pair))
+        return out
         
     policy_rules = pdata["policy_rules"] # This is true for now. Might change
     policy_states = list(policy_rules.keys())
     policy_states.remove("default")
 
-    default_policy_set = []
-    for pair in policy_rules["default"]:
-        pol = create_policy_tuple(pair)
-        default_policy_set.append(pol)
+    default_policy_set = make_default_policy_set(INTENTS)
+    # for pair in policy_rules["default"]:
+    #     pol = create_policy_tuple(pair)
+    #     default_policy_set.append(pol)
 
     make_policy = lambda s_ints: Policy(default_policy_set,s_ints)
 

@@ -1,21 +1,6 @@
 {
-    "COMMENT":"File to decide state transition logic termed policies",
+    "COMMENT":"File to decide state transition logic. Called policies",
     "policy_rules":{
-        "default":[
-            ["ask_name", "SAME_STATE"],
-            ["pay_query", "SAME_STATE"],
-            ["resource_query", "SAME_STATE"],
-            ["sales_query", "init_sale"],
-            ["weixin_query", "SAME_STATE"],
-            ["deny", "SAME_STATE"],
-            ["how_check_shebao_status", "SAME_STATE"],
-            ["when_check_shebao_status", "SAME_STATE"],
-            ["how_to_pai","SAME_STATE"],
-            ["goodbye", "goodbye"],
-            ["report_issue", "log_issue"],
-            ["reset_chat", "init"],
-            ["greet", "SAME_STATE"]
-        ],
         "init": [
             ["sales_query", "init_sale"],
             ["purchase", "propose_plan"],
