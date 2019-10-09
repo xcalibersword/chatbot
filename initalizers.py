@@ -60,7 +60,6 @@ def init_policykeeper(jdata, pdata):
         
     policy_rules = pdata["policy_rules"] # This is true for now. Might change
     policy_states = list(policy_rules.keys())
-    policy_states.remove("default")
 
     default_policy_set = make_default_policy_set(INTENTS)
     # for pair in policy_rules["default"]:

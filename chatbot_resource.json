@@ -1,32 +1,60 @@
-
 {
     "intents": {
         "affirm": {
             "key": "affirmation",
             "default_set": false,
-            "default_target":"NA",
-            "matchdb":[
-                "yes","(?<!(不|你|您))好","(?<!没)有((啊|哦)*)$","(?<!不)是","没问题","(?<!不)确定", "ok", "(?<!不)好的","(?<!不)可以","是的",
-                "哦", "(?<!(不|没))对", "没错"
+            "default_target": "NA",
+            "matchdb": [
+                "yes",
+                "(?<!(不|你|您))好",
+                "(?<!没)有((啊|哦)*)$",
+                "(?<!不)是",
+                "没问题",
+                "(?<!不)确定",
+                "ok",
+                "(?<!不)好的",
+                "(?<!不)可以",
+                "是的",
+                "哦",
+                "(?<!(不|没))对",
+                "没错"
             ],
             "replies": []
         },
         "deny": {
             "key": "denial",
             "default_set": false,
-            "default_target":"NA",
-            "matchdb":[
-                "不好","不可以","不是","没有","没问题","不确定","no","not ok",
-                "(?<=(不|没))对","没(?!错)"
+            "default_target": "NA",
+            "matchdb": [
+                "不好",
+                "不可以",
+                "不是",
+                "没有",
+                "没问题",
+                "不确定",
+                "no",
+                "not ok",
+                "(?<=(不|没))对",
+                "没(?!错)"
             ],
             "replies": []
         },
         "greet": {
             "key": "greetings",
             "default_set": true,
-            "default_target":"SAME_STATE",
-            "matchdb":[
-                "(你|您)好","hello","早","早安","下午好","午安","晚上好", "hi", "在吗", "喂", "有人不"
+            "default_target": "SAME_STATE",
+            "matchdb": [
+                "(你|您)好",
+                "hello",
+                "早",
+                "早安",
+                "下午好",
+                "午安",
+                "晚上好",
+                "hi",
+                "在吗",
+                "喂",
+                "有人不"
             ],
             "replies": [
                 "您好!",
@@ -36,9 +64,15 @@
         "ask_name": {
             "key": "ask_for_name",
             "default_set": true,
-            "default_target":"SAME_STATE",
-            "matchdb":[
-                "who u","what is your name", "who are you","(您|你)的名字是什么","(您|你)叫什么","(您|你)叫什么名", "(您|你)是谁"
+            "default_target": "SAME_STATE",
+            "matchdb": [
+                "who u",
+                "what is your name",
+                "who are you",
+                "(您|你)的名字是什么",
+                "(您|你)叫什么",
+                "(您|你)叫什么名",
+                "(您|你)是谁"
             ],
             "replies": [
                 "我是回音机器人",
@@ -49,53 +83,60 @@
         "indicate_query": {
             "key": 1702,
             "default_set": true,
-            "default_target":"SAME_STATE",
-            "matchdb":[],
+            "default_target": "SAME_STATE",
+            "matchdb": [],
             "replies": []
         },
         "sales_query": {
             "key": 111,
             "default_set": true,
-            "default_target":"init_sale",
-            "matchdb":[
-                "how does this work", "流程是怎么样的", "sales query"
+            "default_target": "init_sale",
+            "matchdb": [
+                "how does this work",
+                "流程是怎么样的",
+                "sales query"
             ],
             "replies": []
         },
         "pay_query": {
             "key": "112 pay query",
             "default_set": true,
-            "default_target":"SAME_STATE",
-            "matchdb":[
-                "pay","付(款|钱)", "办理"
+            "default_target": "SAME_STATE",
+            "matchdb": [
+                "pay",
+                "付(款|钱)",
+                "办理"
             ],
-            "replies": ["直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"]
+            "replies": [
+                "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
+            ]
         },
         "gen_query": {
             "key": 113,
             "default_set": true,
-            "default_target":"SAME_STATE",
-            "matchdb":[
-                "请问","想问","问一下","ask", "怎么"
+            "default_target": "SAME_STATE",
+            "matchdb": [
+                "ask",
+                "asketh"
             ],
             "replies": []
         },
         "resource_query": {
             "key": "114 ziliao query",
             "default_set": true,
-            "default_target":"SAME_STATE",
-            "matchdb":[
+            "default_target": "SAME_STATE",
+            "matchdb": [
                 "要(.*)(资料|材料)"
             ],
             "replies": [
                 "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料"
             ]
         },
-        "total_amt_query":{
+        "total_amt_query": {
             "key": "116 total amt query (gated)",
             "default_set": false,
-            "default_target":"NA",
-            "matchdb":[
+            "default_target": "NA",
+            "matchdb": [
                 "一共(.*)（付|缴纳|多少)"
             ],
             "replies": []
@@ -103,18 +144,26 @@
         "weixin_query": {
             "key": "115 weixin query (might be gated)",
             "default_set": true,
-            "default_target":"SAME_STATE",
-            "matchdb":[
-                "微信(.*)吗","(有|加)(.*)微信"
+            "default_target": "SAME_STATE",
+            "matchdb": [
+                "微信(.*)吗",
+                "(有|加)(.*)微信"
             ],
-            "replies": ["上海wei信号：iHR-7531，备注填写：店铺名称+上海+淘宝会员名"]
+            "replies": [
+                "上海wei信号：iHR-7531，备注填写：店铺名称+上海+淘宝会员名"
+            ]
         },
         "how_check_shebao_status": {
             "key": "info_how_check_shebao",
             "default_set": true,
-            "default_target":"SAME_STATE",
-            "matchdb":[
-                "查询社保资格", "查询缴纳", "缴纳怎么查询", "how do i check shebao status", "how check shebao", "在哪里能查到"
+            "default_target": "SAME_STATE",
+            "matchdb": [
+                "查询社保资格",
+                "查询缴纳",
+                "缴纳怎么查询",
+                "how do i check shebao status",
+                "how check shebao",
+                "在哪里能查到"
             ],
             "replies": [
                 "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能） http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp"
@@ -123,8 +172,8 @@
         "when_check_shebao_status": {
             "key": "info_when_check_shebao",
             "default_set": true,
-            "default_target":"SAME_STATE",
-            "matchdb":[
+            "default_target": "SAME_STATE",
+            "matchdb": [
                 "(多久|时)(.*)能查到"
             ],
             "replies": [
@@ -134,9 +183,11 @@
         "how_to_pai": {
             "key": "info_how_to_pai",
             "default_set": true,
-            "default_target":"SAME_STATE",
-            "matchdb":[
-                "流程","怎么(拍|付钱)","要做(啥|什么)"
+            "default_target": "SAME_STATE",
+            "matchdb": [
+                "流程",
+                "怎么(拍|付钱)",
+                "要做(啥|什么)"
             ],
             "replies": [
                 "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
@@ -145,43 +196,51 @@
         "report_issue": {
             "key": 151,
             "default_set": true,
-            "default_target":"log_issue",
-            "matchdb":[
-                "issue","problem","我有事"
+            "default_target": "log_issue",
+            "matchdb": [
+                "issue",
+                "problem",
+                "我有事"
             ],
             "replies": []
         },
         "purchase": {
             "key": "purchase",
             "default_set": false,
-            "default_target":"NA",
-            "matchdb":[
-                "(交|付|代缴)社保", "怎么缴纳", "buy", "社保(.*)(交|付|代缴)"
+            "default_target": "NA",
+            "matchdb": [
+                "(交|付|代缴)社保",
+                "怎么缴纳",
+                "buy",
+                "社保(.*)(交|付|代缴)"
             ],
             "replies": []
         },
         "confusion": {
             "key": 193,
             "default_set": false,
-            "default_target":"NA",
-            "matchdb":[],
+            "default_target": "NA",
+            "matchdb": [],
             "replies": []
         },
         "goodbye": {
             "key": "195 goodbyes",
             "default_set": true,
-            "default_target":"goodbye",
-            "matchdb":[
-                "再见", "bye", "goodbye"
+            "default_target": "goodbye",
+            "matchdb": [
+                "再见",
+                "bye",
+                "goodbye"
             ],
             "replies": []
         },
-        "thankyou":{
+        "thankyou": {
             "key": "194 thankyou",
             "default_set": true,
-            "default_target":"SAME_STATE",
-            "matchdb":[
-              "谢谢", "谢了"  
+            "default_target": "SAME_STATE",
+            "matchdb": [
+                "谢谢",
+                "谢了"
             ],
             "replies": [
                 "不客气的亲"
@@ -190,43 +249,51 @@
         "reset_chat": {
             "key": 12345,
             "default_set": true,
-            "default_target":"init",
-            "matchdb":[
+            "default_target": "init",
+            "matchdb": [
                 "resetchat1"
             ],
-            "replies": ["CHAT HAS BEEN RESET"]
+            "replies": [
+                "CHAT HAS BEEN RESET"
+            ]
         }
     },
     "states": {
         "init": {
             "key": "state_init",
             "gated": false,
+            "thread": "BASE",
             "pocket_state": false,
             "req_info": "",
-            "replies": [                
-                "您好! 有什么能帮助您的", 
-                "Hello! 有什么能帮助您的"]
+            "replies": [
+                "您好! 有什么能帮助您的",
+                "Hello! 有什么能帮助您的"
+            ]
         },
         "initplus": {
             "key": "state_init++",
             "gated": false,
+            "thread": "BASE",
             "pocket_state": false,
             "req_info": "",
-            "replies": [                
+            "replies": [
                 "亲有别的事要问吗？"
             ]
         },
         "ask_if_issue": {
             "key": "251 whats wrong",
             "gated": false,
+            "thread": "t_issue",
             "pocket_state": true,
             "req_info": "",
             "replies": [
-                "有事吗？"]
+                "有事吗？"
+            ]
         },
         "sales_query": {
             "key": "211 saleq",
             "gated": false,
+            "thread": "NONE",
             "pocket_state": false,
             "req_info": "",
             "replies": []
@@ -234,20 +301,30 @@
         "pay_query": {
             "key": "212 pay q",
             "gated": false,
+            "thread": "NONE",
             "pocket_state": false,
             "req_info": "",
             "replies": []
         },
-        "total_amt_query":{
+        "total_amt_query": {
             "key": "216 total amt q",
             "gated": true,
+            "thread": "NONE",
             "pocket_state": true,
-            "req_info": [["city","city"]],
-            "replies": ["亲一共要付{city_info[total_amt]}"]
+            "req_info": [
+                [
+                    "city",
+                    "city"
+                ]
+            ],
+            "replies": [
+                "亲一共要付{city_info[total_amt]}"
+            ]
         },
         "gen_query": {
             "key": 213,
             "gated": false,
+            "thread": "NONE",
             "pocket_state": false,
             "req_info": "",
             "replies": []
@@ -255,6 +332,7 @@
         "confirm_query": {
             "key": 218,
             "gated": false,
+            "thread": "NONE",
             "pocket_state": false,
             "req_info": "",
             "replies": []
@@ -262,13 +340,17 @@
         "TMP_recv_info": {
             "key": "221 recv info",
             "gated": true,
+            "thread": "NONE",
             "pocket_state": false,
             "req_info": "",
-            "replies": ["亲,{requested_info}"]
+            "replies": [
+                "亲,{requested_info}"
+            ]
         },
         "log_issue": {
             "key": 251,
             "gated": false,
+            "thread": "t_issue",
             "pocket_state": true,
             "req_info": "",
             "replies": []
@@ -276,15 +358,17 @@
         "recommend": {
             "key": 271,
             "gated": false,
+            "thread": "NONE",
             "pocket_state": false,
             "req_info": [],
-            "replies":[
+            "replies": [
                 "本人推存社保套餐 A"
             ]
         },
         "init_sale": {
             "key": 280,
             "gated": false,
+            "thread": "NONE",
             "pocket_state": false,
             "req_info": "",
             "replies": []
@@ -292,31 +376,56 @@
         "propose_plan": {
             "key": "281 propose plan",
             "gated": true,
+            "thread": "t_presale",
             "pocket_state": false,
-            "req_info": [["city","city"],["首次","shouci"]],
-            "replies":[
+            "req_info": [
+                [
+                    "city",
+                    "city"
+                ],
+                [
+                    "首次",
+                    "shouci"
+                ]
+            ],
+            "replies": [
                 "亲{首次}哦。那么目前{city}社保按照最低基数{city_info[jishu]}，缴纳{city_info[payment]}；服务费{city_info[svc_fee]}元每月 {city_info[首次ext]}。"
             ]
         },
         "confirm_plan": {
             "key": "282 confirm plan",
             "gated": false,
+            "thread": "t_presale",
             "pocket_state": false,
-            "req_info": [["city","city"]],
-            "replies": ["确认要{city}的宝贝?"]
+            "req_info": [
+                [
+                    "city",
+                    "city"
+                ]
+            ],
+            "replies": [
+                "确认要{city}的宝贝?"
+            ]
         },
         "payment": {
             "key": 283,
             "gated": true,
+            "thread": "t_presale",
             "pocket_state": false,
-            "req_info": [["首次","shouci"]],
-            "replies":[
+            "req_info": [
+                [
+                    "首次",
+                    "shouci"
+                ]
+            ],
+            "replies": [
                 "{city}的宝贝一共要付{city_info[calc_str]}，亲确认下哦"
             ]
         },
         "finish_sale": {
             "key": 289,
             "gated": false,
+            "thread": "NONE",
             "pocket_state": false,
             "req_info": "",
             "replies": []
@@ -324,128 +433,197 @@
         "goodbye": {
             "key": "209 bye",
             "gated": false,
+            "thread": "NONE",
             "pocket_state": false,
             "req_info": "",
             "replies": [
-                "好的，谢谢光临", "好的，欢迎使用淘宝"
+                "好的，谢谢光临",
+                "好的，欢迎使用淘宝"
             ]
         },
         "PREV_STATE": {
             "key": "299 PREV_STATE",
             "gated": false,
+            "thread": "NONE",
             "pocket_state": false,
             "req_info": "",
             "replies": []
         },
-        "inform_pai":{
+        "inform_pai": {
             "key": "260 inform pai",
             "gated": false,
+            "thread": "t_pai",
             "pocket_state": false,
             "req_info": "",
-            "replies":[
+            "replies": [
                 "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
             ]
         },
-        "finished_pai":{
+        "finished_pai": {
             "key": "261 done pai",
-            "gated": true,
+            "gated": false,
+            "thread": "t_pai",
             "pocket_state": false,
-            "req_info": [["拍了","paile"]],
-            "replies":[
+            "req_info": [],
+            "replies": [
                 "两点注意：1.每个月的15号前，来淘宝缴费，不要更改淘宝ID和缴费基数 2.如果要停缴或者已入职新单位的，请通知我们。比如你6月份停缴，最晚在6月15号前通知我们，可以在小程序上提交终止服务的申请，或者拍下1元停缴宝贝、留言备注好退工日期，以防影响你下家单位交金；如不备注一律以我司办理为准，谢谢亲的配合。（PS. 只缴社保和公积金是没有个税记录的哦，如需要个税申报的麻烦联系客服办理哦）"
             ]
-
         }
     },
-    "reply_db":{
-        "r_opening_message":{
+    "reply_db": {
+        "r_opening_message": {
             "context_flag": 0,
-            "text" :[
-            "您好，欢迎光临唯洛社保，很高兴为您服务。本店现在可以代缴上海、北京、长沙、广州、苏州、杭州、成都的五险一金。请问需要代缴哪个城市的呢？需要从几月份开始代缴呢？注意：社保局要求已怀孕的客户（代缴后再怀孕的客户不受影响）和重大疾病或者慢性病状态客户，我司不能为其代缴社保，如有隐瞒恶意代缴的责任自负！请注意参保手续开始办理后，无法退款。"
+            "text": [
+                "您好，欢迎光临唯洛社保，很高兴为您服务。本店现在可以代缴上海、北京、长沙、广州、苏州、杭州、成都的五险一金。请问需要代缴哪个城市的呢？需要从几月份开始代缴呢？注意：社保局要求已怀孕的客户（代缴后再怀孕的客户不受影响）和重大疾病或者慢性病状态客户，我司不能为其代缴社保，如有隐瞒恶意代缴的责任自负！请注意参保手续开始办理后，无法退款。"
             ]
         },
-        "r_pay_query":{
-            "context_flag":0,
-            "text" :[
+        "r_pay_query": {
+            "context_flag": 0,
+            "text": [
                 "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠，不会断缴"
             ]
         }
     },
-
-    "plans":{
-        "上海":{
-            "jishu":4927,
-            "payment":1937.7,
-            "svc_fee":40,
-            "shouci_fee":50
+    "plans": {
+        "上海": {
+            "jishu": 4927,
+            "payment": 1937.7,
+            "svc_fee": 40,
+            "shouci_fee": 50
         },
-        "北京":{
-            "jishu":1337,
-            "payment":0,
-            "svc_fee":0,
-            "shouci_fee":50
+        "北京": {
+            "jishu": 1337,
+            "payment": 0,
+            "svc_fee": 0,
+            "shouci_fee": 50
         },
-        "深圳":{
-            "jishu":2335,
-            "payment":0,
-            "svc_fee":0,
-            "shouci_fee":50
+        "深圳": {
+            "jishu": 2335,
+            "payment": 0,
+            "svc_fee": 0,
+            "shouci_fee": 50
         },
         "杭州": {
-            "jishu":1100,
-            "payment":0,
-            "svc_fee":0,
-            "shouci_fee":50
+            "jishu": 1100,
+            "payment": 0,
+            "svc_fee": 0,
+            "shouci_fee": 50
         },
-        "广州":{
-            "jishu":1200,
-            "payment":0,
-            "svc_fee":0,
-            "shouci_fee":50
+        "广州": {
+            "jishu": 1200,
+            "payment": 0,
+            "svc_fee": 0,
+            "shouci_fee": 50
         },
-        "成都":{
-            "jishu":1300,
-            "payment":0,
-            "svc_fee":0,
-            "shouci_fee":50
+        "成都": {
+            "jishu": 1300,
+            "payment": 0,
+            "svc_fee": 0,
+            "shouci_fee": 50
         }
     },
-    "formulae":{
-        "shebao":{
-            "add":["jishu", "payment", "svc_fee","shouci_fee"]
+    "formulae": {
+        "shebao": {
+            "add": [
+                "jishu",
+                "payment",
+                "svc_fee",
+                "shouci_fee"
+            ]
         }
     },
     "info_parser": {
         "city": {
-            "上海": ["上海", "shanghai"],
-            "北京": ["北京", "beijing"],
-            "深圳": ["shenzhen","深圳"],
-            "广州": ["广州", "guangzhou"],
-            "杭州": ["杭州","suzhou"],
-            "成都": ["成都", "chengdu"]
+            "上海": [
+                "上海",
+                "shanghai"
+            ],
+            "北京": [
+                "北京",
+                "beijing"
+            ],
+            "深圳": [
+                "shenzhen",
+                "深圳"
+            ],
+            "广州": [
+                "广州",
+                "guangzhou"
+            ],
+            "杭州": [
+                "杭州",
+                "suzhou"
+            ],
+            "成都": [
+                "成都",
+                "chengdu"
+            ]
         },
         "payment_info": {
-            "支付": ["支付", "alipay", "zhifu", "zhifubao"],
-            "微信": ["微信","wechat", "weixin","vxin"]
+            "支付": [
+                "支付",
+                "alipay",
+                "zhifu",
+                "zhifubao"
+            ],
+            "微信": [
+                "微信",
+                "wechat",
+                "weixin",
+                "vxin"
+            ]
         },
-        "paile":{
-            "拍好了": ["拍了", "好了", "拍好了", "付(.*)(好|了)", "已付", "已拍"]
+        "paile": {
+            "拍好了": [
+                "拍了",
+                "好了",
+                "拍好了",
+                "付(.*)(好|了)",
+                "已付",
+                "已拍"
+            ]
         },
-        "shouci":{
-            "是首次": ["yes", "(?<!不)是", "(?<!不)对", "没(.+)过", "(?<!不)(.*)首次"],
-            "不是首次": ["no","nope","不是", "不", "(?<!没)(.+)过", "不(.*)首次"] 
+        "shouci": {
+            "是首次": [
+                "yes",
+                "(?<!不)是",
+                "(?<!不)对",
+                "没(.+)过",
+                "(?<!不)(.*)首次"
+            ],
+            "不是首次": [
+                "no",
+                "nope",
+                "不是",
+                "不",
+                "(?<!没)(.+)过",
+                "不(.*)首次"
+            ]
         },
         "yesno": {
-            "是": ["yes", "(?<!没)有", "(?<!不)是", "(?<!不)对"],
-            "不是": ["no","nope","不是","没有", "不"]
+            "是": [
+                "yes",
+                "(?<!没)有",
+                "(?<!不)是",
+                "(?<!不)对"
+            ],
+            "不是": [
+                "no",
+                "nope",
+                "不是",
+                "没有",
+                "不"
+            ]
         },
         "shop": {
-            "唯洛店":["唯洛店"]
+            "唯洛店": [
+                "唯洛店"
+            ]
         }
     },
     "forms": {
         "shebao": {
-            "req_info":[
+            "req_info": [
                 "city",
                 "val_shebao",
                 "val_gongjijin",
