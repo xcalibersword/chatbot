@@ -14,68 +14,100 @@ DEBUG = 1
 class StateThreader():
     def __init__(self, default_state):
         self.default_state = default_state
-        self.threadstack = [] # A stack of threads
+        self.threadIDstack = [] # A stack of threadIDs
         self.threadmap = {}
-        self.curr_threadID = ""
-        self.curr_thread = ""
+        self.state_changed = True
         self.spawn_thread(default_state, threadID = "BASE") # Spawn base thread
 
-    def _get_thread(self, state):
+    def get_curr_threadID(self):
+        return self.threadIDstack[-1]
+
+    def get_curr_thread(self):
+        key = self.get_curr_threadID()
+        thrd = self.threadmap[key]
+        return thrd
+
+    def _get_threadID(self, state):
         return state["thread"]
+
+    # UNUSED intentionally. KIV.
+    def state_never_change(self):
+        return not self.state_changed
+
+    def _thread_same_state(self, nstate):
+        print("new vs old", nstate, self.get_curr_thread_state())
+        print("result:",self.get_curr_thread()._is_same_state(nstate))
+        return self.get_curr_thread()._is_same_state(nstate)
+
+    def _thread_same_id(self, tid):
+        tid == self.get_curr_threadID()
     
     def spawn_thread(self, start_state = -1, threadID = "DEFAULT"):
         if isinstance(start_state, int):
             raise Exception("Tried to spawn thread but no start state provided")
         newthread = ConvoThread(start_state)
-        self.threadstack.append(newthread)
+        self.threadIDstack.append(threadID)
         self.threadmap[threadID] = newthread
-        self.curr_threadID = threadID
-        self.curr_thread = self.threadstack[-1]
     
     def get_curr_thread_state(self):
-        state = self.curr_thread.get_curr_state()
+        state = self.get_curr_thread().get_curr_state()
         if isinstance(state, SIP):
             raise Exception("SIP DETECTED{}".format(state.toString()))
         return state
 
-    def exit_thread(self):
-        if len(self.threadstack) > 1:
-            self.threadstack.pop(-1)
-            self.curr_thread = self.threadstack[-1]
+    def kill_curr_thread(self):
+        if len(self.threadIDstack) > 1:
+            deadthreadID = self.threadIDstack.pop(-1)
+            self.threadmap.pop(deadthreadID)
+
+            new_headID = self.threadIDstack[-1]
+            if DEBUG or 1: print("KILLING THREAD:",deadthreadID,"NEW HEAD:",new_headID)
 
     def switch_thread_to(self, threadID):
-        switcher = self.threadmap[threadID]
-        self.curr_threadID = threadID
-        self.threadstack.remove(switcher)
-        self.threadstack.append(switcher)
+        # Push to front of stack
+        self.threadIDstack.remove(threadID)
+        self.threadIDstack.append(threadID)
         return
 
-    def update_state(self, new_state):
-        def need_switch_thread(threadID):
-            return not (threadID == "NONE" or threadID == self.curr_threadID)
-        
-        # How to decide if spawn a new thread? or kill old one?
-        ns_threadID = self._get_thread(new_state)
+    def update_thread_state(self, new_state):
+        def _is_terminal_state(state):
+            return state["terminal_state"]
 
+        def need_switch_thread(threadID):
+            return not (threadID == "NONE" or self._thread_same_id(threadID))
+
+        ns_threadID = self._get_threadID(new_state)
+        UPDATE_STATE_BOOL = True
+        curr_state = self.get_curr_thread_state()
+
+        if _is_terminal_state(curr_state):
+            UPDATE_STATE_BOOL = not self._thread_same_state(new_state)
+            self.kill_curr_thread()
+        
         if need_switch_thread(ns_threadID):
             if ns_threadID in self.threadmap:
                 self.switch_thread_to(ns_threadID)
             else:
                 self.spawn_thread(new_state, ns_threadID)
         
-        self.curr_thread.update_state(new_state)
+        if UPDATE_STATE_BOOL:
+            self.get_curr_thread().update_state(new_state)
 
+        if DEBUG: print("Statestack", self.threadIDstack)
+
+    # Assigns the pending state to the current thread
     def set_thread_pending(self, hs, ps):
-        self.curr_thread.set_pending_state(hs,ps)
+        self.get_curr_thread().set_pending_state(hs,ps)
 
     # If has pending, returns pending
     # If nothing pending, returns given_next_state
     def move_forward(self, given_next_state):
         print("Moving forward...")
-        if self.curr_thread.has_pending_state():
-            self.curr_thread.unlock_pending_state()
+        if self.get_curr_thread().has_pending_state():
+            self.get_curr_thread().unlock_pending_state()
+            self.state_changed = True
         else:
-            self.update_state(given_next_state)
+            self.state_changed = self.update_thread_state(given_next_state)
         return self.get_curr_thread_state()
 
 # A conversation thread
@@ -91,10 +123,11 @@ class ConvoThread:
         return ns == self.curr_state
 
     def update_state(self, new_state):
-        if not self._is_same_state(new_state):
+        notsamestate = not self._is_same_state(new_state)
+        if notsamestate:
             self.state_history.append(self.curr_state)
             self.curr_state = new_state
-        return
+        return notsamestate
 
     def get_prev_state(self):
         return self.state_history[-1]
@@ -171,8 +204,8 @@ class ChatManager:
     def _parse_message_overall(self,msg):
         # Inital understanding
         uds = self._fetch_understanding(msg)
-        print("Initial UDS:")
-        uds.printout()
+        if DEBUG: print("Initial UDS:")
+        if DEBUG: uds.printout()
         self.gatekeeper.scan_SIP(uds.get_sip())
 
         # Try to mine message details. 
@@ -185,7 +218,6 @@ class ChatManager:
     # Results in change in chat details and change in state
     def _digest_uds(self, uds):
         sip = uds.get_sip()
-        self.samestateflag = False
 
         # FEATURE NOT IMPLEMENTED
         # if sip.is_go_back():
@@ -193,10 +225,11 @@ class ChatManager:
         #     return final_intent
 
         if sip.is_same_state():
-            self.samestateflag = True
             if DEBUG: print("SAME STATE FLAGGED")
+            self.samestateflag = True
             state = self._get_curr_state()
         else:
+            self.samestateflag = False
             state = sip.get_state_obj()
         
         self._gatekeep_state(state)
@@ -217,20 +250,24 @@ class ChatManager:
         # print("sip", sip.toString(), "nextsip", constructed_sip.toString())
         if DEBUG: print("Gate passed:",passed)
         if passed:
-            self.move_forward_state(nextstate)
+            self._move_forward_state(nextstate)
 
         else:
             # Didnt pass
             constructed_sip = self._make_info_sip(required_slots)
             infostate = constructed_sip.get_state_obj()
-            self.statethreader.set_thread_pending(infostate, nextstate)
+            self._set_thread_pending(infostate, nextstate)
+           
 
     # REMOVAL
     def _make_info_sip(self, req_info):
         con_sip = self.pkeeper.make_info_req_sip(req_info)
         return con_sip
 
-    def move_forward_state(self, state):
+    def _set_thread_pending(self, hs, ps):
+         self.statethreader.set_thread_pending(hs, ps)
+
+    def _move_forward_state(self, state):
         self.statethreader.move_forward(state)
 
     def push_req_slots_to_dm(self, required_slots):
@@ -245,9 +282,10 @@ class ChatManager:
     def _fetch_reply(self,intent):
         information = self._get_current_info()
         curr_state = self._get_curr_state()
-        ss = self.samestateflag
-        print("curr_state", curr_state, "samestate",ss)
-        return self.replygen.get_reply(curr_state, intent, ss, information)
+        # samestateflag = self.statethreader.state_never_change()
+        samestateflag = self.samestateflag
+        print("curr_state", curr_state, "samestate",samestateflag)
+        return self.replygen.get_reply(curr_state, intent, samestateflag, information)
 
     # Asks dmanager for info
     def _get_current_info(self):
@@ -438,38 +476,39 @@ class ReplyGenerator:
             if "拍了" in rlist:
                 crafted_msg = crafted_msg + "拍好了吗？"
 
-            enhanced["requested_info"] = crafted_msg
-            
-            # Message extensions
-            if "首次" in enhanced and "city_info" in enhanced:
-                # Calculations
-                bool_shouci = (enhanced["首次"] == "是首次")
-                bool_gongjijin = False
-                ci = enhanced["city_info"]
-                total = 0
-                payment_base = ci["payment"]
-                total += payment_base
-                calcstr = "{} 应缴纳".format(payment_base)
-                svc_fee = ci["svc_fee"]
-                total += svc_fee
-                calcstr = calcstr + " + " + "{} 服务费".format(svc_fee)
-                if bool_shouci:
-                    shouci_fee = ci["shouci_fee"]
-                    total += shouci_fee
-                    calcstr = calcstr + " + " + "{} 开户费".format(shouci_fee)
-                if bool_gongjijin:
-                    total += 10000
+            enhanced["request_string"] = crafted_msg
+        
+        print("pre extension enh", enhanced)
+        # Message extensions
+        if "首次" in enhanced and "city_info" in enhanced:
+            # Calculations
+            bool_shouci = (enhanced["首次"] == "是首次")
+            bool_gongjijin = False
+            ci = enhanced["city_info"]
+            total = 0
+            payment_base = ci["payment"]
+            total += payment_base
+            calcstr = "{} 应缴纳".format(payment_base)
+            svc_fee = ci["svc_fee"]
+            total += svc_fee
+            calcstr = calcstr + " + " + "{} 服务费".format(svc_fee)
+            if bool_shouci:
+                shouci_fee = ci["shouci_fee"]
+                total += shouci_fee
+                calcstr = calcstr + " + " + "{} 开户费".format(shouci_fee)
+            if bool_gongjijin:
+                total += 10000
 
-                ci["total_amt"] = total # Hopefully this is a pointer and not a copy
+            ci["total_amt"] = total # Hopefully this is a pointer and not a copy
 
-                calcstr = calcstr + " = " + "{}块".format(total)
-                ci["calc_str"] = calcstr
+            calcstr = calcstr + " = " + "{}块".format(total)
+            ci["calc_str"] = calcstr
 
-                if bool_shouci:
-                    ci["首次ext"] = "首次参保额外收取{city_info[shouci_fee]}元开户费".format(**enhanced)
-                else:
-                    ci["首次ext"] = ""
-            
+            if bool_shouci:
+                ci["首次ext"] = "首次参保额外收取{city_info[shouci_fee]}元开户费".format(**enhanced)
+            else:
+                ci["首次ext"] = ""
+        
         return enhanced
 
 
