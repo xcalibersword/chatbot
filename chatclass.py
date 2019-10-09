@@ -1,4 +1,5 @@
 # All Chat related Classes
+
 import re
 import random
 import cbsv
@@ -9,12 +10,7 @@ from chatbot_supp import *
 
 DEBUG = 1
 
-# The problem of gated states.
-# Some states need certain things in order to proceed. E.g.
-# Quotation: Needs location
-# Payment: Needs payment details?
-
-# A stack manager
+# A conversation thread manager using stack and dict
 class StateThreader():
     def __init__(self, default_state):
         self.default_state = default_state
@@ -29,7 +25,7 @@ class StateThreader():
     
     def spawn_thread(self, start_state = -1, threadID = "DEFAULT"):
         if isinstance(start_state, int):
-            raise Exception("Tried to spawn thread but no start state provided!")
+            raise Exception("Tried to spawn thread but no start state provided")
         newthread = ConvoThread(start_state)
         self.threadstack.append(newthread)
         self.threadmap[threadID] = newthread
@@ -83,6 +79,7 @@ class StateThreader():
         return self.get_curr_thread_state()
 
 # A conversation thread
+# Tracks state
 class ConvoThread:
     def __init__(self, initial_state):
         self.curr_state = initial_state
@@ -131,9 +128,7 @@ class ConvoThread:
         self._clear_pending()
         return
 
-# Controls state and details
-# Gatekeeps for states
-# STATE MANAGER
+# Coordinates everything about a chat
 class ChatManager:
     def __init__(self, chat, iparser, pkeeper, replygen, dmanager):
         # Internal properties
@@ -155,7 +150,7 @@ class ChatManager:
     def _get_curr_state_key(self):
         return cbsv.getstatekey(self._get_curr_state())
     
-    # Big method.
+    ############### PRIMARY METHOD ###############
     # Takes in a message, returns a text reply.
     def respond_to_message(self, msg):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") # For clarity in terminal
@@ -180,14 +175,14 @@ class ChatManager:
         uds.printout()
         self.gatekeeper.scan_SIP(uds.get_sip())
 
-        # Try to mine message details. This is after gatekeep because gatekeep sets the slots.
+        # Try to mine message details. 
+        # This is after gatekeep because gatekeep sets the slots.
         self._parse_message_details(msg)
 
         return uds
     
     # Process, gatekeep then internalize changes
     # Results in change in chat details and change in state
-    # Returns nothing 
     def _digest_uds(self, uds):
         sip = uds.get_sip()
         self.samestateflag = False
@@ -346,7 +341,7 @@ class PolicyKeeper:
         return uds
 
 # MANAGES DETAILS (previously held by Chat)
-# TODO: Differentiate between contextual chat info and user info
+# TODO: Differentiate between contextual chat info and user info?
 class DetailManager:
     def __init__(self, info_vault):
         self.vault = info_vault
@@ -591,9 +586,7 @@ class Chat:
             if DEBUG: print("Creating chatlogs folder...")
             os.mkdir(os.path.join(direct,"chatlogs")) # If no folder, make a folder
         filepath = os.path.join(direct,"chatlogs/" + self.chatID + ".json")
-
-        # write info        
-        # write issues
+      
         # write chatlog
         cbsv.dump_to_json(filepath,self.get_chatlog(),1)
         return

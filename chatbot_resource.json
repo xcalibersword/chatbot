@@ -1,7 +1,7 @@
 {
     "intents": {
         "affirm": {
-            "key": "affirmation",
+            "key": "11 affirmation",
             "default_set": false,
             "default_target": "NA",
             "matchdb": [
@@ -22,7 +22,7 @@
             "replies": []
         },
         "deny": {
-            "key": "denial",
+            "key": "10 denial",
             "default_set": false,
             "default_target": "NA",
             "matchdb": [
@@ -40,7 +40,7 @@
             "replies": []
         },
         "greet": {
-            "key": "greetings",
+            "key": "100 greetings",
             "default_set": true,
             "default_target": "SAME_STATE",
             "matchdb": [
@@ -93,7 +93,7 @@
             "default_target": "init_sale",
             "matchdb": [
                 "how does this work",
-                "流程是怎么样的",
+                "流程(.*)怎么样",
                 "sales query"
             ],
             "replies": []
@@ -135,14 +135,26 @@
         "total_amt_query": {
             "key": "116 total amt query (gated)",
             "default_set": false,
-            "default_target": "NA",
+            "default_target": "SAME_STATE",
             "matchdb": [
                 "一共(.*)（付|缴纳|多少)"
             ],
             "replies": []
         },
-        "weixin_query": {
-            "key": "115 weixin query (might be gated)",
+        "can_topup": {
+            "key": "info_can_topup",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "matchdb": [
+                "补(交|缴)",
+                "(有|加)(.*)微信"
+            ],
+            "replies": [
+                "亲，可以补缴最近6个月，补缴不算连续哦，望知悉"
+            ]
+        },
+        "ask_for_weixin": {
+            "key": "info_weixin",
             "default_set": true,
             "default_target": "SAME_STATE",
             "matchdb": [
@@ -153,17 +165,29 @@
                 "上海wei信号：iHR-7531，备注填写：店铺名称+上海+淘宝会员名"
             ]
         },
+        "ask_for_phone": {
+            "key": "info phone number",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "matchdb": [
+                "电话(.*)(询|吗)",
+                "(用|可以)电话"
+            ],
+            "replies": [
+                "15221004815"
+            ]
+        },
         "how_check_shebao_status": {
             "key": "info_how_check_shebao",
             "default_set": true,
             "default_target": "SAME_STATE",
             "matchdb": [
-                "查询社保资格",
+                "查询社保(资格*)",
                 "查询缴纳",
                 "缴纳怎么查询",
                 "how do i check shebao status",
                 "how check shebao",
-                "在哪里能查到"
+                "在哪(.*)能查到"
             ],
             "replies": [
                 "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能） http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp"
@@ -209,7 +233,8 @@
             "default_set": false,
             "default_target": "NA",
             "matchdb": [
-                "(交|付|代缴)社保",
+                "代缴",
+                "(交|付)社保",
                 "怎么缴纳",
                 "buy",
                 "社保(.*)(交|付|代缴)"
@@ -260,7 +285,7 @@
     },
     "states": {
         "init": {
-            "key": "state_init",
+            "key": "201 state_init",
             "gated": false,
             "thread": "BASE",
             "pocket_state": false,
@@ -271,13 +296,13 @@
             ]
         },
         "initplus": {
-            "key": "state_init++",
+            "key": "202 state_init++",
             "gated": false,
             "thread": "BASE",
             "pocket_state": false,
             "req_info": "",
             "replies": [
-                "亲有别的事要问吗？"
+                "亲有别的要问吗？"
             ]
         },
         "ask_if_issue": {
