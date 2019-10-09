@@ -1,9 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# @Site    : https://github.com/InsaneLife
-
 import numpy as np
 
+def hasChinese(check_str):
+    for ch in check_str:
+        if u'\u4e00' <= ch <= u'\u9fff':
+            return True
+    return False
 
 def createVocabulary(input_path, output_path, no_pad=False):
     if not isinstance(input_path, str):
@@ -13,12 +14,15 @@ def createVocabulary(input_path, output_path, no_pad=False):
         raise TypeError('output_path should be string')
 
     vocab = {}
-    with open(input_path, 'r') as fd, \
-            open(output_path, 'w+') as out:
+    with open(input_path, 'r',encoding="gb18030") as fd, \
+            open(output_path,'w+',encoding="gb18030") as out:
         for line in fd:
             line = line.rstrip('\r\n')
-            #use jieba to tokenise
-            words = line.split()
+            
+            if hasChinese(line):
+                words = [word for word in line]
+            else:
+                words = line.split()
 
             for w in words:
                 if w == '_UNK':
@@ -41,10 +45,9 @@ def createVocabulary(input_path, output_path, no_pad=False):
 def loadVocabulary(path):
     if not isinstance(path, str):
         raise TypeError('path should be a string')
-
     vocab = []
     rev = []
-    with open(path) as fd:
+    with open(path,encoding="gb18030") as fd:
         for line in fd:
             line = line.rstrip('\r\n')
             rev.append(line)
@@ -58,7 +61,10 @@ def sentenceToIds(data, vocab):
         raise TypeError('vocab should be a dict that contains vocab and rev')
     vocab = vocab['vocab']
     if isinstance(data, str):
-        words = data.split()
+        if hasChinese(data):
+            words = [word for word in data]
+        else:
+            words = data.split()
     elif isinstance(data, list):
         words = data
     else:
@@ -229,9 +235,9 @@ def computeF1Score(correct_slots, pred_slots):
 
 class DataProcessor(object):
     def __init__(self, in_path, slot_path, intent_path, in_vocab, slot_vocab, intent_vocab):
-        self.__fd_in = open(in_path, 'r')
-        self.__fd_slot = open(slot_path, 'r')
-        self.__fd_intent = open(intent_path, 'r')
+        self.__fd_in = open(in_path, 'r',encoding="gb18030")
+        self.__fd_slot = open(slot_path, 'r',encoding="gb18030")
+        self.__fd_intent = open(intent_path, 'r',encoding="gb18030")
         self.__in_vocab = in_vocab
         self.__slot_vocab = slot_vocab
         self.__intent_vocab = intent_vocab

@@ -3,7 +3,7 @@
 ## File directory
 - chatbot_server : deploy bot for testing locally
 - QNPlugin.py : test the plugin
-- utils.py : data processor
+- data_utils.py : data processor
 
 ## DONE
 - QNPlugin
@@ -13,11 +13,12 @@
 
 ## In progress
 - data_utils (manual label 50 input everyday)
-    - use test bot to build up template for labels
-    - auto label input
-    - build NLU model data pipeline
+    - use test bot to build up template for labels (build up on the other functions)
+    - auto label input (add more slot and intent,arrange the functions)
+    - build NLU model data pipeline (use jieba, edit slot, edit crf, remove useless function, simplify stuff using tf2.0)
 - train_NLU
 - NLU_classifier
+
 - Design Doc (for collabs)
 - Dialog State Tracking
     - state

@@ -18,7 +18,7 @@ parser.add_argument("--num_units", type=int, default=64, help="Network size.", d
 parser.add_argument("--model_type", type=str, default='full', help="""full(default) | intent_only
                                                                     full: full attention model
                                                                     intent_only: intent attention model""")
-parser.add_argument("--use_crf", type=str, default='0', help="""use crf for seq labeling""")
+parser.add_argument("--use_crf", type=str, default='1', help="""use crf for seq labeling""")
 parser.add_argument("--cell", type=str, default='gru', help="""rnn cell""")
 
 # Training Environment
@@ -35,10 +35,10 @@ parser.add_argument("--decay_steps", type=int, default=280*4, help="decay_steps.
 parser.add_argument("--decay_rate", type=float, default=0.9, help="decay_rate.")
 
 # Model and Vocab
-parser.add_argument("--dataset", type=str, default='', help="""Type 'atis' or 'snips' to use dataset provided by us or enter what ever you named your own dataset.
+parser.add_argument("--dataset", type=str, default='test', help="""Type 'atis' or 'snips' to use dataset provided by us or enter what ever you named your own dataset.
                 Note, if you don't want to use this part, enter --dataset=''. It can not be None""")
-parser.add_argument("--model_path", type=str, default=r'D:\chatbot\test_NLU(intent-slot)\model', help="Path to save model.")
-parser.add_argument("--vocab_path", type=str, default=r'D:\chatbot\test_NLU(intent-slot)\vocab', help="Path to vocabulary files.")
+parser.add_argument("--model_path", type=str, default=r'D:\chatbot\test_NLU\model1', help="Path to save model.")
+parser.add_argument("--vocab_path", type=str, default=r'D:\chatbot\test_NLU\vocab1', help="Path to vocabulary files.")
 
 # Data
 parser.add_argument("--train_data_path", type=str, default='train', help="Path to training data files.")
@@ -55,6 +55,7 @@ arg = parser.parse_args()
 for k, v in sorted(vars(arg).items()):
     print(k, '=', v)
 print()
+
 # use full attention or intent only
 if arg.model_type == 'full':
     add_final_state_to_intent = True
@@ -65,7 +66,6 @@ elif arg.model_type == 'intent_only':
 else:
     print('unknown model type!')
     exit(1)
-
 # full path to data will be: ./data + dataset + train/test/valid
 if arg.dataset == None:
     print('name of dataset can not be None')
@@ -76,7 +76,7 @@ elif arg.dataset == 'atis':
     print('use atis dataset')
 else:
     print('use own dataset: ', arg.dataset)
-data_path = r'D:\chatbot\test_NLU(intent-slot)\data'
+data_path = r'D:\chatbot\test_NLU\data'
 full_train_path = os.path.join(data_path, arg.dataset, arg.train_data_path)
 full_test_path = os.path.join(data_path, arg.dataset, arg.test_data_path)
 full_valid_path = os.path.join(data_path, arg.dataset, arg.valid_data_path)
@@ -88,7 +88,6 @@ createVocabulary(os.path.join(full_train_path, arg.intent_file), os.path.join(ar
 in_vocab = loadVocabulary(os.path.join(arg.vocab_path, 'in_vocab'))
 slot_vocab = loadVocabulary(os.path.join(arg.vocab_path, 'slot_vocab'))
 intent_vocab = loadVocabulary(os.path.join(arg.vocab_path, 'intent_vocab'))
-
 
 def createModel(input_data, input_size, sequence_length, slot_size, intent_size, layer_size=128, isTraining=True):
     cell_fw = tf.contrib.rnn.BasicLSTMCell(layer_size)
@@ -220,9 +219,9 @@ def createModel(input_data, input_size, sequence_length, slot_size, intent_size,
     with tf.variable_scope('slot_proj'):
         # [bs * nsetp, intent_size]
         slot = core_rnn_cell._linear(slot_output, slot_size, True)
-        #if arg.use_crf:
-         #   nstep = tf.shape(state_outputs)[1]
-          #  slot = tf.reshape(slot, [-1, nstep, slot_size])
+        if arg.use_crf:
+           nstep = tf.shape(state_outputs)[1]
+           slot = tf.reshape(slot, [-1, nstep, slot_size])
 
     outputs = [slot, intent]
     return outputs
@@ -245,16 +244,16 @@ slots_reshape = tf.reshape(slots, [-1])
 
 slot_outputs = training_outputs[0]
 with tf.variable_scope('slot_loss'):
-  #  if arg.use_crf:
-   #     log_likelihood, trans_params = tf.contrib.crf.crf_log_likelihood(slot_outputs, slots, sequence_length)
-    #    slot_loss = tf.reduce_mean(-log_likelihood)
-   # else:
-    crossent = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=slots_reshape, logits=slot_outputs)
-    crossent = tf.reshape(crossent, slots_shape)
-    slot_loss = tf.reduce_sum(crossent * slot_weights, 1)
-    total_size = tf.reduce_sum(slot_weights, 1)
-    total_size += 1e-12
-    slot_loss = slot_loss / total_size
+   if arg.use_crf:
+        log_likelihood, trans_params = tf.contrib.crf.crf_log_likelihood(slot_outputs, slots, sequence_length)
+        slot_loss = tf.reduce_mean(-log_likelihood)
+   else:
+        crossent = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=slots_reshape, logits=slot_outputs)
+        crossent = tf.reshape(crossent, slots_shape)
+        slot_loss = tf.reduce_sum(crossent * slot_weights, 1)
+        total_size = tf.reduce_sum(slot_weights, 1)
+        total_size += 1e-12
+        slot_loss = slot_loss / total_size
 
 intent_output = training_outputs[1]
 with tf.variable_scope('intent_loss'):
@@ -297,13 +296,13 @@ with tf.variable_scope('model', reuse=True):
                                     len(intent_vocab['vocab']), layer_size=arg.layer_size, isTraining=False)
 # slot output
 
-#if arg.use_crf:
- #   inference_slot_output, pred_scores = tf.contrib.crf.crf_decode(inference_outputs[0], trans_params, sequence_length)
-  #  print("no havee")
-#else:
+if arg.use_crf:
+    inference_slot_output, pred_scores = tf.contrib.crf.crf_decode(inference_outputs[0], trans_params, sequence_length)
+    test_slot = tf.multiply(inference_slot_output,1,name='slot_output')
+    test_score = tf.multiply(pred_scores,1,name='score_output')
+else:
+    inference_slot_output = tf.nn.softmax(inference_outputs[0], name='slot_output')
 
-inference_slot_output = tf.nn.softmax(inference_outputs[0], name='slot_output')
-print("haveeeeeee")
 # intent output
 inference_intent_output = tf.nn.softmax(inference_outputs[1], name='intent_output')
 
@@ -312,8 +311,7 @@ inference_inputs = [input_data, sequence_length]
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-saver = tf.train.Saver()
-
+saver = tf.train.Saver(max_to_keep=1)
 # gpu setting
 gpu_options = tf.GPUOptions(allow_growth=True)
 
@@ -396,10 +394,11 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
 
                     pred_slots = ret[1].reshape((slot_data.shape[0], slot_data.shape[1], -1))
                     for p, t, i, l in zip(pred_slots, slot_data, in_data, length):
-                        #if arg.use_crf:
-                         #   p = p.reshape([-1])
-                        #else:
-                        p = np.argmax(p, 1)
+                        if arg.use_crf:
+                           p = p.reshape([-1])
+                        else:
+                            p = np.argmax(p, 1)
+
                         tmp_pred = []
                         tmp_correct = []
                         tmp_input = []

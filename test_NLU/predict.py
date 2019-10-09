@@ -3,12 +3,13 @@ import tensorflow as tf
 import os
 from utils import loadVocabulary, sentenceToIds
 
-main_path = r'D:\chatbot\test_NLU(intent-slot)'            
+main_path = r'D:\chatbot\test_NLU'            
 ckpt_path = os.path.join(main_path,'model')
-meta_path = os.path.join(main_path,'model\_step_1424_epochs_9.ckpt.meta')
-input_vocab_path = os.path.join(main_path,'vocab\in_vocab')
-intent_vocab_path = os.path.join(main_path,'vocab\intent_vocab')
-slot_vocab_path = os.path.join(main_path,'vocab\slot_vocab')
+meta_path = os.path.join(main_path,'model\_step_3170_epochs_55.ckpt.meta')
+#meta_path = os.path.join(main_path,'model\_step_2908_epochs_43.ckpt.meta')
+input_vocab_path = os.path.join(main_path,'vocab1\in_vocab')
+intent_vocab_path = os.path.join(main_path,'vocab1\intent_vocab')
+slot_vocab_path = os.path.join(main_path,'vocab1\slot_vocab')
 
 def view_variables(aa):
     if aa == "tvs":
@@ -31,12 +32,15 @@ saver = tf.train.import_meta_graph(meta_path)
 saver.restore(sess,tf.train.latest_checkpoint(ckpt_path))
 
 graph = tf.get_default_graph()
+
+#view_variables("ops")
+
 msg = graph.get_tensor_by_name("inputs:0")
 seq_len = graph.get_tensor_by_name("sequence_length:0")
 intent = graph.get_tensor_by_name("intent_output:0")
-#if never use crf
 slot = graph.get_tensor_by_name("slot_output:0")
-#if use crf
+
+crf_score = graph.get_tensor_by_name("score_output:0")
 
 in_vocab = loadVocabulary(input_vocab_path)
 intent_vocab = loadVocabulary(intent_vocab_path)
@@ -53,7 +57,6 @@ while True:
         message = message.rstrip()
         
         #input idx
-        #
         inp = sentenceToIds(message, in_vocab)
         a = np.array(inp)
         b = []
@@ -73,33 +76,44 @@ while True:
         #print(pred_intent_array)
         pred_intent_idx = np.argmax(pred_intent_array)
         #print(pred_intent_idx)
-        #
+
+        #implement top 3 option for debugging
+        #show the accuracy of intent prediction
+        print(pred_intent_array[0][pred_intent_idx]*100)
+
         idx2intent = intent_vocab["rev"]
         pred_intent_word = idx2intent[pred_intent_idx]
         print(pred_intent_word)
+        
+        
         #predict slots
         pred_slot_array_array = sess.run(slot, feed_dict={msg:c,seq_len:l})
         #print(pred_slot_array_array)
-        #pred_slot_array_array = pred_slot_array_array.reshape(16, 33, -1)
-
+        
         #if use crf
-        #pred_slot_array = pred_slot_array_array.reshape([-1])
-        #if never use crf
-        pred_slot_array = np.argmax(pred_slot_array_array,1)
+        pred_slot_array = pred_slot_array_array.reshape([-1])
+        #if dun use crf
+        #pred_slot_array = np.argmax(pred_slot_array_array,1)
         #print(pred_slot_array)
-        #
+
+        #show the accuracy of slot prediction
+        
         pred_slot_word = []
         for idx in range(k):
             pred_slot_word.append(slot_vocab['rev'][pred_slot_array[idx]])
         print(pred_slot_word)
 
-        slot_details = {}
-        for i in range(k):
-            if pred_slot_word[i][0] == 'B':
-                slot_details[pred_intent_word[i][2:]] = idx2word[inp[i]]
-            if pred_slot_word[i][0] == 'I':
-                slot_details[pred_intent_word[i][2:]] += idx2word[inp[i]]
-        print(slot_details)
+        
+        crf_score_array_array = sess.run(crf_score, feed_dict={msg:c,seq_len:l})
+        print(crf_score_array_array[0])
+
+        # slot_details = {}
+        # for i in range(k):
+        #     if pred_slot_word[i][0] == 'B':
+        #         slot_details[pred_intent_word[i][2:]] = idx2word[inp[i]]
+        #     if pred_slot_word[i][0] == 'I':
+        #         slot_details[pred_intent_word[i][2:]] += idx2word[inp[i]]
+        # print(slot_details)
 
 #convert to slot value pair
 

@@ -16,3 +16,9 @@ id_data/
 test_NLU(intent-slot)/model/
 
 test_NLU(intent-slot)/vocab/
+
+test_NLU/model/
+
+test_NLU/vocab/
+
+test_NLU/vocab1/

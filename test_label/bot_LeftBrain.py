@@ -10,7 +10,7 @@ import re
 intent_dict = {
                 "user.greet":
                 {
-                    "pattern":r"(你好|在吗|hi|hello|hey)"
+                    "pattern":r"(你好|在吗|hi|hello|hey|您好)"
                 },
                 "user.request.fee":
                 {
@@ -36,6 +36,7 @@ intent_dict = {
                 }
 
             }
+
 #r"\b()\b"
 slot_dict = {
                 "city":
