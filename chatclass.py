@@ -18,37 +18,56 @@ DEBUG = 1
 class StateThreader():
     def __init__(self, default_state):
         self.default_state = default_state
-        self.threads = [] # A stack of threads
-        self.spawn_thread(default_state) # Spawn base thread
+        self.threadstack = [] # A stack of threads
+        self.threadmap = {}
+        self.curr_threadID = ""
+        self.curr_thread = ""
+        self.spawn_thread(default_state, threadID = "BASE") # Spawn base thread
+
+    def _get_thread(self, state):
+        return state["thread"]
     
-    def spawn_thread(self, start_state = -1):
+    def spawn_thread(self, start_state = -1, threadID = "DEFAULT"):
         if isinstance(start_state, int):
-            start_state = self.default_state
-        new = ConvoThread(start_state)
-        self.threads.append(new)
-        self.curr_thread = self.threads[-1]
+            raise Exception("Tried to spawn thread but no start state provided!")
+        newthread = ConvoThread(start_state)
+        self.threadstack.append(newthread)
+        self.threadmap[threadID] = newthread
+        self.curr_threadID = threadID
+        self.curr_thread = self.threadstack[-1]
     
     def get_curr_thread_state(self):
-        state = self.curr_thread.get_state()
+        state = self.curr_thread.get_curr_state()
         if isinstance(state, SIP):
             raise Exception("SIP DETECTED{}".format(state.toString()))
         return state
 
     def exit_thread(self):
-        if len(self.threads) > 1:
-            self.threads.pop(-1)
-            self.curr_thread = self.threads[-1]
+        if len(self.threadstack) > 1:
+            self.threadstack.pop(-1)
+            self.curr_thread = self.threadstack[-1]
 
-    def update_state(self, newstate):
+    def switch_thread_to(self, threadID):
+        switcher = self.threadmap[threadID]
+        self.curr_threadID = threadID
+        self.threadstack.remove(switcher)
+        self.threadstack.append(switcher)
+        return
+
+    def update_state(self, new_state):
+        def need_switch_thread(threadID):
+            return not (threadID == "NONE" or threadID == self.curr_threadID)
+        
         # How to decide if spawn a new thread? or kill old one?
-        NEWTHREAD = 0
-        POPTHREAD = 0
-        if NEWTHREAD:
-            self.spawn_thread(new_state)
-        elif POPTHREAD:
-            self.exit_thread()
-        else:
-            self.curr_thread.update_state(newstate)
+        ns_threadID = self._get_thread(new_state)
+
+        if need_switch_thread(ns_threadID):
+            if ns_threadID in self.threadmap:
+                self.switch_thread_to(ns_threadID)
+            else:
+                self.spawn_thread(new_state, ns_threadID)
+        
+        self.curr_thread.update_state(new_state)
 
     def set_thread_pending(self, hs, ps):
         self.curr_thread.set_pending_state(hs,ps)
@@ -69,6 +88,7 @@ class ConvoThread:
         self.curr_state = initial_state
         self.pend_state = None
         self.state_history = [self.curr_state]
+        self.required_info = []
 
     def _is_same_state(self, ns):
         return ns == self.curr_state
@@ -82,7 +102,7 @@ class ConvoThread:
     def get_prev_state(self):
         return self.state_history[-1]
 
-    def get_state(self):
+    def get_curr_state(self):
         return self.curr_state
 
     def has_pending_state(self):
@@ -110,7 +130,6 @@ class ConvoThread:
         self.update_state(self.get_pending_state())
         self._clear_pending()
         return
-
 
 # Controls state and details
 # Gatekeeps for states
@@ -140,7 +159,6 @@ class ChatManager:
     # Takes in a message, returns a text reply.
     def respond_to_message(self, msg):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") # For clarity in terminal
-
         # Parse the message and get an understanding
         full_uds = self._parse_message_overall(msg)
 
@@ -166,18 +184,6 @@ class ChatManager:
         self._parse_message_details(msg)
 
         return uds
-
-    # Gets the next state according to policy
-    def _fetch_understanding(self, msg):
-        curr_state_key = self._get_curr_state_key()
-        return self.pkeeper.get_understanding(curr_state_key, msg)
-
-    # Asks iparser to parse the message
-    def _parse_message_details(self, msg):
-        slots = self.gatekeeper.get_slots() # Best is to only look out for what is needed
-        details = self.iparser.parse(msg, slots)
-        self.push_detail_to_dm(details)
-        return
     
     # Process, gatekeep then internalize changes
     # Results in change in chat details and change in state
@@ -224,6 +230,7 @@ class ChatManager:
             infostate = constructed_sip.get_state_obj()
             self.statethreader.set_thread_pending(infostate, nextstate)
 
+    # REMOVAL
     def _make_info_sip(self, req_info):
         con_sip = self.pkeeper.make_info_req_sip(req_info)
         return con_sip
@@ -251,10 +258,23 @@ class ChatManager:
     def _get_current_info(self):
         return self.dmanager.fetch_info()
 
-    ## Detail stuff
+     # Gets the next state according to policy
+    def _fetch_understanding(self, msg):
+        curr_state_key = self._get_curr_state_key()
+        return self.pkeeper.get_understanding(curr_state_key, msg)
+
+    # Asks iparser to parse the message
+    def _parse_message_details(self, msg):
+        slots = self.gatekeeper.get_slots() # Best is to only look out for what is needed
+        details = self.iparser.parse(msg, slots)
+        self.push_detail_to_dm(details)
+        return
+
+    ### Detail logging
     def push_detail_to_dm(self, d):
         return self.dmanager.log_detail(d)
 
+    ### Chat logging
     def _record_messages_in_chat(self,recv, sent):
         self.chat.record_messages(recv,sent)
     
@@ -465,13 +485,13 @@ class ReplyGenerator:
             return False
 
         def get_replylist(obj):
-            print("get replies from obj",obj)
+            # print("get replies from obj",obj)
             return obj["replies"]
     
         LOCALDEBUG = 0
         DEBUG = 1 if LOCALDEBUG else 0
 
-        if DEBUG: print("csk", curr_state)
+        if DEBUG: print("csk", curr_state["key"],curr_state["thread"])
 
         # <Specific state to state goes here> if needed
 
