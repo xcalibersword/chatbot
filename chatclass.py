@@ -438,38 +438,39 @@ class ReplyGenerator:
             if "拍了" in rlist:
                 crafted_msg = crafted_msg + "拍好了吗？"
 
-            enhanced["requested_info"] = crafted_msg
-            
-            # Message extensions
-            if "首次" in enhanced and "city_info" in enhanced:
-                # Calculations
-                bool_shouci = (enhanced["首次"] == "是首次")
-                bool_gongjijin = False
-                ci = enhanced["city_info"]
-                total = 0
-                payment_base = ci["payment"]
-                total += payment_base
-                calcstr = "{} 应缴纳".format(payment_base)
-                svc_fee = ci["svc_fee"]
-                total += svc_fee
-                calcstr = calcstr + " + " + "{} 服务费".format(svc_fee)
-                if bool_shouci:
-                    shouci_fee = ci["shouci_fee"]
-                    total += shouci_fee
-                    calcstr = calcstr + " + " + "{} 开户费".format(shouci_fee)
-                if bool_gongjijin:
-                    total += 10000
+            enhanced["request_string"] = crafted_msg
+        
+        print("pre extension enh", enhanced)
+        # Message extensions
+        if "首次" in enhanced and "city_info" in enhanced:
+            # Calculations
+            bool_shouci = (enhanced["首次"] == "是首次")
+            bool_gongjijin = False
+            ci = enhanced["city_info"]
+            total = 0
+            payment_base = ci["payment"]
+            total += payment_base
+            calcstr = "{} 应缴纳".format(payment_base)
+            svc_fee = ci["svc_fee"]
+            total += svc_fee
+            calcstr = calcstr + " + " + "{} 服务费".format(svc_fee)
+            if bool_shouci:
+                shouci_fee = ci["shouci_fee"]
+                total += shouci_fee
+                calcstr = calcstr + " + " + "{} 开户费".format(shouci_fee)
+            if bool_gongjijin:
+                total += 10000
 
-                ci["total_amt"] = total # Hopefully this is a pointer and not a copy
+            ci["total_amt"] = total # Hopefully this is a pointer and not a copy
 
-                calcstr = calcstr + " = " + "{}块".format(total)
-                ci["calc_str"] = calcstr
+            calcstr = calcstr + " = " + "{}块".format(total)
+            ci["calc_str"] = calcstr
 
-                if bool_shouci:
-                    ci["首次ext"] = "首次参保额外收取{city_info[shouci_fee]}元开户费".format(**enhanced)
-                else:
-                    ci["首次ext"] = ""
-            
+            if bool_shouci:
+                ci["首次ext"] = "首次参保额外收取{city_info[shouci_fee]}元开户费".format(**enhanced)
+            else:
+                ci["首次ext"] = ""
+        
         return enhanced
 
 
