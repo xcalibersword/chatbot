@@ -42,6 +42,9 @@
         ],
         "goodbye":[
             ["greet", "init"]
+        ],
+        "total_amt_query":[
+            ["affirm","initplus"]
         ]
     },
     "forms":{

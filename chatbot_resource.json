@@ -5,13 +5,13 @@
             "default_set": false,
             "default_target": "NA",
             "matchdb": [
-                "yes",
+                "yes$",
                 "(?<!(不|你|您))好(啊|哦|滴|的)*$",
                 "(?<!没)有(啊|哦|滴|的)*$",
                 "(?<!不)(是|好的|可以)(啊|哦|滴|的)*$",
                 "没问题",
-                "(?<!不|没)确(认|定)",
-                "ok",
+                "(?<!不|没)确(认|定)$",
+                "ok$",
                 "是的$",
                 "哦$",
                 "(?<!(不|没))对(啊|哦|滴|的)*$",
@@ -25,12 +25,11 @@
             "default_target": "NA",
             "matchdb": [
                 "(?<!.)不(是|好|行|可以)$",
-                "(?<!.)没有$",
+                "(?<!.)没(有)*(?!错)$",
                 "不确定$",
-                "no",
+                "no$",
                 "not ok",
-                "(?<=(不|没))对",
-                "没(?!错)"
+                "(?<=(不|没))对$"
             ],
             "replies": []
         },
@@ -39,17 +38,17 @@
             "default_set": true,
             "default_target": "SAME_STATE",
             "matchdb": [
-                "(你|您)好",
+                "(你|您)好$",
                 "hello",
-                "早",
-                "早安",
-                "下午好",
-                "午安",
-                "晚上好",
-                "hi",
-                "在吗",
-                "喂",
-                "有人(不|吗)"
+                "早$",
+                "早安$",
+                "下午好$",
+                "午安$",
+                "晚上好$",
+                "hi$",
+                "在吗$",
+                "喂$",
+                "有人(不|吗)$"
             ],
             "replies": [
                 "您好!",
@@ -96,11 +95,10 @@
         "pay_query": {
             "key": "112 pay query",
             "default_set": true,
-            "default_target": "SAME_STATE",
+            "default_target": "inform_pai",
             "matchdb": [
-                "pay",
-                "付(款|钱)",
-                "办理"
+                "pay$",
+                "办理$"
             ],
             "replies": [
                 "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
@@ -119,10 +117,10 @@
         },
         "total_amt_query": {
             "key": "116 total amt query (gated)",
-            "default_set": false,
-            "default_target": "SAME_STATE",
+            "default_set": true,
+            "default_target": "total_amt_query",
             "matchdb": [
-                "一共(.*)（付|缴纳|多少)"
+                "一共(.*)(付|缴纳|多少)"
             ],
             "replies": []
         },
@@ -284,7 +282,7 @@
             "key": "201 state_init",
             "gated": false,
             "thread": "BASE",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": "",
             "replies": [
                 "您好! 有什么能帮助您的",
@@ -295,7 +293,7 @@
             "key": "202 state_init++",
             "gated": false,
             "thread": "BASE",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": "",
             "replies": [
                 "亲有别的要问吗？"
@@ -305,7 +303,7 @@
             "key": "251 whats wrong",
             "gated": false,
             "thread": "t_issue",
-            "pocket_state": true,
+            "terminal_state": true,
             "req_info": "",
             "replies": [
                 "有事吗？"
@@ -315,7 +313,7 @@
             "key": "211 saleq",
             "gated": false,
             "thread": "NONE",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": "",
             "replies": []
         },
@@ -323,30 +321,34 @@
             "key": "212 pay q",
             "gated": false,
             "thread": "NONE",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": "",
             "replies": []
         },
         "total_amt_query": {
             "key": "216 total amt q",
             "gated": true,
-            "thread": "NONE",
-            "pocket_state": true,
+            "thread": "t_amt_query",
+            "terminal_state": true,
             "req_info": [
                 [
                     "city",
                     "city"
+                ],
+                [
+                    "首次",
+                    "shouci"
                 ]
             ],
             "replies": [
-                "亲一共要付{city_info[total_amt]}"
+                "一共要付{city_info[total_amt]}"
             ]
         },
         "gen_query": {
             "key": 213,
             "gated": false,
             "thread": "NONE",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": "",
             "replies": []
         },
@@ -354,7 +356,7 @@
             "key": 218,
             "gated": false,
             "thread": "NONE",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": "",
             "replies": []
         },
@@ -362,7 +364,7 @@
             "key": "221 recv info",
             "gated": true,
             "thread": "NONE",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": "",
             "replies": [
                 "亲,{request_string}"
@@ -372,7 +374,7 @@
             "key": 251,
             "gated": false,
             "thread": "t_issue",
-            "pocket_state": true,
+            "terminal_state": true,
             "req_info": "",
             "replies": []
         },
@@ -380,7 +382,7 @@
             "key": 271,
             "gated": false,
             "thread": "NONE",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": [],
             "replies": [
                 "本人推存社保套餐 A"
@@ -390,7 +392,7 @@
             "key": 280,
             "gated": false,
             "thread": "NONE",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": "",
             "replies": []
         },
@@ -398,7 +400,7 @@
             "key": "281 propose plan",
             "gated": true,
             "thread": "t_presale",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": [
                 [
                     "city",
@@ -417,7 +419,7 @@
             "key": "282 confirm plan",
             "gated": false,
             "thread": "t_presale",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": [
                 [
                     "city",
@@ -432,7 +434,7 @@
             "key": 283,
             "gated": true,
             "thread": "t_presale",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": [
                 [
                     "首次",
@@ -447,7 +449,7 @@
             "key": 289,
             "gated": false,
             "thread": "NONE",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": "",
             "replies": []
         },
@@ -455,7 +457,7 @@
             "key": "209 bye",
             "gated": false,
             "thread": "NONE",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": "",
             "replies": [
                 "好的，谢谢光临",
@@ -466,7 +468,7 @@
             "key": "299 PREV_STATE",
             "gated": false,
             "thread": "NONE",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": "",
             "replies": []
         },
@@ -474,7 +476,7 @@
             "key": "260 inform pai",
             "gated": false,
             "thread": "t_pai",
-            "pocket_state": false,
+            "terminal_state": false,
             "req_info": "",
             "replies": [
                 "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
@@ -484,7 +486,7 @@
             "key": "261 done pai",
             "gated": false,
             "thread": "t_pai",
-            "pocket_state": false,
+            "terminal_state": true,
             "req_info": [],
             "replies": [
                 "两点注意：1.每个月的15号前，来淘宝缴费，不要更改淘宝ID和缴费基数 2.如果要停缴或者已入职新单位的，请通知我们。比如你6月份停缴，最晚在6月15号前通知我们，可以在小程序上提交终止服务的申请，或者拍下1元停缴宝贝、留言备注好退工日期，以防影响你下家单位交金；如不备注一律以我司办理为准，谢谢亲的配合。（PS. 只缴社保和公积金是没有个税记录的哦，如需要个税申报的麻烦联系客服办理哦）"
@@ -606,18 +608,18 @@
         },
         "shouci": {
             "是首次": [
-                "yes",
-                "(?<!不)是",
-                "(?<!不)对",
-                "没(.+)过",
+                "yes$",
+                "(?<!不)是$",
+                "(?<!不)对$",
+                "没(交|付|代缴)(.*)过",
                 "(?<!不)(.*)首次"
             ],
             "不是首次": [
-                "no",
-                "nope",
-                "不是",
-                "不",
-                "(?<!没)(.+)过",
+                "no$",
+                "nope$",
+                "不是$",
+                "不$",
+                "(?<!没)(交|付|代缴)(.+)过",
                 "不(.*)首次"
             ]
         },
