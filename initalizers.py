@@ -13,10 +13,8 @@ def state_key_dict(states):
     return out
 
 def init_replygen(jdata):
-    REPLY_DB = jdata["reply_db"]
-
-    # Everything above is not required anymore 
-    return ReplyGenerator(REPLY_DB)
+    FORMAT_DB = jdata["reply_formatting"]
+    return ReplyGenerator(FORMAT_DB)
 
 def init_policykeeper(jdata, pdata):
     INTENTS = jdata["intents"]

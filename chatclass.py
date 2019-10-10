@@ -102,8 +102,8 @@ class StateThreader():
     # If has pending, returns pending
     # If nothing pending, returns given_next_state
     def move_forward(self, given_next_state):
-        print("Moving forward...")
         if self.get_curr_thread().has_pending_state():
+            if DEBUG: print("Unlocking...")
             self.get_curr_thread().unlock_pending_state()
             self.state_changed = True
         else:
@@ -449,41 +449,132 @@ class DetailManager:
 
 # Generates reply text based on current state info
 class ReplyGenerator:
-    def __init__(self, replyDB):
-        self.replyDB = replyDB
+    def __init__(self, formattingDB):
+        self.formatDB = formattingDB
         self.formatter = string.Formatter()
 
     # OVERALL METHOD
     def get_reply(self, curr_state, intent, ss, info = -1):
         rdb = self.getreplydb(intent, curr_state, ss)
-        infoplus = self._enhance_info(info)
+        infoplus = self._enhance_info(curr_state, info)
         reply = self.generate_reply_message(rdb, infoplus)
         return reply
 
     # Formats txts and calculates
-    def _enhance_info(self,info):
+    def _enhance_info(self,curr_state,info):
         enhanced = info.copy()
-        if "requested_info" in enhanced:
-            rlist = enhanced["requested_info"]
-            
-            # Crafted message for info gathering
-            crafted_msg = ""
-            # TODO Have a proper mapping for thisa
-            if "city" in rlist:
-                crafted_msg = crafted_msg + "您是哪个城市呢？"
-            if "首次" in rlist:
-                crafted_msg = crafted_msg + "是首次吗？"
-            if "拍了" in rlist:
-                crafted_msg = crafted_msg + "拍好了吗？"
+        rep_ext = {}
+        calc_ext = {}
 
-            enhanced["request_string"] = crafted_msg
+        cskey = curr_state["key"]
+        state_calcs = False
+
+        formatDB = self.formatDB["msg_formats"]
+        calcDB = self.formatDB["calcs"]
+
+        def add_enh(key, rawstr, ext_dict,overall_key):
+            print("enhancing!")
+            enhstr = rawstr.format(**enhanced)
+            if key in ext_dict:
+                ext_dict[key] = ext_dict[key] + enhstr
+            else:
+                ext_dict[key] = enhstr
+            enhanced[overall_key] = rep_ext
+
+        def add_txt_enh(key, rawstr):
+            return add_enh(key,rawstr,rep_ext,"rep_ext")
         
-        print("pre extension enh", enhanced)
-        # Message extensions
+        def add_calc_enh(key, rawstr):
+            return add_enh(key,rawstr,calc_ext,"calc_ext")
+
+        def needs_txt_enh(tmp):
+            states = tmp["states"]
+            if cskey in states:
+                lookout = tmp["lookfor"].copy()
+                for detail in enhanced:
+                    if detail in lookout:
+                        lookout.remove(detail)
+                if len(lookout) == 0:
+                    return True
+            return False
+
+        def needs_calc(state):
+            return "calcs" in state
+
+        def evaluate_formula(f):
+            def op_on_all(vnames, op, vdic):
+                def operate(a,b,op):
+                    return op(a,b)
+                out = 0
+                for vname in vnames:
+                    rel_val = vname if isinstance(vname, float) else vdic[vname]
+                    out = out + operate(vdic[tkey],relval,op)
+                return out
+
+            def dive_for_values(c_list, c_dir):
+                out = {}
+                for valname in c_list:
+                    if isinstance(c_list, list):
+                        nextdirname, nestlist = c_list
+                        nextdir = c_dir[nextdirname]
+                        out.update(dive_for_values(nestlist,nextdir))
+                    else:
+                        if valname in c_dir:
+                            rawval = c_dir[valname]
+                            out[valname] = rawval
+                        else:
+                            print("ERROR! Cannot find{} in {}".format(valname,c_dir))
+                    
+                return out    
+
+            
+                    
+            instr = f["steps"]
+            steps = list(instr.keys())
+            steps = list(map(lambda x: (x.split(","), instr[x]),steps))
+            print(steps)
+            steps.sort(key=lambda t: t[0][0])
+            print("aft sort",steps)
+            req_vars = f["req_vars"]
+            vd = dive_for_values(req_vars,enhanced)
+            print(vd)
+
+            #CALCULATIONS 
+            vd["OUTCOME"] = 0
+            for stp in steps:
+                (n, opname),(valnames,tkey)  = stp
+                if not tkey in vd:
+                    vd[tkey] = 0
+
+                if opname == "add":
+                    opr = lambda a,b: a+b
+                elif opname == "multi":
+                    opr = lambda a,b: a*b
+                elif opname == "sub":
+                    opr = lambda a,b: a-b
+                else:
+                    opr = lambda a,b: a
+                vd[tkey] = op_on_all(valnames,op,vd)
+
+            return vd["OUTCOME"]
+
+        # Calculations
+        if needs_calc(curr_state):
+            state_calcs = curr_state["calcs"]
+            for fname in state_calcs:
+                if not fname in calcDB:
+                    print("ERROR! No such formula:{}".format(formula))
+                else:
+                    formula = calcDB[fname]
+                    result = evaluate_formula(formula)
+                    
+                    add_calc_enh(target_key,value)
+        else:
+            print("No calculation performed")
+
+        
         if "首次" in enhanced and "city_info" in enhanced:
             # Calculations
-            bool_shouci = (enhanced["首次"] == "是首次")
-            bool_gongjijin = False
             ci = enhanced["city_info"]
             total = 0
             payment_base = ci["payment"]
@@ -492,23 +583,39 @@ class ReplyGenerator:
             svc_fee = ci["svc_fee"]
             total += svc_fee
             calcstr = calcstr + " + " + "{} 服务费".format(svc_fee)
-            if bool_shouci:
-                shouci_fee = ci["shouci_fee"]
-                total += shouci_fee
-                calcstr = calcstr + " + " + "{} 开户费".format(shouci_fee)
-            if bool_gongjijin:
-                total += 10000
+            # if bool_shouci:
+            #     shouci_fee = ci["shouci_fee"]
+            #     total += shouci_fee
 
             ci["total_amt"] = total # Hopefully this is a pointer and not a copy
 
             calcstr = calcstr + " = " + "{}块".format(total)
             ci["calc_str"] = calcstr
 
-            if bool_shouci:
-                ci["首次ext"] = "首次参保额外收取{city_info[shouci_fee]}元开户费".format(**enhanced)
-            else:
-                ci["首次ext"] = ""
+
+        # Message extensions and formatting
+        # Template in format database
+        for tmp in formatDB:
+            if needs_txt_enh(tmp):
+                target_key = tmp["writeto"]
+                # ifpr = tmp["if_present"]
+                # for deet in list(ifpr.keys()):
+                #     enstr = ifpr[deet]
+                #     add_txt_enh(target_key,enstr)
+                
+                ifvl = tmp["if_value"]
+                for deet in list(ifvl.keys()):
+                    formatmap = ifvl[deet]
+                    if isinstance(enhanced[deet],list):
+                        contents = enhanced[deet]
+                    else:
+                        contents = [enhanced[deet]]
+
+                    for deetval in contents:
+                        enstr = formatmap[deetval]
+                        add_txt_enh(target_key,enstr)
         
+
         return enhanced
 
 

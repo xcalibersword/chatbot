@@ -6,6 +6,7 @@ from cbsv import read_json, dump_to_json, check_file_exists
 
 dbfolder = "userdata"
 DEBUG = 1
+WRITE_TO_FILE = 0 # Switch to turn of writing for testing purposes.
 
 class DatabaseRunner():
     def __init__(self):
@@ -20,6 +21,7 @@ class DatabaseRunner():
             print("Creating empty database file")
             dump_to_json(self.dbfilepath,{}) # Create an empty file
         self.database = read_json(self.dbfilepath)
+        if not WRITE_TO_FILE: print("<BACKEND WARNING: Writing to file has been disabled>")
 
     def fetch_user_info(self, user):
         if not user in self.database:
@@ -52,6 +54,6 @@ class DatabaseRunner():
                 if self.database[user] == {}:
                     self.database.pop(user)
         destroy_empty_records()
-        dump_to_json(self.dbfilepath, self.database)
+        if WRITE_TO_FILE: dump_to_json(self.dbfilepath, self.database)
         self.timer_on = False
 
