@@ -3,6 +3,9 @@ import os
 import re
 import json
 
+WRITE_TO_FILE = 0 # Switch to turn of writing for testing purposes.
+
+
 def DEFAULT_CONFUSED():
     return "不好意思，我听不懂"
 
@@ -65,6 +68,9 @@ def check_input_against_db(msg, db, exact = False):
     return match
 
 def dump_to_json(filename, data, DEBUG = 0):
+    if not WRITE_TO_FILE: 
+        print("<BACKEND WARNING: Writing to file has been disabled> {} remains unchanged".format(filename))
+        return
     try:
         with open(filename,'w', encoding='utf8') as f:
             json.dump(data, f, indent = 4, ensure_ascii=0)

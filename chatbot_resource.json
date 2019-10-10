@@ -436,7 +436,7 @@
             "thread": "t_presale",
             "terminal_state": false,
             "calcs": [
-                "shebao_basic"
+                "have_shouci_val","zero_shouci_val","shebao_basic"
             ],
             "req_info": [
                 [
@@ -449,7 +449,7 @@
                 ]
             ],
             "replies": [
-                "{city}的宝贝一共要付{rep_ext[calc_str]}，亲确认下哦"
+                "{city}的宝贝一共要付{rep_ext[calc_str_working]}{rep_ext[calc_str_total]}，亲确认下哦"
             ]
         },
         "finish_sale": {
@@ -556,46 +556,120 @@
                     "payment"
                 ],
                 "lookfor": [
-                    "首次",
-                    "city_info"
+                    ["city_info",
+                        [
+                            "payment",
+                            "svc_fee",
+                            "shouci_fee"
+                        ]
+                    ],
+                    "首次"
                 ],
-                "writeto": "calc_str",
-                "if_present": {},
+                "writeto": "calc_str_working",
+                "if_present": {
+                    "payment":"{city_info[payment]}应缴纳",
+                    "svc_fee":"{city_info[svc_fee]}服务费"
+                },
                 "if_value": {
                     "首次": {
                         "yes": "{city_info[shouci_fee]}开户费",
                         "no": ""
                     }
                 }
+            },
+            {
+                "states": [
+                    "payment"
+                ],
+                "lookfor": [
+                    ["calc_ext",["shebao_basic_total"]]
+                ],
+                "writeto": "calc_str_total",
+                "if_present": {
+                    "shebao_basic_total":" = {calc_ext[shebao_basic_total]}块"
+                },
+                "if_value": {}
+                
             }
         ],
         "calcs": {
+            "have_shouci_val":{
+                "conditions":[
+                    ["首次","yes"]
+                ],
+                "req_vars":[
+                    [
+                        "city_info",
+                        [
+                            "shouci_fee"
+                        ]
+                    ]
+                ],
+                "steps":{
+                    "1,add": [
+                        [
+                            "shouci_fee",
+                            0
+                        ],
+                        "OUTCOME"
+                    ]
+                },
+                "writeto": "w_shouci_fee"
+            },
+            "zero_shouci_val":{
+                "conditions":[
+                    ["首次","no"]
+                ],
+                "req_vars":[
+                    [
+                        "city_info",
+                        [
+                            "shouci_fee"
+                        ]
+                    ]
+                ],
+                "steps":{
+                    "1,multi": [
+                        [
+                            "OUTCOME",
+                            0
+                        ],
+                        "OUTCOME"
+                    ]
+                },
+                "writeto": "w_shouci_fee"
+            },
             "shebao_basic": {
+                "conditions":[],
                 "req_vars":[
                     [
                         "city_info",
                         [
                             "jishu",
                             "payment",
-                            "svc_fee",
-                            "shouci_fee"
+                            "svc_fee"
+                        ]
+                    ],
+                    [
+                        "calc_ext",[
+                            "w_shouci_fee"
                         ]
                     ]
                 ],
                 "steps": {
                     "1,add": [
-                        ["jishu",
+                        [
                             "payment",
                             "svc_fee",
-                            "shouci_fee"],
+                            "w_shouci_fee"],
                         "OUTCOME"
                     ],
                     "2,multi": [
-                        ["total",10.0],
+                        ["OUTCOME",1.0],
                         "OUTCOME"
                     ]
                 },
-                "writeto": "total_amt"
+                "writeto": "shebao_basic_total"
             }
         }
     },

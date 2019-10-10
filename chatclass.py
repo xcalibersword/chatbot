@@ -464,7 +464,7 @@ class ReplyGenerator:
     def _enhance_info(self,curr_state,info):
         enhanced = info.copy()
         rep_ext = {}
-        calc_ext = {}
+        l_calc_ext = {}
 
         cskey = curr_state["key"]
         state_calcs = False
@@ -472,50 +472,50 @@ class ReplyGenerator:
         formatDB = self.formatDB["msg_formats"]
         calcDB = self.formatDB["calcs"]
 
-        def add_enh(key, rawstr, ext_dict,overall_key):
-            print("enhancing!")
-            enhstr = rawstr.format(**enhanced)
+        def add_enh(key, value, ext_dict,overall_key):
+            print("Enhancing!{}:{}".format(key,value))
             if key in ext_dict:
-                ext_dict[key] = ext_dict[key] + enhstr
+                ext_dict[key] = ext_dict[key] + value
             else:
-                ext_dict[key] = enhstr
-            enhanced[overall_key] = rep_ext
+                ext_dict[key] = value
+            
+            # Init here to separate concern from DataManager
+            if not overall_key in enhanced: enhanced[overall_key] = {} 
+            enhanced[overall_key].update(ext_dict)
 
         def add_txt_enh(key, rawstr):
-            return add_enh(key,rawstr,rep_ext,"rep_ext")
+            enhstr = rawstr.format(**enhanced)
+            return add_enh(key,enhstr,rep_ext,"rep_ext")
         
         def add_calc_enh(key, rawstr):
-            return add_enh(key,rawstr,calc_ext,"calc_ext")
+            flt = float(rawstr)
+            print("Calculated {}:{}".format(key,flt))
+            return add_enh(key,flt,l_calc_ext,"calc_ext")
 
-        def needs_txt_enh(tmp):
+        def needs_txt_enh(tmp,csk):
             states = tmp["states"]
-            if cskey in states:
-                lookout = tmp["lookfor"].copy()
-                for detail in enhanced:
-                    if detail in lookout:
-                        lookout.remove(detail)
-                if len(lookout) == 0:
-                    return True
-            return False
+            return csk in states
 
         def needs_calc(state):
             return "calcs" in state
 
-        def evaluate_formula(f):
-            def op_on_all(vnames, op, vdic):
-                def operate(a,b,op):
-                    return op(a,b)
-                out = 0
-                for vname in vnames:
-                    rel_val = vname if isinstance(vname, float) else vdic[vname]
-                    out = out + operate(vdic[tkey],relval,op)
-                return out
+        def fcondition_met(f):
+            # This assumes all conditions are linked by AND
+            conds = f["conditions"]
+            for cond in conds:
+                k, v = cond
+                met = (enhanced[k] == v) # Simple match
+                if not met:
+                    return False
+            return True
 
-            def dive_for_values(c_list, c_dir):
+        # Useful
+        # Recursively looks in dicts for nested dicts until finds values.
+        def dive_for_values(c_list, c_dir):
                 out = {}
                 for valname in c_list:
-                    if isinstance(c_list, list):
-                        nextdirname, nestlist = c_list
+                    if isinstance(valname, list):
+                        nextdirname, nestlist = valname
                         nextdir = c_dir[nextdirname]
                         out.update(dive_for_values(nestlist,nextdir))
                     else:
@@ -523,11 +523,22 @@ class ReplyGenerator:
                             rawval = c_dir[valname]
                             out[valname] = rawval
                         else:
-                            print("ERROR! Cannot find{} in {}".format(valname,c_dir))
-                    
-                return out    
+                            print("ERROR! Cannot find variable<{}> in {}".format(valname,c_dir))
+                return out
 
-            
+        def evaluate_formula(f):
+            def op_on_all(vnames, op, vdic):
+                def operate(a,b,op):
+                    return op(a,b)
+                out = None
+                for vname in vnames:
+                    isnumbr = isinstance(vname, float) or isinstance(vname, int)
+                    rel_val = vname if isnumbr else vdic[vname]
+                    if out == None:
+                        out = rel_val
+                    else:
+                        out = operate(out,rel_val,op)
+                return out
                     
             instr = f["steps"]
             steps = list(instr.keys())
@@ -552,64 +563,53 @@ class ReplyGenerator:
                     opr = lambda a,b: a*b
                 elif opname == "sub":
                     opr = lambda a,b: a-b
+                elif opname == "sub":
+                    opr = lambda a,b: a/b
                 else:
                     opr = lambda a,b: a
-                vd[tkey] = op_on_all(valnames,op,vd)
+                vd[tkey] = op_on_all(valnames,opr,vd)
 
             return vd["OUTCOME"]
 
+        ### MAIN FUNCTION ###
         # Calculations
         if needs_calc(curr_state):
             state_calcs = curr_state["calcs"]
             for fname in state_calcs:
+                print("performing",fname)
                 if not fname in calcDB:
                     print("ERROR! No such formula:{}".format(formula))
                 else:
                     formula = calcDB[fname]
-                    result = evaluate_formula(formula)
-                    
-                    add_calc_enh(target_key,value)
+                    if fcondition_met(formula):
+                        target_key = formula["writeto"]
+                        result = evaluate_formula(formula)
+                        add_calc_enh(target_key,result)
         else:
             print("No calculation performed")
-
-        
-        if "首次" in enhanced and "city_info" in enhanced:
-            # Calculations
-            ci = enhanced["city_info"]
-            total = 0
-            payment_base = ci["payment"]
-            total += payment_base
-            calcstr = "{} 应缴纳".format(payment_base)
-            svc_fee = ci["svc_fee"]
-            total += svc_fee
-            calcstr = calcstr + " + " + "{} 服务费".format(svc_fee)
-            # if bool_shouci:
-            #     shouci_fee = ci["shouci_fee"]
-            #     total += shouci_fee
-
-            ci["total_amt"] = total # Hopefully this is a pointer and not a copy
-
-            calcstr = calcstr + " = " + "{}块".format(total)
-            ci["calc_str"] = calcstr
-
 
         # Message extensions and formatting
         # Template in format database
         for tmp in formatDB:
-            if needs_txt_enh(tmp):
+            if needs_txt_enh(tmp,cskey):
                 target_key = tmp["writeto"]
-                # ifpr = tmp["if_present"]
-                # for deet in list(ifpr.keys()):
-                #     enstr = ifpr[deet]
-                #     add_txt_enh(target_key,enstr)
+                lookout = tmp["lookfor"].copy()
+                vd = dive_for_values(lookout, enhanced)
+                vks = list(vd.keys())
+                
+                ifpr = tmp["if_present"]
+                for deet in list(ifpr.keys()):
+                    enstr = ifpr[deet]
+                    add_txt_enh(target_key,enstr)
                 
                 ifvl = tmp["if_value"]
                 for deet in list(ifvl.keys()):
                     formatmap = ifvl[deet]
-                    if isinstance(enhanced[deet],list):
-                        contents = enhanced[deet]
+                    if isinstance(vd[deet],list):
+                        # E.g. reqinfo is a list
+                        contents = vd[deet]
                     else:
-                        contents = [enhanced[deet]]
+                        contents = [vd[deet]]
 
                     for deetval in contents:
                         enstr = formatmap[deetval]
