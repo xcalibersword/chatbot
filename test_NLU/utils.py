@@ -19,10 +19,10 @@ def createVocabulary(input_path, output_path, no_pad=False):
         for line in fd:
             line = line.rstrip('\r\n')
             
-            if hasChinese(line):
-                words = [word for word in line]
-            else:
-                words = line.split()
+            # if hasChinese(line):
+            #     words = [word for word in line]
+            # else:
+            words = line.split()
 
             for w in words:
                 if w == '_UNK':
@@ -40,7 +40,6 @@ def createVocabulary(input_path, output_path, no_pad=False):
 
         for v in vocab:
             out.write(v + '\n')
-
 
 def loadVocabulary(path):
     if not isinstance(path, str):
@@ -61,10 +60,10 @@ def sentenceToIds(data, vocab):
         raise TypeError('vocab should be a dict that contains vocab and rev')
     vocab = vocab['vocab']
     if isinstance(data, str):
-        if hasChinese(data):
-            words = [word for word in data]
-        else:
-            words = data.split()
+        # if hasChinese(data):
+        #     words = [word for word in data]
+        # else:
+        words = data.split()
     elif isinstance(data, list):
         words = data
     else:
@@ -263,13 +262,20 @@ class DataProcessor(object):
         in_seq = []
         slot_seq = []
         intent_seq = []
+
+        #read the first 16 then 20 then 24 of the training set
+        #convert to id
         for i in range(batch_size):
             inp = self.__fd_in.readline()
             if inp == '':
+                print(self.__fd_in)
+                print("batch: {0} & idx: {1} >>> {2}".format(batch_size,i,inp))
+                print(len(batch_in),len(batch_slot),len(intents),len(length))
                 self.end = 1
                 break
             slot = self.__fd_slot.readline()
             intent = self.__fd_intent.readline()
+
             inp = inp.rstrip()
             slot = slot.rstrip()
             intent = intent.rstrip()
@@ -280,13 +286,17 @@ class DataProcessor(object):
 
             iii = inp
             sss = slot
+
             inp = sentenceToIds(inp, self.__in_vocab)
             slot = sentenceToIds(slot, self.__slot_vocab)
             intent = sentenceToIds(intent, self.__intent_vocab)
+
             batch_in.append(np.array(inp))
             batch_slot.append(np.array(slot))
+
             length.append(len(inp))
             intents.append(intent[0])
+
             if len(inp) != len(slot):
                 print(iii, sss)
                 print(inp, slot)
@@ -294,8 +304,10 @@ class DataProcessor(object):
             if len(inp) > max_len:
                 max_len = len(inp)
 
+        #process batch
         length = np.array(length)
         intents = np.array(intents)
+
         # print(max_len)
         # print('A'*20)
         for i, s in zip(batch_in, batch_slot):
@@ -312,8 +324,8 @@ class DataProcessor(object):
             weight = weight.astype(np.float32)
             slot_weight.append(weight)
         slot_weight = np.array(slot_weight)
-        return in_data, slot_data, slot_weight, length, intents, in_seq, slot_seq, intent_seq
 
+        return in_data, slot_data, slot_weight, length, intents, in_seq, slot_seq, intent_seq
 
 def load_embedding(embedding_path):
     return np.load(embedding_path)

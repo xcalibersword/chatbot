@@ -1,7 +1,7 @@
 import csv, time, os, re, argparse, random
 import pandas as pd
 from test_label.bot_LeftBrain import intent_dict, slot_dict
-
+os.getcwd()
 parser = argparse.ArgumentParser(allow_abbrev=False)
 
 parser.add_argument("--save_type", type=str, default="label", help="Type of file to save label,id or QA")
@@ -18,7 +18,7 @@ class RawDataProcessor:
         self.pattern_timestamp = r'[(]\d*-\d*-\d* \d*:\d*:\d*[)]:'
         self.pattern_startline = r'-{28}.*-{28}'
 
-        #load      
+        #load raw data   
         self.datapath = r"D:\data (unsorted)\QianNiu_Conv_FanFan"
         #save QA
         self.savepath = os.path.join(str(os.getcwd()),"data", "QA" + time.strftime(r'%Y-%m-%d', time.localtime(time.time())) + ".csv")
@@ -130,16 +130,22 @@ class RawDataProcessor:
                 text_intent = []
                 text_slot = []
                 for label_sent_list in custlist[start:stop]:
-                    text_input.append(label_sent_list[0]+"\n")
+                    #format chinese input into english format
+                    msg = label_sent_list[0]
+                    new_msg = ""
+                    for char in msg:
+                        new_msg = new_msg + char + " "
+                    text_input.append(new_msg.rstrip()+"\n")
                     text_intent.append(label_sent_list[1]+"\n")
                     text_slot.append(label_sent_list[2]+"\n")
-                with open(r"D:\chatbot\test_NLU\data\test\{}\seq.in".format(category),"w",newline="\n") as f:
+                
+                with open(r"D:\chatbot\test_NLU\data\test\{}\seq.in".format(category),"w",newline="\n",encoding="gb18030") as f:
                     f.writelines(text_input)
                     f.close()
-                with open(r"D:\chatbot\test_NLU\data\test\{}\label".format(category),"w",newline="\n") as f:
+                with open(r"D:\chatbot\test_NLU\data\test\{}\label".format(category),"w",newline="\n",encoding="gb18030") as f:
                     f.writelines(text_intent)
                     f.close()
-                with open(r"D:\chatbot\test_NLU\data\test\{}\seq.out".format(category),"w",newline="\n") as f:
+                with open(r"D:\chatbot\test_NLU\data\test\{}\seq.out".format(category),"w",newline="\n",encoding="gb18030") as f:
                     f.writelines(text_slot)
                     f.close()
 
@@ -156,14 +162,14 @@ class RawDataProcessor:
             new_cust_list = [[sent] for sent in self.cust_list]
             cust_df = pd.DataFrame(columns=["CUST"],data=new_cust_list)
             QA_df = pd.concat([cso_df,cust_df],ignore_index=True,axis=1)
-            QA_df.to_csv(self.savepath,index=False,encoding="utf-8")
+            QA_df.to_csv(self.savepath,index=False,encoding="gb18030")
         #generate id
         if arg.save_type == "id":
             list_list_list = []
             for id_key,sent_list in self.id_list.items():
                 temp_df = pd.DataFrame(data=[[sent] for sent in sent_list])
                 list_list_list.append(temp_df)
-                temp_df.to_csv(r"D:\chatbot\id_data\{}.csv".format(id_key),index=False,encoding="utf-8")
+                temp_df.to_csv(r"D:\chatbot\id_data\{}.csv".format(id_key),index=False,encoding="gb18030")
 
         #generate to be label
         if arg.save_type == "label":
@@ -174,14 +180,18 @@ class RawDataProcessor:
                     if query.strip() != "":
                         cust_query.append(query)
             
+            # save raw query only
+            # new_df = pd.DataFrame(data=custlist)
+            # new_df.to_csv(self.labelpath,index=False,encoding="gb18030")
+
             clean_cust_query = []
-            #simple clean to keep only chinese character
+            #keep chinese work, len(sent) > 1
             for unclean in cust_query:
                 clean = unclean
                 for char in unclean:
                     if not self.isChinese(char):
                         clean = clean.replace(char,"")
-                if not clean == "":
+                if len(clean) > 1:
                     clean_cust_query.append(clean)
 
             greet_pattern = r"(你好|在吗|hi|hello|hey|您好)"
@@ -211,12 +221,18 @@ class RawDataProcessor:
                 labelled_sent.append(slot_string)
                 custlist.append(labelled_sent)
 
-            #split data into train,valid,test and the respective columns -> may need to refer to sklearn cross validation notes
+            # save labelled cleaned data
+            new_df = pd.DataFrame(data=custlist)
+            new_df.to_csv(r"D:\chatbot\data\a.csv",index=False,encoding="gb18030")
 
-            custlist_length = len(custlist)
-            interval_first = round(custlist_length * 0.1)
-            interval_second = round(custlist_length * 0.3)
+            # split data into train,valid,test and the respective category | refer to sklearn
+            # custlist_length = len(custlist)
+            # interval_first = round(custlist_length * 0.1)
+            # interval_second = round(custlist_length * 0.3)
 
+            interval_first = 483
+            interval_second = 1231
+            end = 4890
             random.shuffle(custlist)
             
             #test
@@ -224,11 +240,7 @@ class RawDataProcessor:
             #validation
             self.split2train_valid_test(custlist,"valid",interval_first,interval_second)
             #train
-            self.split2train_valid_test(custlist,"train",interval_second,None)
-
-            # new_df = pd.DataFrame(data=custlist)
-            # new_df.to_csv(r"D:\chatbot\data\a.csv",index=False,encoding="utf-8")
-            #new_df.to_csv(self.labelpath,index=False,encoding="utf-8")
+            self.split2train_valid_test(custlist,"train",interval_second,end)
 
 def readData():
     w = RawDataProcessor()

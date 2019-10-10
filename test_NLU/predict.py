@@ -4,9 +4,8 @@ import os
 from utils import loadVocabulary, sentenceToIds
 
 main_path = r'D:\chatbot\test_NLU'            
-ckpt_path = os.path.join(main_path,'model')
-meta_path = os.path.join(main_path,'model\_step_3170_epochs_55.ckpt.meta')
-#meta_path = os.path.join(main_path,'model\_step_2908_epochs_43.ckpt.meta')
+ckpt_path = os.path.join(main_path,'model1')
+meta_path = os.path.join(main_path,'model1\_step_1576_epochs_16.ckpt.meta')
 input_vocab_path = os.path.join(main_path,'vocab1\in_vocab')
 intent_vocab_path = os.path.join(main_path,'vocab1\intent_vocab')
 slot_vocab_path = os.path.join(main_path,'vocab1\slot_vocab')
@@ -40,13 +39,16 @@ seq_len = graph.get_tensor_by_name("sequence_length:0")
 intent = graph.get_tensor_by_name("intent_output:0")
 slot = graph.get_tensor_by_name("slot_output:0")
 
-crf_score = graph.get_tensor_by_name("score_output:0")
+#crf_score = graph.get_tensor_by_name("score_output:0")
 
 in_vocab = loadVocabulary(input_vocab_path)
 intent_vocab = loadVocabulary(intent_vocab_path)
 slot_vocab = loadVocabulary(slot_vocab_path)
 
 idx2word = in_vocab['rev']
+
+#make into function
+
 while True:
     message = input("Enter message: ")
     if message == "stop":
@@ -54,7 +56,13 @@ while True:
         break
     else:
         #preprocess new data for prediction
-        message = message.rstrip()
+
+        #englishfy
+        new_msg = ""
+        for char in message:
+            new_msg = new_msg + char + " "
+
+        message = new_msg.rstrip()
         
         #input idx
         inp = sentenceToIds(message, in_vocab)
@@ -85,27 +93,18 @@ while True:
         pred_intent_word = idx2intent[pred_intent_idx]
         print(pred_intent_word)
         
-        
         #predict slots
         pred_slot_array_array = sess.run(slot, feed_dict={msg:c,seq_len:l})
         #print(pred_slot_array_array)
         
-        #if use crf
-        pred_slot_array = pred_slot_array_array.reshape([-1])
-        #if dun use crf
-        #pred_slot_array = np.argmax(pred_slot_array_array,1)
-        #print(pred_slot_array)
-
         #show the accuracy of slot prediction
-        
         pred_slot_word = []
         for idx in range(k):
-            pred_slot_word.append(slot_vocab['rev'][pred_slot_array[idx]])
+            pred_slot_word.append(slot_vocab['rev'][pred_slot_array_array[0][idx]])
         print(pred_slot_word)
 
-        
-        crf_score_array_array = sess.run(crf_score, feed_dict={msg:c,seq_len:l})
-        print(crf_score_array_array[0])
+        # crf_score_array_array = sess.run(crf_score, feed_dict={msg:c,seq_len:l})
+        # print(crf_score_array_array[0])
 
         # slot_details = {}
         # for i in range(k):

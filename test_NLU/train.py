@@ -1,9 +1,8 @@
-#try to enabale crf and also improve to use bert SOTA
-
 import os
 import argparse
 import logging
 import sys
+import time
 import tensorflow as tf
 import numpy as np
 from tensorflow.contrib.rnn.python.ops import core_rnn_cell
@@ -18,7 +17,7 @@ parser.add_argument("--num_units", type=int, default=64, help="Network size.", d
 parser.add_argument("--model_type", type=str, default='full', help="""full(default) | intent_only
                                                                     full: full attention model
                                                                     intent_only: intent attention model""")
-parser.add_argument("--use_crf", type=str, default='1', help="""use crf for seq labeling""")
+parser.add_argument("--use_crf", type=str, default='0', help="""use crf for seq labeling""")
 parser.add_argument("--cell", type=str, default='gru', help="""rnn cell""")
 
 # Training Environment
@@ -342,7 +341,7 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
                                            os.path.join(full_train_path, arg.slot_file),
                                            os.path.join(full_train_path, arg.intent_file), in_vocab, slot_vocab,
                                            intent_vocab)
-        in_data, slot_data, slot_weight, length, intents, _, _, _ = data_processor.get_batch(arg.batch_size)
+        in_data, slot_data, slot_weight, length, intents, a, b, c = data_processor.get_batch(arg.batch_size)
         feed_dict = {input_data.name: in_data, slots.name: slot_data, slot_weights.name: slot_weight,
                      sequence_length.name: length, intent.name: intents}
         ret = sess.run(training_outputs, feed_dict)
