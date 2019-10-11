@@ -461,8 +461,10 @@ class ReplyGenerator:
         return reply
 
     # Formats txts and calculates
+    # Big function
     def _enhance_info(self,curr_state,info):
         enhanced = info.copy()
+        if DEBUG: print("initial info", enhanced)
         rep_ext = {}
         l_calc_ext = {}
 
@@ -479,12 +481,13 @@ class ReplyGenerator:
             else:
                 ext_dict[key] = value
             
-            # Init here to separate concern from DataManager
+            # MODIFYING ORIGINAL DICT
             if not overall_key in enhanced: enhanced[overall_key] = {} 
             enhanced[overall_key].update(ext_dict)
 
         def add_txt_enh(key, rawstr):
-            enhstr = rawstr.format(**enhanced)
+            wstr = rawstr.format(**enhanced)
+            enhstr = cbsv.conv_numstr(wstr)
             return add_enh(key,enhstr,rep_ext,"rep_ext")
         
         def add_calc_enh(key, rawstr):
@@ -516,6 +519,9 @@ class ReplyGenerator:
                 for valname in c_list:
                     if isinstance(valname, list):
                         nextdirname, nestlist = valname
+                        if not nextdirname in c_dir:
+                            print("ERROR! Cannot find subdict<{}> in {}".format(nextdirname,c_dir))
+                            return {}
                         nextdir = c_dir[nextdirname]
                         out.update(dive_for_values(nestlist,nextdir))
                     else:
@@ -526,13 +532,13 @@ class ReplyGenerator:
                             print("ERROR! Cannot find variable<{}> in {}".format(valname,c_dir))
                 return out
 
-        def evaluate_formula(f):
+        def resolve_formula(f):
             def op_on_all(vnames, op, vdic):
                 def operate(a,b,op):
                     return op(a,b)
                 out = None
                 for vname in vnames:
-                    isnumbr = isinstance(vname, float) or isinstance(vname, int)
+                    isnumbr = cbsv.is_number(vname)
                     rel_val = vname if isnumbr else vdic[vname]
                     if out == None:
                         out = rel_val
@@ -543,12 +549,11 @@ class ReplyGenerator:
             instr = f["steps"]
             steps = list(instr.keys())
             steps = list(map(lambda x: (x.split(","), instr[x]),steps))
-            print(steps)
             steps.sort(key=lambda t: t[0][0])
-            print("aft sort",steps)
+            if DEBUG: print("aft sort",steps)
             req_vars = f["req_vars"]
             vd = dive_for_values(req_vars,enhanced)
-            print(vd)
+            if DEBUG: print("vd",vd)
 
             #CALCULATIONS 
             vd["OUTCOME"] = 0
@@ -568,7 +573,6 @@ class ReplyGenerator:
                 else:
                     opr = lambda a,b: a
                 vd[tkey] = op_on_all(valnames,opr,vd)
-
             return vd["OUTCOME"]
 
         ### MAIN FUNCTION ###
@@ -578,15 +582,17 @@ class ReplyGenerator:
             for fname in state_calcs:
                 print("performing",fname)
                 if not fname in calcDB:
-                    print("ERROR! No such formula:{}".format(formula))
+                    print("ERROR! No such formula:{}".format(fname))
                 else:
                     formula = calcDB[fname]
                     if fcondition_met(formula):
                         target_key = formula["writeto"]
-                        result = evaluate_formula(formula)
+                        result = resolve_formula(formula)
                         add_calc_enh(target_key,result)
         else:
             print("No calculation performed")
+
+        if DEBUG: print("postcalc enh",enhanced)
 
         # Message extensions and formatting
         # Template in format database
@@ -595,7 +601,7 @@ class ReplyGenerator:
                 target_key = tmp["writeto"]
                 lookout = tmp["lookfor"].copy()
                 vd = dive_for_values(lookout, enhanced)
-                vks = list(vd.keys())
+                # vks = list(vd.keys())
                 
                 ifpr = tmp["if_present"]
                 for deet in list(ifpr.keys()):
@@ -615,11 +621,11 @@ class ReplyGenerator:
                         enstr = formatmap[deetval]
                         add_txt_enh(target_key,enstr)
         
-
+        # info.update(enhanced) # Write to info
         return enhanced
 
 
-    def getreplydb(self,intent, curr_state, issamestate):
+    def getreplydb(self, intent, curr_state, issamestate):
         def dict_lookup(key, dictionary):
             if key in dictionary:
                 return dictionary[key]
@@ -641,22 +647,26 @@ class ReplyGenerator:
         # Else look at state based replies
         lookups = [intent, curr_state] if issamestate else [curr_state, intent]
 
+        nointent = False
+
         # Single state
         rdb = []
         for obj in lookups:
-            if not obj:
+            if obj == cbsv.NO_INTENT():
                 # This is for when no intent
                 continue
 
-            if len(rdb) < 1:
+            if rdb == []:
                 rdb = get_replylist(obj)
+            else:
+                break
         
         # if DEBUG: print("SS rdb:",rdb)
 
         if DEBUG: print("rdb:",rdb)
 
         if LOCALDEBUG: DEBUG = 0
-        if len(rdb) < 1:
+        if rdb == []:
             rdb = [cbsv.DEFAULT_CONFUSED()] # TODO fix bad OOP
 
         return rdb

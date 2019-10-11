@@ -7,7 +7,7 @@ WRITE_TO_FILE = 0 # Switch to turn of writing for testing purposes.
 
 
 def DEFAULT_CONFUSED():
-    return "不好意思，我听不懂"
+    return ["不好意思,我听不懂","不好意思,我不明白亲说啥"]
 
 def PREV_STATE_FLAG():
     return "299 PREV_STATE"
@@ -20,11 +20,34 @@ def CHINA_CITIES():
 def DIGITS():
     return "[零一二三四五六七八九十|0-9]"
 
+def DIGITSET():
+    return {0,1,2,3,4,5,6,7,8,9}
+
 def INFO_GATHER_STATE_KEY():
     return "221 recv info"
 
 # def INFO_GATHER_STATE_REPLIES():
 #     return 
+
+def is_number(n):
+    return isinstance(n, float) or isinstance(n, int)
+
+def conv_numstr(n):
+    if not isinstance(n,str):
+        return n
+
+    try:
+        con = float(n)
+        return con
+    except ValueError:
+        #if DEBUG: print("Tried to convert {} to float and failed".format(n))
+        return n
+
+def NO_INTENT():
+    return {
+        "key":"no_intent",
+        "replies": DEFAULT_CONFUSED()
+    }
 
 def state_key_dict(states):
     ks = states.keys()
