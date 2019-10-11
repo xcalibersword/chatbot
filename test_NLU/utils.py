@@ -1,11 +1,5 @@
 import numpy as np
 
-def hasChinese(check_str):
-    for ch in check_str:
-        if u'\u4e00' <= ch <= u'\u9fff':
-            return True
-    return False
-
 def createVocabulary(input_path, output_path, no_pad=False):
     if not isinstance(input_path, str):
         raise TypeError('input_path should be string')
@@ -18,10 +12,6 @@ def createVocabulary(input_path, output_path, no_pad=False):
             open(output_path,'w+',encoding="gb18030") as out:
         for line in fd:
             line = line.rstrip('\r\n')
-            
-            # if hasChinese(line):
-            #     words = [word for word in line]
-            # else:
             words = line.split()
 
             for w in words:
@@ -60,9 +50,6 @@ def sentenceToIds(data, vocab):
         raise TypeError('vocab should be a dict that contains vocab and rev')
     vocab = vocab['vocab']
     if isinstance(data, str):
-        # if hasChinese(data):
-        #     words = [word for word in data]
-        # else:
         words = data.split()
     elif isinstance(data, list):
         words = data
@@ -268,9 +255,9 @@ class DataProcessor(object):
         for i in range(batch_size):
             inp = self.__fd_in.readline()
             if inp == '':
-                print(self.__fd_in)
-                print("batch: {0} & idx: {1} >>> {2}".format(batch_size,i,inp))
-                print(len(batch_in),len(batch_slot),len(intents),len(length))
+                # print(self.__fd_in)
+                # print("batch: {0} & idx: {1} >>> {2}".format(batch_size,i,inp))
+                # print(len(batch_in),len(batch_slot),len(intents),len(length))
                 self.end = 1
                 break
             slot = self.__fd_slot.readline()

@@ -1,11 +1,18 @@
-import csv, time, os, re, argparse, random
+import csv, time, os, re, random, string
 import pandas as pd
-from test_label.bot_LeftBrain import intent_dict, slot_dict
-os.getcwd()
-parser = argparse.ArgumentParser(allow_abbrev=False)
+from cbsv import *
+import jieba_fast as jieba
 
-parser.add_argument("--save_type", type=str, default="label", help="Type of file to save label,id or QA")
-arg = parser.parse_args()
+os.getcwd()
+
+#add in words to detect [], html, error with set dictionary and user dict function, have to reset init.py for posseg
+#and jieba to allow detection of special character
+jieba.add_word("http://item.taobao.com/item.htm?id=")
+jieba.add_word("[emoji]")
+jieba.add_word("[表情]")
+jieba.add_word("[卡片]")
+jieba.add_word("[图片]")
+jieba.add_word("[未知]")
 
 #Funnel for all forms of data to the different pipeline
 class RawDataProcessor:
@@ -17,6 +24,8 @@ class RawDataProcessor:
         
         self.pattern_timestamp = r'[(]\d*-\d*-\d* \d*:\d*:\d*[)]:'
         self.pattern_startline = r'-{28}.*-{28}'
+        self.pattern_punctuation = r"！？｡。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾\
+            ＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧.﹏" + string.punctuation
 
         #load raw data   
         self.datapath = r"D:\data (unsorted)\QianNiu_Conv_FanFan"
@@ -24,6 +33,9 @@ class RawDataProcessor:
         self.savepath = os.path.join(str(os.getcwd()),"data", "QA" + time.strftime(r'%Y-%m-%d', time.localtime(time.time())) + ".csv")
         #save label
         self.labelpath = os.path.join(str(os.getcwd()),"data", "input_intent_slot" + ".csv")  
+
+        #bot_resource for intent and slot pattern
+        self.bot_resource = read_json(os.path.join(str(os.getcwd()),"chatbot_resource.json"))
 
     def storeConvoID(self,convo,speaker):
         try:
@@ -124,18 +136,59 @@ class RawDataProcessor:
                     isCSO = True
                 self.stackConvoQA(sent,isCSO)
                 self.stackConvoID(sent,prevs_id)
+    
+    def label_intent(self,msg):
+        msg_intent = "no_intent"
+        for intent, v in self.bot_resource["intents"].items():
+            if v["matchdb"] != []:
+                pattern = list_to_regexList(v["matchdb"])
+                if re.search(pattern,msg):
+                    msg_intent = intent
+                    break
+        return msg_intent
 
+    def label_slot(self,msg):
+        msg_slot = ["0"]*len(msg)
+        for slot_label, v in self.bot_resource["info_parser"].items():
+            for _,pattern_list in v.items():
+                if pattern_list != []:
+                    pattern = list_to_regexList(pattern_list)
+                    word_pos = 0
+                    for word in msg:
+                        #missing for "I-"
+                        if re.search(pattern,word):
+                            msg_slot[word_pos] = "B-" + slot_label
+                        word_pos += 1
+
+        # label slot by character
+        # slot_pattern = r"(上海|台湾)"
+        # sent = "上海按时打算"
+        # slot_list = ["O"]*len(sent)
+        # m = re.finditer(slot_pattern,sent)
+        # for a in m:
+        #     slot_list[a.start()] = "B-" + "city"
+        #     if (a.end()-1) == a.start():
+        #         pass
+        #     else:
+        #         for i in range(a.end()-1-a.start()):
+        #             slot_list[a.start()+i+1] = "I-" + "city"
+        # slot_string = " ".join(slot_list)
+        # print(slot_string)
+
+        return(" ".join(msg_slot))    
+        
     def split2train_valid_test(self,custlist,category,start,stop):
                 text_input = []
                 text_intent = []
                 text_slot = []
+
                 for label_sent_list in custlist[start:stop]:
-                    #format chinese input into english format
-                    msg = label_sent_list[0]
-                    new_msg = ""
-                    for char in msg:
-                        new_msg = new_msg + char + " "
-                    text_input.append(new_msg.rstrip()+"\n")
+                    #format chinese input into english format (tokenising)
+                    # msg = label_sent_list[0]
+                    # new_msg = ""
+                    # for char in msg:
+                    #     new_msg = (new_msg + char + " ").rstrip()
+                    text_input.append(label_sent_list[0]+"\n")
                     text_intent.append(label_sent_list[1]+"\n")
                     text_slot.append(label_sent_list[2]+"\n")
                 
@@ -148,99 +201,88 @@ class RawDataProcessor:
                 with open(r"D:\chatbot\test_NLU\data\test\{}\seq.out".format(category),"w",newline="\n",encoding="gb18030") as f:
                     f.writelines(text_slot)
                     f.close()
+    
+    def rm_punctuation(self,phrase_list):
+        clean_phrase_list = []
+        for phrase in phrase_list:
+            if not phrase in self.pattern_punctuation:
+                clean_phrase_list.append(phrase)
+        return clean_phrase_list
 
     def isChinese(self,char):
         if u'\u4e00' <= char <= u'\u9fff':
             return True
         return False
 
-    def saveProcessed(self):
-        #generate QA
-        if arg.save_type == "QA":
-            new_cso_list = [[sent] for sent in self.cso_list]
-            cso_df = pd.DataFrame(columns=["CSO"],data=new_cso_list)
-            new_cust_list = [[sent] for sent in self.cust_list]
-            cust_df = pd.DataFrame(columns=["CUST"],data=new_cust_list)
-            QA_df = pd.concat([cso_df,cust_df],ignore_index=True,axis=1)
-            QA_df.to_csv(self.savepath,index=False,encoding="gb18030")
-        #generate id
-        if arg.save_type == "id":
-            list_list_list = []
-            for id_key,sent_list in self.id_list.items():
-                temp_df = pd.DataFrame(data=[[sent] for sent in sent_list])
-                list_list_list.append(temp_df)
-                temp_df.to_csv(r"D:\chatbot\id_data\{}.csv".format(id_key),index=False,encoding="gb18030")
+    def save2QA(self):
+        new_cso_list = [[sent] for sent in self.cso_list]
+        cso_df = pd.DataFrame(columns=["CSO"],data=new_cso_list)
+        new_cust_list = [[sent] for sent in self.cust_list]
+        cust_df = pd.DataFrame(columns=["CUST"],data=new_cust_list)
+        QA_df = pd.concat([cso_df,cust_df],ignore_index=True,axis=1)
+        QA_df.to_csv(self.savepath,index=False,encoding="gb18030")
+    
+    def save2ID(self):
+        list_list_list = []
+        for id_key,sent_list in self.id_list.items():
+            temp_df = pd.DataFrame(data=[[sent] for sent in sent_list])
+            list_list_list.append(temp_df)
+            temp_df.to_csv(r"D:\chatbot\id_data\{}.csv".format(id_key),index=False,encoding="gb18030")
 
-        #generate to be label
-        if arg.save_type == "label":
-            cust_query = []
-            for q in self.cust_list:
-                query_list = q.split(" ")
-                for query in query_list:
-                    if query.strip() != "":
-                        cust_query.append(query)
-            
-            # save raw query only
-            # new_df = pd.DataFrame(data=custlist)
-            # new_df.to_csv(self.labelpath,index=False,encoding="gb18030")
+    def save2label(self):
+        cust_query = []
+        for q in self.cust_list:
+            query_list = q.split(" ")
+            for query in query_list:
+                if query.strip() != "":
+                    cust_query.append(query)
+        
+        # save raw query only
+        # new_df = pd.DataFrame(data=custlist)
+        # new_df.to_csv(self.labelpath,index=False,encoding="gb18030")
 
-            clean_cust_query = []
-            #keep chinese work, len(sent) > 1
-            for unclean in cust_query:
-                clean = unclean
-                for char in unclean:
-                    if not self.isChinese(char):
-                        clean = clean.replace(char,"")
-                if len(clean) > 1:
-                    clean_cust_query.append(clean)
+        # remove non chinese words
+        # clean_cust_query = []
+        # for unclean in cust_query:
+            # clean = unclean
+            # for char in unclean:
+            #     if not self.isChinese(char):
+            #         clean = clean.replace(char,"")
+            # if clean != "":
+            #     clean_cust_query.append(clean)
 
-            greet_pattern = r"(你好|在吗|hi|hello|hey|您好)"
-            slot_pattern = r"(上海|北京|广州|长沙|苏州|杭州|成都)"
+        #tokenise chinese word and labelling
+        custlist = []
+        for sent in cust_query:
+            tokenised_sent_list = jieba.lcut(sent)
+            tokenised_sent_list = self.rm_punctuation(tokenised_sent_list)
+            tokenised_sent = " ".join(tokenised_sent_list)
+            sent_intent = self.label_intent(sent)
+            sent_slots = self.label_slot(tokenised_sent_list)
+            labelled_sent = [tokenised_sent,sent_intent,sent_slots]
+            custlist.append(labelled_sent)
 
-            custlist = []
-            for sent in clean_cust_query:
-                labelled_sent = [sent]
+        # save labelled cleaned data
+        new_df = pd.DataFrame(data=custlist)
+        new_df.to_csv(r"D:\chatbot\data\a.csv",index=False,encoding="gb18030")
 
-                #label intent
-                if re.search(greet_pattern,sent):
-                    labelled_sent.append("user.greet")
-                else:
-                    labelled_sent.append("none")
-                
-                #label slot
-                slot_list = ["O"]*len(sent)
-                m = re.finditer(slot_pattern,sent)
-                for a in m:
-                    slot_list[a.start()] = "B-" + "city"
-                    if (a.end()-1) == a.start():
-                        pass
-                    else:
-                        for i in range(a.end()-1-a.start()):
-                            slot_list[a.start()+i+1] = "I-" + "city"
-                slot_string = " ".join(slot_list)
-                labelled_sent.append(slot_string)
-                custlist.append(labelled_sent)
+        # split data into train,valid,test and the respective category | refer to sklearn | problem with size
 
-            # save labelled cleaned data
-            new_df = pd.DataFrame(data=custlist)
-            new_df.to_csv(r"D:\chatbot\data\a.csv",index=False,encoding="gb18030")
+        # custlist_length = len(custlist)
+        # interval_first = round(custlist_length * 0.1)
+        # interval_second = round(custlist_length * 0.3)
 
-            # split data into train,valid,test and the respective category | refer to sklearn
-            # custlist_length = len(custlist)
-            # interval_first = round(custlist_length * 0.1)
-            # interval_second = round(custlist_length * 0.3)
-
-            interval_first = 483
-            interval_second = 1231
-            end = 4890
-            random.shuffle(custlist)
-            
-            #test
-            self.split2train_valid_test(custlist,"test",None,interval_first)
-            #validation
-            self.split2train_valid_test(custlist,"valid",interval_first,interval_second)
-            #train
-            self.split2train_valid_test(custlist,"train",interval_second,end)
+        interval_first = 483
+        interval_second = 1231
+        end = 4890
+        random.shuffle(custlist)
+        
+        #test
+        self.split2train_valid_test(custlist,"test",None,interval_first)
+        #validation
+        self.split2train_valid_test(custlist,"valid",interval_first,interval_second)
+        #train
+        self.split2train_valid_test(custlist,"train",interval_second,end)
 
 def readData():
     w = RawDataProcessor()
@@ -248,6 +290,10 @@ def readData():
     w.processQNdata()
     return w
 
-if __name__ == "__main__":
+def main():
     w = readData()
-    w.saveProcessed()
+    w.save2label()
+
+
+if __name__ == "__main__":
+    main()

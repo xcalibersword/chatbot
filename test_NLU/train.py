@@ -22,7 +22,7 @@ parser.add_argument("--cell", type=str, default='gru', help="""rnn cell""")
 
 # Training Environment
 parser.add_argument("--batch_size", type=int, default=16, help="Batch size.")
-parser.add_argument("--batch_size_add", type=int, default=4, help="Batch size add.")
+parser.add_argument("--batch_size_add", type=int, default=0, help="Batch size add.")
 parser.add_argument("--max_epochs", type=int, default=100, help="Max epochs to train.")
 parser.add_argument("--no_early_stop", action='store_false', dest='early_stop',
                     help="Disable early stop, which is based on sentence level accuracy.")

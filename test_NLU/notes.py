@@ -1,14 +1,19 @@
 import tensorflow as tf
 
-####max batch size (adjust when run out of memory) (large -> 减缓梯度震荡, lower epoch, optimising )
+####max batch size####
 
+# adjust when run out of memory
+# large -> 减缓梯度震荡, lower epoch, optimising, faster, each epoch is longer
+# too large -> overconfident to stay at the least optimal point
+# 10-100 as we prefer mini batch
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 with tf.Session(config=config) as sess:
     pass
 
-####learning rate decay (let it decrease as the training proceed)
+####learning rate decay####
 
+#let it decrease as the training proceed
 #deep learning every epoch rate halve
 #supervised learning set large then slowly decreased
 global_step = tf.Variable(0)
