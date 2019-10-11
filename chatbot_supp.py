@@ -170,7 +170,7 @@ class Understanding:
 
     @classmethod
     def make_null(cls):
-        n = cls(False, SIP.same_state())
+        n = cls(cbsv.NO_INTENT(), SIP.same_state())
         return n
 
     def set_details(self, d):
@@ -199,7 +199,7 @@ class Understanding:
         self.intent = i
 
     def printout(self):
-        print("UNDERSTANDING PRINTOUT: Intent: ",self.intent, " SIP: ", self.sip.toString(), " details: ", self.details)
+        print("UNDERSTANDING PRINTOUT: Intent: ", self.intent, " SIP: ", self.sip.toString(), " details: ", self.details)
 
 # Action that includes string for replies
 class Action:
@@ -308,9 +308,11 @@ class InfoParser():
         self.digits = cbsv.DIGITS()
 
         self.regexDB = {}
-        self._build_regex_DB(json_dict)
+        self.perm_slots = json_dict["permanent_slots"]
+        slots = json_dict["slots"]
+        self._build_slots_DB(slots)
 
-    def _build_regex_DB(self, jdata):
+    def _build_slots_DB(self, jdata):
         for catkey in list(jdata.keys()):
             self.regexDB[catkey] = {}
             category = jdata[catkey]
@@ -323,8 +325,10 @@ class InfoParser():
     def _default_parse(self, text):
         # Default parser
         out = {}
-        cityentry = {"city":self.get_category_value(text,"city")}
-        out.update(cityentry)
+        for ps in self.perm_slots:
+            key, slot = ps
+            entry = {key:self.get_category_value(text,slot)}
+            out.update(entry)
         return out
 
     # Get the value in the text related to the specified category

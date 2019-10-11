@@ -117,7 +117,8 @@
             ]
         },
         "total_amt_query": {
-            "key": "116 total amt query (gated)",
+            "type": "intent",
+            "key": "rep_ext[calc_str_total]",
             "default_set": true,
             "default_target": "total_amt_query",
             "matchdb": [
@@ -326,14 +327,21 @@
             "replies": []
         },
         "total_amt_query": {
-            "key": "216 total amt q",
+            "key": "total_amt_query",
             "gated": true,
             "thread": "t_amt_query",
             "terminal_state": true,
+            "calcs": [
+                "have_gongjijin",
+                "zero_gongjijin",
+                "have_shouci_val",
+                "zero_shouci_val",
+                "shebao_basic"
+            ],
             "req_info": [
                 [
                     "city",
-                    "city"
+                    "city_slot"
                 ],
                 [
                     "首次",
@@ -341,7 +349,7 @@
                 ]
             ],
             "replies": [
-                "一共要付{city_info[total_amt]}"
+                "亲在{city}一共要付{rep_ext[calc_str_working]} = {rep_ext[calc_str_total]}块"
             ]
         },
         "gen_query": {
@@ -404,11 +412,15 @@
             "req_info": [
                 [
                     "city",
-                    "city"
+                    "city_slot"
                 ],
                 [
                     "首次",
                     "shouci"
+                ],
+                [
+                    "要公积金",
+                    "default_yes"
                 ]
             ],
             "replies": [
@@ -423,7 +435,7 @@
             "req_info": [
                 [
                     "city",
-                    "city"
+                    "city_slot"
                 ]
             ],
             "replies": [
@@ -436,12 +448,16 @@
             "thread": "t_presale",
             "terminal_state": false,
             "calcs": [
-                "have_shouci_val","zero_shouci_val","shebao_basic"
+                "have_gongjijin",
+                "zero_gongjijin",
+                "have_shouci_val",
+                "zero_shouci_val",
+                "shebao_basic"
             ],
             "req_info": [
                 [
                     "city",
-                    "city"
+                    "city_slot"
                 ],
                 [
                     "首次",
@@ -449,7 +465,7 @@
                 ]
             ],
             "replies": [
-                "{city}的宝贝一共要付{rep_ext[calc_str_working]}{rep_ext[calc_str_total]}，亲确认下哦"
+                "{city}的宝贝一共要付{rep_ext[calc_str_working]} = {rep_ext[calc_str_total]}块，亲确认下哦"
             ]
         },
         "finish_sale": {
@@ -553,51 +569,117 @@
             },
             {
                 "states": [
-                    "payment"
+                    "payment","total_amt_query"
                 ],
                 "lookfor": [
+                    "首次",
+                    "要公积金",
                     ["city_info",
                         [
                             "payment",
                             "svc_fee",
-                            "shouci_fee"
+                            "shouci_fee",
+                            "gongjijin_fee"
                         ]
-                    ],
-                    "首次"
+                    ]
                 ],
                 "writeto": "calc_str_working",
                 "if_present": {
-                    "payment":"{city_info[payment]}应缴纳",
-                    "svc_fee":"{city_info[svc_fee]}服务费"
+                    "payment": "{city_info[payment]}应缴纳",
+                    "svc_fee": " + {city_info[svc_fee]}服务费"
                 },
                 "if_value": {
                     "首次": {
-                        "yes": "{city_info[shouci_fee]}开户费",
+                        "yes": " + {city_info[shouci_fee]}开户费",
+                        "no": ""
+                    },
+                    "要公积金": {
+                        "yes": " + {city_info[gongjijin_fee]}公积金",
                         "no": ""
                     }
                 }
             },
             {
                 "states": [
-                    "payment"
+                    "payment",
+                    "total_amt_query"
                 ],
                 "lookfor": [
-                    ["calc_ext",["shebao_basic_total"]]
+                    [
+                        "calc_ext",
+                        [
+                            "shebao_basic_total"
+                        ]
+                    ]
                 ],
                 "writeto": "calc_str_total",
                 "if_present": {
-                    "shebao_basic_total":" = {calc_ext[shebao_basic_total]}块"
+                    "shebao_basic_total": "{calc_ext[shebao_basic_total]}"
                 },
                 "if_value": {}
-                
             }
         ],
         "calcs": {
-            "have_shouci_val":{
-                "conditions":[
-                    ["首次","yes"]
+            "have_gongjijin": {
+                "conditions": [
+                    [
+                        "要公积金",
+                        "yes"
+                    ]
                 ],
-                "req_vars":[
+                "req_vars": [
+                    [
+                        "city_info",
+                        [
+                            "gongjijin_fee"
+                        ]
+                    ]
+                ],
+                "steps": {
+                    "1,add": [
+                        [
+                            "gongjijin_fee",
+                            0
+                        ],
+                        "OUTCOME"
+                    ]
+                },
+                "writeto": "w_gongjijin_fee"
+            },
+            "zero_gongjijin": {
+                "conditions": [
+                    [
+                        "要公积金",
+                        "no"
+                    ]
+                ],
+                "req_vars": [
+                    [
+                        "city_info",
+                        [
+                            "gongjijin_fee"
+                        ]
+                    ]
+                ],
+                "steps": {
+                    "1,multi": [
+                        [
+                            "OUTCOME",
+                            0
+                        ],
+                        "OUTCOME"
+                    ]
+                },
+                "writeto": "w_gongjijin_fee"
+            },
+            "have_shouci_val": {
+                "conditions": [
+                    [
+                        "首次",
+                        "yes"
+                    ]
+                ],
+                "req_vars": [
                     [
                         "city_info",
                         [
@@ -605,7 +687,7 @@
                         ]
                     ]
                 ],
-                "steps":{
+                "steps": {
                     "1,add": [
                         [
                             "shouci_fee",
@@ -616,11 +698,14 @@
                 },
                 "writeto": "w_shouci_fee"
             },
-            "zero_shouci_val":{
-                "conditions":[
-                    ["首次","no"]
+            "zero_shouci_val": {
+                "conditions": [
+                    [
+                        "首次",
+                        "no"
+                    ]
                 ],
-                "req_vars":[
+                "req_vars": [
                     [
                         "city_info",
                         [
@@ -628,7 +713,7 @@
                         ]
                     ]
                 ],
-                "steps":{
+                "steps": {
                     "1,multi": [
                         [
                             "OUTCOME",
@@ -640,8 +725,8 @@
                 "writeto": "w_shouci_fee"
             },
             "shebao_basic": {
-                "conditions":[],
-                "req_vars":[
+                "conditions": [],
+                "req_vars": [
                     [
                         "city_info",
                         [
@@ -651,8 +736,10 @@
                         ]
                     ],
                     [
-                        "calc_ext",[
-                            "w_shouci_fee"
+                        "calc_ext",
+                        [
+                            "w_shouci_fee",
+                            "w_gongjijin_fee"
                         ]
                     ]
                 ],
@@ -661,11 +748,16 @@
                         [
                             "payment",
                             "svc_fee",
-                            "w_shouci_fee"],
+                            "w_gongjijin_fee",
+                            "w_shouci_fee"
+                        ],
                         "OUTCOME"
                     ],
                     "2,multi": [
-                        ["OUTCOME",1.0],
+                        [
+                            "OUTCOME",
+                            1.0
+                        ],
                         "OUTCOME"
                     ]
                 },
@@ -678,126 +770,145 @@
             "jishu": 4927,
             "payment": 1937.7,
             "svc_fee": 40,
-            "shouci_fee": 50
+            "shouci_fee": 50,
+            "gongjijin_fee": 100
         },
         "北京": {
             "jishu": 1337,
             "payment": 0,
             "svc_fee": 0,
-            "shouci_fee": 50
+            "shouci_fee": 50,
+            "gongjijin_fee": 100
         },
         "深圳": {
             "jishu": 2335,
             "payment": 0,
             "svc_fee": 0,
-            "shouci_fee": 50
+            "shouci_fee": 50,
+            "gongjijin_fee": 100
         },
         "杭州": {
             "jishu": 1100,
             "payment": 0,
             "svc_fee": 0,
-            "shouci_fee": 50
+            "shouci_fee": 50,
+            "gongjijin_fee": 100
         },
         "广州": {
             "jishu": 1200,
             "payment": 0,
             "svc_fee": 0,
-            "shouci_fee": 50
+            "shouci_fee": 50,
+            "gongjijin_fee": 100
         },
         "成都": {
             "jishu": 1300,
             "payment": 0,
             "svc_fee": 0,
-            "shouci_fee": 50
+            "shouci_fee": 50,
+            "gongjijin_fee": 100
         }
     },
     "info_parser": {
-        "city": {
-            "上海": [
-                "上海",
-                "shanghai"
-            ],
-            "北京": [
-                "北京",
-                "beijing"
-            ],
-            "深圳": [
-                "shenzhen",
-                "深圳"
-            ],
-            "广州": [
-                "广州",
-                "guangzhou"
-            ],
-            "杭州": [
-                "杭州",
-                "suzhou"
-            ],
-            "成都": [
-                "成都",
-                "chengdu"
-            ]
-        },
-        "payment_info": {
-            "支付": [
-                "支付",
-                "alipay",
-                "zhifu",
-                "zhifubao"
-            ],
-            "微信": [
-                "微信",
-                "wechat",
-                "weixin",
-                "vxin"
-            ]
-        },
-        "paile": {
-            "拍好了": [
-                "拍了",
-                "好了",
-                "拍好了",
-                "付(.*)(好|了)",
-                "已付",
-                "已拍"
-            ]
-        },
-        "shouci": {
-            "yes": [
-                "yes$",
-                "(?<!不)是$",
-                "(?<!不)对$",
-                "没(交|付|代缴)(.*)过",
-                "(?<!不)(.*)首次"
-            ],
-            "no": [
-                "no$",
-                "nope$",
-                "不是$",
-                "不$",
-                "(?<!没)(交|付|代缴)(.+)过",
-                "不(.*)首次"
-            ]
-        },
-        "yesno": {
-            "是": [
-                "yes",
-                "(?<!没)有",
-                "(?<!不)是",
-                "(?<!不)对"
-            ],
-            "不是": [
-                "no",
-                "nope",
-                "不是",
-                "没有",
-                "不"
-            ]
-        },
-        "shop": {
-            "唯洛店": [
-                "唯洛店"
-            ]
+        "permanent_slots":[
+            ["city","city_slot"],
+            ["要公积金","gongjijin_slot"]
+        ],
+        "slots":{
+            "city_slot": {
+                "上海": [
+                    "上海",
+                    "shanghai"
+                ],
+                "北京": [
+                    "北京",
+                    "beijing"
+                ],
+                "深圳": [
+                    "shenzhen",
+                    "深圳"
+                ],
+                "广州": [
+                    "广州",
+                    "guangzhou"
+                ],
+                "杭州": [
+                    "杭州",
+                    "suzhou"
+                ],
+                "成都": [
+                    "成都",
+                    "chengdu"
+                ]
+            },
+            "payment_info": {
+                "支付": [
+                    "支付",
+                    "alipay",
+                    "zhifu",
+                    "zhifubao"
+                ],
+                "微信": [
+                    "微信",
+                    "wechat",
+                    "weixin",
+                    "vxin"
+                ]
+            },
+            "paile": {
+                "拍好了": [
+                    "拍了",
+                    "好了",
+                    "拍好了",
+                    "付(.*)(好|了)",
+                    "已付",
+                    "已拍"
+                ]
+            },
+            "shouci": {
+                "yes": [
+                    "yes$",
+                    "(?<!不)是$",
+                    "(?<!不)对$",
+                    "没(交|付|代缴)(.*)过",
+                    "(?<!不)(.*)首次"
+                ],
+                "no": [
+                    "no$",
+                    "nope$",
+                    "不是$",
+                    "不$",
+                    "(?<!没)(交|付|代缴)(.+)过",
+                    "不(.*)首次"
+                ]
+            },
+            "gongjijin_slot":{
+                "yes":["(?<!(没|不))(要|交|付)公积金"],
+                "no":["不(要|交|付)公积金"]
+            },
+            "default_yes":{
+                "yes":[".*"]
+            },
+            "yesno": {
+                "是": [
+                    "yes",
+                    "(?<!没)有",
+                    "(?<!不)是",
+                    "(?<!不)对"
+                ],
+                "不是": [
+                    "no",
+                    "nope",
+                    "不是",
+                    "没有",
+                    "不"
+                ]
+            },
+            "shop": {
+                "唯洛店": [
+                    "唯洛店"
+                ]
+            }
         }
     },
     "forms": {
