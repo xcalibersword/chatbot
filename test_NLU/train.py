@@ -22,7 +22,7 @@ parser.add_argument("--cell", type=str, default='gru', help="""rnn cell""")
 
 # Training Environment
 parser.add_argument("--batch_size", type=int, default=16, help="Batch size.")
-parser.add_argument("--batch_size_add", type=int, default=0, help="Batch size add.")
+parser.add_argument("--batch_size_add", type=int, default=4, help="Batch size add.")
 parser.add_argument("--max_epochs", type=int, default=100, help="Max epochs to train.")
 parser.add_argument("--no_early_stop", action='store_false', dest='early_stop',
                     help="Disable early stop, which is based on sentence level accuracy.")
@@ -382,6 +382,8 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
                 while True:
                     in_data, slot_data, slot_weight, length, intents, in_seq, slot_seq, intent_seq = data_processor_valid.get_batch(
                         arg.batch_size)
+
+                    #error?
                     if len(in_data) <= 0:
                         break
                     feed_dict = {input_data.name: in_data, sequence_length.name: length}

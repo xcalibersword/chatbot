@@ -10,16 +10,15 @@
 - data_utils
     - load,save qn data by ID and QA
     - set-up excel for collaboration
+    - save labelled query for NLU
     
 
 ## In progress
-- data_utils (manual label 50 input everyday use the help of auto label)
-    - use test bot to build up template for labels (build up on dialog manager portion)
-    - build NLU model data pipeline (break into function)
-    - auto label input (label multiple slot and intent)
-- NLU_classifier (adjust parameter to fit in more training data)(weird problem with batch size and data size,problem with memory issue)(build own model for entity seq labeling then extend to slot and intent)
+- dataset (manual label)
+- NLU_classifier (problem with large dataset, add word embedding, rebuild from scratch using tf2.0, break into function)
 
 - Design Doc (for collabs)
+- test bot (build up template for labels)
 - Dialog State Tracking
     - state
     - database/json

@@ -8,8 +8,8 @@ def createVocabulary(input_path, output_path, no_pad=False):
         raise TypeError('output_path should be string')
 
     vocab = {}
-    with open(input_path, 'r',encoding="gb18030") as fd, \
-            open(output_path,'w+',encoding="gb18030") as out:
+    with open(input_path, 'r',encoding="utf-8") as fd, \
+            open(output_path,'w+',encoding="utf-8") as out:
         for line in fd:
             line = line.rstrip('\r\n')
             words = line.split()
@@ -36,7 +36,7 @@ def loadVocabulary(path):
         raise TypeError('path should be a string')
     vocab = []
     rev = []
-    with open(path,encoding="gb18030") as fd:
+    with open(path,encoding="utf-8") as fd:
         for line in fd:
             line = line.rstrip('\r\n')
             rev.append(line)
@@ -221,9 +221,9 @@ def computeF1Score(correct_slots, pred_slots):
 
 class DataProcessor(object):
     def __init__(self, in_path, slot_path, intent_path, in_vocab, slot_vocab, intent_vocab):
-        self.__fd_in = open(in_path, 'r',encoding="gb18030")
-        self.__fd_slot = open(slot_path, 'r',encoding="gb18030")
-        self.__fd_intent = open(intent_path, 'r',encoding="gb18030")
+        self.__fd_in = open(in_path, 'r',encoding="utf-8")
+        self.__fd_slot = open(slot_path, 'r',encoding="utf-8")
+        self.__fd_intent = open(intent_path, 'r',encoding="utf-8")
         self.__in_vocab = in_vocab
         self.__slot_vocab = slot_vocab
         self.__intent_vocab = intent_vocab

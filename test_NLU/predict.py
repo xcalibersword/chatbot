@@ -5,7 +5,7 @@ from utils import loadVocabulary, sentenceToIds
 
 main_path = r'D:\chatbot\test_NLU'            
 ckpt_path = os.path.join(main_path,'model1')
-meta_path = os.path.join(main_path,'model1\_step_7328_epochs_32.ckpt.meta')
+meta_path = os.path.join(main_path,'model1\_step_1824_epochs_22.ckpt.meta')
 input_vocab_path = os.path.join(main_path,'vocab1\in_vocab')
 intent_vocab_path = os.path.join(main_path,'vocab1\intent_vocab')
 slot_vocab_path = os.path.join(main_path,'vocab1\slot_vocab')
