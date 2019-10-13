@@ -815,7 +815,7 @@
             ["要公积金","gongjijin_slot"]
         ],
         "slots":{
-            "city_slot": {
+            "city": {
                 "上海": [
                     "上海",
                     "shanghai"

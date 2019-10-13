@@ -8,13 +8,17 @@
 ## DONE
 - QNPlugin
 - data_utils
-    - load,save qn data by ID and QA
-    - set-up excel for collaboration
-    - save labelled query for NLU
+    - load qn data
+    - process and save data by ID, QA and query   
+    - process query for auto labelling
+    - auto label query
+    - split labelled query into test,valid and train for intent-slot NLU
+- set-up excel for collaboration
     
 
 ## In progress
 - dataset (manual label)
+    - build tools to help with labelling slot (refer to chatbot_resource, bot_Arm, bot_LeftBrain and excels when labelling) (kiv test label for now)
 - NLU_classifier (problem with large dataset, add word embedding, rebuild from scratch using tf2.0, break into function)
 
 - Design Doc (for collabs)

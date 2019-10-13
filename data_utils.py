@@ -210,7 +210,7 @@ class RawDataProcessor:
     def preprocess(self,sent_list):
         clean_list = []
         for word in sent_list:
-            clean_word = re.sub(r'\W+', '', word).replace("_", '')
+            clean_word = re.sub(r'\W+', '', word.strip()).replace("_", '')
             if clean_word != "":
                 if self.is_all_chinese(clean_word):
                     for char in clean_word:
@@ -232,7 +232,8 @@ class RawDataProcessor:
                 msg_list.append(msg[prev_start:start])
             # print("Prev:  ",prev_start,prev_end)
             # print("Now:  ",start,end)
-            msg_list.append(msg[start:end])
+            if not msg[start:end] == "":
+                msg_list.append(msg[start:end])
             prev_start = end
         
         if prev_start < prev_end:
@@ -258,11 +259,12 @@ class RawDataProcessor:
         custlist = []
         for q in self.cust_list:
             query_list = q.split(" ")
+            #tokenising part need to be reviewed
             for query in query_list:
                 if query.strip() != "":
                     sent = query.strip()
                     tokenised_sent_list = []
-                    #case of sent sticking together, remove empty words! BUG
+                    #case of sent sticking together
                     if self.hasLink(sent) or self.hasImage(sent):
                         imageless_list = self.tokeniser(self.pattern_image,sent)
                         for msg in imageless_list:
@@ -274,35 +276,34 @@ class RawDataProcessor:
                                     if not re.search(self.pattern_link,word):
                                         split_word = jieba.lcut(word)
                                         split_word_list = self.preprocess(split_word)
+
                                         for splitword in split_word_list:
                                             tokenised_sent_list.append(splitword)
                                     else:
                                         tokenised_sent_list.append(word)
                     else:
                         tokenised_sent_list = jieba.lcut(sent)
-                        tokenised_sent_list = self.preprocess(tokenised_sent_list)
-
+                        tokenised_sent_list = self.preprocess(tokenised_sent_list)      
+                    #empty sentence cases
                     tokenised_sent = " ".join(tokenised_sent_list)
-                    sent_intent = self.label_intent(sent)
-                    sent_slots = self.label_slot(tokenised_sent_list)
-                    labelled_sent = [tokenised_sent,sent_intent,sent_slots]
-                    custlist.append(labelled_sent)
-
+                    if tokenised_sent != "": 
+                        sent_intent = self.label_intent(sent)
+                        sent_slots = self.label_slot(tokenised_sent_list)
+                        labelled_sent = [tokenised_sent,sent_intent,sent_slots]
+                        custlist.append(labelled_sent)
         # save labelled cleaned data
         new_df = pd.DataFrame(data=custlist)
         new_df.to_csv(self.labelpath,index=False,encoding="utf-8")
-
+        
+        #break up this step by reading from csv
         # split data into train,valid,test and the respective category | refer to sklearn | problem with size
-
         custlist_length = len(custlist)
         interval_first = round(custlist_length * 0.1)
         interval_second = round(custlist_length * 0.3)
-
         # interval_first = 483
         # interval_second = 1231
         # end = 4890
         random.shuffle(custlist)
-        
         #test
         self.split2train_valid_test(custlist,"test",None,interval_first)
         #validation

@@ -1,8 +1,34 @@
+#process of pai product
+#query about product
+#query on procedure
+
 #identify slot,intent and context of a given query
 #kiv context
 
 #need to solve issue of required slot not carrying forward to be filled and when does it reset
 #need to pass slot required around after replying
+
+#enquiry (add a confirmation before displaying the info)
+#enquire_price(city,month,haveAcc)->inform_price->inform{price_range}->inform_link
+#enquire_procedure_material(city,month,haveAcc,price_range) -> inform_procedure_material
+
+
+
+#check_procedure_shouce
+#check_procedure_card
+#check_payment_month
+
+#question_reliability
+#show_interest
+
+#inform
+#reassure
+#affirm
+#deny
+
+#greet
+
+
 
 import jieba
 import re
@@ -12,7 +38,7 @@ intent_dict = {
                 {
                     "pattern":r"(你好|在吗|hi|hello|hey|您好)"
                 },
-                "user.request.fee":
+                "user.enquire_price":
                 {
                     "pattern":r"(收费)",
                     "slot_required":["city","product","month","hasAcc"]
@@ -30,7 +56,7 @@ intent_dict = {
                 {
                     "pattern":r"(没有)"
                 },
-                "user.request.procedure":
+                "user.enquire_procedure":
                 {
                     "pattern":r"(准备什么资料)"
                 }
