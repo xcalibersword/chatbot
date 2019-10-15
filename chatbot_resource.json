@@ -56,6 +56,28 @@
                 "Hello!"
             ]
         },
+        "first_greet": {
+            "key": "1001 first greetings",
+            "default_set": false,
+            "default_target": "NA",
+            "matchdb": [
+                "(你|您)好$",
+                "hello",
+                "早$",
+                "早安$",
+                "下午好$",
+                "午安$",
+                "晚上好$",
+                "hi$",
+                "在吗$",
+                "喂$",
+                "有人(不|吗)$"
+            ],
+            "replies": [
+                "您好! 有什么能帮助您的?",
+                "Hello! 有什么能帮助您的?"
+            ]
+        },
         "ask_name": {
             "key": "ask_for_name",
             "default_set": true,
@@ -285,10 +307,7 @@
             "thread": "BASE",
             "terminal_state": false,
             "req_info": "",
-            "replies": [
-                "您好! 有什么能帮助您的",
-                "Hello! 有什么能帮助您的"
-            ]
+            "replies": []
         },
         "initplus": {
             "key": "202 state_init++",
@@ -341,7 +360,7 @@
             "req_info": [
                 [
                     "city",
-                    "city_slot"
+                    "city"
                 ],
                 [
                     "首次",
@@ -412,7 +431,7 @@
             "req_info": [
                 [
                     "city",
-                    "city_slot"
+                    "city"
                 ],
                 [
                     "首次",
@@ -435,7 +454,7 @@
             "req_info": [
                 [
                     "city",
-                    "city_slot"
+                    "city"
                 ]
             ],
             "replies": [
@@ -457,7 +476,7 @@
             "req_info": [
                 [
                     "city",
-                    "city_slot"
+                    "city"
                 ],
                 [
                     "首次",
@@ -811,7 +830,7 @@
     },
     "info_parser": {
         "permanent_slots":[
-            ["city","city_slot"],
+            ["city","city"],
             ["要公积金","gongjijin_slot"]
         ],
         "slots":{
