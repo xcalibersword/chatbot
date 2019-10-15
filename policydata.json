@@ -2,14 +2,14 @@
     "COMMENT":"File to decide state transition logic. Called policies",
     "policy_rules":{
         "init": [
+            ["first_greet", "SAME_STATE"],
             ["sales_query", "init_sale"],
             ["purchase", "propose_plan"],
             ["affirm", "initplus"],
-            ["deny", "goodbye"],
-            ["greet", "init"]
+            ["deny", "goodbye"]
         ],
         "initplus":[
-            ["greet", "init"],
+            ["first_greet", "init"],
             ["sales_query", "init_sale"],
             ["purchase", "propose_plan"],
             ["deny", "goodbye"]

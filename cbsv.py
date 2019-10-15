@@ -3,6 +3,7 @@ import os
 import re
 import json
 
+
 WRITE_TO_FILE = 0 # Switch to turn of writing for testing purposes.
 
 
@@ -92,7 +93,7 @@ def check_input_against_db(msg, db, exact = False):
 
 def dump_to_json(filename, data, DEBUG = 0):
     if not WRITE_TO_FILE: 
-        print("<BACKEND WARNING: Writing to file has been disabled> {} remains unchanged".format(filename))
+        print("<BACKEND WARNING: Writing to file has been disabled> Restore it in cbsv.py\n {} remains unchanged".format(filename))
         return
     try:
         with open(filename,'w', encoding='utf8') as f:

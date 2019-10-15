@@ -667,7 +667,7 @@ class ReplyGenerator:
 
         if LOCALDEBUG: DEBUG = 0
         if rdb == []:
-            rdb = [cbsv.DEFAULT_CONFUSED()] # TODO fix bad OOP
+            rdb = cbsv.DEFAULT_CONFUSED() # TODO fix bad OOP
 
         return rdb
 
