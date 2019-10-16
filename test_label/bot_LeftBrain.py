@@ -12,11 +12,10 @@
 #enquire_price(city,month,haveAcc)->inform_price->inform{price_range}->inform_link
 #enquire_procedure_material(city,month,haveAcc,price_range) -> inform_procedure_material
 
-
-
 #check_procedure_shouce
 #check_procedure_card
 #check_payment_month
+#check_payment_company
 
 #question_reliability
 #show_interest
@@ -25,10 +24,7 @@
 #reassure
 #affirm
 #deny
-
 #greet
-
-
 
 import jieba
 import re
