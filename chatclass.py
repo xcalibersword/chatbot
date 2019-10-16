@@ -95,6 +95,8 @@ class StateThreader():
 
         if DEBUG: print("Statestack", self.threadIDstack)
 
+        return UPDATE_STATE_BOOL
+
     # Assigns the pending state to the current thread
     def set_thread_pending(self, hs, ps):
         self.get_curr_thread().set_pending_state(hs,ps)
@@ -344,7 +346,6 @@ class PolicyKeeper:
     def _get_state_replies(self, statekey):
         if not statekey in self.STATE_DICT:
             raise Exception("No such state as {}".format(statekey))
-            return False
         state = self.STATE_DICT[statekey]
         replies = state["replies"]
         return replies
@@ -394,6 +395,8 @@ class DetailManager:
 
     def _set_chatID(self, chatID):
         self.chatID = chatID
+        # prev_info = self.dbr.fetch_user_info(chatID)
+        # self.chat_prov_info.update(prev_info)
 
     def log_detail(self, new_info, DEBUG = 0):
         if DEBUG: print("Logging", new_info)
@@ -426,9 +429,6 @@ class DetailManager:
             out["city_info"] = self.vault.lookup_city(cityname)
         
         return out
-
-    def check_info_keys(self, k):
-        return k in list(self.chat_info.keys())
 
     def clone(self, chatID):
         # This is called during the creation of a new chat
@@ -558,7 +558,7 @@ class ReplyGenerator:
             #CALCULATIONS 
             vd["OUTCOME"] = 0
             for stp in steps:
-                (n, opname),(valnames,tkey)  = stp
+                (NA, opname),(valnames,tkey)  = stp
                 if not tkey in vd:
                     vd[tkey] = 0
 
@@ -626,11 +626,6 @@ class ReplyGenerator:
 
 
     def getreplydb(self, intent, curr_state, issamestate):
-        def dict_lookup(key, dictionary):
-            if key in dictionary:
-                return dictionary[key]
-            return False
-
         def get_replylist(obj):
             # print("get replies from obj",obj)
             return obj["replies"]
@@ -646,8 +641,6 @@ class ReplyGenerator:
         # If same state flagged, look at intents first
         # Else look at state based replies
         lookups = [intent, curr_state] if issamestate else [curr_state, intent]
-
-        nointent = False
 
         # Single state
         rdb = []
@@ -676,7 +669,7 @@ class ReplyGenerator:
         def rand_response(response_list):
             return random.choice(response_list)
 
-        reply_template = random.choice(rdb)
+        reply_template = rand_response(rdb)
         if DEBUG: print("template",reply_template)
         final_msg = reply_template
         if isinstance(info, dict):
@@ -714,26 +707,15 @@ class Chat:
     def pop_prev_msg(self):
         # TODO failsafe when empty?
         # Need to get the previous previous message
-        if len(self.prev_messages) < 2:
-            return self.prev_messages[-1]
-        if self.firstpop: 
-            self.prev_messages.pop(-1)
-            self.firstpop = False
-        return self.prev_messages.pop(-1)
-
-    def set_prev_msg(self, msg):
-        if msg == cbsv.DEFAULT_CONFUSED():
+        if self.convo_index < 2:
             return
-        self.prev_messages.append(msg)
-        self.firstpop = True
+        return self.curr_chatlog[self.convo_index - 2]
     
-    # def recv_info_dump(self, new_info):
-    #     print("Recieved info dump...",new_info)
-    #     self.info.update(new_info)
 
     ## Database interaction?
     def get_previous_issues(self):
-        return self.user.get_issues()
+        pass
+        # return self.user.get_issues()
 
     # Writes to a file eventually
     def record_to_database(self):

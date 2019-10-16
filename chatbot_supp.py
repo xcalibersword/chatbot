@@ -213,12 +213,6 @@ class Action:
         act = cls()
         act.set_message(msg)
         return act
-    
-    @classmethod
-    def go_back(cls, prev_msg):
-        act = cls()
-        act.message = msg
-        return act
 
     def set_message(self, msg):
         self.message = msg
@@ -244,7 +238,6 @@ class Policy():
         return self.g_intents
 
     def get_s_intents(self):
-        print("s_intents", s_intents)
         return self.s_intents
 
     def get_intents(self):
@@ -285,12 +278,13 @@ class InfoVault():
         self.plans = json_data["plans"]
         self.city_keys = list(self.plans.keys())
         self.other_keys = ["asd"]
+        
     # General query
     def lookup(self, q):
-        if q in city_keys:
-            return lookup_city(q)
-        if q in other_keys:
-            return lookup_other(q)
+        if q in self.city_keys:
+            return self.lookup_city(q)
+        if q in self.other_keys:
+            return self.lookup_other(q)
         return False
         
     def lookup_city(self, city):
@@ -349,7 +343,7 @@ class InfoParser():
             if m:
                 if found:
                     print("Double value. Prev:", value, ", Current:",v)
-                token = m.group(0)
+                # token = m.group(0)
                 value = v
                 found = True
                 print("Found a ", category, ":", v)

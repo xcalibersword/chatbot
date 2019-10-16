@@ -3,6 +3,7 @@
 import os
 import threading
 from cbsv import read_json, dump_to_json, check_file_exists
+from cb_sql import write_to_sqltable, fetch_uid_from_sqltable
 
 dbfolder = "userdata"
 DEBUG = 1
@@ -24,7 +25,12 @@ class DatabaseRunner():
     def fetch_user_info(self, user):
         if not user in self.database:
             # Create empty entry for new user
-            self.database[user] = {}
+            fetch = fetch_uid_from_sqltable(user)
+            if isinstance(fetch, dict):
+                ndic = fetch
+            else:
+                ndic = {}
+            self.database[user] = ndic
         return self.database[user]
 
     def trigger_backup(self):
@@ -40,7 +46,9 @@ class DatabaseRunner():
             self.database[chatid] = {}
 
         # Write to a dict that will later be pushed to the db
+        self.database[chatid].update({"userID":chatid})
         self.database[chatid].update(info)
+        print("self db", self.database)
 
         # Set timer to write
         self.trigger_backup()
@@ -52,6 +60,7 @@ class DatabaseRunner():
                 if self.database[user] == {}:
                     self.database.pop(user)
         destroy_empty_records()
-        dump_to_json(self.dbfilepath, self.database)
+        write_to_sqltable(self.database)
+        # dump_to_json(self.dbfilepath, self.database)
         self.timer_on = False
 
