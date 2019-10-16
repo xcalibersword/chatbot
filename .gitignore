@@ -24,3 +24,5 @@ test_NLU/vocab/
 test_NLU/vocab1/
 
 test_NLU/model1/
+
+.vscode/

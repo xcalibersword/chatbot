@@ -2,22 +2,32 @@
 
 import pymysql
 
+# DB ACCESS SETTINGS
+db_host = 'localhost'
+db_user = 'root'
+db_pass = 'abcd1234'
+db_dbname = "chatbot_schema"
+db_charset = "utf8mb4"
+db_cc = pymysql.cursors.DictCursor
+
 tablename = "table1"
 
-stdcon = pymysql.connect(host='localhost',
-                            user='root',
-                            password='abcd1234',
-                            db='chatbot_schema',
-                            charset='utf8mb4',
+NO_WRITE_TO_SQL = False
+
+stdcon = pymysql.connect(host=db_host,
+                            user=db_user,
+                            password=db_pass,
+                            db=db_dbname,
+                            charset=db_charset,
                             cursorclass=pymysql.cursors.DictCursor)
 
 def hello():
-    connection = pymysql.connect(host='localhost',
-                                user='root',
-                                password='abcd1234',
-                                db='chatbot_schema',
-                                charset='utf8mb4',
-                                cursorclass=pymysql.cursors.DictCursor)
+    connection = pymysql.connect(host=db_host,
+                            user=db_user,
+                            password=db_pass,
+                            db=db_dbname,
+                            charset=db_charset,
+                            cursorclass=pymysql.cursors.DictCursor)
     try:
         vals = ('我是个鸟儿', '甲城市')
         slots = "(userID, city)"
@@ -40,44 +50,47 @@ def fetch_from_con(con, sql, sqlvals):
         print(result)
         return result
 
-def fetch_all_from_con(tabnam):
-    query = "SELECT * FROM " + tabnam
+def fetch_all_from_con(tabnam, condition = ""):
+    query = "SELECT * FROM " + tabnam + " " + condition
     with stdcon.cursor() as cursor:
         cursor.execute(query,[])
         result = cursor.fetchall()
     return result
 
 def commit_to_con(con, comcmd, comvals):
+    if NO_WRITE_TO_SQL:
+        print("<BACKEND WARNING: Writing to SQL has been disabled> Restore it in cb_sql.py.\nCommand not executed:{}".format(comcmd))
+        return
+
     try:
         with con.cursor() as cursor:
-            # Create a new record
             cursor.execute(comcmd, comvals)
 
-        # connection is not autocommit by default. So you must commit to save
-        # your changes.
+        # connection is not autocommit by default. Must commit to save changes.
         con.commit()
+        print("Committed to db")
     except Exception as e:
         print("EXCEPTION! Rolling back", e)
-        print("command",comcmd)
+        print("Failed command:",comcmd)
         con.rollback()
-    finally:
-        print("Committed")
 
+def fetch_uid_from_sqltable(userID):
+    cond = "WHERE userID='" + str(userID) + "'"
+    f = fetch_all_from_con(tablename, cond)
+    if len(f) > 0:
+        f = f[0]
+    return f
 
-def write_to_sqltable(tablename, info):
-    connection = pymysql.connect(host='localhost',
-                                user='root',
-                                password='abcd1234',
-                                db='chatbot_schema',
-                                charset='utf8mb4',
-                                cursorclass=pymysql.cursors.DictCursor)
+# Writes to a predefined table
+def write_to_sqltable(info):
+    connection = stdcon
 
     users = list(info.keys())
     
     for uk in users:
-        userinfo = info[uk]
+        userinfo = info[uk].copy()
         vals = list(userinfo.values())
-        print("v",vals)
+        print("uinfo",userinfo)
         cols = ', '.join(userinfo.keys())
         qmarks = ', '.join(['%s'] * len(userinfo)) # Generates n * ? separated by commas
         qry = "INSERT INTO %s (%s) VALUES (%s)" % (tablename, cols, qmarks)
@@ -85,5 +98,8 @@ def write_to_sqltable(tablename, info):
 
 asdf = {"alina":{"userID":"小花朵","city":"北京", "首次":"yes"}}
 # write_to_sqltable(tablename,asdf)
-r = fetch_all_from_con(tablename)
-print(r)
+if __name__ == "__main__":
+    r = fetch_all_from_con(tablename)
+    print(r)
+    f = fetch_uid_from_sqltable("hoe")
+    print(f)
