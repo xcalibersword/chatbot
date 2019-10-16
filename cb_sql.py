@@ -50,8 +50,9 @@ def fetch_from_con(con, sql, sqlvals):
         print(result)
         return result
 
-def fetch_all_from_con(tabnam, condition = ""):
-    query = "SELECT * FROM " + tabnam + " " + condition
+def fetch_all_from_con(tabnam, columns = "*", condition = ""):
+    query = "SELECT {} FROM {} {}".format(columns,tabnam,condition)
+    print("Q:", query)
     with stdcon.cursor() as cursor:
         cursor.execute(query,[])
         result = cursor.fetchall()
@@ -76,7 +77,7 @@ def commit_to_con(con, comcmd, comvals):
 
 def fetch_uid_from_sqltable(userID):
     cond = "WHERE userID='" + str(userID) + "'"
-    f = fetch_all_from_con(tablename, cond)
+    f = fetch_all_from_con(tablename, condition = cond)
     if len(f) > 0:
         f = f[0]
     return f
@@ -84,7 +85,10 @@ def fetch_uid_from_sqltable(userID):
 # Writes to a predefined table
 def write_to_sqltable(info):
     connection = stdcon
-
+    userids = fetch_all_from_con(tablename, columns = "userID")
+    userids = map(lambda x: x['userID'],userids)
+    print("uids",userids)
+    
     users = list(info.keys())
     
     for uk in users:
@@ -93,6 +97,10 @@ def write_to_sqltable(info):
         print("uinfo",userinfo)
         cols = ', '.join(userinfo.keys())
         qmarks = ', '.join(['%s'] * len(userinfo)) # Generates n * ? separated by commas
+        if uk in userids:
+            delq = "DELETE FROM %s WHERE userID = '%s'" % (tablename, uk)
+            commit_to_con(connection, delq, ())
+
         qry = "INSERT INTO %s (%s) VALUES (%s)" % (tablename, cols, qmarks)
         commit_to_con(connection, qry, vals)
 
