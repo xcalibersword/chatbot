@@ -1,0 +1,2 @@
+model_checkpoint_path: "D:\\chatbot\\test_NLU\\model1\\_step_59506_epochs_18.ckpt"
+all_model_checkpoint_paths: "D:\\chatbot\\test_NLU\\model1\\_step_59506_epochs_18.ckpt"
