@@ -3,7 +3,7 @@ import tensorflow as tf
 import os
 from utils import loadVocabulary, sentenceToIds
 
-main_path = r'D:\chatbot\test_NLU'            
+main_path = os.path.join(os.curdir,"test_NLU")     
 ckpt_path = os.path.join(main_path,'model1')
 meta_path = os.path.join(main_path,r'model1\_step_59506_epochs_18.ckpt.meta')
 input_vocab_path = os.path.join(main_path,r'vocab1\in_vocab')
