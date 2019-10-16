@@ -395,8 +395,8 @@ class DetailManager:
 
     def _set_chatID(self, chatID):
         self.chatID = chatID
-        prev_info = self.dbr.fetch_user_info(chatID)
-        self.chat_prov_info.update(prev_info)
+        # prev_info = self.dbr.fetch_user_info(chatID)
+        # self.chat_prov_info.update(prev_info)
 
     def log_detail(self, new_info, DEBUG = 0):
         if DEBUG: print("Logging", new_info)
