@@ -2,6 +2,7 @@ import csv, time, os, re, random
 import pandas as pd
 from cbsv import *
 import jieba_fast as jieba
+import numpy as np
 
 os.getcwd()
 
@@ -164,26 +165,6 @@ class RawDataProcessor:
             msg_slot[token_pos] = tag
             token_pos += 1
         return(" ".join(msg_slot))    
-        
-    def split2train_valid_test(self,custlist,category,start,stop):
-                text_input = []
-                text_intent = []
-                text_slot = []
-
-                for label_sent_list in custlist[start:stop]:
-                    text_input.append(label_sent_list[0]+"\n")
-                    text_intent.append(label_sent_list[1]+"\n")
-                    text_slot.append(label_sent_list[2]+"\n")
-                
-                with open(r"D:\chatbot\test_NLU\data\test\{}\seq.in".format(category),"w",newline="\n",encoding="utf-8") as f:
-                    f.writelines(text_input)
-                    f.close()
-                with open(r"D:\chatbot\test_NLU\data\test\{}\label".format(category),"w",newline="\n",encoding="utf-8") as f:
-                    f.writelines(text_intent)
-                    f.close()
-                with open(r"D:\chatbot\test_NLU\data\test\{}\seq.out".format(category),"w",newline="\n",encoding="utf-8") as f:
-                    f.writelines(text_slot)
-                    f.close()
 
     def hasLink(self,phrase):
         if re.search(self.pattern_link,phrase):
@@ -275,6 +256,8 @@ class RawDataProcessor:
                                 for word in linkless_list:
                                     if not re.search(self.pattern_link,word):
                                         split_word = jieba.lcut(word)
+                                        #not to remove decimal point from numbers
+                                        #typo of jiao(teach) & jiao(hand in)
                                         split_word_list = self.preprocess(split_word)
 
                                         for splitword in split_word_list:
@@ -295,7 +278,30 @@ class RawDataProcessor:
         new_df = pd.DataFrame(data=custlist)
         new_df.to_csv(self.labelpath,index=False,encoding="utf-8")
         
-        #break up this step by reading from csv
+    
+
+def split2train_valid_test(custlist,category,start,stop):
+    text_input = []
+    text_intent = []
+    text_slot = []
+
+    for label_sent_list in custlist[start:stop]:
+        text_input.append(label_sent_list[0]+"\n")
+        text_intent.append(label_sent_list[1]+"\n")
+        text_slot.append(label_sent_list[2]+"\n")
+    
+    with open(r"D:\chatbot\test_NLU\data\test\{}\seq.in".format(category),"w",newline="\n",encoding="utf-8") as f:
+        f.writelines(text_input)
+        f.close()
+    with open(r"D:\chatbot\test_NLU\data\test\{}\label".format(category),"w",newline="\n",encoding="utf-8") as f:
+        f.writelines(text_intent)
+        f.close()
+    with open(r"D:\chatbot\test_NLU\data\test\{}\seq.out".format(category),"w",newline="\n",encoding="utf-8") as f:
+        f.writelines(text_slot)
+        f.close()
+
+def train_test_eval(csv_path):
+        custlist =  np.array(pd.read_csv(csv_path)).tolist()
         # split data into train,valid,test and the respective category | refer to sklearn | problem with size
         custlist_length = len(custlist)
         interval_first = round(custlist_length * 0.1)
@@ -305,11 +311,11 @@ class RawDataProcessor:
         # end = 4890
         random.shuffle(custlist)
         #test
-        self.split2train_valid_test(custlist,"test",None,interval_first)
+        split2train_valid_test(custlist,"test",None,interval_first)
         #validation
-        self.split2train_valid_test(custlist,"valid",interval_first,interval_second)
+        split2train_valid_test(custlist,"valid",interval_first,interval_second)
         #train
-        self.split2train_valid_test(custlist,"train",interval_second,None)
+        split2train_valid_test(custlist,"train",interval_second,None)
 
 def readData():
     w = RawDataProcessor()
@@ -318,9 +324,10 @@ def readData():
     return w
 
 def main():
-    w = readData()
-    w.save2label()
-    print("Label Done")
+    # w = readData()
+    # w.save2label()
+    # print("Label Done")
+    train_test_eval(r"D:\chatbot\data\a.csv")
 
 if __name__ == "__main__":
     main()
