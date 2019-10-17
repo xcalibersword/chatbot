@@ -25,7 +25,6 @@
         "payment": [
             ["affirm", "inform_pai"],
             ["query_pay_process", "inform_pai"],
-            ["sales_query", "inform_pai"],
             ["how_to_pai", "inform_pai"]
         ],
         "inform_pai": [

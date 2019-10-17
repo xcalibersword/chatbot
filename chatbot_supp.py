@@ -23,8 +23,7 @@ class SIP:
         self.state_obj = state.copy() # states are dicts
         self.state_key = self.state_obj["key"]
         self.gated_bool = self.state_obj["gated"]
-        self.state_slots = []
-        if self.state_obj["gated"]: self.state_slots = self.state_obj["req_info"]
+        self.state_slots = self.state_obj["req_info"] if self.state_obj["gated"] else []
         self.pending_state = ""
 
     def set_backtrack(self):
@@ -88,7 +87,7 @@ class SIP:
         return self.go_back == True
 
     def toString(self):
-        return ("State obj",self.state_obj,"cs",self.state_change,"backtrack ",self.backtrack," slots ",self.state_slots)
+        return ("State key",self.state_key,"cs",self.state_change, "slots",self.state_slots)
 
 class ReqGatekeeper:
     def __init__(self):
@@ -332,7 +331,6 @@ class InfoParser():
         if not category in self.regexDB:
             print("No such category:{}".format(category))
             return {category: ""}
-        if DEBUG: print("CATEGORIES",category)
         catDB = self.regexDB[category]
         value = ""
         found = False
