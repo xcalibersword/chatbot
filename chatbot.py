@@ -16,7 +16,7 @@ DEBUG = 0
 
 # Calls all the supporting functions from chatclass and chatbot_supp and initalizers
 # Required libraries: 
-# None right now
+# - mypysql used in cb_sql
 
 # Server libraries:
 # - python-socketio

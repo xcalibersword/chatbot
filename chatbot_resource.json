@@ -104,19 +104,8 @@
             "matchdb": [],
             "replies": []
         },
-        "sales_query": {
-            "key": 111,
-            "default_set": true,
-            "default_target": "init_sale",
-            "matchdb": [
-                "how does this work",
-                "流程(.*)怎么样",
-                "sales query"
-            ],
-            "replies": []
-        },
-        "pay_query": {
-            "key": "112 pay query",
+        "query_pay_process": {
+            "key": "112 query_pay_process",
             "default_set": true,
             "default_target": "inform_pai",
             "matchdb": [
@@ -127,7 +116,7 @@
                 "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
             ]
         },
-        "resource_query": {
+        "query_req_resources": {
             "key": "114 ziliao query",
             "default_set": true,
             "default_target": "SAME_STATE",
@@ -138,11 +127,11 @@
                 "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料"
             ]
         },
-        "total_amt_query": {
+        "ask_amt_month_fee_total": {
             "type": "intent",
             "key": "rep_ext[calc_str_total]",
             "default_set": true,
-            "default_target": "total_amt_query",
+            "default_target": "amt_month_fee_total",
             "matchdb": [
                 "一共(.*)(付|缴纳|多少)"
             ],
@@ -171,7 +160,7 @@
                 "亲，可以补缴最近6个月，补缴不算连续哦，望知悉"
             ]
         },
-        "ask_for_weixin": {
+        "query_weixin": {
             "key": "info_weixin",
             "default_set": true,
             "default_target": "SAME_STATE",
@@ -195,7 +184,7 @@
                 "15221004815"
             ]
         },
-        "how_check_shebao_status": {
+        "query_how_check_shebao_status": {
             "key": "info_how_check_shebao",
             "default_set": true,
             "default_target": "SAME_STATE",
@@ -211,7 +200,7 @@
                 "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能） http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp"
             ]
         },
-        "when_check_shebao_status": {
+        "query_when_check_shebao_status": {
             "key": "info_when_check_shebao",
             "default_set": true,
             "default_target": "SAME_STATE",
@@ -221,6 +210,15 @@
             "replies": [
                 "社保查询: \n次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费\n次次月15日可以在网上查询到实缴款;\n社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp\n公积金缴费查询：\n次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。"
             ]
+        },
+        "complicated":{
+            "key": "404 too complicated",
+            "default_set": true,
+            "default_target": "pass_to_human",
+            "matchdb": [
+                "complex"
+            ],
+            "replies": []
         },
         "how_to_pai": {
             "key": "info_how_to_pai",
@@ -243,6 +241,15 @@
                 "我有事"
             ],
             "replies": []
+        },
+        "inform_paid":{
+            "key": 180,
+            "default_set": false,
+            "default_target": "NA",
+            "matchdb": [
+                "(交|付)了"
+            ],
+            "replies": ["That's great!"]
         },
         "purchase": {
             "key": "purchase",
@@ -303,11 +310,12 @@
     "states": {
         "init": {
             "key": "201 state_init",
-            "gated": false,
+            "gated": true,
             "thread": "BASE",
             "terminal_state": false,
             "req_info": "",
             "replies": []
+            
         },
         "initplus": {
             "key": "202 state_init++",
@@ -317,6 +325,16 @@
             "req_info": "",
             "replies": [
                 "亲有别的要问吗？"
+            ]
+        },
+        "pass_to_human":{
+            "key": "pass_to_human",
+            "gated": false,
+            "thread": "EXIT",
+            "terminal_state": false,
+            "req_info": "",
+            "replies": [
+                "不好意思，我是新手，现在给你转到服务员"
             ]
         },
         "ask_if_issue": {
@@ -337,16 +355,8 @@
             "req_info": "",
             "replies": []
         },
-        "pay_query": {
-            "key": "212 pay q",
-            "gated": false,
-            "thread": "NONE",
-            "terminal_state": false,
-            "req_info": "",
-            "replies": []
-        },
-        "total_amt_query": {
-            "key": "total_amt_query",
+        "amt_month_fee_total": {
+            "key": "amt_month_fee_total",
             "gated": true,
             "thread": "t_amt_query",
             "terminal_state": true,
@@ -365,6 +375,10 @@
                 [
                     "首次",
                     "shouci"
+                ],
+                [
+                    "要公积金",
+                    "gongjijin_slot"
                 ]
             ],
             "replies": [
@@ -420,7 +434,7 @@
             "gated": false,
             "thread": "NONE",
             "terminal_state": false,
-            "req_info": "",
+            "req_info": [],
             "replies": []
         },
         "propose_plan": {
@@ -437,10 +451,7 @@
                     "首次",
                     "shouci"
                 ],
-                [
-                    "要公积金",
-                    "default_no"
-                ]
+                ["要公积金","default_no"]
             ],
             "replies": [
                 "亲{rep_ext[首次ornot]}哦。那么目前{city}社保按照最低基数{city_info[jishu]}，缴纳{city_info[payment]}；服务费{city_info[svc_fee]}元每月 {rep_ext[首次ext]}。"
@@ -481,6 +492,10 @@
                 [
                     "首次",
                     "shouci"
+                ],
+                [
+                    "要公积金",
+                    "gongjijin_slot"
                 ]
             ],
             "replies": [
@@ -549,7 +564,8 @@
                 "if_value": {
                     "requested_info": {
                         "city": "您是哪个城市呢？",
-                        "首次": "是首次吗？"
+                        "首次": "是首次吗？",
+                        "要公积金": "要交公积金吗？"
                     }
                 }
             },
@@ -588,7 +604,7 @@
             },
             {
                 "states": [
-                    "payment","total_amt_query"
+                    "payment","amt_month_fee_total"
                 ],
                 "lookfor": [
                     "首次",
@@ -621,7 +637,7 @@
             {
                 "states": [
                     "payment",
-                    "total_amt_query"
+                    "amt_month_fee_total"
                 ],
                 "lookfor": [
                     [
@@ -829,6 +845,9 @@
         }
     },
     "info_parser": {
+        "defaults":[
+            ["要公积金", "no"]
+        ],
         "permanent_slots":[
             ["city","city"],
             ["要公积金","gongjijin_slot"]
@@ -906,10 +925,10 @@
                 "no":["不(要|交|付)公积金"]
             },
             "default_yes":{
-                "yes":[".*"]
+                "yes":["."]
             },
             "default_no":{
-                "no":[".*"]
+                "no":["."]
             },
             "yesno": {
                 "是": [

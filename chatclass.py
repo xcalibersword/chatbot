@@ -507,6 +507,10 @@ class ReplyGenerator:
             conds = f["conditions"]
             for cond in conds:
                 k, v = cond
+                if not k in enhanced:
+                    print("ERROR {} not in info".format(k))
+                    return False
+                
                 met = (enhanced[k] == v) # Simple match
                 if not met:
                     return False
