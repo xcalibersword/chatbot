@@ -35,8 +35,8 @@ class StateThreader():
         return not self.state_changed
 
     def _thread_same_state(self, nstate):
-        print("new vs old", nstate, self.get_curr_thread_state())
-        print("result:",self.get_curr_thread()._is_same_state(nstate))
+        # print("new vs old", nstate, self.get_curr_thread_state())
+        if DEBUG: print("StateThreader samestate:",self.get_curr_thread()._is_same_state(nstate))
         return self.get_curr_thread()._is_same_state(nstate)
 
     def _thread_same_id(self, tid):
@@ -286,7 +286,7 @@ class ChatManager:
         curr_state = self._get_curr_state()
         # samestateflag = self.statethreader.state_never_change()
         samestateflag = self.samestateflag
-        print("curr_state", curr_state, "samestate",samestateflag)
+        print("curr_state", curr_state['key'], "samestate",samestateflag)
         return self.replygen.get_reply(curr_state, intent, samestateflag, information)
 
     # Asks dmanager for info
@@ -507,6 +507,10 @@ class ReplyGenerator:
             conds = f["conditions"]
             for cond in conds:
                 k, v = cond
+                if not k in enhanced:
+                    print("ERROR {} not in info".format(k))
+                    return False
+                
                 met = (enhanced[k] == v) # Simple match
                 if not met:
                     return False

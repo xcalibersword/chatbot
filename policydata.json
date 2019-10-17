@@ -3,14 +3,12 @@
     "policy_rules":{
         "init": [
             ["first_greet", "SAME_STATE"],
-            ["sales_query", "init_sale"],
             ["purchase", "propose_plan"],
             ["affirm", "initplus"],
             ["deny", "goodbye"]
         ],
         "initplus":[
             ["first_greet", "init"],
-            ["sales_query", "init_sale"],
             ["purchase", "propose_plan"],
             ["deny", "goodbye"]
         ],
@@ -26,8 +24,7 @@
         ],
         "payment": [
             ["affirm", "inform_pai"],
-            ["pay_query", "inform_pai"],
-            ["sales_query", "inform_pai"],
+            ["query_pay_process", "inform_pai"],
             ["how_to_pai", "inform_pai"]
         ],
         "inform_pai": [
@@ -43,7 +40,7 @@
         "goodbye":[
             ["greet", "init"]
         ],
-        "total_amt_query":[
+        "amt_month_fee_total":[
             ["affirm","initplus"]
         ]
     },
