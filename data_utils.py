@@ -240,6 +240,7 @@ class RawDataProcessor:
         custlist = []
         for q in self.cust_list:
             query_list = q.split(" ")
+            
             #tokenising part need to be reviewed
             for query in query_list:
                 if query.strip() != "":
@@ -274,6 +275,7 @@ class RawDataProcessor:
                         sent_slots = self.label_slot(tokenised_sent_list)
                         labelled_sent = [tokenised_sent,sent_intent,sent_slots]
                         custlist.append(labelled_sent)
+
         # save labelled cleaned data
         new_df = pd.DataFrame(data=custlist)
         new_df.to_csv(self.labelpath,index=False,encoding="utf-8")
@@ -327,7 +329,7 @@ def main():
     # w = readData()
     # w.save2label()
     # print("Label Done")
-    train_test_eval(r"D:\chatbot\data\a.csv")
+    train_test_eval(r"D:\chatbot\data\b.csv")
 
 if __name__ == "__main__":
     main()

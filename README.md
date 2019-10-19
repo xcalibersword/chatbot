@@ -9,18 +9,21 @@
 - QNPlugin
 - data_utils
     - load qn data
-    - process and save data by ID, QA and query   
-    - process query for auto labelling
-    - auto label query
+    - process and save data by ID, QA and query
     - split labelled query into test,valid and train for intent-slot NLU
-- set-up excel for collaboration
-    
+- dataset
+    - build tools to help with labelling slot
+    - set-up excel for collaboration
 
 ## In progress
-- dataset (manual label)
-    - build tools to help with labelling slot (refer to chatbot_resource, bot_Arm, bot_LeftBrain and excels when labelling) (kiv test label for now)
-- NLU_classifier (problem with large dataset, add word embedding, rebuild from scratch using tf2.0, break into function)
+- dataset
+    - set-up template for labeling
+    - manual label
+- data_utils
+    - process query for auto labelling (tokenise, word2vec, abstract)
+- NLU_classifier (add word embedding, use best practise)
 
+## For future
 - Design Doc (for collabs)
 - test bot (build up template for labels)
 - Dialog State Tracking
@@ -50,5 +53,4 @@
 - TCNN for intent classifier
 - slot-gated for intent-slot classifier
 - BiLSTM for entity classifier (seq labeling)
-
 - BiLSTM for state prediction

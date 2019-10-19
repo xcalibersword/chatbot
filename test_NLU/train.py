@@ -382,8 +382,6 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
                 while True:
                     in_data, slot_data, slot_weight, length, intents, in_seq, slot_seq, intent_seq = data_processor_valid.get_batch(
                         arg.batch_size)
-
-                    #error?
                     if len(in_data) <= 0:
                         break
                     feed_dict = {input_data.name: in_data, sequence_length.name: length}
