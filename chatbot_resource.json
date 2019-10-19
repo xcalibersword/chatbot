@@ -104,16 +104,40 @@
             "matchdb": [],
             "replies": []
         },
-        "query_pay_process": {
-            "key": "112 query_pay_process",
+        "ask_can_bujiao":{
+            "key": "ask_can_bujiao",
             "default_set": true,
-            "default_target": "inform_pai",
+            "default_target": "SAME_STATE",
             "matchdb": [
                 "pay$",
                 "办理$"
             ],
             "replies": [
-                "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
+                "亲，可以补缴最近6个月，补缴不算连续哦，望知悉"
+            ]
+        },
+        "ask_amt_month_fee_total":{
+            "key": "ask_amt_month_fee_total",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "matchdb": [
+                "pay$",
+                "办理$"
+            ],
+            "replies": [
+                
+            ]
+        },
+        "query_pay_process": {
+            "key": "112 query_pay_process",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "matchdb": [
+                "pay$",
+                "办理$"
+            ],
+            "replies": [
+                "缴纳流程：和客服明确缴纳城市以及缴纳月份，拍下链接付款---小程序提供资料---申报参保手续---手续办理成功发货---确认收货请注意：参保手续完成后，不可以申请退款！！！"
             ]
         },
         "query_req_resources": {
@@ -127,9 +151,9 @@
                 "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料"
             ]
         },
-        "ask_amt_month_fee_total": {
+        "short_ask_amt_month_fee_total": {
             "type": "intent",
-            "key": "rep_ext[calc_str_total]",
+            "key": "short_ask_amt_month_fee_total",
             "default_set": true,
             "default_target": "amt_month_fee_total",
             "matchdb": [
@@ -261,6 +285,15 @@
                 "怎么缴纳",
                 "buy",
                 "社保(.*)(交|付|代缴)"
+            ],
+            "replies": []
+        },
+        "purchase_wxyj": {
+            "key": "purchase_wxyj",
+            "default_set": false,
+            "default_target": "NA",
+            "matchdb": [
+                "社保 +公积金"
             ],
             "replies": []
         },
@@ -437,8 +470,8 @@
             "req_info": [],
             "replies": []
         },
-        "propose_plan": {
-            "key": "propose_plan",
+        "propose_plan_shebao": {
+            "key": "propose_plan_shebao",
             "gated": true,
             "thread": "t_presale",
             "terminal_state": false,
@@ -454,7 +487,27 @@
                 ["要公积金","default_no"]
             ],
             "replies": [
-                "亲{rep_ext[首次ornot]}哦。那么目前{city}社保按照最低基数{city_info[jishu]}，缴纳{city_info[payment]}；服务费{city_info[svc_fee]}元每月 {rep_ext[首次ext]}。"
+                "亲{rep_ext[首次ornot]}哦。那么目前{city}社保按照最低基数{city_info[jishu]}，缴纳{city_info[payment]}, 服务费{city_info[svc_fee]}元每月 {rep_ext[首次ext]}。"
+            ]
+        },
+        "propose_plan_wxyj": {
+            "key": "propose_plan_wxyj",
+            "gated": true,
+            "thread": "t_presale",
+            "terminal_state": false,
+            "req_info": [
+                [
+                    "city",
+                    "city"
+                ],
+                [
+                    "首次",
+                    "shouci"
+                ],
+                ["要公积金","default_yes"]
+            ],
+            "replies": [
+                "亲{rep_ext[首次ornot]}哦。那么目前{city}社保按照最低基数{city_info[jishu]}，缴纳{city_info[payment]}, 公积金{city_info[gongjijin_fee]}, 服务费{city_info[svc_fee]}元每月 {rep_ext[首次ext]}。"
             ]
         },
         "confirm_plan": {
@@ -571,7 +624,7 @@
             },
             {
                 "states": [
-                    "propose_plan"
+                    "propose_plan_shebao"
                 ],
                 "lookfor": [
                     "首次"
@@ -587,7 +640,7 @@
             },
             {
                 "states": [
-                    "propose_plan"
+                    "propose_plan_shebao"
                 ],
                 "lookfor": [
                     "首次",
@@ -604,7 +657,24 @@
             },
             {
                 "states": [
-                    "payment","amt_month_fee_total"
+                    "propose_plan_wxyj"
+                ],
+                "lookfor": [
+                    "首次",
+                    "city_info"
+                ],
+                "writeto": "首次ext",
+                "if_present": {},
+                "if_value": {
+                    "首次": {
+                        "yes": "如果以前在{city}没有缴纳过社保，需要付开户费{city_info[shouci_fee]}元",
+                        "no": ""
+                    }
+                }
+            },
+            {
+                "states": [
+                    "payment","short_ask_amt_month_fee_total"
                 ],
                 "lookfor": [
                     "首次",
@@ -637,7 +707,7 @@
             {
                 "states": [
                     "payment",
-                    "amt_month_fee_total"
+                    "short_ask_amt_month_fee_total"
                 ],
                 "lookfor": [
                     [
@@ -759,7 +829,7 @@
                 },
                 "writeto": "w_shouci_fee"
             },
-            "shebao_basic": {
+            "shebao_w_gjj": {
                 "conditions": [],
                 "req_vars": [
                     [
@@ -787,11 +857,34 @@
                             "w_shouci_fee"
                         ],
                         "OUTCOME"
-                    ],
-                    "2,multi": [
+                    ]
+                },
+                "writeto": "shebao_basic_total"
+            },
+            "shebao_basic": {
+                "conditions": [],
+                "req_vars": [
+                    [
+                        "city_info",
                         [
-                            "OUTCOME",
-                            1.0
+                            "jishu",
+                            "payment",
+                            "svc_fee"
+                        ]
+                    ],
+                    [
+                        "calc_ext",
+                        [
+                            "w_shouci_fee"
+                        ]
+                    ]
+                ],
+                "steps": {
+                    "1,add": [
+                        [
+                            "payment",
+                            "svc_fee",
+                            "w_shouci_fee"
                         ],
                         "OUTCOME"
                     ]
@@ -806,7 +899,7 @@
             "payment": 1937.7,
             "svc_fee": 40,
             "shouci_fee": 50,
-            "gongjijin_fee": 100
+            "gongjijin_fee": 338
         },
         "北京": {
             "jishu": 1337,

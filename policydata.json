@@ -3,20 +3,20 @@
     "policy_rules":{
         "init": [
             ["first_greet", "SAME_STATE"],
-            ["purchase", "propose_plan"],
+            ["purchase", "propose_plan_shebao"],
             ["affirm", "initplus"],
             ["deny", "goodbye"]
         ],
         "initplus":[
             ["first_greet", "init"],
-            ["purchase", "propose_plan"],
+            ["purchase", "propose_plan_shebao"],
             ["deny", "goodbye"]
         ],
         "init_sale": [
-            ["affirm", "propose_plan"],
-            ["purchase", "propose_plan"]
+            ["affirm", "propose_plan_shebao"],
+            ["purchase", "propose_plan_shebao"]
         ],
-        "propose_plan": [
+        "propose_plan_shebao": [
             ["affirm", "confirm_plan"]
         ],
         "confirm_plan": [
