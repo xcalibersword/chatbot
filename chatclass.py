@@ -553,7 +553,7 @@ class ReplyGenerator:
             instr = f["steps"]
             steps = list(instr.keys())
             steps = list(map(lambda x: (x.split(","), instr[x]),steps))
-            steps.sort(key=lambda t: t[0][0])
+            steps.sort(key=lambda t: float(t[0][0])) # If no conversion it sorts as string
             if DEBUG: print("aft sort",steps)
             req_vars = f["req_vars"]
             vd = dive_for_values(req_vars,enhanced)
@@ -607,23 +607,30 @@ class ReplyGenerator:
                 vd = dive_for_values(lookout, enhanced)
                 # vks = list(vd.keys())
                 
-                ifpr = tmp["if_present"]
-                for deet in list(ifpr.keys()):
-                    enstr = ifpr[deet]
-                    add_txt_enh(target_key,enstr)
-                
-                ifvl = tmp["if_value"]
-                for deet in list(ifvl.keys()):
-                    formatmap = ifvl[deet]
-                    if isinstance(vd[deet],list):
-                        # E.g. reqinfo is a list
-                        contents = vd[deet]
-                    else:
-                        contents = [vd[deet]]
+                print("TMP",tmp)
+                # assert ("if_present" in tmp)
+                # assert ("if value" in tmp)
 
-                    for deetval in contents:
-                        enstr = formatmap[deetval]
+                if "if_present" in tmp:
+                    ifpr = tmp["if_present"]
+                    for deet in list(ifpr.keys()):
+                        enstr = ifpr[deet]
                         add_txt_enh(target_key,enstr)
+                
+                if "if_value" in tmp:
+                    ifvl = tmp["if_value"]
+                    for deet in list(ifvl.keys()):
+                        formatmap = ifvl[deet]
+                        if isinstance(vd[deet],list):
+                            # E.g. reqinfo is a list
+                            contents = vd[deet]
+                        else:
+                            contents = [vd[deet]]
+
+                        for deetval in contents:
+                            dstr = str(cbsv.conv_numstr(deetval,wantint=1)) # Because json keys can only be str
+                            enstr = formatmap[dstr]
+                            add_txt_enh(target_key,enstr)
         
         # info.update(enhanced) # Write to info
         return enhanced

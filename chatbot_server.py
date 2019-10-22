@@ -31,11 +31,12 @@ def display_own_message(msg):
     return "<您>: " + str(msg)
 
 def get_qingyunke(query):
-    url = "http://api.qingyunke.com/api.php?key=free&appid=0&msg="
-    #query = urllib.parse.urlencode(query)
-    resp = requests.get(url+query)
-    result_json = json.loads(resp.text)
-    return result_json['content']
+    # url = "http://api.qingyunke.com/api.php?key=free&appid=0&msg="
+    # query = urllib.parse.urlencode(query)
+    # resp = requests.get(url+query)
+    # result_json = json.loads(resp.text)
+    # return result_json['content']
+    pass
 
 def get_bot_reply(bot, cid, message):
     replytext = bot.get_bot_reply(cid,message)

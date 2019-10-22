@@ -33,12 +33,13 @@ def INFO_GATHER_STATE_KEY():
 def is_number(n):
     return isinstance(n, float) or isinstance(n, int)
 
-def conv_numstr(n):
-    if not isinstance(n,str):
-        return n
+# Converts a string number to real number
+def conv_numstr(n,wantint = False):
+    cnvrt = (lambda n: int(n)) if wantint else (lambda n: float(n))
 
     try:
-        con = float(n)
+        con = cnvrt(n)
+        print("raw",n)
         return con
     except ValueError:
         #if DEBUG: print("Tried to convert {} to float and failed".format(n))
