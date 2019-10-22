@@ -379,6 +379,7 @@
                 "not_shebao",
                 "yes_shouci_val",
                 "not_shouci_val",
+                "sum_svc_fee",
                 "shebao_basic"
             ],
             "req_info": [
@@ -483,10 +484,11 @@
                 "not_shouci",
                 "sum_jishu",
                 "sum_jiaona",
+                "sum_svc_fee",
                 "shebao_basic"
             ],
             "replies": [
-                "{city}目前{rep_ext[product]}{rep_ext[proposal]} 共计{rep_ext[calc_str_total]}{rep_ext[首次ext]}"
+                "{city}目前{rep_ext[product]}{rep_ext[proposal]} 共计{rep_ext[calc_str_total]}。{rep_ext[首次ext]}"
             ]
         },
         "propose_plan_wxyj": {
@@ -540,7 +542,7 @@
                 ]
             ],
             "replies": [
-                "亲{rep_ext[首次ornot]}哦。那么目前{city}社保按照最低基数{city_info[jishu]}，缴纳{city_info[payment]}, 公积金{city_info[gongjijin_fee]}, 服务费{city_info[svc_fee]}元每月 {rep_ext[首次ext]}。"
+                "亲{rep_ext[首次ornot]}哦。那么目前{city}社保按照最低基数{city_info[jishu]}，缴纳{city_info[payment]}, 公积金{city_info[gongjijin_fee]}, 服务费{calc_ext[svc_fee_total]}元每月 {rep_ext[首次ext]}。"
             ]
         },
         "confirm_plan": {
@@ -566,8 +568,11 @@
             "calcs": [
                 "yes_gongjijin",
                 "not_gongjijin",
-                "have_shouci_val",
-                "zero_shouci_val",
+                "yes_shebao",
+                "not_shebao",
+                "yes_shouci",
+                "not_shouci",
+                "sum_svc_fee",
                 "shebao_basic"
             ],
             "req_info": [
@@ -585,7 +590,7 @@
                 ]
             ],
             "replies": [
-                "{city}的宝贝一共要付{rep_ext[calc_str_working]} = {rep_ext[calc_str_total]}块，亲确认下哦"
+                "{city}的{rep_ext[product]}一共要付{rep_ext[calc_str_working]} = {rep_ext[calc_str_total]}块，亲确认下哦"
             ]
         },
         "finish_sale": {
@@ -738,8 +743,8 @@
                 },
                 "if_value": {
                     "要公积金":{
-                        "yes":",公积金{city_info[gongjijin_fee]}元, 服务费{city_info[svc_fee]}元",
-                        "no":"服务费{city_info[svc_fee]}元"
+                        "yes":"公积金{city_info[gongjijin_fee]}元, 服务费{calc_ext[svc_fee_total]}元",
+                        "no":"服务费{calc_ext[svc_fee_total]}元"
                     }
                 }
             },
@@ -789,7 +794,7 @@
             },
             {
                 "states": [
-                    "payment",
+                    "general_payment",
                     "short_ask_amt_month_fee_total"
                 ],
                 "lookfor": [
@@ -807,8 +812,8 @@
                 ],
                 "writeto": "calc_str_working",
                 "if_present": {
-                    "shebao_payment": "{city_info[shebao_payment]}应缴纳",
-                    "svc_fee": " + {city_info[svc_fee]}服务费"
+                    "shebao_payment": "{city_info[shebao_payment]}最低缴费",
+                    "svc_fee": " + {calc_ext[svc_fee_total]}服务费"
                 },
                 "if_value": {
                     "首次": {
@@ -824,7 +829,7 @@
             {
                 "states": [
                     "propose_plan",
-                    "payment",
+                    "general_payment",
                     "short_ask_amt_month_fee_total"
                 ],
                 "lookfor": [
@@ -846,7 +851,7 @@
             {
                 "states": [
                     "propose_plan",
-                    "payment"
+                    "general_payment"
                 ],
                 "lookfor": [
                     [
@@ -1006,6 +1011,41 @@
                 },
                 "writeto": "w_shouci_fee"
             },
+            "sum_svc_fee": {
+                "conditions": [],
+                "req_vars": [
+                    [
+                        "city_info",
+                        [
+                            "svc_fee"
+                        ]
+                    ],
+                    [
+                        "calc_ext",
+                        [
+                            "w_sb_flag",
+                            "w_gjj_flag"
+                        ]
+                    ]
+                ],
+                "steps": {
+                    "1,add": [
+                        [
+                            "w_sb_flag",
+                            "w_gjj_flag"
+                        ],
+                        "w_sf_multi"
+                    ],
+                    "2,multi": [
+                        [
+                            "w_sf_multi",
+                            "svc_fee"
+                        ],
+                        "OUTCOME"
+                    ]
+                },
+                "writeto": "svc_fee_total"
+            },
             "sum_jishu": {
                 "conditions": [],
                 "req_vars": [
@@ -1163,7 +1203,7 @@
             "sb_jishu": 1337,
             "gjj_jishu": 1101,
             "shebao_payment": 0,
-            "svc_fee": 0,
+            "svc_fee": 999,
             "shouci_fee": 50,
             "pay_deadline": 20,
             "gongjijin_fee": 100
@@ -1172,7 +1212,7 @@
             "sb_jishu": 2335,
             "gjj_jishu": 1101,
             "shebao_payment": 0,
-            "svc_fee": 0,
+            "svc_fee": 999,
             "shouci_fee": 50,
             "pay_deadline": 20,
             "gongjijin_fee": 100
@@ -1181,7 +1221,7 @@
             "sb_jishu": 1100,
             "gjj_jishu": 1101,
             "shebao_payment": 0,
-            "svc_fee": 0,
+            "svc_fee": 999,
             "shouci_fee": 50,
             "pay_deadline": 20,
             "gongjijin_fee": 100
