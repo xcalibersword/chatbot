@@ -1,2 +1,2 @@
-model_checkpoint_path: "D:\\chatbot\\test_NLU\\model1\\_step_755_epochs_29.ckpt"
-all_model_checkpoint_paths: "D:\\chatbot\\test_NLU\\model1\\_step_755_epochs_29.ckpt"
+model_checkpoint_path: "_step_755_epochs_29.ckpt"
+all_model_checkpoint_paths: "_step_755_epochs_29.ckpt"
