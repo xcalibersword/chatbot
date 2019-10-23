@@ -1,0 +1,1145 @@
+160,no_intent
+923,no_intent
+1867,no_intent
+3290,no_intent
+12333,no_intent
+20201,no_intent
+20358,no_intent
+21377,no_intent
+17358239536,no_intent
+1.72E+11,no_intent
+1.92E+11,no_intent
+3.62E+17,no_intent
+5.11E+17,no_intent
+[表情] [表情],unknown
+[表情] [表情] [表情] [表情],unknown
+[表情] 不 知 道 的 可 以 不 写 吗,complicated
+[表情] 付 完 了 一 个,inform_paid
+[表情] 还 要 分 开 啊,complicated
+[表情] 好,affirm
+[表情] 可 能 会 交 不 上 是 吧,complicated
+[表情] 那 活 不 到 60 呢,complicated
+[表情] 怎 么 退,query_refund
+[图片] 单 月 是 这 个 吗,complicated
+0 么,doublecheck
+1 5 月 有,affirm
+1 年 之 内 这 个 业 务 是 暂 停 的 是 吧,complicated
+10 月 份 开 始 给 我 缴 纳,complicated
+10 月 公 司 可 以 交 的,complicated
+10 月 开 始,complicated
+1000 可 以 贷 50 万 吗,complicated
+103 分,unknown
+11 月 10 号 之 前 能 查 询 到 吗,query_when_check_shebao_status
+120 元 是 怎 么 回 事,complicated
+12027 486 80 3 30 2 20 53861,no_intent
+120656 包 括 哪 些 费 用,complicated
+120656 是 每 月 费 用 吗,complicated
+15 号 之 前 下 单 都 可 以 交 是 吧,complicated
+163 是 什 么,confused
+1856 啊,no_intent
+18621321922 手 机,no_intent
+19377 那 个 直 接 付 款 吗,doublecheck
+2 3 4 这 几 个 月 的 比 例 能 不 能 给 我 下,complicated
+2 3 的 基 数 是 多 少 4 月 的 是 多 少,complicated
+2 月 份 的,no_intent
+2000 多 吧,complicated
+30 2 是 啥,confused
+3290 这 个 貌 似 是,affirm
+3500 的,complicated
+3500 觉,complicated
+39735 那 个 是 什 么 呀,complicated
+4 5 月 的 240 的 预 调 基 的 钱 什 么 时 候 才 可 以 退,query_refund
+4 月,no_intent
+4 月 的 不 是 你 们 帮 我 缴 纳 的 嘛,complicated
+4 月 的 公 司 会 帮 忙 缴 纳 五 月 份 的 找 你 们 代 缴 的,purchase
+4 月 的 社 保 交 了 吗,purchase
+4 月 份 的,no_intent
+4 月 份 的 社 保 和 公 积 金 已 经 缴 纳 了 吧,ask_shebao_status
+4 月 份 的 要 开 始 买,purchase
+4 月 份 还 能 缴 么,check_can_pay_current_month
+4 月 份 邮 箱 有 通 知,complicated
+4 月 几 号,no_intent
+4 月 离 职 了,complicated
+40 的 拍 5 份 是 吧,complicated
+40 为 啥 三 个,clarify
+5 0 0 0 基 数 能 贷 到 上 限 吗,no_intent
+5 月,complicated
+5 月 的 公 司 已 经 给 我 交 了,inform_payment_history
+5 月 的 什 么 时 候 能 查 到,query_when_check_shebao_status
+5 月 的 我 拍 下,no_intent
+5 月 的 五 险 现 在 可 以 缴 纳 吗,check_can_pay_current_month
+5 月 底 拍 是 不 是 也 来 得 及,check_can_pay_current_month
+5 月 份 的,no_intent
+5 月 份 的 不 能 交 吗,check_can_pay_current_month
+5 月 份 的 还 能 交 吗,check_can_pay_current_month
+5 月 份 的 没 法 交 了 吗,check_can_pay_current_month
+5 月 份 的 你 们 这 边 还 是 会 交 吧,complicated
+5 月 份 的 现 在 下 单 吗,complicated
+5 月 份 的 最 晚 什 么 时 候 可 以 办 理,query_pay_deadline
+5 月 份 公 司 会 交 但 是 我 马 上 辞 职 了 6 月 份 开 始 社 保 就 要 断 了,complicated
+5 月 份 杭 州 社 保 今 天 能 交 么,purchase
+5 月 份 社 保,no_intent
+5 月 份 社 保 公 积 金,no_intent
+5 月 几 号 可 以 查 询,ask_shebao_status
+5 月 开 始 社 保 费 用 下 调 了,complicated
+5 月 没 有,unknown
+5 月 确 定 可 以 交 上 是 吧,check_can_pay_current_month
+5 月 社 保 和 公 积 金,no_intent
+54 岁,no_intent
+58 那 个 进 不 去,report_issue
+6 月 份 可 以 补 交 到 2018 年 11 月 份 的 社 保 吗,complicated
+6 月 份 最 晚 几 号 交,query_pay_deadline
+6 月 什 么 时 候 能 查 到 成 功 缴 费 信 息 呢,query_when_check_shebao_status
+7 号 之 后,complicated
+7 月 底 刚 办 完 深 户 ， 准 备 申 请 入 户 补 贴 ， 应 该 缴 哪 一 档 的 社 保 ？,no_intent
+7 月 份 社 保 公 积 金 已 拍,purchase_wxyj
+7 月 以 后 退 吗,complicated
+70 每 月 乘 12 个 月,complicated
+80 是 代 缴 费,doublecheck
+840 呀 怎 么 是 130601 了,complicated
+9 月 26 日 入 职,complicated
+9 月 份 参 保 的 话 参 保 信 息 提 交 的 截 止 时 间 是,complicated
+9 月 截 止 了,complicated
+hello,greet
+hi,greet
+nono 最 晚 26,complicated
+OK,affirm
+ok 不 影 响 就 好,affirm
+ok 好 了 我 联 系 你,get_back_later
+OK 了 都,affirm
+tks,thankyou
+yourenma,unknown
+zai ma,greet
+啊,affirm
+按 最 低 的,purchase
+按 最 低 的 交,purchase
+按 最 低 交,purchase
+嗷 嗷,affirm
+嗷 嗷 懂 了,affirm
+办 日 本 签 证,complicated
+帮 忙 看 下 哈,ask_verify
+帮 我 查 一 下,req_check
+帮 我 交 了 吗,ask_shebao_status
+帮 我 看 一 下,ask_verify
+帮 我 退 款 吧,ask_for_refund
+包 括 生 育 险 没 有,complicated
+报 税,unknown
+北 京,no_intent
+北 京 社 保 可 以 交 吗,purchase
+本 科,no_intent
+本 人,unknown
+比 例 怎 么 缴 费 的,query_pay_process
+比 如 购 房,complicated
+必 须 工 行 卡 吗,query_req_resources
+必 须 是 现 金 对 吧,complicated
+哔 哔 哔 受 不 了,unknown
+别 这 样,deny
+补 个 税 怎 么 收 费,no_intent
+补 交 和 正 常 交 有 什 么 区 别 ？,no_intent
+补 缴 费 用 一 样,ask_can_topup
+补 缴 跟 按 时 缴 有 啥 区 别 吗,no_intent
+补 三 月,ask_can_topup
+不 出 具 资 料,query_req_resources
+不 懂,confused
+不 对 啊,deny
+不 对 了,deny
+不 好 意 思,apology
+不 会,deny
+不 会 忘 记 的,chitchat
+不 加 服 务 费 的 吧,query_have_service_fee
+不 交 公 积 金,purchase
+不 交 公 积 金 呢,purchase
+不 交 社 保,gongjijin_only
+不 缴 社 保,gongjijin_only
+不 客 气,no_intent
+不 买,deny
+不 买 公 积 金,purchase
+不 能 弄 一 下 吗,check_is_possible
+不 能 中 断,complicated
+不 是 首 次,no_intent
+不 是 首 次 参 保,no_intent
+不 是 太 了 解,confused
+不 说 是 查 询 晚 啊,complicated
+不 太 懂,confused
+不 需 要 重 新 开 户,no_intent
+不 要 出 纰 漏,unknown
+不 要 工 资 个 税,complicated
+不 影 响 吧,complicated
+不 影 响 贷 款 吧,complicated
+不 影 响 买 房 吧,complicated
+不 用 啊,deny
+才 找 淘 宝,unknown
+参 保 流 程,query_pay_process
+差 价 那 个 链 接,complicated
+成 都,no_intent
+成 都 社 保 可 以 交 吗,purchase
+承 诺 人 王 贞,complicated
+初 中,no_intent
+大 概 多 少 钱,ask_amt_month_fee_total
+代 缴,purchase
+代 缴 包 括 公 司 部 分 和 个 人 部 分 吗,purchase
+代 缴 社 保,purchase
+代 缴 社 保 费 用,purchase
+代 缴 社 保 费 用   是 怎 么 收 费 的 呀,purchase
+代 理 费 多 少,ask_amt_service_fee
+贷 款,no_intent
+贷 款,unknown
+贷 款 方 便,complicated
+贷 款 是 连 续 6 个 月 就 好 对 吧,affirm
+单 独 交 生 育 险,complicated
+但 是 不 能 断,complicated
+但 是 还 没 更 新,complicated
+都 可 以,affirm
+都 没 收 到,report_issue
+都 是 杭 州 的 吧,doublecheck
+都 需 要 什 么 资 料 ？,query_pay_process
+都 需 要 我 准 备 什 么,query_pay_process
+都 支 付 过 了,inform_paid
+读 书 需 要,unknown
+断 了,no_intent
+断 了 的 可 以 补 吗,ask_can_topup
+对,affirm
+对 啊,affirm
+对 吧,doublecheck
+对 吧,no_intent
+对 的,affirm
+对 的 呢,affirm
+对 的 上 海 的,affirm
+对 了,affirm
+对 吗,doublecheck
+多 少 个 月,complicated
+多 少 钱,ask_amt_month_fee_total
+多 少 钱,no_intent
+多 少 钱 ？,purchase_wxyj
+多 少 钱 了,ask_amt_month_fee_total
+多 问 一 下,no_intent
+额,affirm
+额 好,affirm
+恩,affirm
+恩 好 的,affirm
+恩 呢,affirm
+嗯,affirm
+嗯 啊,affirm
+嗯 嗯,affirm
+嗯 嗯 好 的,affirm
+嗯 嗯 是 的,affirm
+嗯 咯,affirm
+嗯 好,affirm
+嗯 好 稍 等,affirm
+嗯 肯 定 的,affirm
+嗯 蛮 贵,complain
+嗯 呢,affirm
+发 送 缴 纳 通 知,complicated
+方 便 电 话 吗,ask_for_phone
+房,unknown
+房 屋 中 介 能 缴,complicated
+放 心 吧,chitchat
+费 用 和 材 料,ask_amt_month_fee_total
+费 用 是 多 少,purchase_wxyj
+费 用 已 付 ， 注 意 查 收,no_intent
+费 用 怎 么 收 取,query_pay_process
+费 用 怎 么 算 的,complicated
+费 用 怎 么 走,query_pay_process
+封 存 了,complicated
+服 务 费 多 少,ask_amt_service_fee
+付 好 告 诉 你 哈,reassure
+付 好 了,inform_paid
+付 好 钱 了,inform_paid
+付 款 怎 么 操 做 呢,query_pay_process
+付 了,inform_paid
+改 个 价 ， 谢 谢,thankyou
+改 价 我 现 在 付 款,no_intent
+尴 尬 了,chitchat
+感 谢,thankyou
+刚 离 职 不 想 断,complicated
+高 新 南 区 没 有,no_intent
+给 你 介 绍 朋 友 来,chitchat
+给 你 们 不 搭 嘎 的,complicated
+给 我 链 接,request_link
+给 我 做 减 员 了 吗,ask_discount
+工 资 呢,complicated
+公 积 金,no_intent
+公 积 金 贷 款,gongjijin_only
+公 积 金 贷 款 额 度,complicated
+公 积 金 断 缴 会 有 什 么 问 题 吗 。 断 几 个 月,no_intent
+公 积 金 断 缴 有 影 响 吗,no_intent
+公 积 金 断 了,complicated
+公 积 金 交 了 吗,ask_shebao_status
+公 积 金 交 吗,gongjijin_only
+公 积 金 可 以 贷 款,no_intent
+公 积 金 呢,no_intent
+公 积 金 收 到 了,ask_verify
+公 积 金 提 取 能 做 吗,no_intent
+公 积 金 也 能 交 吗,no_intent
+公 积 金 有 点 用 吗,complicated
+公 积 金 最 低 队 少,ask_amt_month_fee_total
+公 司,no_intent
+公 司 帮 忙 交,complicated
+公 司 帮 我 交 了,complicated
+公 司 给 交 过 了,inform_payment_history
+公 司 名 字 是 啥,no_intent
+够 的,no_intent
+光 缴 纳 公 积 金 可 以 吗,purchase_gjj
+广 州,no_intent
+广 州 社 保 可 以 交 吗,purchase
+哈 哈,chitchat
+哈 哈 哈 哈 好 的,affirm
+还 得 重 新 交 吗,complicated
+还 来 的 及 吗,check_can_pay_current_month
+还 能 改 吗,complicated
+还 是 必 须 裸 的,complicated
+还 是 下 月,unknown
+还 是 要 怎 么 交,query_pay_process
+还 是 怎 么 回 事 啊,confused
+还 是 只 买 一 份,complicated
+还 受,no_intent
+还 需 要 其 他 的 么,check_anything_else
+还 有 个 问 题,no_intent
+行,affirm
+行 吧,check_is_possible
+行 吧 尽 量 快 点 哦,affirm
+杭 州,no_intent
+杭 州 社 保 可 以 交 吗,purchase
+好,affirm
+好 吧,affirm
+好 吧 谢 谢 啦,affirm#thankyou
+好 哒,affirm
+好 的,affirm
+好 的 好 的,affirm
+好 的 亲,affirm
+好 的 我 去 问 问,no_intent
+好 的 我 问 问,chitchat
+好 的 谢 了,affirm#thankyou
+好 的 谢 谢,affirm#thankyou
+好 的 谢 谢,affirm#thankyou
+好 的 谢 谢,thankyou
+好 的 谢 谢 啦,thankyou
+好 的 谢 谢 你,thankyou
+好 的 谢 谢 你 哈,thankyou
+好 的 谢 谢 你 啦,thankyou
+好 的 直 接 拍 吗,doublecheck
+好 滴,affirm
+好 几 年 的 钱,complicated
+好 了,affirm
+好 了,inform_info_filled
+好 了,unknown
+好 了 你 看 看,ask_verify
+好 了 哦,affirm
+好 那,affirm
+好 哦,affirm
+好 我 先 确 认 下,get_back_later
+好 谢 谢,thankyou
+好 谢 谢 谢 谢,thankyou
+好 需 要 提 供 啥,query_req_resources
+合 作 愉 快,thankyou
+和,no_intent
+和 社 保 卡 吗,complicated
+很 厉 害 啊,chitchat
+后 来 断 了,unknown
+后 来 休 息 一 年,complicated
+户 籍 就 是 户 口,complicated
+花 呗 算 信 用 卡 么,complicated
+换 工 作 好 麻 烦,chitchat
+黄 孟 琪 的 继 续 缴,complicated
+会 不 会 突 然 停 交 了 呢 ？,inform_paid
+会 代 缴 税 吗,complicated
+或 者,no_intent
+积 分 之 后 再 说,complicated
+基 数 的 问 题,no_intent
+基 数 怎 么 填 写,complicated
+几 号 发 的,unknown
+几 号 汇 缴,query_pay_deadline
+几 号 可 以 转 出 来,complicated
+交,unknown
+交 北 京 社 保,purchase
+交 北 京 社 保 可 以 吗,purchase
+交 成 都 社 保,purchase
+交 成 都 社 保 可 以 吗,purchase
+交 工 资 加 社 保,purchase
+交 广 州 社 保,purchase
+交 广 州 社 保 可 以 吗,purchase
+交 过,no_intent
+交 过 啊,no_intent
+交 杭 州 社 保,purchase
+交 杭 州 社 保 可 以 吗,purchase
+交 好 了 吗,ask_shebao_status
+交 了,inform_paid
+交 齐 全 呢,unknown
+交 上 海 社 保,purchase
+交 上 海 社 保 可 以 吗,purchase
+交 社 保,purchase
+交 社 保 可 以 吗,purchase
+缴 费 基 数 是 多 少,ask_amt_month_fee_total
+缴 费 基 数 填 什 么,complicated
+缴 纳 得 公 司 名 称 是 什 么,no_intent
+缴 纳 基 数 呢,ask_amt_month_fee_total
+缴 纳 可 以 查 看 记 录 吗,query_how_check_shebao_status
+缴 纳 吗,unknown
+截 止 日 期 是 什 么 时 候,query_pay_deadline
+今 天 刚 离 职,complicated
+今 天 看 还 是 停 缴,complicated
+今 天 我 拍 进 去,chitchat
+尽 快 回 复 你,get_back_later
+就 贷 款,no_intent
+就 交 一 个 月,no_intent
+就 去 柜 台 去 啦,complicated
+就 是,affirm
+就 是 说,unknown
+就 这 个,affirm
+就 这 样,affirm
+居 住 证 代 办 吗,complicated
+居 住 证 有 的,affirm
+居 住 证 咋 弄,complicated
+开 票 也 要 钱,chitchat
+看 到 了,affirm
+看 到 吗,doublecheck
+看 得 到 么,ask_verify
+看 下 上 面 的 留 言,chitchat
+可 拍 了 吗,request_link
+可 以,affirm
+可 以 吧,check_is_possible
+可 以 办 理 落 户 吗,complicated
+可 以 办 留 学 生 落 户 吗,complicated
+可 以 补 交 社 保 吗,ask_can_topup
+可 以 补 缴 社 保 吗,ask_can_topup
+可 以 补 叫 我,unknown
+可 以 补 吗,ask_can_topup
+可 以 补 么,ask_can_topup
+可 以 出 合 同 吗,no_intent
+可 以 代 办 吗,complicated
+可 以 的,affirm
+可 以 电 话 联 系 下 吗,ask_for_phone
+可 以 电 话 咨 询 吗,ask_for_phone
+可 以 光 交 税 么,complicated
+可 以 后 付 吗,ask_can_topup
+可 以 加 微 信 吗 ？,query_weixin
+可 以 交 补 充 公 积 金 吗,no_intent
+可 以 交 社 保 不,purchase
+可 以 开 发 票 吗,ask_kai_piao
+可 以 了,affirm
+可 以 两 地 同 时 缴 纳 吗,no_intent
+可 以 吗,check_is_possible
+可 以 吗,doublecheck
+可 以 么,check_is_possible
+可 以 么,doublecheck
+可 以 苏 州 落 户 吗,purchase
+可 以 一 月 一 交 吗,query_payment_schedule
+可 以 这 样 补 缴 么,ask_can_topup
+可 以 只 交 3 险 吗,query_pay_part_only
+可 以 只 交 个 人 部 分 吗,no_intent
+可 以 只 交 养 老 吗,query_pay_part_only
+可 以 只 交 医 保 吗,query_pay_part_only
+可 以 转 吗,complicated
+快 点,chitchat
+昆 山 的,no_intent
+来 吧,chitchat
+来 得 及 吧,check_can_pay_current_month
+老 板 ， 能 代 缴 湖 南 省 直 社 保 吗,purchase
+老 人 也 不 行 是 么,complicated
+了 解,affirm
+了 解 了,affirm
+离 职 日 期,complicated
+李 亚 霏,unknown
+理 解,affirm
+链 接,request_link
+两 年 多,chitchat
+俩 一 起 多 少,ask_amt_month_fee_total
+俩 账 户 都 有,affirm
+聊 城 社 保 代 缴 一 年 多 钱,purchase
+留 学 生 落 户 怎 么 个 流 程,complicated
+流 程,query_pay_process
+流 程 是,how_to_pai
+流 程 是 什 么,query_pay_process
+流 程 再 给 我 下,query_pay_process
+六 月 就 停 缴,complicated
+六 月 中 旬 才 开 始,complicated
+落 户,complicated
+落 户 上 海 需 要 什 么 材 料,query_req_resources
+麻 烦,chitchat
+麻 烦 了,chitchat
+麻 烦 了,unknown
+麻 烦 您 了,apology
+麻 烦 您 了,chitchat
+麻 烦 弄 一 下,chitchat
+麻 烦 提 供 下,unknown
+麻 烦 通 过 下,complicated
+麻 烦 问 下 ， 社 保 公 积 金 交 了 没,ask_shebao_status
+马 上 就 能 做,chitchat
+吗,unknown
+买 房 呢,complicated
+忙 忘 了,unknown
+么 多,unknown
+没 交 社 保,no_intent
+没 看 到 信 息 啊,complain
+没 去 更 新 过,complicated
+没 事 吧,doublecheck
+没 说 不 可 以 呀,chitchat
+没 问 题,affirm
+没 有,deny
+没 有 交,deny
+没 有 劳 动 合 同 吗,complicated
+没 有 其 他 办 法 吗,complicated
+没 有 人 事,unknown
+没 有 社 保 呢,complicated
+每 个 都 要 拍 吗,doublecheck
+每 个 月 缴 费 多 少,ask_amt_month_fee_total
+每 月 什 么 时 间 交,query_pay_deadline
+美 女,greet
+明 白,affirm
+明 白 了,affirm
+明 白 了 的,affirm
+明 天,unknown
+明 天 可 以 吗,complicated
+目 前 封 存 不 了,complicated
+哪 里 啊,confused
+那 残 章 金 呢,query_canzhangjin
+那 公 积 金 呢,unknown
+那 好,affirm
+那 好 久 能 查 到,chitchat
+那 加 上 公 积 金 的 话 是 多 少 钱,no_intent
+那 就 办 吧,affirm
+那 就 单 纯 社 保 吧,purchase
+那 就 没 办 法 了 吗,complicated
+那 就 是 很 快 了,chitchat
+那 就 这 样,affirm
+那 没 事,affirm
+那 能 有 合 同 吗,complicated
+那 你 们 先 退,complicated
+那 什 么 办 啊,complicated
+那 我 八 月 份 呢,ask_shebao_status
+那 我 换 家 吧,complicated
+那 我 明 天 操 作 吧,get_back_later
+那 我 能 补 缴 吗,ask_can_topup
+那 我 拍 了,no_intent
+那 我 去 下 单 了,chitchat
+那 我 入 职 日 期 填 什 么,no_intent
+那 我 先 退 了 吧,ask_for_refund
+那 我 需 要 交 社 保,purchase
+那 我 应 该 提 供 些 什 么 材 料,query_pay_process
+那 我 怎 么 办 理,pay_query
+那 我 怎 么 下 单,query_pay_process
+那 我 准 备 付 款 了,no_intent
+那 现 在 要 填 什 么,complicated
+那 要 什 么 交,query_req_resources
+那 有 什 么 影 响 吗,complicated
+那 这 样,unknown
+那 最 多 能 贷 多 少,complicated
+能 办 理 积 分 落 户 吗,complicated
+能 办 理 社 保 转 移 吗,no_intent
+能 帮 忙 介 绍 下 吗,query_product_explain
+能 补 交 上 吗,ask_can_topup
+能 给 个 链 接 吗,request_link
+能 领 多 长 时 间,complicated
+能 提 取 公 积 金 吗,no_intent
+你 好,greet
+你 好   我 在 哪 里 查 询 社 保 金 额 是 否 已 经 到 账 呢,query_how_check_shebao_status
+你 好 ， 单 位 有 固 定 电 话 嘛 ？,no_intent
+你 好 ， 就 是 我 现 在 要 从 上 海 离 职 去 北 京 ， 就 是 你 们 这 边 可 以 帮 忙 续 交 上 海 社 保 是 吧 ？,no_intent
+你 好 ， 请 问 如 果 选 择 你 们 代 缴 上 海 社 保 ， 你 们 是 以 哪 家 公 司 名 义 缴 纳 ?,purchase
+你 好 ， 社 保 ， 你 这 能 补 交 吗 ？,purchase
+你 好 ， 在 吗 ？ 想 问 一 下 我 姐 姐 长 沙 的 房 子 赠 送 给 我 ， 但 我 不 是 长 沙 户 口 ， 这 种 可 以 吗 ？,no_intent
+你 好 亲,greet
+你 好 我 想 问 一 下,greet
+你 好 我 想 问 一 下,no_intent
+你 好 在 吗,greet
+你 家 无 锡 有 代 缴 嘛 ？,purchase
+你 觉 得 有 必 要 吗,complicated
+你 看 看,doublecheck
+你 了 解 的 有 吗,complain
+你 没 说 不 能 调 啊,complicated
+你 们 代 缴 社 保 ， 后 期 可 以 领 取 生 育 津 贴 吗,purchase
+你 们 公 司 的 名 字 是 什 么,no_intent
+你 们 很 不 诚 信,complain
+你 们 可 以 看 到 成 功 了 吗 ？,ask_shebao_status
+你 们 试 一 下 嘛,complicated
+你 们 是 正 规 的 吗,no_intent
+你 们 属 于 人 力 资 源 公 司 吗,no_intent
+你 们 提 供 吗,complicated
+你 们 再 确 认 一 下,ask_verify
+你 们 自 己 的 公 司,no_intent
+你 那 里 能 看 到 吗,ask_verify
+你 这 边 看 一 下,ask_verify
+你 这 边 有 渠 道 吗,complicated
+你 这 可 以 代 缴 杭 州 五 险 一 金 是 吗,purchase
+您 好,greet
+您 好 ， 我 想 咨 询 一 下 代 缴 五 险 一 金,purchase
+您 好 ， 我 想 咨 询 一 下 上 海 代 缴 五 险 一 金,purchase_wxyj
+您 好 ， 我 这 边 在 办 离 职 手 续 ，   H R 那 边 需 要 我 填 一 个 公 积 金 的 处 理 方 式 ， 如 果 我 后 续 准 备 在 你 们 这 边 办 理 代 缴 的 话 ， 是 选 封 存 吗 ？,purchase
+您 好 ， 五 险 一 金 服 务 费 怎 么 收,purchase_wxyj
+您 看 下,ask_verify
+您 看 一 下,reassure
+您 是 说 我 的,clarify
+哦,affirm
+哦 对,affirm
+哦 给 个 链 接,request_link
+哦 好 的,affirm
+哦 基 本 用 不 上,deny
+哦 哦,affirm
+哦 哦 好 的,affirm
+哦 哦 麻 烦 了,affirm#chitchat
+哦 哦 哦,affirm
+哦 哦 谢 谢,thankyou
+哦 哦 知 道 了,affirm
+哦 哦 知 道 了 谢 谢,affirm#thankyou
+怕 漏 交,unknown
+拍 车 牌,unknown
+拍 好 了,inform_paid
+拍 了,inform_paid
+拍 哪 个 链 接 呢,request_link
+拍 下 后,unknown
+拍 下 就 可 以 了 么,doublecheck
+拍 下 了,inform_paid
+企 业 社 保,no_intent
+气 死 我 了,chitchat
+钱 付 过 了,inform_paid
+亲,no_intent
+亲 ， 请 问 你 们 之 前 有 帮 回 国 留 学 生 缴 社 保 吗 ？,complicated
+亲 亲,chitchat
+亲 在 吗,greet
+请 不 要 停 缴 ， 我 明 天 中 午 去 缴,ask_shebao_status
+请 问,no_intent
+请 问 代 缴 社 保 的 小 程 序 里 “ 入 职 时 间 ” 怎 么 填 ?,purchase
+请 问 公 积 金 有 帮 我 转 出 吗,ask_shebao_status
+请 问 可 以 补 个 税 吗,no_intent
+请 问 可 以 代 缴 上 海 社 保 吗,purchase_wxyj
+请 问 可 以 开 吗,purchase
+请 问 上 海 社 保 能 补 缴 吗,ask_can_topup
+请 问 我 的 缴 公 积 金 基 数 是 多 少 ， 我 忘 记 了,ask_shebao_status
+请 问 一 个 月 多 少 钱,purchase_wxyj
+请 问 一 下,no_intent
+请 问 这 话 啥 意 思,no_intent
+去 那 里 交,query_pay_process
+全 部 的,no_intent
+缺 什 么,query_req_resources
+确 定 是 这 个 月 哦,affirm
+然 后,unknown
+然 后 呢,next_step
+然 后 怎 么 弄 呢,complicated
+人 嗯,greet
+人 嗯,unknown
+人 呢,greet
+如 果 还 是 不 行,complicated
+如 果 可 以,check_is_possible
+如 果 有 问 题 及 时 联 系 我,no_intent
+如 果 在 你 这 缴,chitchat
+如 何 查 询 ？,query_how_check_shebao_status
+如 何 付 费 ？,query_pay_process
+入 职,unknown
+入 职 日 期 填 什 么,complicated
+三 个 月,unknown
+三 月 没 交,complicated
+啥 意 思,confused
+山 海,no_intent
+上 班 呢,complicated
+上 个 月 还 是 两 个,clarify
+上 海,no_intent
+上 海,purchase_wxyj
+上 海 本 地 户 籍,unknown
+上 海 的,no_intent
+上 海 的 呢,purchase
+上 海 的 社 保 可 以 补 交 吗,ask_can_topup
+上 海 多 少,purchase
+上 海 户 籍,no_intent
+上 海 社 保,purchase
+上 海 社 保 公 积 金 代 缴 怎 么 办 理 收 费,purchase
+上 海 社 保 可 以 补 缴 吗,ask_can_topup
+上 海 社 保 可 以 交 吗,purchase
+上 海 社 保 能 补 缴 吗,ask_can_topup
+上 海 生 育 保 险   要 缴 纳 多 久,no_intent
+上 家 单 位 说 退 了,unknown
+上 家 刚 转 出 来,complicated
+社 保,purchase
+社 保   + 公 积 金,purchase_wxyj
+社 保 编 号,no_intent
+社 保 补 缴,ask_can_topup
+社 保 补 缴 啥 意 思 ？,no_intent
+社 保 不 交,no_intent
+社 保 不 想 断     可 以 在 你 这 里 交 吗,purchase
+社 保 代 缴 吗,purchase
+社 保 单 位 有 交,purchase
+社 保 断 缴 有 什 么 影 响 吗,no_intent
+社 保 多 少 一 个 月,ask_amt_month_fee_total
+社 保 公 积 金,purchase_wxyj
+社 保 公 积 金 呢,purchase_wxyj
+社 保 公 积 金 一 起 做 收 多 少 服 务 费 啊,purchase_wxyj
+社 保 还 可 以 交 吗 ？,purchase
+社 保 还 是 按 上 月 一 样 拍 就 可 以 吧,no_intent
+社 保 加 公 积 金 上 海 的 一 个 月 差 不 多 要 多 少,purchase_wxyj
+社 保 交 了,purchase
+社 保 缴 纳,purchase
+社 保 就 行,purchase
+社 保 可 以 补 交 吗,ask_can_topup
+社 保 可 以 交 吗,purchase
+社 保 哪 几 种,query_product_explain
+社 保 呢,no_intent
+社 保 是 变 高 了 吗,complicated
+社 保 影 响 吗,complicated
+社 保 有 医 保 卡,complicated
+社 保 怎 么 缴 纳,purchase
+社 保 涨 了 是 吗,complicated
+社 保 这 块 什 么 费 用 ， 怀 孕 了 没 社 保,no_intent
+社 保 最 低 档 多 少 钱,purchase
+什 么 时 候 可 以 搞,ask_turnaround_time
+什 么 时 候 能 查 到 ？,query_when_check_shebao_status
+什 么 是 个 税 记 录,unknown
+什 么 微 信 小 程 序,no_intent
+什 么 意 思,confused
+生 育 金 还 没 发,complicated
+时 间 呢,query_pay_deadline
+市 区 交 了 几 个 月,inform_payment_history
+市 区 也 行,complicated
+是,affirm
+是 吧,affirm
+是 吧,doublecheck
+是 不 是 不 行 啊,check_is_possible
+是 不 是 就 可 以 了,check_is_possible
+是 不 是 需 要 代 缴,purchase
+是 的,affirm
+是 的 好 郁 闷,chitchat
+是 否 可 以 转 社 保,complicated
+是 什 么 意 思 呢,confused
+是 选 择 的,unknown
+是 要 什 么 么,query_req_resources
+是 因 为 稽 查 严 了,complicated
+是 在 淘 宝 在 拍 吗,how_to_pai
+是 这 样 的,affirm
+收 费 可 以,affirm
+手 机 号 码,no_intent
+手 续 费 多 少,ask_amt_service_fee
+四 十 我 拍 了,inform_paid
+四 月,no_intent
+四 月 的,no_intent
+搜 好 了,affirm
+苏 州,no_intent
+苏 州 联 系 地 址,no_intent
+算 这 个 月 交 的 吗,no_intent
+所 以 才 考 虑 苏 州,complicated
+所 以 打 扰 了,apology
+所 以 我 先 拍 吗,no_intent
+所 以 想 先 补 缴,ask_can_topup
+所 以 需 要 转 移,complicated
+她 补 三 四,complicated
+太 仓 落 户,no_intent
+提 交 成 功,inform_paid
+提 交 成 功 了,inform_paid
+提 交 好 了,inform_paid
+提 交 了,inform_info_filled
+提 交 了,inform_paid
+填 好 了 谢 谢 你,thankyou
+填 完 小 程 序 就 显 示 了 “ 服 务 要 求 成 功 ” 几 个 字 ， 这 就 可 以 啦 ？,no_intent
+调 整 到 多 少 了,complicated
+挺 快,chitchat
+同 事 补 三 四,complicated
+同 事 也 需 要,complicated
+退 来 退 去 麻 烦,chitchat
+退 完 我 再 拍,complicated
+外 地,complicated
+外 地 不 让 补 了,complicated
+外 地 的 能 交 吧,complicated
+外 地 没 有 工 作,complicated
+外 地 人,complicated
+王 成 银,no_intent
+王 贞,unknown
+网 上 可 以 查 询 吗,query_how_check_shebao_status
+往 前,unknown
+忘 了,unknown
+微 信 里 填 写 的,unknown
+为 了 落 户 苏 州,complicated
+为 啥,question_why
+为 啥 是 今 天,question_why
+为 什 么,question_why
+为 什 么 涨 价 了,complicated
+维 护 了,unknown
+维 洛 代 缴 的,purchase
+我,no_intent
+我 把 钱 付 了,inform_paid
+我 帮 她 推 荐,chitchat
+我 补,unknown
+我 补 三,unknown
+我 补 三 月,ask_can_topup
+我 不 能 断 交,complicated
+我 不 需 要 公 积 金,no_intent
+我 才 三 年,complicated
+我 的 服 务 费 到 期 了 ？,no_intent
+我 的 公 积 金 封 存 了 吗,ask_shebao_status
+我 的 公 积 金 交 好 了 吗,ask_shebao_status
+我 的 公 积 金 转 出 了 吗,ask_shebao_status
+我 的 社 保 交 了 吗,ask_shebao_status
+我 的 社 保 之 前 一 直 在 你 们 这 里 交 的   我 想 换 个 旺 旺 I D 缴 纳   行 不 行 啊,purchase
+我 的 社 保 转 出 了 吗,ask_shebao_status
+我 的 意 思 是,unknown
+我 订 单 进 度 是 这 样 的   应 该 没 有 什 么 问 题 吧,ask_shebao_status
+我 付 款 了,inform_paid
+我 付 完 款 了,inform_paid
+我 给 他 钱,unknown
+我 还 能 续 上 吗,complicated
+我 和 他 们 说 一 下,unknown
+我 很 快,chitchat
+我 交 五 险 一 金,inform_paid
+我 就 只 能 算 了,complicated
+我 看 到 你 们 会 提 供 截 图 的 ， 什 么 时 候 会 有 呢 ？,no_intent
+我 考 虑 一 下,get_back_later
+我 可 以 补 缴 社 保 吗,ask_can_topup
+我 来 拍,no_intent
+我 买 了 服 务,unknown
+我 没 工 行 银 行 卡,missing_info
+我 没 交 金,no_intent
+我 没 有 开 过 户 的,no_intent
+我 没 有 验 证 码,missing_info
+我 明 天 上 午 办 理,complicated
+我 目 的 是 为 了 买 苏 州 全 区 的 房 子,no_intent
+我 那 边 才 好 交,complicated
+我 怕 是 补 缴,ask_can_topup
+我 拍 好 了,inform_paid
+我 拍 了,inform_paid
+我 朋 友 要 交,chitchat
+我 上 次 补 几 月,inform_payment_history
+我 上 面 要 怎 么 办,complicated
+我 是 应 届 生 落 户,complicated
+我 刷 卡 没 事 吧,check_procedure_card
+我 说 的 如 果,unknown
+我 提 交 好 了,inform_paid
+我 提 交 了,inform_paid
+我 提 交 完 毕,inform_paid
+我 问 一 下,chitchat
+我 问 一 下 ， 在 你 们 这 边 代 缴 公 积 金 ， 后 面 想 办 公 积 金 贷 款 的 话 怎 么 操 作 呢,purchase
+我 下 单 了,inform_paid
+我 先 了 解 一 下,get_back_later
+我 现 在 离 职 状 态,complicated
+我 想 补 个 税,no_intent
+我 想 电 话 咨 询,ask_for_phone
+我 想 给 我 妈 交 税,complicated
+我 想 交 两 个 地 方 的 社 保 ， 行 吗,no_intent
+我 想 缴 社 保,no_intent
+我 想 看 下 账 单 明 细,ask_shebao_status
+我 想 请 问 一 下,chitchat
+我 想 问 下 ， 这 个 广 州 社 保 的 生 育 报 销 是 什 么 ， 代 缴 的 社 保 也 能 享 受 吗,purchase
+我 想 问 一 下,no_intent
+我 小 孩 读 书,chitchat
+我 需 要 交 公 积 金,no_intent
+我 需 要 做 什 么 ？,query_pay_process
+我 要 补 缴 社 保,ask_can_topup
+我 要 交 杭 州 社 保,purchase
+我 要 缴 纳 社 保,purchase
+我 要 找 别 家 代 缴,complicated
+我 一 次 缴 了,unknown
+我 一 直 上 海 工 作,complicated
+我 已 经 付 了,inform_paid
+我 已 经 入 住,complicated
+我 已 经 重 新 拍 了,complicated
+我 有,affirm
+我 原 来 提 交 过,complicated
+我 再 看 看,get_back_later
+我 再 试 试,get_back_later
+我 在 上 海 有 社 保,no_intent
+我 怎 么 办 呢,complicated
+我 怎 么 查 询 ？,query_how_check_shebao_status
+我 怎 么 拍,how_to_pai
+我 找 到 工 作 了,complicated
+我 找 人 注 册 一 下,complicated
+我 这 边 要 调 整 公 积 金 基 数,no_intent
+我 这 个 月 失 业,complicated
+我 这 个 月 需 要 交 多 少 钱,ask_shebao_status
+我 这 种 情 况,complicated
+我 正 常 缴 费,no_intent
+我 之 前 去 医 院,chitchat
+我 只 缴 公 积 金,gongjijin_only
+我 知 道,affirm
+我 准 备 在 单 位 离 职 . 中 间 有 大 概 两 个 月 不 交 社 保 这 里 可 以 代 缴 吗,purchase
+我 最 低 就 可 以,affirm
+无 语 了 你 们,complicated
+吴 江,complicated
+五 险 一 金,purchase_wxyj
+五 险 一 金 都 有 吗,query_wxyj_included
+五 月 的,no_intent
+五 月 的 一 个 月,complicated
+五 月 还 能 缴 吗,check_can_pay_current_month
+五 月 可 以 交 吗,check_can_pay_current_month
+五 月 也 是,affirm
+喜 爱,unknown
+下,no_intent
+下 个 月 我 再 办 卡,complicated
+下 个 月 一 号,unknown
+下 月 叫 我 亲,request_future_notify
+先 问 问,no_intent
+先 下 单 对 吧,doublecheck
+先 这 样 吧 不 改 了,complicated
+现 在 不 行,deny
+现 在 都 五 月 了 哈,chitchat
+现 在 付 款 给 你,complicated
+现 在 还 能 补 么,ask_can_topup
+现 在 怀 孕 四 个 月 ， 之 前 上 海 社 保 已 经 交 满 一 年 ， 交 到 生 产 当 月 可 以 领 生 育 津 贴 吗,query_pregnant
+现 在 就 填,chitchat
+现 在 可 以 查 询 吗,query_when_check_shebao_status
+现 在 来 不 及 了 ？,no_intent
+现 在 离 职 了,complicated
+现 在 能 汇 缴 么,check_can_pay_current_month
+现 在 拍,no_intent
+现 在 拍 吧,doublecheck
+现 在 去 拍,chitchat
+现 在 是 交 几 月 的,complicated
+现 在 是 欠 费 状 态,complicated
+现 在 想 交,purchase
+现 在 需 要 手 术,chitchat
+现 在 要 怎 么 完 成,complicated
+相 城 区 呢,no_intent
+相 城 区 也 是 吗,complicated
+享 受 北 京 的,chitchat
+想 落 户 苏 州,complicated
+想 问 下,no_intent
+想 问 下 杭 州 社 保 的 情 况,no_intent
+想 问 下 上 海 社 保 的 情 况,purchase_wxyj
+想 在 广 州 教 社 保,purchase
+想 咨 询 下,no_intent
+想 咨 询 下 ， 本 人 想 在 长 沙 购 房 ， 本 人 户 口 是 湖 南 常 德 ， 因 为 限 购 ， 需 要 先 缴 纳 社 保 2 年 连 续 的 ， 想 问 要 怎 么 去 办 理 和 缴 费 呢,no_intent
+小 城 镇 保 险,complicated
+小 程 序,unknown
+小 孩 还 很 小,chitchat
+写 上 月 吧,complicated
+谢 了,thankyou
+谢 谢,thankyou
+谢 谢 啊,thankyou
+谢 谢 你 了,thankyou
+谢 谢 您,thankyou
+谢 谢 亲,thankyou
+辛 苦 了,chitchat
+新 公 司 需 要,complicated
+信 息 表 给 我,complicated
+信 息 提 交 了,inform_info_filled
+信 息 填 好 了,chitchat
+信 息 已 经 填 完 了,no_intent
+姓 名,no_intent
+需 要 补 缴 社 保,ask_can_topup
+需 要 代 缴,purchase
+需 要 的,affirm
+需 要 付 社 保,purchase
+需 要 交 社 保,purchase
+需 要 缴 纳,purchase
+需 要 缴 纳 多 少 钱,ask_amt_month_fee_total
+需 要 缴 纳 社 保,purchase
+需 要 劳 动 手 册 么,check_procedure_shouce
+需 要 哪 些 资 料,query_req_resources
+需 要 啥,query_req_resources
+需 要 啥 材 料,query_req_resources
+需 要 什 么 吗,query_req_resources
+需 要 什 么 信 息,query_req_resources
+需 要 什 么 资 料,query_req_resources
+需 要 提 供 什 么 资 料 吗,query_pay_process
+需 要 停 的 对 吗,complicated
+需 要 我 提 供 什 东 西 吗 ？,query_pay_process
+续 保 怎 么 拍,how_to_pai
+续 交,unknown
+续 交 呢,complicated
+续 了 哦,no_intent
+学 历 文 化 程 度,no_intent
+学 校 要 看,unknown
+验 证 码,no_intent
+验 证 码 给 我 吓,complicated
+验 证 码 是 什 么,complicated
+验 证 码 在 哪,complicated
+要,affirm
+要 补 缴 社 保,ask_can_topup
+要 不 能 补 算 了,complicated
+要 的,affirm
+要 多 久 能 查 到,query_when_check_shebao_status
+要 付 多 少 钱,purchase_wxyj
+要 付 社 保,purchase
+要 交 北 京 社 保,purchase
+要 交 北 京 社 保 可 以 吗,purchase
+要 交 成 都 社 保,purchase
+要 交 成 都 社 保 可 以 吗,purchase
+要 交 广 州 社 保,purchase
+要 交 广 州 社 保 可 以 吗,purchase
+要 交 杭 州 社 保,purchase
+要 交 杭 州 社 保 可 以 吗,purchase
+要 交 上 海 社 保,purchase
+要 交 上 海 社 保 可 以 吗,purchase
+要 交 社 保,purchase
+要 交 社 保 可 以 吗,purchase
+要 连 续,complicated
+要 哪 些 材 料,query_req_resources
+要 啥 材 料 吗 ？,query_pay_process
+要 什 么 资 料 吗 ？,query_pay_process
+要 是 加 上 社 保,purchase
+要 下 周,unknown
+要 验 证 码,complicated
+也 没 查 到,complicated
+也 是 老 客 户,complicated
+一 般 几 号,ask_turnaround_time
+一 般 写 哪 天,complicated
+一 个 月,no_intent
+一 个 月 时 间,no_intent
+一 个 月 是 多 少,ask_amt_month_fee_total
+一 共 多 少 钱,total_amt_query
+一 金 呢,gongjijin_only
+一 月 未 缴 费,complicated
+一 直 进 不 去,report_issue
+一 直 没 交 过,inform_payment_history
+一 直 在 杭 州 的,no_intent
+医 保 卡 什 么 时 候 可 以 使 用 ？,no_intent
+已 付,inform_paid
+已 付 费,inform_paid
+已 付 款,inform_paid
+已 经 付 好 啦,affirm
+已 经 付 款 了,inform_paid
+已 经 好 了,inform_info_filled
+已 经 减 掉 了,complicated
+已 经 减 员 了,unknown
+已 经 全 部 付 了,inform_paid
+已 经 支 付,inform_paid
+已 拍,inform_paid
+已 填 写 好,inform_info_filled
+以 前 缴 过,no_intent
+以 前 可 以,affirm
+因 为 我 马 上 要 买 房 ， 会 有 什 么 影 响,no_intent
+银 行 卡 的 照 片,complicated
+影 响 买 房 吗,complicated
+应 届 毕 业 生 落 户 是 怎 么 办 理 的,complicated
+用 社 保 卡,complicated
+优 惠 吗,ask_discount
+有,affirm
+有 必 要 交 最 高 吗,complicated
+有 的,affirm
+有 电 话 吗,ask_for_phone
+有 对 比 参 照 吗,complicated
+有 发 票 提 供 吗,no_intent
+有 合 同 没,unknown
+有 缴 费 明 细 吗,complicated
+有 具 体 的 明 细 吗,ask_shebao_status
+有 客 户 这 么 做 吗,complicated
+有 明 细 没 亲,ask_for_details
+有 朋 友 说,complicated
+有 人 不,greet
+有 人 吗,greet
+有 人 么,greet
+有 什 么 区 别 吗,complicated
+有 微 信 吗 ？,query_weixin
+有 闲 林 的 吗,purchase
+又 多 收 钱,chitchat
+园 区 的,no_intent
+园 区 的 可 以 交 吗,purchase
+园 区 呢,complicated
+月 底 交,no_intent
+咋 回 事,confused
+在,no_intent
+在 别 家 做 了,complicated
+在 杭 州,no_intent
+在 吗,greet
+在 嘛,greet
+在 么,greet
+在 没,greet
+在 哪 里 能 查 到 ？,query_how_check_shebao_status
+在 哪 里 找,complicated
+在 请 问 下,no_intent
+在 上 海,no_intent
+在 嵊 州 办 过,inform_payment_history
+暂 时 不 想 工 作,chitchat
+怎 么 办,ask_how_now
+怎 么 办 理,query_pay_process
+怎 么 办 理 呢,query_pay_process
+怎 么 补 啊,ask_can_topup
+怎 么 操 作,query_pay_process
+怎 么 登 陆,complicated
+怎 么 发 信 息 说 要 停 缴 了 呐,no_intent
+怎 么 付 款,query_pay_process
+怎 么 付 钱,query_pay_process
+怎 么 交,query_pay_process
+怎 么 缴 纳 社 保 的 ？,purchase
+怎 么 看 有 没 暂 停,complicated
+怎 么 拿 钱,complicated
+怎 么 拍,how_to_pai
+怎 么 拍,query_pay_process
+怎 么 收 费 呢,query_pay_process
+怎 么 算 出 来 的,complicated
+怎 么 提 交 资 料 的,query_req_resources
+怎 么 调 基,complicated
+怎 么 下 单,query_pay_process
+怎 么 选 呢,confused
+长 沙,no_intent
+长 沙 二 套 房 首 付 是 多 少 知 道 吗,no_intent
+找 别 家,complicated
+这 边 公 司 要 转 入,complicated
+这 边 我 的 缴 上 了 吗,no_intent
+这 不 是 理 由,complain
+这 都 要 收 费,unknown
+这 个,no_intent
+这 个,unknown
+这 个 跟 后 面 小 孩 子 上 学 有 冲 突 嘛 ？,no_intent
+这 个 缴 纳,no_intent
+这 个 就 算 了,unknown
+这 个 吗,doublecheck
+这 个 日 期,no_intent
+这 个 社 保 公 积 金 一 共 多 少 钱,purchase_wxyj
+这 个 有 啥 影 响 么,complicated
+这 个 月 不 用 交 了,no_intent
+这 个 月 辞 职 了,chitchat
+这 个 月 的 款 已 经 付,no_intent
+这 个 月 还 能 交 吗,check_can_pay_current_month
+这 个 月 缴 纳 啦   你 看 一 下,no_intent
+这 个 月 能 交 么,check_can_pay_current_month
+这 个 月 社 保 公 积 金 以 及 服 务 费 用 已 经 缴 纳,purchase_wxyj
+这 个 怎 么 选,complicated
+这 里 选 什 么,confused
+这 么 麻 烦,chitchat
+这 样,unknown
+这 样 不 行 吗,check_is_possible
+这 样 可 以 了 吗,check_is_possible
+这 月 社 保 多 少,ask_amt_month_fee_total
+真 麻 烦 你 了,apology
+真 实 有 效 的 吧,question_reliability
+真 是 搞 笑,complain
+正 规 的,no_intent
+之 前 跟 你 聊 过 的,complicated
+之 前 公 司 有 交 的,inform_payment_history
+之 前 交 的,no_intent
+之 前 交 综 合 保 险,inform_payment_history
+之 前 缴 过 的,no_intent
+之 前 我 补 一 月,inform_payment_history
+之 前 有 账 户,inform_payment_history
+之 前 在 市 区 交 的,inform_payment_history
+支 付 好 了,inform_paid
+只 发 工 行,no_intent
+只 交 公 积 金,gongjijin_only
+只 交 社 保,purchase
+只 交 社 保 多 少 钱 ？,purchase
+只 交 社 保 可 以 吧,purchase
+只 交 五 险 多 钱 少,ask_amt_month_fee_total
+只 缴 纳 养 老 可 以 吗,query_pay_part_only
+只 买 社 保,purchase
+只 能 交 锦 江 区 吗,complicated
+只 能 一 起 交 吗,query_product_explain
+只 是 断 了,complicated
+只 是 额 度 受 影 响,complicated
+只 需 要 五 险,no_intent
+只 做 当 月,complicated
+知 道 的,affirm
+知 道 了,affirm
+直 接 拍,doublecheck
+直 接 拍 就 行 了,doublecheck
+直 接 拍 么,how_to_pai
+直 接 拍 下 吗,doublecheck
+直 接 淘 宝 付 款 吗,no_intent
+直 接 问 第 三 方,complicated
+职 业 填 啥,complicated
+中 间 空 一 个 月,complicated
+中 文 的,unknown
+重 拍 了,unknown
+重 新 拍 了,no_intent
+朱 嘉 佑,no_intent
+住 院 可 以 报 销 吗,no_intent
+转 出 了 吗,ask_shebao_status
+转 回 河 南 郑 州,complicated
+准 备 续 签 居 住 证 了,no_intent
+咨 询 下,no_intent
+资 料 已 经 完 成 了,complicated
+自 己 交,unknown
+综 合 保 险,complicated
+综 合 保 险,unknown
+总 共 多 少 钱,ask_amt_month_fee_total
+总 计 多 少 钱,ask_amt_month_fee_total
+最 低 的 额 度 ， 是 多 少,purchase_wxyj
+最 低 基 数,purchase
+最 高 的 吧,no_intent
+最 晚 什 么 时 候 下 单,query_pay_deadline
+作 假 的 那 种,complicated
+做 啊,affirm
