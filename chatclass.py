@@ -518,7 +518,7 @@ class ReplyGenerator:
 
         # Useful
         # Recursively looks in dicts for nested dicts until finds values.
-        def dive_for_values(c_list, c_dir):
+        def dive_for_values(c_list, c_dir, failzero = False):
                 out = {}
                 for valname in c_list:
                     if isinstance(valname, list):
@@ -532,13 +532,20 @@ class ReplyGenerator:
                         if valname in c_dir:
                             rawval = c_dir[valname]
                             out[valname] = rawval
+                        elif failzero:
+                            # Returns 0
+                            return {valname:0}
                         else:
                             print("ERROR! Cannot find variable<{}> in {}".format(valname,c_dir))
+                            
                 return out
 
         def resolve_formula(f):
+            reqvars = "req_vars"
+            dz_rv = "dz_req_vars"
             def op_on_all(vnames, op, vdic):
                 def operate(a,b,op):
+                    print("a,b", a, b)
                     return op(a,b)
                 out = None
                 for vname in vnames:
@@ -555,14 +562,19 @@ class ReplyGenerator:
             steps = list(map(lambda x: (x.split(","), instr[x]),steps))
             steps.sort(key=lambda t: float(t[0][0])) # If no conversion it sorts as string
             if DEBUG: print("aft sort",steps)
-            req_vars = f["req_vars"]
+            req_vars = f[reqvars]
             vd = dive_for_values(req_vars,enhanced)
+            if dz_rv in f:
+                dz_vals = dive_for_values(f[dz_rv], enhanced,failzero = True)
+                vd.update(dz_vals)
+
             if DEBUG: print("vd",vd)
 
             #CALCULATIONS 
             vd["OUTCOME"] = 0
             for stp in steps:
                 (NA, opname),(valnames,tkey)  = stp
+                opname.replace(" ","")
                 if not tkey in vd:
                     vd[tkey] = 0
 
@@ -572,8 +584,12 @@ class ReplyGenerator:
                     opr = lambda a,b: a*b
                 elif opname == "sub":
                     opr = lambda a,b: a-b
-                elif opname == "sub":
+                elif opname == "div":
                     opr = lambda a,b: a/b
+                elif opname == "issame":
+                    opr = lambda a,b: (1 if a == b else 0)
+                elif opname == "isgreater":
+                    opr = lambda a,b: (1 if a > b else 0)
                 else:
                     opr = lambda a,b: a
                 vd[tkey] = op_on_all(valnames,opr,vd)
@@ -641,19 +657,16 @@ class ReplyGenerator:
             # print("get replies from obj",obj)
             return obj["replies"]
     
-        LOCALDEBUG = 0
-        DEBUG = 1 if LOCALDEBUG else 0
+        LOCALDEBUG = 0 or DEBUG
+        
 
-        if DEBUG: print("csk", curr_state["key"],curr_state["thread"])
-
-        # <Specific state to state goes here> if needed
+        if LOCALDEBUG: print("csk", curr_state["key"],curr_state["thread"])
 
         # Decides priority of lookup. 
         # If same state flagged, look at intents first
         # Else look at state based replies
         lookups = [intent, curr_state] if issamestate else [curr_state, intent]
 
-        # Single state
         rdb = []
         for obj in lookups:
             if obj == cbsv.NO_INTENT():
@@ -665,12 +678,10 @@ class ReplyGenerator:
             else:
                 break
         
-        # if DEBUG: print("SS rdb:",rdb)
+        if LOCALDEBUG: print("rdb:",rdb)
 
-        if DEBUG: print("rdb:",rdb)
-
-        if LOCALDEBUG: DEBUG = 0
         if rdb == []:
+            # call the NLP AI here.
             rdb = cbsv.DEFAULT_CONFUSED() # TODO fix bad OOP
 
         return rdb
