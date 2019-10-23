@@ -8,6 +8,7 @@ os.getcwd()
 
 #add in words to detect [], html, error with set dictionary and user dict function, have to reset init.py for posseg
 #and jieba to allow detection of special character
+#remove repeated inputs from unique query
 
 #Funnel for all forms of data to the different pipeline
 class RawDataProcessor:
@@ -238,12 +239,12 @@ class RawDataProcessor:
 
     def save2label(self):
         custlist = []
+        unique_query_list = []
         for q in self.cust_list:
             query_list = q.split(" ")
-            
             #tokenising part need to be reviewed
             for query in query_list:
-                if query.strip() != "":
+                if query.strip() != "" and query.strip() not in unique_query_list:
                     sent = query.strip()
                     tokenised_sent_list = []
                     #case of sent sticking together
@@ -276,11 +277,13 @@ class RawDataProcessor:
                         labelled_sent = [tokenised_sent,sent_intent,sent_slots]
                         custlist.append(labelled_sent)
 
+                unique_query_list.append(query.strip())
+
         # save labelled cleaned data
         new_df = pd.DataFrame(data=custlist)
         new_df.to_csv(self.labelpath,index=False,encoding="utf-8")
         
-    
+        return custlist
 
 def split2train_valid_test(custlist,category,start,stop):
     text_input = []
@@ -326,9 +329,10 @@ def readData():
     return w
 
 def main():
-    # w = readData()
-    # w.save2label()
-    # print("Label Done")
+    #w = readData()
+    #clist = w.save2label()
+    print("Label Done")
+    #train_test_eval(clist)
     train_test_eval(r"D:\chatbot\data\b.csv")
 
 if __name__ == "__main__":
