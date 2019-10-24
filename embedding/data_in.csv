@@ -1,16 +1,3 @@
-160,no_intent
-923,no_intent
-1867,no_intent
-3290,no_intent
-12333,no_intent
-20201,no_intent
-20358,no_intent
-21377,no_intent
-17358239536,no_intent
-1.72E+11,no_intent
-1.92E+11,no_intent
-3.62E+17,no_intent
-5.11E+17,no_intent
 [表情] [表情],unknown
 [表情] [表情] [表情] [表情],unknown
 [表情] 不 知 道 的 可 以 不 写 吗,complicated
@@ -91,7 +78,7 @@
 6 月 份 最 晚 几 号 交,query_pay_deadline
 6 月 什 么 时 候 能 查 到 成 功 缴 费 信 息 呢,query_when_check_shebao_status
 7 号 之 后,complicated
-7 月 底 刚 办 完 深 户 ， 准 备 申 请 入 户 补 贴 ， 应 该 缴 哪 一 档 的 社 保 ？,no_intent
+7 月 底 刚 办 完 深 户 ， 准 备 申 请 入 户 补 贴 ， 应 该 缴 哪 一 档 的 社 保 ,no_intent
 7 月 份 社 保 公 积 金 已 拍,purchase_wxyj
 7 月 以 后 退 吗,complicated
 70 每 月 乘 12 个 月,complicated
@@ -135,7 +122,7 @@ zai ma,greet
 哔 哔 哔 受 不 了,unknown
 别 这 样,deny
 补 个 税 怎 么 收 费,no_intent
-补 交 和 正 常 交 有 什 么 区 别 ？,no_intent
+补 交 和 正 常 交 有 什 么 区 别 ,no_intent
 补 缴 费 用 一 样,ask_can_topup
 补 缴 跟 按 时 缴 有 啥 区 别 吗,no_intent
 补 三 月,ask_can_topup
@@ -192,7 +179,7 @@ zai ma,greet
 都 可 以,affirm
 都 没 收 到,report_issue
 都 是 杭 州 的 吧,doublecheck
-都 需 要 什 么 资 料 ？,query_pay_process
+都 需 要 什 么 资 料 ,query_pay_process
 都 需 要 我 准 备 什 么,query_pay_process
 都 支 付 过 了,inform_paid
 读 书 需 要,unknown
@@ -210,7 +197,7 @@ zai ma,greet
 多 少 个 月,complicated
 多 少 钱,ask_amt_month_fee_total
 多 少 钱,no_intent
-多 少 钱 ？,purchase_wxyj
+多 少 钱 ,purchase_wxyj
 多 少 钱 了,ask_amt_month_fee_total
 多 问 一 下,no_intent
 额,affirm
@@ -341,7 +328,7 @@ zai ma,greet
 花 呗 算 信 用 卡 么,complicated
 换 工 作 好 麻 烦,chitchat
 黄 孟 琪 的 继 续 缴,complicated
-会 不 会 突 然 停 交 了 呢 ？,inform_paid
+会 不 会 突 然 停 交 了 呢 ,inform_paid
 会 代 缴 税 吗,complicated
 或 者,no_intent
 积 分 之 后 再 说,complicated
@@ -412,7 +399,7 @@ zai ma,greet
 可 以 电 话 咨 询 吗,ask_for_phone
 可 以 光 交 税 么,complicated
 可 以 后 付 吗,ask_can_topup
-可 以 加 微 信 吗 ？,query_weixin
+可 以 加 微 信 吗 ,query_weixin
 可 以 交 补 充 公 积 金 吗,no_intent
 可 以 交 社 保 不,purchase
 可 以 开 发 票 吗,ask_kai_piao
@@ -533,16 +520,16 @@ zai ma,greet
 能 提 取 公 积 金 吗,no_intent
 你 好,greet
 你 好   我 在 哪 里 查 询 社 保 金 额 是 否 已 经 到 账 呢,query_how_check_shebao_status
-你 好 ， 单 位 有 固 定 电 话 嘛 ？,no_intent
-你 好 ， 就 是 我 现 在 要 从 上 海 离 职 去 北 京 ， 就 是 你 们 这 边 可 以 帮 忙 续 交 上 海 社 保 是 吧 ？,no_intent
-你 好 ， 请 问 如 果 选 择 你 们 代 缴 上 海 社 保 ， 你 们 是 以 哪 家 公 司 名 义 缴 纳 ?,purchase
-你 好 ， 社 保 ， 你 这 能 补 交 吗 ？,purchase
-你 好 ， 在 吗 ？ 想 问 一 下 我 姐 姐 长 沙 的 房 子 赠 送 给 我 ， 但 我 不 是 长 沙 户 口 ， 这 种 可 以 吗 ？,no_intent
+你 好 ， 单 位 有 固 定 电 话 嘛 ,no_intent
+你 好 ， 就 是 我 现 在 要 从 上 海 离 职 去 北 京 ， 就 是 你 们 这 边 可 以 帮 忙 续 交 上 海 社 保 是 吧 ,no_intent
+你 好 ， 请 问 如 果 选 择 你 们 代 缴 上 海 社 保 ， 你 们 是 以 哪 家 公 司 名 义 缴 纳 ,purchase
+你 好 ， 社 保 ， 你 这 能 补 交 吗 ,purchase
+你 好 ， 在 吗  想 问 一 下 我 姐 姐 长 沙 的 房 子 赠 送 给 我 ， 但 我 不 是 长 沙 户 口 ， 这 种 可 以 吗 ,no_intent
 你 好 亲,greet
 你 好 我 想 问 一 下,greet
 你 好 我 想 问 一 下,no_intent
 你 好 在 吗,greet
-你 家 无 锡 有 代 缴 嘛 ？,purchase
+你 家 无 锡 有 代 缴 嘛 ,purchase
 你 觉 得 有 必 要 吗,complicated
 你 看 看,doublecheck
 你 了 解 的 有 吗,complain
@@ -550,7 +537,7 @@ zai ma,greet
 你 们 代 缴 社 保 ， 后 期 可 以 领 取 生 育 津 贴 吗,purchase
 你 们 公 司 的 名 字 是 什 么,no_intent
 你 们 很 不 诚 信,complain
-你 们 可 以 看 到 成 功 了 吗 ？,ask_shebao_status
+你 们 可 以 看 到 成 功 了 吗 ,ask_shebao_status
 你 们 试 一 下 嘛,complicated
 你 们 是 正 规 的 吗,no_intent
 你 们 属 于 人 力 资 源 公 司 吗,no_intent
@@ -564,7 +551,7 @@ zai ma,greet
 您 好,greet
 您 好 ， 我 想 咨 询 一 下 代 缴 五 险 一 金,purchase
 您 好 ， 我 想 咨 询 一 下 上 海 代 缴 五 险 一 金,purchase_wxyj
-您 好 ， 我 这 边 在 办 离 职 手 续 ，   H R 那 边 需 要 我 填 一 个 公 积 金 的 处 理 方 式 ， 如 果 我 后 续 准 备 在 你 们 这 边 办 理 代 缴 的 话 ， 是 选 封 存 吗 ？,purchase
+您 好 ， 我 这 边 在 办 离 职 手 续 ，   H R 那 边 需 要 我 填 一 个 公 积 金 的 处 理 方 式 ， 如 果 我 后 续 准 备 在 你 们 这 边 办 理 代 缴 的 话 ， 是 选 封 存 吗 ,purchase
 您 好 ， 五 险 一 金 服 务 费 怎 么 收,purchase_wxyj
 您 看 下,ask_verify
 您 看 一 下,reassure
@@ -593,12 +580,12 @@ zai ma,greet
 气 死 我 了,chitchat
 钱 付 过 了,inform_paid
 亲,no_intent
-亲 ， 请 问 你 们 之 前 有 帮 回 国 留 学 生 缴 社 保 吗 ？,complicated
+亲 ， 请 问 你 们 之 前 有 帮 回 国 留 学 生 缴 社 保 吗 ,complicated
 亲 亲,chitchat
 亲 在 吗,greet
 请 不 要 停 缴 ， 我 明 天 中 午 去 缴,ask_shebao_status
 请 问,no_intent
-请 问 代 缴 社 保 的 小 程 序 里 “ 入 职 时 间 ” 怎 么 填 ?,purchase
+请 问 代 缴 社 保 的 小 程 序 里 “ 入 职 时 间 ” 怎 么 填 ,purchase
 请 问 公 积 金 有 帮 我 转 出 吗,ask_shebao_status
 请 问 可 以 补 个 税 吗,no_intent
 请 问 可 以 代 缴 上 海 社 保 吗,purchase_wxyj
@@ -622,8 +609,8 @@ zai ma,greet
 如 果 可 以,check_is_possible
 如 果 有 问 题 及 时 联 系 我,no_intent
 如 果 在 你 这 缴,chitchat
-如 何 查 询 ？,query_how_check_shebao_status
-如 何 付 费 ？,query_pay_process
+如 何 查 询 ,query_how_check_shebao_status
+如 何 付 费 ,query_pay_process
 入 职,unknown
 入 职 日 期 填 什 么,complicated
 三 个 月,unknown
@@ -652,7 +639,7 @@ zai ma,greet
 社 保   + 公 积 金,purchase_wxyj
 社 保 编 号,no_intent
 社 保 补 缴,ask_can_topup
-社 保 补 缴 啥 意 思 ？,no_intent
+社 保 补 缴 啥 意 思 ,no_intent
 社 保 不 交,no_intent
 社 保 不 想 断     可 以 在 你 这 里 交 吗,purchase
 社 保 代 缴 吗,purchase
@@ -662,7 +649,7 @@ zai ma,greet
 社 保 公 积 金,purchase_wxyj
 社 保 公 积 金 呢,purchase_wxyj
 社 保 公 积 金 一 起 做 收 多 少 服 务 费 啊,purchase_wxyj
-社 保 还 可 以 交 吗 ？,purchase
+社 保 还 可 以 交 吗 ,purchase
 社 保 还 是 按 上 月 一 样 拍 就 可 以 吧,no_intent
 社 保 加 公 积 金 上 海 的 一 个 月 差 不 多 要 多 少,purchase_wxyj
 社 保 交 了,purchase
@@ -680,7 +667,7 @@ zai ma,greet
 社 保 这 块 什 么 费 用 ， 怀 孕 了 没 社 保,no_intent
 社 保 最 低 档 多 少 钱,purchase
 什 么 时 候 可 以 搞,ask_turnaround_time
-什 么 时 候 能 查 到 ？,query_when_check_shebao_status
+什 么 时 候 能 查 到 ,query_when_check_shebao_status
 什 么 是 个 税 记 录,unknown
 什 么 微 信 小 程 序,no_intent
 什 么 意 思,confused
@@ -726,7 +713,7 @@ zai ma,greet
 提 交 了,inform_info_filled
 提 交 了,inform_paid
 填 好 了 谢 谢 你,thankyou
-填 完 小 程 序 就 显 示 了 “ 服 务 要 求 成 功 ” 几 个 字 ， 这 就 可 以 啦 ？,no_intent
+填 完 小 程 序 就 显 示 了 “ 服 务 要 求 成 功 ” 几 个 字 ， 这 就 可 以 啦 ,no_intent
 调 整 到 多 少 了,complicated
 挺 快,chitchat
 同 事 补 三 四,complicated
@@ -760,7 +747,7 @@ zai ma,greet
 我 不 能 断 交,complicated
 我 不 需 要 公 积 金,no_intent
 我 才 三 年,complicated
-我 的 服 务 费 到 期 了 ？,no_intent
+我 的 服 务 费 到 期 了 ,no_intent
 我 的 公 积 金 封 存 了 吗,ask_shebao_status
 我 的 公 积 金 交 好 了 吗,ask_shebao_status
 我 的 公 积 金 转 出 了 吗,ask_shebao_status
@@ -777,7 +764,7 @@ zai ma,greet
 我 很 快,chitchat
 我 交 五 险 一 金,inform_paid
 我 就 只 能 算 了,complicated
-我 看 到 你 们 会 提 供 截 图 的 ， 什 么 时 候 会 有 呢 ？,no_intent
+我 看 到 你 们 会 提 供 截 图 的 ， 什 么 时 候 会 有 呢 ,no_intent
 我 考 虑 一 下,get_back_later
 我 可 以 补 缴 社 保 吗,ask_can_topup
 我 来 拍,no_intent
@@ -817,7 +804,7 @@ zai ma,greet
 我 想 问 一 下,no_intent
 我 小 孩 读 书,chitchat
 我 需 要 交 公 积 金,no_intent
-我 需 要 做 什 么 ？,query_pay_process
+我 需 要 做 什 么 ,query_pay_process
 我 要 补 缴 社 保,ask_can_topup
 我 要 交 杭 州 社 保,purchase
 我 要 缴 纳 社 保,purchase
@@ -833,7 +820,7 @@ zai ma,greet
 我 再 试 试,get_back_later
 我 在 上 海 有 社 保,no_intent
 我 怎 么 办 呢,complicated
-我 怎 么 查 询 ？,query_how_check_shebao_status
+我 怎 么 查 询 ,query_how_check_shebao_status
 我 怎 么 拍,how_to_pai
 我 找 到 工 作 了,complicated
 我 找 人 注 册 一 下,complicated
@@ -871,7 +858,7 @@ zai ma,greet
 现 在 怀 孕 四 个 月 ， 之 前 上 海 社 保 已 经 交 满 一 年 ， 交 到 生 产 当 月 可 以 领 生 育 津 贴 吗,query_pregnant
 现 在 就 填,chitchat
 现 在 可 以 查 询 吗,query_when_check_shebao_status
-现 在 来 不 及 了 ？,no_intent
+现 在 来 不 及 了 ,no_intent
 现 在 离 职 了,complicated
 现 在 能 汇 缴 么,check_can_pay_current_month
 现 在 拍,no_intent
@@ -926,7 +913,7 @@ zai ma,greet
 需 要 什 么 资 料,query_req_resources
 需 要 提 供 什 么 资 料 吗,query_pay_process
 需 要 停 的 对 吗,complicated
-需 要 我 提 供 什 东 西 吗 ？,query_pay_process
+需 要 我 提 供 什 东 西 吗 ,query_pay_process
 续 保 怎 么 拍,how_to_pai
 续 交,unknown
 续 交 呢,complicated
@@ -958,8 +945,8 @@ zai ma,greet
 要 交 社 保 可 以 吗,purchase
 要 连 续,complicated
 要 哪 些 材 料,query_req_resources
-要 啥 材 料 吗 ？,query_pay_process
-要 什 么 资 料 吗 ？,query_pay_process
+要 啥 材 料 吗 ,query_pay_process
+要 什 么 资 料 吗 ,query_pay_process
 要 是 加 上 社 保,purchase
 要 下 周,unknown
 要 验 证 码,complicated
@@ -976,7 +963,7 @@ zai ma,greet
 一 直 进 不 去,report_issue
 一 直 没 交 过,inform_payment_history
 一 直 在 杭 州 的,no_intent
-医 保 卡 什 么 时 候 可 以 使 用 ？,no_intent
+医 保 卡 什 么 时 候 可 以 使 用 ,no_intent
 已 付,inform_paid
 已 付 费,inform_paid
 已 付 款,inform_paid
@@ -1013,7 +1000,7 @@ zai ma,greet
 有 人 吗,greet
 有 人 么,greet
 有 什 么 区 别 吗,complicated
-有 微 信 吗 ？,query_weixin
+有 微 信 吗 ,query_weixin
 有 闲 林 的 吗,purchase
 又 多 收 钱,chitchat
 园 区 的,no_intent
@@ -1028,7 +1015,7 @@ zai ma,greet
 在 嘛,greet
 在 么,greet
 在 没,greet
-在 哪 里 能 查 到 ？,query_how_check_shebao_status
+在 哪 里 能 查 到 ,query_how_check_shebao_status
 在 哪 里 找,complicated
 在 请 问 下,no_intent
 在 上 海,no_intent
@@ -1044,7 +1031,7 @@ zai ma,greet
 怎 么 付 款,query_pay_process
 怎 么 付 钱,query_pay_process
 怎 么 交,query_pay_process
-怎 么 缴 纳 社 保 的 ？,purchase
+怎 么 缴 纳 社 保 的 ,purchase
 怎 么 看 有 没 暂 停,complicated
 怎 么 拿 钱,complicated
 怎 么 拍,how_to_pai
@@ -1064,7 +1051,7 @@ zai ma,greet
 这 都 要 收 费,unknown
 这 个,no_intent
 这 个,unknown
-这 个 跟 后 面 小 孩 子 上 学 有 冲 突 嘛 ？,no_intent
+这 个 跟 后 面 小 孩 子 上 学 有 冲 突 嘛 ,no_intent
 这 个 缴 纳,no_intent
 这 个 就 算 了,unknown
 这 个 吗,doublecheck
@@ -1101,7 +1088,7 @@ zai ma,greet
 只 发 工 行,no_intent
 只 交 公 积 金,gongjijin_only
 只 交 社 保,purchase
-只 交 社 保 多 少 钱 ？,purchase
+只 交 社 保 多 少 钱 ,purchase
 只 交 社 保 可 以 吧,purchase
 只 交 五 险 多 钱 少,ask_amt_month_fee_total
 只 缴 纳 养 老 可 以 吗,query_pay_part_only
