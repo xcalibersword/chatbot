@@ -6,7 +6,7 @@ from cbsv import read_json, dump_to_json, check_file_exists
 from cb_sql import write_to_sqltable, fetch_uid_from_sqltable
 
 dbfolder = "userdata"
-DEBUG = 1
+DEBUG = 0
 
 class DatabaseRunner():
     def __init__(self):

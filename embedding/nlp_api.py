@@ -1,11 +1,11 @@
 import numpy as np
-from unzipper import get_vector_dict
+from embedding.unzipper import get_vector_dict
 from keras.models import load_model
 from keras.preprocessing.sequence import pad_sequences 
 
 max_review_length = 20 #maximum length of the sentence
 
-model_filename = './241019_1600_model.h5'
+model_filename = 'embedding/241019_1600_model.h5'
 w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
 
 
@@ -25,8 +25,8 @@ class Predictor:
     def predict(self, raw):
         arr, words = self.tokenize(raw)
         raw_pred = self.pmodel.predict(arr)[0] # We want a single prediction
-        intent = self.pred_to_word(raw_pred)
-        return intent
+        outdict = self.pred_to_word(raw_pred)
+        return outdict
 
     # Tokenizes and converts to int
     def tokenize(self, string):
@@ -56,6 +56,7 @@ class Predictor:
         total = np.sum(pred)
         s_pred = np.sort(pred,-1)
         best = None
+        breakdown = ""
 
         for i in range(top):
             curr = s_pred[-1]
@@ -63,12 +64,13 @@ class Predictor:
                 break
             s_pred = s_pred[:-1]
             idx = np.where(pred == curr)[0][0]
-            print("idx",idx,"curr",curr)
             intent = reverse_word_map[idx]
             if (best == None): best = intent 
-            print("<{}> Intent:{} Confidence:{}%".format(i+1,intent,curr*100/total))
+            conf = (curr*100/total)//0.1/10
+            breakdown = breakdown + "<{}> Intent:{} Confidence:{}%\n".format(i+1, intent, conf)
         
-        return best
+        out = {"prediction":best,"breakdown":breakdown}
+        return out
 
     def predict_loop(self):
         while 1:
@@ -80,10 +82,11 @@ class Predictor:
             self.pred_to_word(out)
 
 
-testins = ["您好","哦了解", "一共多少", "我爱你", "代缴社保", "落户苏州", "上海社保可以吗", "我不太懂哦"]
-pp = Predictor()
+if __name__ == "__main__":
+    testins = ["您好","哦了解", "一共多少", "我爱你", "代缴社保", "落户苏州", "上海社保可以吗", "我不太懂哦"]
+    pp = Predictor()
 
-for testin in testins:
-    out = pp.predict(testin)
-    print("In:",testin,"Predicted Intent:",out)
-    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    for testin in testins:
+        out = pp.predict(testin)
+        print("In:",testin,"Predicted Intent:",out)
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")

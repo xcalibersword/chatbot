@@ -1,6 +1,7 @@
 import json
 import os
 from cbsv import read_json
+from embedding.nlp_api import Predictor
 from chatbot_supp import SIP, Policy, InfoVault, InfoParser
 from chatclass import DetailManager, ReplyGenerator, PolicyKeeper
 
@@ -34,8 +35,9 @@ def init_policykeeper(jdata, pdata):
         if len(destination) < 4:
             name = INTENTS[state]["key"]
             print("Warning! {} has bad destination: {}".format(name,destination))
-            return (INTENTS[state], SIP.same_state())
-        if destination == "SAME_STATE":
+            target_state = SIP.same_state()
+
+        elif destination == "SAME_STATE":
             target_state = SIP.same_state()
         elif destination == "GO_BACK_STATE":
             target_state = SIP.go_back_state()
@@ -43,7 +45,8 @@ def init_policykeeper(jdata, pdata):
             target_state = SIP.exit_pocket()
         else:
             target_state = SIP(STATES[destination])
-        return (INTENTS[state], target_state)
+
+        return (state, target_state)
 
     def make_default_policy_set(intents):
         iks = list(intents.keys())
@@ -82,7 +85,10 @@ def init_policykeeper(jdata, pdata):
             continue # Don't overwrite existing policy lookup values
         POLICY_RULES[k] = make_policy([])
 
-    return PolicyKeeper(POLICY_RULES, INTENTS, STATES)
+    ## INITALIZE NLP_API here
+    pp = Predictor() 
+
+    return PolicyKeeper(POLICY_RULES, INTENTS, STATES, pp)
 
 def init_infoparser(jdata):
     relevant = jdata["info_parser"]
@@ -106,8 +112,8 @@ def master_initalize(filename = ""):
     pdata = read_json(pr_filepath)
 
     components = {}
-    components["replygen"] = init_replygen(jdata)
-    components["pkeeper"] = init_policykeeper(jdata,pdata)
     components["dmanager"] = init_detailmanager(jdata)
     components["iparser"] = init_infoparser(jdata)
+    components["replygen"] = init_replygen(jdata)
+    components["pkeeper"] = init_policykeeper(jdata,pdata)
     return components
