@@ -95,7 +95,6 @@
             "default_target": "inform_topup",
             "matchdb": [],
             "replies": [
-                "asdfg"
             ]
         },
         "ask_amt_month_fee_total": {
@@ -160,7 +159,6 @@
                 "最晚"
             ],
             "replies": [
-                "{rep_ext[pay_deadline_info]}"
             ]
         },
         "query_weixin": {
@@ -618,7 +616,7 @@
             "replies": []
         },
         "inform_topup": {
-            "key": "262 inform topup",
+            "key": "inform_topup",
             "gated": false,
             "thread": "t_topup",
             "terminal_state": false,
@@ -640,11 +638,11 @@
         "inform_pay_deadline": {
             "key": "inform_pay_deadline",
             "gated": true,
-            "thread": "t_pai",
-            "terminal_state": false,
-            "req_info": "city",
+            "thread": "t_pay_deadline",
+            "terminal_state": true,
+            "req_info": [["city","city"]],
             "replies": [
-                "{pay_deadline_info}"
+                "{rep_ext[pay_deadline_info]}"
             ]
         },
         "finished_pai": {
@@ -1248,10 +1246,10 @@
             },
             "wantnot": {
                 "yes": [
-                    "(?<!不)要"
+                    "(?<!不)(要|交)"
                 ],
                 "no": [
-                    "不(要|交)"
+                    "(不|没)(要|交)"
                 ]
             },
             "yesno": {
