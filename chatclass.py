@@ -8,7 +8,7 @@ import os
 from datetime import datetime
 from chatbot_supp import *
 
-DEBUG = 1
+DEBUG = 0
 
 # A conversation thread manager using stack and dict
 class StateThreader():
@@ -190,7 +190,7 @@ class ChatManager:
     def respond_to_message(self, msg):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") # For clarity in terminal
         # Parse the message and get an understanding
-        full_uds = self._parse_message_overall(msg)
+        full_uds, bd = self._parse_message_overall(msg)
 
         # Digest and internalize the new info
         self._digest_uds(full_uds)
@@ -200,12 +200,12 @@ class ChatManager:
         reply = self._fetch_reply(intent)
 
         self._record_messages_in_chat(msg,reply)
-        return reply
+        return (reply, bd)
 
     # Takes in message text, returns a full understanding
     def _parse_message_overall(self,msg):
         # Inital understanding
-        uds = self._fetch_understanding(msg)
+        uds, bd = self._fetch_understanding(msg)
         if DEBUG: print("Initial UDS:")
         if DEBUG: uds.printout()
         self.gatekeeper.scan_SIP(uds.get_sip())
@@ -214,7 +214,7 @@ class ChatManager:
         # This is after gatekeep because gatekeep sets the slots.
         self._parse_message_details(msg)
 
-        return uds
+        return uds, bd
     
     # Process, gatekeep then internalize changes
     # Results in change in chat details and change in state
@@ -286,7 +286,7 @@ class ChatManager:
         curr_state = self._get_curr_state()
         # samestateflag = self.statethreader.state_never_change()
         samestateflag = self.samestateflag
-        print("curr_state", curr_state['key'], "samestate",samestateflag)
+        # print("curr_state", curr_state['key'], "samestate",samestateflag)
         return self.replygen.get_reply(curr_state, intent, samestateflag, information)
 
     # Asks dmanager for info
@@ -319,10 +319,11 @@ class ChatManager:
 # Keeps policies
 # Also deciphers messages
 class PolicyKeeper:
-    def __init__(self, policy_rules, intent_dict, state_lib):
+    def __init__(self, policy_rules, intent_dict, state_lib,pp):
         self.POLICY_RULES = policy_rules
         self.INTENT_DICT = intent_dict
         self.STATE_DICT = state_lib
+        self.predictor = pp
 
     def GET_INITIAL_STATE(self):
         initstate = self.STATE_DICT['init']
@@ -352,9 +353,31 @@ class PolicyKeeper:
 
     # Right now just a wrapper for decipher message
     def get_understanding(self, curr_state, msg):
-        uds = self.decipher_message(curr_state, msg)
+        pack = self.predictor.predict(msg)
+        intent = pack["prediction"]
+        breakdown = pack["breakdown"]
+        print("NLP intent:",intent)
+        uds = self.intent_to_next_state(curr_state, intent)
+        # !!!!!!!!!!!!!!!!!!!! IN PROGRESS
+        # uds = self.decipher_message(curr_state, msg)
+        return uds, breakdown
+
+    # METHOD FOR NLP
+    def intent_to_next_state(self, curr_state, intent):
+        policy = self.POLICY_RULES[curr_state]
+        uds = Understanding.make_null()
+        for intent_lst in policy.get_intents():
+            print("intent_list",list(map(lambda x: x[0],intent_lst)))
+            for pair in intent_lst:
+                c_int, next_sip = pair
+                if intent == c_int:
+                    print("MATCH",intent)
+                    intent_obj = self.INTENT_DICT[intent]
+                    uds = Understanding(intent_obj, next_sip)
+
         return uds
 
+    # OLD METHOD USING SEARCH
     def decipher_message(self,curr_state,msg):
         def get_intent_matchdb(intent):
             if not "matchdb" in intent:
@@ -363,7 +386,7 @@ class PolicyKeeper:
 
         # Returns an Understanding minus details
         def uds_from_policies(state, msg):
-            print("uds from state:",state)
+            if DEBUG: print("uds from state:",state)
             policy = self.POLICY_RULES[state]
             # print("policy list intents", policy.get_intents())
             for intent_lst in policy.get_intents():
@@ -452,7 +475,7 @@ class ReplyGenerator:
     def __init__(self, formattingDB):
         self.formatDB = formattingDB
         self.formatter = string.Formatter()
-
+        
     # OVERALL METHOD
     def get_reply(self, curr_state, intent, ss, info = -1):
         rdb = self.getreplydb(intent, curr_state, ss)
@@ -475,7 +498,7 @@ class ReplyGenerator:
         calcDB = self.formatDB["calcs"]
 
         def add_enh(key, value, ext_dict,overall_key):
-            print("Enhancing!{}:{}".format(key,value))
+            if 0: print("Enhancing!{}:{}".format(key,value))
             if key in ext_dict:
                 ext_dict[key] = ext_dict[key] + value
             else:
@@ -492,7 +515,6 @@ class ReplyGenerator:
         
         def add_calc_enh(key, rawstr):
             flt = float(rawstr)
-            print("Calculated {}:{}".format(key,flt))
             return add_enh(key,flt,l_calc_ext,"calc_ext")
 
         def needs_txt_enh(tmp,csk):
@@ -545,7 +567,7 @@ class ReplyGenerator:
             dz_rv = "dz_req_vars"
             def op_on_all(vnames, op, vdic):
                 def operate(a,b,op):
-                    print("a,b", a, b)
+                    if 0: print("a,b", a, b)
                     return op(a,b)
                 out = None
                 for vname in vnames:
@@ -610,7 +632,8 @@ class ReplyGenerator:
                         result = resolve_formula(formula)
                         add_calc_enh(target_key,result)
         else:
-            print("No calculation performed")
+            iamnotused = True
+            if DEBUG: print("No calculation performed")
 
         if DEBUG: print("postcalc enh",enhanced)
 

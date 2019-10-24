@@ -39,14 +39,15 @@ def get_qingyunke(query):
     pass
 
 def get_bot_reply(bot, cid, message):
-    replytext = bot.get_bot_reply(cid,message)
+    replypack = bot.get_bot_reply(cid,message)
+    text, bd = replypack
     # if replytext == '不好意思，我听不懂':
     #     if get_qingyunke(message) == None:
     #         replytext = '我收到' + message
     #     else:
     #         replytext = get_qingyunke(message)
-    reply = robotify(replytext)
-    return reply
+    reply = robotify(text)
+    return (reply, bd)
 
 def index(request):
     indexfilepath = 'testing_server/index.html'
@@ -68,7 +69,7 @@ async def disconnect(sid):
 idmap = {}
 
 @sio.on('chat')
-async def chat_message(sid, msg):
+async def chat_message(sid, msg):        
     await sio.emit('message',display_own_message(msg),room=sid)
     if "!setid " in msg:
         userid = msg.split(" ")[1]
@@ -77,8 +78,11 @@ async def chat_message(sid, msg):
     else:
         uid = idmap[sid] if sid in idmap else sid
         print("Recieved from",uid,"Content:",msg)
-        reply = get_bot_reply(bot, uid, msg)
-        await sio.emit('message', reply, room=sid)
+        replypack = get_bot_reply(bot, uid, msg)
+        text, bd = replypack
+        await sio.emit('message', text, room=sid)
+        await sio.emit('message', bd, room=sid)
+
 
 app.router.add_get('/', index)
 
