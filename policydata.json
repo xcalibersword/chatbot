@@ -1,20 +1,25 @@
 {
-    "COMMENT":"File to decide state transition logic. Called policies",
+    "COMMENTS":"File to decide state transition logic. Called policies",
     "policy_rules":{
         "init": [
-            ["first_greet", "SAME_STATE"],
             ["purchase", "propose_plan"],
+            ["purchase_wxyj","propose_plan_wxyj"],
             ["affirm", "initplus"],
             ["deny", "goodbye"]
         ],
-        "initplus":[
-            ["first_greet", "init"],
+        "initplus": [
+            ["greet", "init"],
             ["purchase", "propose_plan"],
+            ["purchase_wxyj","propose_plan_wxyj"],
             ["deny", "goodbye"]
         ],
         "init_sale": [
             ["affirm", "propose_plan"],
-            ["purchase", "propose_plan"]
+            ["purchase", "propose_plan"],
+            ["purchase_wxyj","propose_plan_wxyj"]
+        ],
+        "propose_plan_wxyj": [
+            ["affirm", "confirm_plan"]
         ],
         "propose_plan": [
             ["affirm", "confirm_plan"]
@@ -28,14 +33,23 @@
             ["how_to_pai", "inform_pai"]
         ],
         "inform_pai": [
-            ["affirm", "finished_pai"]
+            ["affirm", "finished_payment"]
         ],
-        "finished_pai": [
+        "finished_payment": [
+            ["affirm", "initplus"]
+        ],
+        "inform_pay_deadline": [
+            ["affirm", "initplus"]
+        ],
+        "inform_topup_gjj":[
             ["affirm", "initplus"]
         ],
         "ask_if_issue": [
             ["affirm", "log_issue"],
             ["deny", "EXIT_POCKET_STATE"]
+        ],
+        "pass_to_human": [
+            ["affirm","goodbye"]
         ],
         "goodbye":[
             ["greet", "init"]
@@ -43,21 +57,5 @@
         "amt_month_fee_total":[
             ["affirm","initplus"]
         ]
-    },
-    "forms":{
-        "form_shebao":{
-            "date":"startdate_shebao",
-            "number":"base_amt_shebao"
-        },
-        "form_gongjijin":{
-            "date":"startdate_gongjijin",
-            "number": "base_amt_gongjijin"
-        },
-        "form_firsttime":{
-            "yesno":"firsttime"
-        },
-        "form_salary":{
-            "yesno":"salary"
-        }
     }
 }

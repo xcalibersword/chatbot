@@ -374,6 +374,7 @@ class PolicyKeeper:
                     print("MATCH",intent)
                     intent_obj = self.INTENT_DICT[intent]
                     uds = Understanding(intent_obj, next_sip)
+                    break
 
         return uds
 

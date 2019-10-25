@@ -46,23 +46,35 @@
                 "有人(不|吗)$"
             ],
             "replies": [
-                "您好! 有什么能帮助您的?",
-                "Hello! 有什么能帮助您的?"
+                "您好 有什么能帮助您的?",
+                "Hello 有什么能帮助您的?"
             ]
         },
-        "first_greet": {
-            "key": "1001 first greetings",
-            "default_set": false,
-            "default_target": "NA",
-            "matchdb": [
-                "(你|您)好$",
-                "hello",
-                "hi$",
-                "有人(不|吗)$"
-            ],
+        "confused": {
+            "key": "109 confused",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "matchdb": [],
             "replies": [
-                "您好! 有什么能帮助您的?",
-                "Hello! 有什么能帮助您的?"
+                "换句话来说...",
+                "我的意思是..."
+            ]
+        },
+        "unknown": {
+            "key": "109 confused",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "matchdb": [],
+            "replies": ["不好意思,我听不懂","不好意思,我不明白"]
+        },
+        "doublecheck": {
+            "key": "107 doublecheck",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "matchdb": [],
+            "replies": [
+                "是的亲",
+                "对的哦"
             ]
         },
         "ask_name": {
@@ -94,27 +106,22 @@
             "default_set": true,
             "default_target": "inform_topup",
             "matchdb": [],
-            "replies": [
-            ]
+            "replies": []
         },
-        "ask_amt_month_fee_total": {
-            "key": "ask_amt_month_fee_total",
+        "ask_shebao_status": {
+            "key": "ask_shebao_status",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [
-                "pay$",
-                "办理$"
-            ],
-            "replies": []
+            "matchdb": [],
+            "replies": [
+                "亲 我是值班客服 看不到系统数据 你白天上班时间联系我们吧 谢谢亲"
+            ]
         },
         "query_pay_process": {
             "key": "112 query_pay_process",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [
-                "pay$",
-                "办理$"
-            ],
+            "matchdb": [],
             "replies": [
                 "缴纳流程：和客服明确缴纳城市以及缴纳月份，拍下链接付款---小程序提供资料---申报参保手续---手续办理成功发货---确认收货请注意：参保手续完成后，不可以申请退款！！！"
             ]
@@ -130,9 +137,15 @@
                 "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料"
             ]
         },
-        "short_ask_amt_month_fee_total": {
-            "type": "intent",
-            "key": "short_ask_amt_month_fee_total",
+        "ask_can_topup_gjj": {
+            "key": "ask_can_topup_gjj",
+            "default_set": true,
+            "default_target": "inform_topup_gjj",
+            "matchdb": [],
+            "replies": []
+        },
+        "ask_amt_month_fee_total": {
+            "key": "ask_amt_month_fee_total",
             "default_set": true,
             "default_target": "amt_month_fee_total",
             "matchdb": [
@@ -158,8 +171,7 @@
             "matchdb": [
                 "最晚"
             ],
-            "replies": [
-            ]
+            "replies": []
         },
         "query_weixin": {
             "key": "info_weixin",
@@ -173,16 +185,41 @@
                 "上海wei信号：iHR-7531，备注填写：店铺名称+上海+淘宝会员名"
             ]
         },
+        "query_pregnant": {
+            "key": "info_pregnant",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "matchdb": [],
+            "replies": [
+                "怀孕的我们不接受代缴哦"
+            ]
+        },
         "ask_for_phone": {
             "key": "info phone number",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [
-                "电话(.*)(询|吗)",
-                "(用|可以)电话"
-            ],
+            "matchdb": [],
             "replies": [
-                "15221004815"
+                "亲亲在白天上班时间联系哦：15221004815",
+                "亲可以在白天上班时间电话咨询哦：021-64360181转602"
+            ]
+        },
+        "query_bujiao": {
+            "key": "query_bujiao",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "matchdb": [],
+            "replies": [
+                "补缴不算连续的，也不算正常缴纳，可以算累计缴纳的月份"
+            ]
+        },
+        "query_pay_part_only": {
+            "key": "query_pay_part_only",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "matchdb": [],
+            "replies": [
+                "不可以哦亲，必须5险一起缴纳哦"
             ]
         },
         "query_how_check_shebao_status": {
@@ -198,27 +235,28 @@
                 "在哪(.*)能查到"
             ],
             "replies": [
-                "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能） http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp"
+                "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp. 公积金缴费查询：次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。）"
             ]
         },
         "query_when_check_shebao_status": {
             "key": "info_when_check_shebao",
             "default_set": true,
-            "default_target": "SAME_STATE",
-            "matchdb": [
-                "(多久|时)(.*)能查到"
-            ],
-            "replies": [
-                "社保查询: \n次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费\n次次月15日可以在网上查询到实缴款;\n社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp\n公积金缴费查询：\n次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。"
-            ]
+            "default_target": "inform_when_check_shebao",
+            "matchdb": [],
+            "replies": []
+        },
+        "query_shebao_components":{
+            "key": "info_when_check_shebao",
+            "default_set": true,
+            "default_target": "inform_when_check_shebao",
+            "matchdb": [],
+            "replies": ["社保包括：养老保险、医疗保险、生育保险、工伤保险和失业保险"]
         },
         "complicated": {
             "key": "404 too complicated",
             "default_set": true,
             "default_target": "pass_to_human",
-            "matchdb": [
-                "complex"
-            ],
+            "matchdb": [],
             "replies": []
         },
         "how_to_pai": {
@@ -226,7 +264,6 @@
             "default_set": true,
             "default_target": "inform_pai",
             "matchdb": [
-                "流程",
                 "怎么(拍|付钱)",
                 "要做(啥|什么)"
             ],
@@ -245,14 +282,17 @@
         },
         "inform_paid": {
             "key": 180,
-            "default_set": false,
-            "default_target": "NA",
-            "matchdb": [
-                "(交|付)了"
-            ],
-            "replies": [
-                "That's great!"
-            ]
+            "default_set": true,
+            "default_target": "finished_payment",
+            "matchdb": [],
+            "replies": []
+        },
+        "inform_early_paid": {
+            "key": 181,
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "matchdb": [],
+            "replies": ["看到了 亲 请放心 我们一定会及时缴纳的 谢谢亲"]
         },
         "purchase": {
             "key": "purchase",
@@ -271,9 +311,7 @@
             "key": "purchase_wxyj",
             "default_set": false,
             "default_target": "NA",
-            "matchdb": [
-                "社保+公积金"
-            ],
+            "matchdb": [],
             "replies": []
         },
         "confusion": {
@@ -640,13 +678,43 @@
             "gated": true,
             "thread": "t_pay_deadline",
             "terminal_state": true,
-            "req_info": [["city","city"]],
+            "req_info": [
+                [
+                    "city",
+                    "city"
+                ]
+            ],
             "replies": [
                 "{rep_ext[pay_deadline_info]}"
             ]
         },
-        "finished_pai": {
-            "key": "261 done pai",
+        "inform_topup_gjj": {
+            "key": "inform_topup_gjj",
+            "gated": true,
+            "thread": "t_topup",
+            "terminal_state": true,
+            "req_info": [
+                [
+                    "city",
+                    "city"
+                ]
+            ],
+            "replies": [
+                "补充公积金需要和基本公积金一起缴纳，基数保持一致；补充公积金服务费80元每月"
+            ]
+        },
+        "inform_when_check_shebao":{
+            "key": "inform_when_check_shebao",
+            "gated": true,
+            "thread": "t_whencheck",
+            "terminal_state": true,
+            "req_info": [["city","city"]],
+            "replies": [
+                "{rep_ext[when_check_shebao]}"
+            ]
+        },
+        "finished_payment": {
+            "key": "261 done pay",
             "gated": false,
             "thread": "t_pai",
             "terminal_state": true,
@@ -672,6 +740,22 @@
                         "city": "您是哪个城市呢？",
                         "首次": "是首次吗？",
                         "要公积金": "要交公积金吗？"
+                    }
+                }
+            },
+            {
+                "writeto": "when_check_shebao",
+                "states": [
+                    "inform_when_check_shebao"
+                ],
+                "lookfor": [
+                    "city"
+                ],
+                "if_present": {},
+                "if_value": {
+                    "city": {
+                        "上海": "社保查询: \n次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费\n次次月15日可以在网上查询到实缴款;\n社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp\n公积金缴费查询：\n次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。",
+                        "苏州": "参保月的次月7日前到账，可以打电话0512-62888222 人工服务查询；参保公司名字：苏州英格玛服务外包股份有限公司园区分公司"
                     }
                 }
             },
@@ -944,8 +1028,7 @@
                 "writeto": "w_shouci_fee"
             },
             "not_shouci": {
-                "conditions": [
-                ],
+                "conditions": [],
                 "req_vars": [
                     [
                         "city_info",
@@ -1117,13 +1200,13 @@
             "gongjijin_fee": 100
         },
         "杭州": {
-            "sb_jishu": 1100,
-            "gjj_jishu": 1101,
-            "shebao_payment": 0,
-            "svc_fee": 999,
+            "sb_jishu": 3321.6,
+            "gjj_jishu": 2010,
+            "shebao_payment": 1288.79,
+            "svc_fee": 40,
             "shouci_fee": 50,
             "pay_deadline": 20,
-            "gongjijin_fee": 100
+            "gongjijin_fee": 482
         },
         "广州": {
             "sb_jishu": 1200,
