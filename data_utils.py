@@ -308,12 +308,19 @@ def split2train_valid_test(custlist,category,start,stop):
 def train_test_eval(csv_path):
         custlist =  np.array(pd.read_csv(csv_path)).tolist()
         # split data into train,valid,test and the respective category | refer to sklearn | problem with size
-        custlist_length = len(custlist)
-        interval_first = round(custlist_length * 0.1)
-        interval_second = round(custlist_length * 0.3)
-        # interval_first = 483
-        # interval_second = 1231
-        # end = 4890
+
+        # errorlist = []
+        # for row in custlist:
+        #     if len(row[0].split(" ")) != len(row[2].split(" ")):
+        #         errorlist.append([row[0]])
+        # new_df = pd.DataFrame(data=errorlist)
+        # new_df.to_csv("D:\chatbot\data\c.csv",index=False,encoding="utf-8")
+        # exit(0)
+        # custlist_length = len(custlist)
+        # interval_first = round(custlist_length * 0.1)
+        # interval_second = round(custlist_length * 0.3)
+        interval_first = 1
+        interval_second = 2
         random.shuffle(custlist)
         #test
         split2train_valid_test(custlist,"test",None,interval_first)

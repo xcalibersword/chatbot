@@ -22,7 +22,7 @@ def view_variables(sess,aa):
 def load_model():
     main_path = os.path.join(os.curdir,"test_NLU")     
     ckpt_path = os.path.join(main_path,'model1')
-    meta_path = os.path.join(main_path,'model1','_step_755_epochs_29.ckpt.meta')
+    meta_path = os.path.join(main_path,'model1','_step_543_epochs_100.ckpt.meta')
 
     sess=tf.Session()    
     #load model and impt parameters
@@ -112,11 +112,9 @@ def predict(sess,saver,graph,message):
 def main():
     sess,saver,graph = load_model()
     print("model loaded")
-    message = input("Msg: ")
-    predict(sess,saver,graph,message)
-    message = input("Msg: ")
-    predict(sess,saver,graph,message)
-
+    while True:
+        message = input("Msg: ")
+        predict(sess,saver,graph,message)
 if __name__ == "__main__":
     main()
 #make into function

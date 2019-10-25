@@ -463,6 +463,6 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             if epochs == arg.max_epochs:
                 break
 
-            if arg.early_stop == True:
-                if no_improve > arg.patience:
-                    break
+            # if arg.early_stop == True:
+            #     if no_improve > arg.patience:
+            #         break

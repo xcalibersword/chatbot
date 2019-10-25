@@ -254,6 +254,7 @@ class DataProcessor(object):
         #convert to id
         for i in range(batch_size):
             inp = self.__fd_in.readline()
+
             if inp == '':
                 # print(self.__fd_in)
                 # print("batch: {0} & idx: {1} >>> {2}".format(batch_size,i,inp))
@@ -311,7 +312,6 @@ class DataProcessor(object):
             weight = weight.astype(np.float32)
             slot_weight.append(weight)
         slot_weight = np.array(slot_weight)
-
         return in_data, slot_data, slot_weight, length, intents, in_seq, slot_seq, intent_seq
 
 def load_embedding(embedding_path):
