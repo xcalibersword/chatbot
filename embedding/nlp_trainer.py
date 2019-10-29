@@ -18,15 +18,19 @@ w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
 max_review_length = 20 #maximum length of the sentence
 embedding_vector_length = 300
 max_intents = 100
-VDLIMIT = 50000
+VDLIMIT = 30000
 
 #read csv
-dataset_fp = "data_in.csv"
+dataset_fp = "data_in2.csv"
+count = 0
 with open(dataset_fp, 'r',encoding='gb18030') as f:
     rows = csv.reader(f, delimiter = ',')
     data = []
     for r in rows:
-        data.append(r)
+        if count > 0:
+            data.append(r)
+        count += 1
+    print("Read {} rows".format(count))
     npdata = np.array(data)
 
 xval = npdata[:,0]
@@ -41,7 +45,7 @@ num_intents = len(intent_tokenizer.word_index) + 1
 print('Found %s unique intents.' %num_intents)
 
 reverse_word_map = dict(map(reversed, intent_tokenizer.word_index.items()))
-# print(reverse_word_map)
+print(reverse_word_map)
 
 def pred_to_word(pred):
     top = 3
@@ -120,7 +124,6 @@ def myTokenize(nparr):
 embed_dict = get_vector_dict(w2v_filepath,limit = VDLIMIT)
 zero_vector = [0] * embedding_vector_length
 
-print("raw", xval[100:105])
 prep_xvals = myTokenize(xval)
 ut = get_unique_tokens(prep_xvals)
 word2int = buildWordToInt(embed_dict,ut)
@@ -172,7 +175,6 @@ main_input = Input(shape=(max_review_length,), dtype='int32')
 embed = my_embedding(main_input)
 embed = BatchNormalization(momentum=0.99)(embed)
 
-
 # 词窗大小分别为 2 3 4
 cnnUnits = 128 # increased
 cnn1 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu')(embed)
@@ -201,13 +203,13 @@ model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 
-model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=64)
+model.fit(x=embed_xvals,y=cat_yval,epochs=80,verbose=1,validation_split=0.0,batch_size=8)
 
 # Post Training
-model.save('251019_JB_model.h5')
+model.save('291019_JB_model.h5')
 print("This Model has been saved! Rejoice")
 
-test_in = ["我在上海","我要付社保","您好","哦了解", "拍好了", "怎么拍", "一共多少钱啊", "我好爱您哦", "代缴社保", "落户苏州", "上海社保可以吗", "我不太懂哦","社保可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
+test_in = ["我在上海","我要付社保","我是想要付社保","您好","哦了解了", "填好了呀", "拍好了", "怎么拍", "一共多少钱啊", "我好爱您哦", "代缴社保", "落户上海", "上海社保可以吗", "我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
 
 ti = myTokenize(test_in)
 # print("input",test_in)
