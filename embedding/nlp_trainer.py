@@ -15,10 +15,10 @@ from keras.utils import to_categorical
 
 w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
 
-max_review_length = 20 #maximum length of the sentence
+max_review_length = 15 #maximum length of the sentence
 embedding_vector_length = 300
 max_intents = 100
-VDLIMIT = 30000
+VDLIMIT = 60000
 
 #read csv
 dataset_fp = "data_in2.csv"
@@ -87,7 +87,7 @@ def get_unique_tokens(nparr):
 # BUILDS DICTIONARY
 def buildWordToInt(w2v,ut):
     count = 1
-    d = {}
+    d = {"_NA":0}
     for c in w2v:
         if not c in d:
             d[c] = count
@@ -115,7 +115,7 @@ def myTokenize(nparr):
 
         seq = seq.replace(" ", "")
         jbseq = jb.lcut(seq, cut_all=True)
-        jbseq = pad_sequences([jbseq,], maxlen = max_review_length, dtype = object, value="0")
+        jbseq = pad_sequences([jbseq,], maxlen = max_review_length, dtype = object, value="_NA")
         outarr.append(jbseq)
     return np.array(outarr)
     # return text_to_word_sequence(arr,lower = False) # Lower causes problems
@@ -176,7 +176,7 @@ embed = my_embedding(main_input)
 embed = BatchNormalization(momentum=0.99)(embed)
 
 # 词窗大小分别为 2 3 4
-cnnUnits = 128 # increased
+cnnUnits = 128 # 
 cnn1 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu')(embed)
 cnn2 = Conv1D(cnnUnits, 3, padding='same', strides=1, activation='relu')(embed)
 cnn3 = Conv1D(cnnUnits, 4, padding='same', strides=1, activation='relu')(embed)
@@ -221,5 +221,6 @@ output_array = model.predict(input_array)
 i = 0
 for bleh in output_array:
     print(test_in[i])
+    print(input_array[i])
     i+=1
     pred_to_word(bleh)

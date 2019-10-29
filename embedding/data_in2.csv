@@ -1,11 +1,11 @@
 Text,Intent,,
-能 提 取 公 积 金 吗,unsupported_request,complicated,199
-公 积 金 提 取 能 做 吗,unsupported_request,no_intent,76
-综 合 保 险,unknown,purchase,99
+能 提 取 公 积 金 吗,unsupported_request,complicated,198
+公 积 金 提 取 能 做 吗,unsupported_request,no_intent,77
+综 合 保 险,unknown,purchase,100
 自 己 交,unknown,affirm,93
 重 拍 了,unknown,unknown,71
 中 文 的,unknown,chitchat,63
-只 是 断 了,unknown,inform_paid,35
+只 是 断 了,unknown,inform_paid,36
 这 样,unknown,query_pay_process,23
 这 个 缴 纳,unknown,ask_can_topup,25
 这 个,unknown,doublecheck,21
@@ -17,7 +17,7 @@ Text,Intent,,
 姓 名,unknown,query_req_resources,22
 下 个 月 一 号,unknown,inform_payment_history,22
 下,unknown,deny,14
-喜 爱,unknown,purchase_wxyj,11
+喜 爱,unknown,purchase_wxyj,12
 吴 江,unknown,ask_verify,14
 我 一 次 缴 了,unknown,check_is_possible,10
 我 说 的 如 果,unknown,get_back_later,11
@@ -25,8 +25,8 @@ Text,Intent,,
 我 和 他 们 说 一 下,unknown,query_pay_deadline,8
 我 给 他 钱,unknown,query_phone,7
 我 的 意 思 是,unknown,how_to_pai,8
-我 补 三,unknown,query_how_check_shebao_status,12
-我 补,unknown,query_when_check_shebao_status,6
+我 补 三,unknown,query_how_check_shebao_status,13
+我 补,unknown,query_when_check_shebao_status,7
 我,unknown,request_link,6
 维 护 了,unknown,apology,6
 微 信 里 填 写 的,unknown,inform_info_filled,9
@@ -41,7 +41,7 @@ Text,Intent,,
 人 嗯,unknown,inform_early_paid,3
 拍 车 牌,unknown,missing_info,3
 怕 漏 交,unknown,query_mini_program,5
-那 这 样,unknown,query_pregnant,3
+那 这 样,unknown,query_pregnant,4
 明 天,unknown,ask_for_refund,6
 没 有 人 事,unknown,query_weixin,4
 么 多,unknown,question_reliability,4
@@ -209,6 +209,7 @@ tks,thankyou,,
 在 哪 里 能 查 到 ,query_how_check_shebao_status,,
 我 怎 么 查 询 ,query_how_check_shebao_status,,
 网 上 可 以 查 询 吗,query_how_check_shebao_status,,
+怎 么 查 询,query_how_check_shebao_status,,
 如 何 查 询 ,query_how_check_shebao_status,,
 你 好 我 在 哪 里 查 询 社 保 金 额 是 否 已 经 到 账 呢,query_how_check_shebao_status,,
 缴 纳 可 以 查 看 记 录 吗,query_how_check_shebao_status,,
@@ -759,7 +760,7 @@ ok 好 了 我 联 系 你,get_back_later,,
 所 以 才 考 虑 苏 州,complicated,,
 是 因 为 稽 查 严 了,complicated,,
 是 否 可 以 转 社 保,complicated,,
-市 区 也 行,complicated,,
+市 区 也 行,no_intent,,
 生 育 金 还 没 发,complicated,,
 社 保 涨 了 是 吗,complicated,,
 社 保 有 医 保 卡,complicated,,
@@ -1190,9 +1191,20 @@ OK,affirm,,
 [表情] 好,affirm,,
 我 爸 自 己 不 会 查 我 不 在 家,chitchat,,
 那 你 说 的 那 3000 是 什 么 意 思 呢,confused,,
+对 于 孩 子 上 学 有 影 响 吗,query_various_effects,,
 这 个 跟 后 面 小 孩 子 上 学 有 冲 突 嘛,query_various_effects,,
 7 月 底 刚 办 完 深 户 准 备 申 请 入 户 补 贴 应 该 缴 哪 一 档 的 社 保,query_various_effects,,
 公 积 金 套 现 可 以 嘛,unsupported_request,,
 可 以 提 取 公 积 金 吗,unsupported_request,,
 提 取 公 积 金 可 以 嘛,unsupported_request,,
 这 里 可 以 提 取 公 积 金 嘛,unsupported_request,,
+可 以 代 缴 昆 山 社 保 吗,purchase,,
+已 经 购 买 请 帮 忙 缴 费,inform_paid,,
+社 保 包 括 医 疗 保 险 吗,query_shebao_components,,
+这 个 代 缴 有 包 括 医 疗 吗,query_shebao_components,,
+社 保 包 含 什 么,query_shebao_components,,
+社 保 主 要 包 括 什 么 的,query_shebao_components,,
+包 括 生 育 险 没 有,query_shebao_components,,
+社 保 这 块 什 么 费 用 怀 孕 了 没 社 保,query_pregnant,,
+想 问 下 从 你 们 这 边 办 社 保 公 积 金 是 怎 么 弄 的,purchase_wxyj,,
+社 保 什 么 时 候 可 以 查 到 账 情 况,query_when_check_shebao_status,,

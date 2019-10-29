@@ -7,16 +7,17 @@ from keras.models import load_model
 from keras.preprocessing.sequence import pad_sequences 
 
 # model_filename = 'embedding/241019_1600_model.h5'
-model_filename = '251019_JB_model.h5'
+rootpath = '/Users/davidgoh/Desktop/chatbot/embedding/'
+model_filename = rootpath+'291019_JB_FINAL.h5'
 w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
-VDLIMIT = 30000
+VDLIMIT = 60000 #35000 includes gongjijin
 
-reverse_word_map = {1: 0, 2: 'complicated', 3: 'no_intent', 4: 'purchase', 5: 'affirm', 6: 'unknown', 7: 'chitchat', 8: 'inform_paid', 9: 'query_pay_process', 10: 'ask_can_topup', 11: 'doublecheck', 12: 'greet', 13: 'ask_shebao_status', 14: 'ask_amt_month_fee_total', 15: 'thankyou', 16: 'inform_payment_history', 17: 'check_can_pay_current_month', 18: 'explore_option', 19: 'confused', 20: 'luohu', 21: 'query_req_resources', 22: 'ask_verify', 23: 'get_back_later', 24: 'deny', 25: 'purchase_wxyj', 26: 'check_is_possible', 27: 'query_how_check_shebao_status', 28: 'query_pay_deadline', 29: 'how_to_pai', 30: 'query_phone', 31: 'apology', 32: 'complain', 33: 'query_when_check_shebao_status', 34: 'request_link', 35: 'affirm#thankyou', 36: 'ask_kai_piao', 37: 'gongjijin_only', 38: 'inform_info_filled', 39: 'query_mini_program', 40: 'ask_amt_service_fee', 41: 'ask_how_now', 42: 'ask_turnaround_time', 43: 'clarify', 44: 'query_pay_part_only', 45: 'request_future_notify', 46: 'query_have_service_fee', 47: 'query_product_explain', 48: 'query_weixin', 49: 'question_why', 50: 'report_issue', 
-51: 'ask_can_topup_gjj', 52: 'ask_discount', 53: 'ask_for_refund', 54: 'inform_early_paid', 55: 'missing_info', 56: 'query_pregnant', 57: 'query_refund', 58: 'query_topup', 59: 'question_reliability', 60: 'affirm#chitchat', 61: 'ask_for_details', 62: 'check_anything_else', 63: 'laodong', 64: 'next_step', 65: 'query_canzhangjin', 66: 'query_company_name', 67: 'query_payment_schedule', 68: 'query_wxyj_included', 69: 'refund', 70: 'withdraw_gjj'}
+reverse_word_map = {1: 0, 2: 'complicated', 3: 'purchase', 4: 'affirm', 5: 'no_intent', 6: 'unknown', 7: 'chitchat', 8: 'inform_paid', 9: 'ask_can_topup', 10: 'query_pay_process', 11: 'greet', 12: 'ask_shebao_status', 13: 'query_req_resources', 14: 'inform_payment_history', 15: 'confused', 16: 'doublecheck', 17: 'ask_amt_month_fee_total', 18: 'explore_option', 19: 'thankyou', 20: 'check_can_pay_current_month', 21: 'query_housing', 22: 'luohu', 23: 'ask_verify', 24: 'deny', 25: 'query_how_check_shebao_status', 26: 'purchase_wxyj', 27: 'get_back_later', 28: 'query_various_effects', 29: 'check_is_possible', 30: 'inform_info_filled', 31: 'query_pay_deadline', 32: 'daikuan', 33: 'how_to_pai', 34: 'unsupported_request', 35: 'query_when_check_shebao_status', 36: 'query_phone', 37: 'request_link', 38: 'pay_shui', 39: 'next_step', 40: 'forget_it', 41: 'complain', 42: 'ask_turnaround_time', 43: 'ask_for_refund', 44: 'ask_can_topup_gjj', 45: 'apology', 46: 'request_future_notify', 47: 'query_mini_program', 48: 'gongjijin_only', 49: 'clarify', 50: 'ask_kai_piao',
+51: 'affirm#thankyou', 52: 'query_shebao_components', 53: 'question_reliability', 54: 'query_weixin', 55: 'query_product_explain', 56: 'query_pregnant', 57: 'query_pay_part_only', 58: 'ask_how_now', 59: 'ask_amt_service_fee', 60: 'report_issue', 61: 'question_why', 62: 'query_topup', 63: 'query_multiple_locations', 64: 'query_have_service_fee', 65: 'missing_info', 66: 'inform_early_paid', 67: 'query_company_name', 68: 'ask_discount', 69: 'query_wxyj_included', 70: 'query_payment_schedule', 71: 'query_canzhangjin', 72: 'laodong', 73: 'ask_for_details', 74: 'ask_amt_gongjijin', 75: 'affirm#chitchat'}
 
 class Predictor:
     def __init__(self):
-        self.max_review_length = 20
+        self.max_review_length = 15
         print("Initalizing Predictor...")
         self.pmodel = load_model(model_filename)
         self.pmodel.summary()
@@ -27,17 +28,19 @@ class Predictor:
 
     def _buildWordToInt(self):
         w2v = self.w2v
-        count = 0
+        count = 1
         d = {}
         for c in w2v:
             if not c in d:
                 d[c] = count
                 count += 1
         print("Found {} unique tokens".format(count+1))
+        self.w2vend = count+1
         return d
     
     def predict(self, raw):
         arr = self.tokenize(raw)
+        print("input_arr",arr)
         raw_pred = self.pmodel.predict(arr)[0] # We want a single prediction
         outdict = self.pred_to_word(raw_pred)
         return outdict
@@ -48,10 +51,11 @@ class Predictor:
         word2int = self.word2int
         out = []
         for c in jbstring:
+            # Converts to an int
             if c in word2int:
                 t = word2int[c]
             else:
-                t = 0
+                t = self.w2vend
             out.append(t)
         out = pad_sequences([out,], self.max_review_length, dtype = object, value=0)
         # print("out",out)
@@ -91,7 +95,7 @@ class Predictor:
 if __name__ == "__main__":
 
     
-    test_ins = ["我在上海","我要付社保","您好","哦了解", "拍好了", "怎么拍", "一共多少钱啊", "我好爱您哦", "代缴社保", "落户苏州", "上海社保可以吗", "我不太懂哦","社保可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
+    test_ins = ["我在上海","我要付社保","交公积金","您好","哦了解", "拍好了", "怎么拍", "一共多少钱啊", "我好爱您哦", "代缴社保", "落户苏州", "上海社保可以吗", "我不太懂哦","社保可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
     # for testin in testins:
     #     print(jb.lcut(testin,cut_all=True))
     # exit()
