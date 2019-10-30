@@ -12,9 +12,12 @@ db_cc = pymysql.cursors.DictCursor
 
 tablename = "table1"
 
-NO_WRITE_TO_SQL = False
+SQL_ENABLED = False
 
-stdcon = pymysql.connect(host=db_host,
+NO_WRITE_TO_SQL = False and SQL_ENABLED
+
+if SQL_ENABLED:
+    stdcon = pymysql.connect(host=db_host,
                             user=db_user,
                             password=db_pass,
                             db=db_dbname,
@@ -44,13 +47,19 @@ def hello():
         connection.close()
 
 def fetch_from_con(con, sql, sqlvals):
-        with con.cursor() as cursor:
-            cursor.execute(sql, sqlvals)
-            result = cursor.fetchall()
-        print(result)
-        return result
+    if not SQL_ENABLED:
+        print("<BACKEND WARNING: Reading from SQL has been disabled> Restore it in cb_sql.py.\nCommand not executed:{}".format(sql))
+        return ()
+    with con.cursor() as cursor:
+        cursor.execute(sql, sqlvals)
+        result = cursor.fetchall()
+    print(result)
+    return result
 
 def fetch_all_from_con(tabnam, columns = "*", condition = ""):
+    if not SQL_ENABLED:
+        print("<BACKEND WARNING: Reading from SQL has been disabled> Restore it in cb_sql.py.\n")
+        return ()
     query = "SELECT {} FROM {} {}".format(columns,tabnam,condition)
     print("Q:", query)
     with stdcon.cursor() as cursor:
@@ -84,6 +93,8 @@ def fetch_uid_from_sqltable(userID):
 
 # Writes to a predefined table
 def write_to_sqltable(info):
+    if not SQL_ENABLED:
+        return 
     connection = stdcon
     userids = fetch_all_from_con(tablename, columns = "userID")
     userids = map(lambda x: x['userID'],userids)
