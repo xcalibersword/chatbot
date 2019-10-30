@@ -69,7 +69,7 @@ def init_policykeeper(jdata, pdata):
 
     make_policy = lambda s_ints: Policy(default_policy_set,s_ints)
 
-    terminal_pair = ["affirm", "initplus"]
+    terminal_pair = create_policy_tuple(["affirm", "initplus"])
 
     POLICY_RULES = {}
     for state_key in policy_states:

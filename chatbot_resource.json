@@ -1562,6 +1562,15 @@
             "pay_deadline": 15,
             "gongjijin_fee": 500
         },
+        "苏州": {
+            "sb_jishu": 3368,
+            "gjj_jishu": 0,
+            "shebao_payment": 1277.57,
+            "svc_fee": 40,
+            "shouci_fee": 50,
+            "pay_deadline": 15,
+            "gongjijin_fee": 540
+        },
         "苏州市区": {
             "sb_jishu": 3368,
             "gjj_jishu": 0,

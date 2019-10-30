@@ -111,12 +111,14 @@ class ReqGatekeeper:
             fetch = cu.dive_for_values([detail,],info,DEBUG=1)
             if len(fetch) > 0:
                 for c in conditions:
-                    val, slot = c
+                    val, slots_list = c
                     fetched = list(fetch.values())
-                    print("f,fval,val",fetch, fetched,val)
-                    if fetched[0] == val and not slot[0] in list(map(lambda x: x[0],self.slots)):
-                        print("Updating slots...", slot)
-                        self.slots.extend(slot)
+                    print("f,fval,val",fetch, fetched,val) 
+                    if fetched[0] == val:
+                        for slot in slots_list:
+                            if not slot[0] in list(map(lambda x: x[0],self.slots)):
+                                print("Updating slots...", slot)
+                                self.slots.append(slot)
                         break
 
     @classmethod

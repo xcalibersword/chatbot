@@ -25,7 +25,7 @@
         ],
         "inform_pai": [
             ["affirm", "finished_payment"],
-            ["next_step", s"finished_payment"]
+            ["next_step", "finished_payment"]
         ],
         "finished_payment": [
             ["affirm", "initplus"]
@@ -35,7 +35,7 @@
             ["deny", "EXIT_POCKET_STATE"]
         ],
         "pass_to_human": [
-            ["affirm","goodbye"]
+            ["affirm","initplus"]
         ],
         "goodbye":[
             ["greet", "init"]
