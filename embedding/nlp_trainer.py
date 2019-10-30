@@ -225,7 +225,7 @@ test_in = ["我在上海","我要付社保","我是想要付社保","您好","�
 
 ti = myTokenize(test_in)
 # print("input",test_in)
-input_array = arrayWordToInt(ti,word2int)
+input_array = arrayWordToInt(ti,word_index)
 input_array = np.reshape(input_array,(input_array.shape[0],input_array.shape[2])) # Remove the 1 in the middle
 output_array = model.predict(input_array)
 # print("raw",output_array)

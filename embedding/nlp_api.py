@@ -105,13 +105,13 @@ class Predictor:
 
     def predict_loop(self):
         while 1:
-            print("Please enter an input:")
+            print("Please enter an input: (press ctrl+d to end)")
             raw_inp = input()
             inp = self.tokenize(raw_inp)
             # print("pro in",inp)
-            out = self.pmodel.predict([inp])
-            self.pred_to_word(out)
-
+            out = self.pmodel.predict([inp])[0]
+            p_out = self.pred_to_word(out)
+            print(p_out)
 
 if MAIN:    
     test_ins = ["我在上海","我要付社保","交公积金","您好","哦了解", "拍好了", "怎么拍", "一共多少钱啊", "我好爱您哦", "代缴社保", "落户苏州", "上海社保可以吗", "我不太懂哦","社保可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
@@ -125,3 +125,5 @@ if MAIN:
         out = pp.predict(testin)
         print("In:",testin,"Predicted Intent:",out)
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+    pp.predict_loop()
