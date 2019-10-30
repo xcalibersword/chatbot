@@ -630,10 +630,10 @@
         },
         "inform_topup": {
             "key": "inform_topup",
-            "gated": false,
+            "gated": true,
             "thread": "t_topup",
             "terminal_state": false,
-            "req_info": "city",
+            "req_info": [["city","city"]],
             "replies": [
                 "亲，{rep_ext[topup_info]}"
             ]
