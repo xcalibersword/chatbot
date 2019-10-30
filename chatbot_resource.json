@@ -62,6 +62,12 @@
                 "对的哦"
             ]
         },
+        "next_step": {
+            "key": "next_step",
+            "default_set": false,
+            "default_target": "NA",
+            "replies": []
+        },
         "ask_name": {
             "key": "ask_for_name",
             "default_set": true,

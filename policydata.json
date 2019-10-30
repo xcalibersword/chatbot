@@ -19,23 +19,15 @@
             ["affirm", "confirm_plan"]
         ],
         "confirm_plan": [
-            ["affirm", "general_payment"]
-        ],
-        "general_payment": [
             ["affirm", "inform_pai"],
             ["query_pay_process", "inform_pai"],
             ["how_to_pai", "inform_pai"]
         ],
         "inform_pai": [
-            ["affirm", "finished_payment"]
+            ["affirm", "finished_payment"],
+            ["next_step", s"finished_payment"]
         ],
         "finished_payment": [
-            ["affirm", "initplus"]
-        ],
-        "inform_pay_deadline": [
-            ["affirm", "initplus"]
-        ],
-        "inform_topup_gjj":[
             ["affirm", "initplus"]
         ],
         "ask_if_issue": [
@@ -47,9 +39,6 @@
         ],
         "goodbye":[
             ["greet", "init"]
-        ],
-        "amt_month_fee_total":[
-            ["affirm","initplus"]
         ]
     }
 }

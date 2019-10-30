@@ -69,9 +69,15 @@ def init_policykeeper(jdata, pdata):
 
     make_policy = lambda s_ints: Policy(default_policy_set,s_ints)
 
+    terminal_pair = ["affirm", "initplus"]
+
     POLICY_RULES = {}
     for state_key in policy_states:
         tuplelist = []
+        state_obj = STATES[state_key]
+        terminal = state_obj["terminal_state"]
+        if terminal:
+            tuplelist.append(terminal_pair)
         for pair in policy_rules[state_key]:
             tuplelist.append(create_policy_tuple(pair))
         POLICY_RULES[STATE_KEYS[state_key]] = make_policy(tuplelist)
