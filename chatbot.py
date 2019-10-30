@@ -61,7 +61,7 @@ class Chatbot():
         return self.dbr.fetch_user_info(user)
 
     def make_new_chatmgr(self, chat):
-        makeCM = lambda c: ChatManager(c, self.ip, self.pk, self.rg, self.dm)
+        makeCM = lambda c: ChatManager(c, self.ip, self.pk, self.rg, self.dm, self.gk)
         return makeCM(chat)
 
     def start(self):
@@ -70,6 +70,7 @@ class Chatbot():
         self.ip = comps['iparser']
         self.pk = comps['pkeeper']
         self.rg = comps['replygen']
+        self.gk = comps['gkeeper']
         self.dbr = DatabaseRunner()
         self.dm.set_runner(self.dbr)
         print("SHEBAO chatbot started!")

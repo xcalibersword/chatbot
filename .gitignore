@@ -23,3 +23,5 @@ test_NLU/vocab/
 
 .vscode/
 
+
+*.h5

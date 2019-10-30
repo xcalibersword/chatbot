@@ -1,0 +1,226 @@
+#encoding = utf-8
+
+import csv
+import numpy as np
+import jieba as jb
+
+from unzipper import get_vector_dict
+from keras.initializers import Constant
+from keras.layers import Concatenate, Dropout, Embedding, LSTM, Dense, Conv1D, Flatten, BatchNormalization, MaxPooling1D
+from keras.models import Model, Input
+from keras.optimizers import Adam
+from keras.preprocessing.text import Tokenizer, text_to_word_sequence
+from keras.preprocessing.sequence import pad_sequences 
+from keras.utils import to_categorical
+
+w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
+
+max_review_length = 15 #maximum length of the sentence
+embedding_vector_length = 300
+max_intents = 100
+VDLIMIT = 60000
+
+#read csv
+dataset_fp = "data_in2.csv"
+count = 0
+with open(dataset_fp, 'r',encoding='gb18030') as f:
+    rows = csv.reader(f, delimiter = ',')
+    data = []
+    for r in rows:
+        if count > 0:
+            data.append(r)
+        count += 1
+    print("Read {} rows".format(count))
+    npdata = np.array(data)
+
+xval = npdata[:,0]
+yval = npdata[:,1]
+
+intent_tokenizer = Tokenizer(max_intents,filters='',oov_token=0)
+intent_tokenizer.fit_on_texts(yval)
+ints_yval = intent_tokenizer.texts_to_sequences(yval)
+cat_yval = to_categorical(ints_yval)
+
+num_intents = len(intent_tokenizer.word_index) + 1
+print('Found %s unique intents.' %num_intents)
+
+reverse_word_map = dict(map(reversed, intent_tokenizer.word_index.items()))
+print(reverse_word_map)
+
+def pred_to_word(pred):
+    top = 3
+    total = np.sum(pred)
+    s_pred = np.sort(pred,-1)
+    best = None
+    breakdown = ""
+
+    for i in range(top):
+        curr = s_pred[-1]
+        if curr == 0:
+            break
+        s_pred = s_pred[:-1]
+        idx = np.where(pred == curr)[0][0]
+        intent = reverse_word_map[idx]
+        if (best == None): best = intent 
+        conf = (curr*100/total)//0.1/10
+        breakdown = breakdown + "<{}> Intent:{} Confidence:{}%\n".format(i+1, intent, conf)
+    out = {"prediction":best,"breakdown":breakdown}
+    print(out)
+
+# ### Test reverse lookup for intent
+# print("testing for",yval[415])
+# test_reverse = cat_yval[415]
+# print(pred_to_word(test_reverse))
+
+#num_words is tne number of unique words in the sequence, if there's more top count words are taken
+
+# Preprocessing
+def get_unique_tokens(nparr):
+    d = []
+    for seq in nparr:
+        for c in seq[0]:
+            if not c in d:
+                d.append(c)
+    print("Found {} unique tokens".format(len(d)))
+    return d
+
+# BUILDS DICTIONARY
+def buildWordToInt(w2v,ut):
+    count = 1
+    d = {"_NA":0}
+    for c in w2v:
+        if not c in d:
+            d[c] = count
+            count += 1
+    for t in ut:
+        if not t in d:
+            d[t] = count
+            count += 1
+    print("Built a map of {} unique tokens".format(count))
+    return d
+
+
+def arrayWordToInt(nparr, d):
+    newArray = np.copy(nparr)
+    for k, v in d.items(): newArray[nparr==k] = v
+    newArray[isinstance(newArray,str)] = 0
+    return newArray
+
+def myTokenize(nparr):
+    pyarr = nparr.tolist() if isinstance(nparr, np.ndarray) else nparr
+    outarr = []
+    for seq in pyarr:
+        if isinstance(seq, np.ndarray):
+            seq = nparr.tolist()
+
+        seq = seq.replace(" ", "")
+        jbseq = jb.lcut(seq, cut_all=True)
+        jbseq = pad_sequences([jbseq,], maxlen = max_review_length, dtype = object, value="_NA")
+        outarr.append(jbseq)
+    return np.array(outarr)
+    # return text_to_word_sequence(arr,lower = False) # Lower causes problems
+
+# EMBEDDING
+embed_dict = get_vector_dict(w2v_filepath,limit = VDLIMIT)
+zero_vector = [0] * embedding_vector_length
+
+prep_xvals = myTokenize(xval)
+ut = get_unique_tokens(prep_xvals)
+word2int = buildWordToInt(embed_dict,ut)
+prep_xvals = arrayWordToInt(prep_xvals,word2int)
+print("split",prep_xvals[100:105])
+# prep_xvals = pad_sequences(prep_xvals, maxlen = max_review_length, dtype = object, value="0")
+# print("padd",prep_xvals[100:105])
+prep_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) # Remove the 1 in the middle
+print("shape", prep_xvals.shape)
+
+# print("WORD INDEX", word2int)
+
+
+# prepare embedding matrix
+num_words = len(embed_dict) + prep_xvals.shape[0]
+embedding_matrix = np.zeros((num_words, embedding_vector_length))
+idx = 0
+
+# Build dict for VECTORS
+for word, i in word2int.items():
+    if word in embed_dict:
+        embedding_matrix[i] = embed_dict[word]
+    else:
+        # words not found in embedding index will be all-zeros.
+        embedding_matrix[i] = zero_vector
+    # word_to_int[word] = i
+    idx += 1
+
+print("embedding mat shape",embedding_matrix.shape)
+
+embed_xvals = prep_xvals
+# for k,v in word_to_int.items(): embed_xvals[prep_xvals==k] = v # Dict lookup for npArrays
+
+my_embedding = Embedding(
+    num_words,
+    embedding_vector_length,
+    embeddings_initializer=Constant(embedding_matrix),
+    input_length=max_review_length,
+    trainable = False
+    )
+
+print('Shape of data tensor:', embed_xvals.shape)
+print("xval sample", embed_xvals[156])
+
+# MODEL CONSTRUCTION
+
+main_input = Input(shape=(max_review_length,), dtype='int32')
+
+embed = my_embedding(main_input)
+embed = BatchNormalization(momentum=0.99)(embed)
+
+# 词窗大小分别为 2 3 4
+cnnUnits = 128 # 
+cnn1 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu')(embed)
+cnn2 = Conv1D(cnnUnits, 3, padding='same', strides=1, activation='relu')(embed)
+cnn3 = Conv1D(cnnUnits, 4, padding='same', strides=1, activation='relu')(embed)
+
+# cnn1 = MaxPooling1D(pool_size=4)(cnn1)
+# cnn2 = MaxPooling1D(pool_size=4)(cnn2)
+# cnn3 = MaxPooling1D(pool_size=4)(cnn3)
+
+# 合并三个模型的输出向量
+# Concat 3 outputs into one
+cnn = Concatenate(axis=-1)([cnn1, cnn2, cnn3])
+cnn = BatchNormalization(momentum=0.99)(cnn)
+
+flat = Flatten()(cnn)
+flat = Dropout(0.2)(flat)
+# flat = Dense(units=256, activation='relu')(flat) # 
+outs = Dense(units=num_intents, activation='sigmoid')(flat)
+model = Model(inputs=main_input, outputs=outs)
+
+
+LEARN_RATE = 0.00005
+optimizer = Adam(learning_rate=LEARN_RATE)
+model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
+
+model.summary()
+
+model.fit(x=embed_xvals,y=cat_yval,epochs=80,verbose=1,validation_split=0.0,batch_size=8)
+
+# Post Training
+model.save('291019_JB_model.h5')
+print("This Model has been saved! Rejoice")
+
+test_in = ["我在上海","我要付社保","我是想要付社保","您好","哦了解了", "填好了呀", "拍好了", "怎么拍", "一共多少钱啊", "我好爱您哦", "代缴社保", "落户上海", "上海社保可以吗", "我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
+
+ti = myTokenize(test_in)
+# print("input",test_in)
+input_array = arrayWordToInt(ti,word2int)
+input_array = np.reshape(input_array,(input_array.shape[0],input_array.shape[2])) # Remove the 1 in the middle
+output_array = model.predict(input_array)
+# print("raw",output_array)
+
+i = 0
+for bleh in output_array:
+    print(test_in[i])
+    print(input_array[i])
+    i+=1
+    pred_to_word(bleh)
