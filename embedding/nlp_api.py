@@ -88,18 +88,19 @@ class Predictor:
         s_pred = np.sort(pred,-1)
         best = None
         breakdown = ""
-
+        rel_threshold = 50
+        DEFAULT_RETURN = "complicated"
         for i in range(top):
-            curr = s_pred[-1]
-            if curr == 0:
+            curr_mag = s_pred[-1]
+            if curr_mag == 0:
                 break
             s_pred = s_pred[:-1]
-            idx = np.where(pred == curr)[0][0]
+            idx = np.where(pred == curr_mag)[0][0]
             intent = reverse_word_map[idx]
-            if (best == None): best = intent 
-            conf = (curr*100/total)//0.1/10
+            conf = (curr_mag*100/total)//0.1/10
+            if (best == None) and conf >= rel_threshold: best = intent 
             breakdown = breakdown + "<{}> Intent:{} Confidence:{}%\n".format(i+1, intent, conf)
-        
+        if (best == None): best = DEFAULT_RETURN
         out = {"prediction":best,"breakdown":breakdown}
         return out
 
