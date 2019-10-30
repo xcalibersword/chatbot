@@ -3,23 +3,17 @@
     "policy_rules":{
         "init": [
             ["purchase", "propose_plan"],
-            ["purchase_wxyj","propose_plan_wxyj"],
             ["affirm", "initplus"],
             ["deny", "goodbye"]
         ],
         "initplus": [
             ["greet", "init"],
             ["purchase", "propose_plan"],
-            ["purchase_wxyj","propose_plan_wxyj"],
             ["deny", "goodbye"]
         ],
         "init_sale": [
             ["affirm", "propose_plan"],
-            ["purchase", "propose_plan"],
-            ["purchase_wxyj","propose_plan_wxyj"]
-        ],
-        "propose_plan_wxyj": [
-            ["affirm", "confirm_plan"]
+            ["purchase", "propose_plan"]
         ],
         "propose_plan": [
             ["affirm", "confirm_plan"]

@@ -4,47 +4,18 @@
             "key": "11 affirmation",
             "default_set": false,
             "default_target": "NA",
-            "matchdb": [
-                "yes$",
-                "(?<!(不|你|您))好(啊|哦|滴|的)*",
-                "(?<!没)有(啊|哦|滴|的)*$",
-                "(?<!不)(是|好的|可以)(啊|哦|滴|的)*$",
-                "没问题",
-                "(?<!不|没)确(认|定)$",
-                "ok$",
-                "是的$",
-                "哦$",
-                "嗯",
-                "(?<!(不|没))对(啊|哦|滴|的)*$",
-                "没错$",
-                "这样(啊|哦|的|滴|哇)*$"
-            ],
             "replies": []
         },
         "deny": {
             "key": "10 denial",
             "default_set": false,
             "default_target": "NA",
-            "matchdb": [
-                "(?<!.)不(是|好|行|可以)$",
-                "(?<!.)没(有)*(?!错)$",
-                "不确定$",
-                "no$",
-                "not ok",
-                "(?<=(不|没))对$"
-            ],
             "replies": []
         },
         "greet": {
             "key": "100 greetings",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [
-                "(你|您)好$",
-                "hello",
-                "hi$",
-                "有人(不|吗)$"
-            ],
             "replies": [
                 "您好 有什么能帮助您的?",
                 "Hello 有什么能帮助您的?"
@@ -54,24 +25,38 @@
             "key": "109 confused",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [],
             "replies": [
                 "换句话来说...",
                 "我的意思是..."
             ]
         },
         "unknown": {
-            "key": "109 confused",
+            "key": "1099 unknown",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [],
-            "replies": ["不好意思,我听不懂","不好意思,我不明白"]
+            "replies": [
+                "不好意思,我听不懂",
+                "不好意思,我不明白"
+            ]
+        },
+        "unsupported_request": {
+            "key": "unsupported_request",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "抱歉哦亲，小店暂时不提供这项业务哦"
+            ]
+        },
+        "forget_it": {
+            "key": "12 forget_it",
+            "default_set": true,
+            "default_target": "initplus",
+            "replies": []
         },
         "doublecheck": {
             "key": "107 doublecheck",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [],
             "replies": [
                 "是的亲",
                 "对的哦"
@@ -81,13 +66,6 @@
             "key": "ask_for_name",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [
-                "who u",
-                "(您|你)的名字是什么",
-                "(您|你)叫什么",
-                "(您|你)叫什么名",
-                "(您|你)是谁"
-            ],
             "replies": [
                 "我是回音机器人",
                 "他们叫我王俊杰！",
@@ -98,21 +76,18 @@
             "key": 1702,
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [],
             "replies": []
         },
         "ask_can_topup": {
             "key": "ask_can_topup",
             "default_set": true,
             "default_target": "inform_topup",
-            "matchdb": [],
             "replies": []
         },
         "ask_shebao_status": {
             "key": "ask_shebao_status",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [],
             "replies": [
                 "亲 我是值班客服 看不到系统数据 你白天上班时间联系我们吧 谢谢亲"
             ]
@@ -121,7 +96,6 @@
             "key": "112 query_pay_process",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [],
             "replies": [
                 "缴纳流程：和客服明确缴纳城市以及缴纳月份，拍下链接付款---小程序提供资料---申报参保手续---手续办理成功发货---确认收货请注意：参保手续完成后，不可以申请退款！！！"
             ]
@@ -130,57 +104,52 @@
             "key": "114 ziliao query",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [
-                "要(.*)(资料|材料)"
-            ],
-            "replies": [
-                "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料"
-            ]
+            "replies": []
         },
         "ask_can_topup_gjj": {
             "key": "ask_can_topup_gjj",
             "default_set": true,
             "default_target": "inform_topup_gjj",
-            "matchdb": [],
             "replies": []
         },
         "ask_amt_month_fee_total": {
             "key": "ask_amt_month_fee_total",
             "default_set": true,
             "default_target": "amt_month_fee_total",
-            "matchdb": [
-                "一共(.*)(付|缴纳|多少)"
-            ],
             "replies": []
         },
         "ask_alt_payment_method": {
             "key": "info_alt_payment",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [
-                "你(们)*(账户|户口)"
-            ],
             "replies": [
                 "淘宝付费，然后我们操作把你加到我们公司名下，每个月参保缴费"
+            ]
+        },
+        "explore_option": {
+            "key": "change options",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": []
+        },
+        "query_company_name": {
+            "key": "info company name",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "我们公司叫做 58社保"
             ]
         },
         "query_pay_deadline": {
             "key": "info_pay_deadline",
             "default_set": true,
             "default_target": "inform_pay_deadline",
-            "matchdb": [
-                "最晚"
-            ],
             "replies": []
         },
         "query_weixin": {
             "key": "info_weixin",
             "default_set": true,
-            "default_target": "SAME_STATE",
-            "matchdb": [
-                "微信(.*)吗",
-                "(有|加)(.*)微信"
-            ],
+            "default_target": "inform_weixin",
             "replies": [
                 "上海wei信号：iHR-7531，备注填写：店铺名称+上海+淘宝会员名"
             ]
@@ -189,16 +158,14 @@
             "key": "info_pregnant",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [],
             "replies": [
                 "怀孕的我们不接受代缴哦"
             ]
         },
-        "ask_for_phone": {
+        "query_phone": {
             "key": "info phone number",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [],
             "replies": [
                 "亲亲在白天上班时间联系哦：15221004815",
                 "亲可以在白天上班时间电话咨询哦：021-64360181转602"
@@ -208,7 +175,6 @@
             "key": "query_bujiao",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [],
             "replies": [
                 "补缴不算连续的，也不算正常缴纳，可以算累计缴纳的月份"
             ]
@@ -217,7 +183,6 @@
             "key": "query_pay_part_only",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [],
             "replies": [
                 "不可以哦亲，必须5险一起缴纳哦"
             ]
@@ -225,122 +190,145 @@
         "query_how_check_shebao_status": {
             "key": "info_how_check_shebao",
             "default_set": true,
-            "default_target": "SAME_STATE",
-            "matchdb": [
-                "查询社保(资格*)",
-                "查询缴纳",
-                "缴纳怎么查询",
-                "how do i check shebao status",
-                "how check shebao",
-                "在哪(.*)能查到"
-            ],
+            "default_target": "inform_how_check_shebao",
             "replies": [
-                "社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp. 公积金缴费查询：次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。）"
+                "{rep_ext[how_check_shebao]}"
             ]
+        },
+        "query_how_check_gjj_status": {
+            "key": "info_how_check_gjj",
+            "default_set": true,
+            "default_target": "inform_how_check_gjj",
+            "replies": []
         },
         "query_when_check_shebao_status": {
             "key": "info_when_check_shebao",
             "default_set": true,
             "default_target": "inform_when_check_shebao",
-            "matchdb": [],
             "replies": []
         },
-        "query_shebao_components":{
-            "key": "info_when_check_shebao",
+        "query_shebao_components": {
+            "key": "info_shebao_components",
             "default_set": true,
-            "default_target": "inform_when_check_shebao",
-            "matchdb": [],
-            "replies": ["社保包括：养老保险、医疗保险、生育保险、工伤保险和失业保险"]
+            "default_target": "SAME_STATE",
+            "replies": [
+                "社保包括：养老保险、医疗保险、生育保险、工伤保险和失业保险"
+            ]
+        },
+        "query_housing": {
+            "key": "info_housing",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "这个亲亲咨询下购房中介哦，小店只负责代缴哈"
+            ]
+        },
+        "daikuan": {
+            "key": "daikuan (same as housing)",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "这个亲亲咨询下购房中介哦，小店只负责代缴哈"
+            ]
+        },
+        "query_various_effects": {
+            "key": "query_various_effects",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "这个小店不太清楚哦，小店只负责代缴哈"
+            ]
+        },
+        "question_reliability": {
+            "key": "question_reliability",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "亲，小店是正规的人力资源公司哦，挂靠公司，不会有代缴痕迹哦"
+            ]
         },
         "complicated": {
             "key": "404 too complicated",
             "default_set": true,
             "default_target": "pass_to_human",
-            "matchdb": [],
+            "replies": []
+        },
+        "luohu": {
+            "key": "4040 luohu complicated",
+            "default_set": true,
+            "default_target": "pass_to_human",
             "replies": []
         },
         "how_to_pai": {
             "key": "info_how_to_pai",
             "default_set": true,
             "default_target": "inform_pai",
-            "matchdb": [
-                "怎么(拍|付钱)",
-                "要做(啥|什么)"
-            ],
             "replies": []
         },
         "report_issue": {
             "key": 151,
             "default_set": true,
             "default_target": "log_issue",
-            "matchdb": [
-                "issue",
-                "problem",
-                "我有事"
-            ],
             "replies": []
         },
         "inform_paid": {
-            "key": 180,
+            "key": "180 inform_paid",
             "default_set": true,
             "default_target": "finished_payment",
-            "matchdb": [],
             "replies": []
         },
-        "inform_early_paid": {
-            "key": 181,
+        "inform_payment_history": {
+            "key": "inform_payment_history",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [],
-            "replies": ["看到了 亲 请放心 我们一定会及时缴纳的 谢谢亲"]
+            "replies": [
+                "哦，好滴。"
+            ]
+        },
+        "inform_early_paid": {
+            "key": "181 inform_early_paid",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "看到了亲 放心我们一定会及时缴纳的 谢谢"
+            ]
         },
         "purchase": {
             "key": "purchase",
             "default_set": false,
             "default_target": "NA",
-            "matchdb": [
-                "代缴",
-                "(交|付)社保",
-                "怎么缴纳",
-                "buy",
-                "社保(.*)(交|付|代缴)"
-            ],
             "replies": []
         },
         "purchase_wxyj": {
             "key": "purchase_wxyj",
             "default_set": false,
             "default_target": "NA",
-            "matchdb": [],
             "replies": []
+        },
+        "pay_shui": {
+            "key": "pay_shui",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "不好意思，暂时不能替您交税"
+            ]
         },
         "confusion": {
             "key": 193,
             "default_set": false,
             "default_target": "NA",
-            "matchdb": [],
             "replies": []
         },
         "goodbye": {
             "key": "195 goodbyes",
             "default_set": true,
             "default_target": "goodbye",
-            "matchdb": [
-                "再见",
-                "bye",
-                "goodbye"
-            ],
             "replies": []
         },
         "thankyou": {
             "key": "194 thankyou",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [
-                "谢谢",
-                "谢了",
-                "感谢"
-            ],
             "replies": [
                 "不客气的亲"
             ]
@@ -523,34 +511,7 @@
                 "shebao_basic"
             ],
             "replies": [
-                "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。"
-            ]
-        },
-        "propose_plan_wxyj": {
-            "key": "propose_plan_wxyj",
-            "gated": true,
-            "thread": "t_presale",
-            "terminal_state": false,
-            "req_info": [
-                [
-                    "city",
-                    "city"
-                ],
-                [
-                    "首次",
-                    "yesno"
-                ],
-                [
-                    "要公积金",
-                    "default_yes"
-                ],
-                [
-                    "要社保",
-                    "default_yes"
-                ]
-            ],
-            "replies": [
-                "ERROR"
+                "{rep_ext[entire_plan_proposal]}"
             ]
         },
         "propose_plan_gjj": {
@@ -703,12 +664,77 @@
                 "补充公积金需要和基本公积金一起缴纳，基数保持一致；补充公积金服务费80元每月"
             ]
         },
-        "inform_when_check_shebao":{
+        "inform_req_resources": {
+            "key": "inform_req_resources",
+            "gated": true,
+            "thread": "t_req_resources",
+            "terminal_state": true,
+            "req_info": [
+                [
+                    "city",
+                    "city"
+                ]
+            ],
+            "replies": [
+                "{rep_ext[req_resource_info]}"
+            ]
+        },
+        "inform_weixin": {
+            "key": "inform_weixin",
+            "gated": true,
+            "thread": "t_weixin",
+            "terminal_state": true,
+            "req_info": [
+                [
+                    "city",
+                    "city"
+                ]
+            ],
+            "replies": [
+                "{rep_ext[weixin_info]}"
+            ]
+        },
+        "inform_how_check_shebao": {
+            "key": "inform_how_check_shebao",
+            "gated": true,
+            "thread": "t_howcheck",
+            "terminal_state": true,
+            "req_info": [
+                [
+                    "city",
+                    "city"
+                ]
+            ],
+            "replies": [
+                "{rep_ext[how_check_shebao]}"
+            ]
+        },
+        "inform_how_check_gjj": {
+            "key": "inform_how_check_gjj",
+            "gated": true,
+            "thread": "t_howcheck",
+            "terminal_state": true,
+            "req_info": [
+                [
+                    "city",
+                    "city"
+                ]
+            ],
+            "replies": [
+                "{rep_ext[how_check_gjj]}"
+            ]
+        },
+        "inform_when_check_shebao": {
             "key": "inform_when_check_shebao",
             "gated": true,
             "thread": "t_whencheck",
             "terminal_state": true,
-            "req_info": [["city","city"]],
+            "req_info": [
+                [
+                    "city",
+                    "city"
+                ]
+            ],
             "replies": [
                 "{rep_ext[when_check_shebao]}"
             ]
@@ -739,7 +765,78 @@
                     "requested_info": {
                         "city": "您是哪个城市呢？",
                         "首次": "是首次吗？",
-                        "要公积金": "要交公积金吗？"
+                        "要公积金": "要交公积金吗？",
+                        "苏州区": "是市区还是园区呢？"
+                    }
+                }
+            },
+            {
+                "writeto": "req_resource_info",
+                "states": [
+                    "inform_req_resource"
+                ],
+                "lookfor": [
+                    "city"
+                ],
+                "if_present": {},
+                "if_value": {
+                    "city": {
+                        "上海": "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料",
+                        "昆山": "<TO BE ADDED>",
+                        "苏州市区": "<TO BE ADDED>",
+                        "苏州园区": "新开户公司办理市民卡，制卡周期6个月左右，需要2寸白底电子照片。\n近期2寸白底正面免冠照片,不着制式服装或白色上衣,常戴眼镜的人员应配戴眼镜。\n格式为jpg或jpeg,照片大小在10-40K之间,长宽分别为441像素(高)*385像素(宽),\n以姓名+身份证命名,不符合条件的相片会导致制卡失败。",
+                        "北京": "1、 员工一寸白底免冠照片；（要求：jpg格式，宽度：358像素，高度：441像素，不小于9KB，不大于20KB；白底免冠，头部占照片2/3，不佩戴眼镜，衣服和背景反差大\n2、 身份证复印件（1：1大小）清晰有底纹；（要求：身份证复印件要跟原件大小一致、身份证复印件有边框、有底纹、身份证复印件字迹、照片清晰、复印件正反面顺序一致）；\n3、 员工的【北京当地】银行卡信息，借记卡卡号和银行名称（必须和参保人信息保持一致）。用于社保局记录向员工支付打款用；（可选：工商银行、光大银行、华夏银行、建设银行、交通银行、民生银行、农业银行、邮政储蓄银行、招商银行、中国银行、中信银行、兴业银行12家）\n4、 告知户口性质（城镇/农业）；\n5、 新参人员的资料准备时间截止至每月13日。"
+                    }
+                }
+            },
+            {
+                "writeto": "weixin_info",
+                "states": [
+                    "inform_weixin"
+                ],
+                "lookfor": [
+                    "city"
+                ],
+                "if_present": {},
+                "if_value": {
+                    "city": {
+                        "上海": "上海wei信号：iHR-7531，备注填写：店铺名称+上海+淘宝会员名",
+                        "昆山": "<TO BE ADDED>",
+                        "苏州市区": "<TO BE ADDED>",
+                        "苏州园区": "<TO BE ADDED>",
+                        "北京": "北京wei信号：iHR-8091， 备注填写：唯洛+北京+淘宝会员名"
+                    }
+                }
+            },
+            {
+                "writeto": "how_check_shebao",
+                "states": [
+                    "inform_how_check_shebao"
+                ],
+                "lookfor": [
+                    "city"
+                ],
+                "if_present": {},
+                "if_value": {
+                    "city": {
+                        "上海": "上海社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp. 公积金缴费查询：次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。）",
+                        "北京": "北京社保查询：① 进入http://www.bjrbj.gov.cn/csibiz/indinfo/login.jsp →“城镇职工个人用户登录”→个人基本信息查询→5险状态显示正常缴费→参保成功；② 缴费明细隔月可查，如4月份的社保明细，6月后可查到账 → 个人缴费信息查询"
+                    }
+                }
+            },
+            {
+                "writeto": "how_check_gjj",
+                "states": [
+                    "inform_how_check_gjj"
+                ],
+                "lookfor": [
+                    "city"
+                ],
+                "if_present": {},
+                "if_value": {
+                    "city": {
+                        "上海": "上海公积金缴费查询：次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。）",
+                        "北京": "北京公积金查询： http://gjj.beijing.gov.cn/  ，\n→“个人信息查询” →“个人住房公积金查询” →输入自己的账号和密码然后选择查询。\n（如果没有联名卡可以去银行办理一张，如果没有联名卡可以选择其他的登录方式）\n→在缴存单位的地方“单击” →这时就能看到公积金的状态，在下面也可以选择打印公积金信息。"
                     }
                 }
             },
@@ -860,7 +957,8 @@
                 ],
                 "if_value": {
                     "city": {
-                        "上海": "可以补缴最近6个月，补缴不算连续哦，望知悉"
+                        "上海": "可以补缴最近6个月，补缴不算连续哦，望知悉",
+                        "北京": "可补缴最近3个月的社保公积金，补缴费40元/月；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。"
                     }
                 }
             },
@@ -946,6 +1044,42 @@
                     "shebao_basic_total": "{calc_ext[shebao_basic_total]}"
                 },
                 "if_value": {}
+            },
+            {
+                "writeto": "entire_plan_proposal",
+                "states": [
+                    "propose_plan",
+                    "propose_plan_wxyj"
+                ],
+                "lookfor": [
+                    "city",
+                    [
+                        "city_info",
+                        [
+                            "sb_jishu",
+                            "gjj_jishu",
+                            "shebao_payment",
+                            "gongjijin_fee"
+                        ]
+                    ],
+                    [
+                        "calc_ext",
+                        [
+                            "flag_sb_gjj"
+                        ]
+                    ]
+                ],
+                "if_present": {},
+                "if_value": {
+                    "city": {
+                        "北京": "农业户口：{rep_ext[product]}{rep_ext[proposal]}，共计{rep_ext[calc_str_total]}\n 城镇户口：{rep_ext[product]}{rep_ext[proposal]}，共计{rep_ext[calc_str_total]}\n服务费单项{city_info[svc_fee]}元，双项{city_info[svc_fee]*2}元（23号之后最低缴纳基数会提高、服务费会贵一些）北京首保：需要开户费50元，公司统一制卡，周期6个月左右，制卡完成会联系邮寄给你",
+                        "上海": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。",
+                        "苏州园区": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。",
+                        "苏州市区": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。",
+                        "昆山": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。",
+                        "杭州": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。"
+                    }
+                }
             }
         ],
         "calcs": {
@@ -1182,22 +1316,31 @@
             "gongjijin_fee": 338
         },
         "北京": {
-            "sb_jishu": 1337,
-            "gjj_jishu": 1101,
-            "shebao_payment": 0,
-            "svc_fee": 999,
+            "sb_jishu": 3613,
+            "gjj_jishu": 2409,
+            "shebao_payment": 1629.17,
+            "svc_fee": 40,
             "shouci_fee": 50,
             "pay_deadline": 20,
-            "gongjijin_fee": 100
+            "gongjijin_fee": 498
         },
-        "深圳": {
-            "sb_jishu": 2335,
-            "gjj_jishu": 1101,
-            "shebao_payment": 0,
-            "svc_fee": 999,
+        "苏州园区": {
+            "sb_jishu": 3125,
+            "gjj_jishu": 0,
+            "shebao_payment": 878.14,
+            "svc_fee": 40,
             "shouci_fee": 50,
-            "pay_deadline": 20,
-            "gongjijin_fee": 100
+            "pay_deadline": 15,
+            "gongjijin_fee": 500
+        },
+        "苏州市区": {
+            "sb_jishu": 3368,
+            "gjj_jishu": 0,
+            "shebao_payment": 1277.57,
+            "svc_fee": 40,
+            "shouci_fee": 50,
+            "pay_deadline": 15,
+            "gongjijin_fee": 540
         },
         "杭州": {
             "sb_jishu": 3321.6,
@@ -1207,6 +1350,15 @@
             "shouci_fee": 50,
             "pay_deadline": 20,
             "gongjijin_fee": 482
+        },
+        "深圳": {
+            "sb_jishu": 2335,
+            "gjj_jishu": 1101,
+            "shebao_payment": 0,
+            "svc_fee": 999,
+            "shouci_fee": 50,
+            "pay_deadline": 20,
+            "gongjijin_fee": 100
         },
         "广州": {
             "sb_jishu": 1200,
@@ -1225,6 +1377,15 @@
             "shouci_fee": 50,
             "pay_deadline": 20,
             "gongjijin_fee": 100
+        },
+        "昆山": {
+            "sb_jishu": 2940,
+            "gjj_jishu": 0,
+            "shebao_payment": 1037.82,
+            "svc_fee": 40,
+            "shouci_fee": 50,
+            "pay_deadline": 20,
+            "gongjijin_fee": 472
         }
     },
     "info_parser": {
@@ -1251,6 +1412,7 @@
         "slots": {
             "city": {
                 "上海": [
+                    "山海",
                     "上海",
                     "shanghai"
                 ],
@@ -1273,7 +1435,20 @@
                 "成都": [
                     "成都",
                     "chengdu"
+                ],
+                "昆山": [
+                    "昆山"
+                ],
+                "苏州": [
+                    "苏州"
+                ],
+                "苏州园区": [
+                    "aa苏州(.*)园区"
+                ],
+                "苏州市区": [
+                    "aa苏州(.*)市区"
                 ]
+                
             },
             "payment_info": {
                 "支付": [
@@ -1301,20 +1476,30 @@
             },
             "gen_shouci_slot": {
                 "yes": [
-                    "没(交|付|代缴)(.*)过",
+                    "没(有*)(交|付|缴|代缴)(.*)过",
                     "(?<!不)(.*)首次"
                 ],
                 "no": [
-                    "(?<!没)(交|付|代缴)(.+)过",
+                    "(?<!没)(交|付|缴)(.+)过",
                     "不(.*)首次"
+                ]
+            },
+            "suzhou_qu_slot": {
+                "苏州园区": [
+                    "园区"
+                ],
+                "苏州市区": [
+                    "市区"
                 ]
             },
             "gongjijin_slot": {
                 "yes": [
-                    "(?<!(没|不))(要|交|付)公积金"
+                    "(?<!(没|不))(要|交|付)公积金",
+                    "和公积金"
                 ],
                 "no": [
-                    "不(要|交|付)公积金"
+                    "不(要|交|付)公积金",
+                    "只(交|付|要)社保"
                 ]
             },
             "default_yes": {
@@ -1357,21 +1542,11 @@
             }
         }
     },
-    "forms": {
-        "shebao": {
-            "req_info": [
-                "city",
-                "val_shebao",
-                "val_gongjijin",
-                "val_monthlyfee",
-                "shop",
-                "date_shebaostart",
-                "date_gongjijinstart",
-                "bool_gongjijin",
-                "bool_gongzi",
-                "bool_firsttime"
-            ]
-        }
+    "conditional_reqs": {
+        "city":[
+            ["苏州",[["city","suzhou_qu_slot"],["苏州区","suzhou_qu_slot"]]],
+            ["北京",[["要交社保","wantnot"]]]
+        ]
     },
     "policy_data_location": "policydata.json"
 }

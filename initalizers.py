@@ -2,7 +2,7 @@ import json
 import os
 from cbsv import read_json
 from embedding.nlp_api import Predictor
-from chatbot_supp import SIP, Policy, InfoVault, InfoParser
+from chatbot_supp import SIP, Policy, InfoVault, InfoParser, ReqGatekeeper
 from chatclass import DetailManager, ReplyGenerator, PolicyKeeper
 
 # Converts a dict of states to a dict of state keys
@@ -98,6 +98,10 @@ def init_detailmanager(jdata):
     vault = InfoVault(jdata)
     return DetailManager(vault)
 
+def init_gatekeeper(jdata):
+    conds = jdata["conditional_reqs"]
+    return ReqGatekeeper(conds)
+
 def master_initalize(filename = ""):
     # INTENTS = jdata["intents"]
     # STATE_KEYS = jdata["state_keys"]
@@ -116,4 +120,5 @@ def master_initalize(filename = ""):
     components["iparser"] = init_infoparser(jdata)
     components["replygen"] = init_replygen(jdata)
     components["pkeeper"] = init_policykeeper(jdata,pdata)
+    components["gkeeper"] = init_gatekeeper(jdata)
     return components
