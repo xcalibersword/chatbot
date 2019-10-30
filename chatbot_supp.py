@@ -114,7 +114,7 @@ class ReqGatekeeper:
                     val, slot = c
                     fetched = list(fetch.values())
                     print("f,fval,val",fetch, fetched,val)
-                    if fetched[0] == val and not slot in self.slots:
+                    if fetched[0] == val and not slot[0] in list(map(lambda x: x[0],self.slots)):
                         print("Updating slots...", slot)
                         self.slots.extend(slot)
                         break

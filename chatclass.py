@@ -499,9 +499,9 @@ class ReplyGenerator:
         formatDB = self.formatDB["msg_formats"]
         calcDB = self.formatDB["calcs"]
 
-        def add_enh(key, value, ext_dict,overall_key):
+        def add_enh(key, value, ext_dict,overall_key, overwrite = False):
             if 0: print("Enhancing!{}:{}".format(key,value))
-            if key in ext_dict:
+            if key in ext_dict and not overwrite:
                 ext_dict[key] = ext_dict[key] + value
             else:
                 ext_dict[key] = value
@@ -517,7 +517,7 @@ class ReplyGenerator:
         
         def add_calc_enh(key, rawstr):
             flt = float(rawstr)
-            return add_enh(key,flt,l_calc_ext,"calc_ext")
+            return add_enh(key,flt,l_calc_ext,"calc_ext",overwrite = True)
 
         def needs_txt_enh(tmp,csk):
             states = tmp["states"]
