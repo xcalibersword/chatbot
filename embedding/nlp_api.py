@@ -1,7 +1,10 @@
 import numpy as np
 import jieba as jb
-# from embedding.unzipper import get_vector_dict
-from unzipper import get_vector_dict
+
+if __name__ == "__main__":
+    from unzipper import get_vector_dict
+else:
+    from embedding.unzipper import get_vector_dict
 
 from keras.models import load_model
 from keras.preprocessing.sequence import pad_sequences 

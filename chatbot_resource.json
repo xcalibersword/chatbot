@@ -10,14 +10,6 @@
             "key": "10 denial",
             "default_set": false,
             "default_target": "NA",
-            "matchdb": [
-                "(?<!.)不(是|好|行|可以)$",
-                "(?<!.)没(有)*(?!错)$",
-                "不确定$",
-                "no$",
-                "not ok",
-                "(?<=(不|没))对$"
-            ],
             "replies": []
         },
         "greet": {
@@ -74,13 +66,6 @@
             "key": "ask_for_name",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [
-                "who u",
-                "(您|你)的名字是什么",
-                "(您|你)叫什么",
-                "(您|你)叫什么名",
-                "(您|你)是谁"
-            ],
             "replies": [
                 "我是回音机器人",
                 "他们叫我王俊杰！",
@@ -119,7 +104,6 @@
             "key": "114 ziliao query",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [],
             "replies": []
         },
         "ask_can_topup_gjj": {
@@ -132,18 +116,12 @@
             "key": "ask_amt_month_fee_total",
             "default_set": true,
             "default_target": "amt_month_fee_total",
-            "matchdb": [
-                "一共(.*)(付|缴纳|多少)"
-            ],
             "replies": []
         },
         "ask_alt_payment_method": {
             "key": "info_alt_payment",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [
-                "你(们)*(账户|户口)"
-            ],
             "replies": [
                 "淘宝付费，然后我们操作把你加到我们公司名下，每个月参保缴费"
             ]
@@ -166,19 +144,12 @@
             "key": "info_pay_deadline",
             "default_set": true,
             "default_target": "inform_pay_deadline",
-            "matchdb": [
-                "最晚"
-            ],
             "replies": []
         },
         "query_weixin": {
             "key": "info_weixin",
             "default_set": true,
             "default_target": "inform_weixin",
-            "matchdb": [
-                "微信(.*)吗",
-                "(有|加)(.*)微信"
-            ],
             "replies": [
                 "上海wei信号：iHR-7531，备注填写：店铺名称+上海+淘宝会员名"
             ]
@@ -220,7 +191,6 @@
             "key": "info_how_check_shebao",
             "default_set": true,
             "default_target": "inform_how_check_shebao",
-            "matchdb": [],
             "replies": [
                 "{rep_ext[how_check_shebao]}"
             ]
@@ -293,21 +263,12 @@
             "key": "info_how_to_pai",
             "default_set": true,
             "default_target": "inform_pai",
-            "matchdb": [
-                "怎么(拍|付钱)",
-                "要做(啥|什么)"
-            ],
             "replies": []
         },
         "report_issue": {
             "key": 151,
             "default_set": true,
             "default_target": "log_issue",
-            "matchdb": [
-                "issue",
-                "problem",
-                "我有事"
-            ],
             "replies": []
         },
         "inform_paid": {
@@ -336,13 +297,6 @@
             "key": "purchase",
             "default_set": false,
             "default_target": "NA",
-            "matchdb": [
-                "代缴",
-                "(交|付)社保",
-                "怎么缴纳",
-                "buy",
-                "社保(.*)(交|付|代缴)"
-            ],
             "replies": []
         },
         "purchase_wxyj": {
@@ -369,22 +323,12 @@
             "key": "195 goodbyes",
             "default_set": true,
             "default_target": "goodbye",
-            "matchdb": [
-                "再见",
-                "bye",
-                "goodbye"
-            ],
             "replies": []
         },
         "thankyou": {
             "key": "194 thankyou",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "matchdb": [
-                "谢谢",
-                "谢了",
-                "感谢"
-            ],
             "replies": [
                 "不客气的亲"
             ]
@@ -568,33 +512,6 @@
             ],
             "replies": [
                 "{rep_ext[entire_plan_proposal]}"
-            ]
-        },
-        "propose_plan_wxyj": {
-            "key": "propose_plan_wxyj",
-            "gated": true,
-            "thread": "t_presale",
-            "terminal_state": false,
-            "req_info": [
-                [
-                    "city",
-                    "city"
-                ],
-                [
-                    "首次",
-                    "yesno"
-                ],
-                [
-                    "要公积金",
-                    "default_yes"
-                ],
-                [
-                    "要社保",
-                    "default_yes"
-                ]
-            ],
-            "replies": [
-                "ERROR"
             ]
         },
         "propose_plan_gjj": {
@@ -1524,7 +1441,14 @@
                 ],
                 "苏州": [
                     "苏州"
+                ],
+                "苏州园区": [
+                    "aa苏州(.*)园区"
+                ],
+                "苏州市区": [
+                    "aa苏州(.*)市区"
                 ]
+                
             },
             "payment_info": {
                 "支付": [
@@ -1618,21 +1542,11 @@
             }
         }
     },
-    "forms": {
-        "shebao": {
-            "req_info": [
-                "city",
-                "val_shebao",
-                "val_gongjijin",
-                "val_monthlyfee",
-                "shop",
-                "date_shebaostart",
-                "date_gongjijinstart",
-                "bool_gongjijin",
-                "bool_gongzi",
-                "bool_firsttime"
-            ]
-        }
+    "conditional_reqs": {
+        "city":[
+            ["苏州",[["city","suzhou_qu_slot"],["苏州区","suzhou_qu_slot"]]],
+            ["北京",[["要交社保","wantnot"]]]
+        ]
     },
     "policy_data_location": "policydata.json"
 }

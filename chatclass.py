@@ -7,6 +7,7 @@ import string
 import os
 from datetime import datetime
 from chatbot_supp import *
+from chatbot_utils import dive_for_values
 
 DEBUG = 0
 
@@ -165,7 +166,7 @@ class ConvoThread:
 
 # Coordinates everything about a chat
 class ChatManager:
-    def __init__(self, chat, iparser, pkeeper, replygen, dmanager):
+    def __init__(self, chat, iparser, pkeeper, replygen, dmanager, gkeeper):
         # Internal properties
         self.chat = chat
         self.chatID = self.chat.getID()
@@ -176,7 +177,7 @@ class ChatManager:
         self.pkeeper = pkeeper
         self.replygen = replygen
         self.dmanager = dmanager.clone(self.chatID)
-        self.gatekeeper = ReqGatekeeper()
+        self.gatekeeper = gkeeper
         self.statethreader = StateThreader(pkeeper.GET_INITIAL_STATE())
 
     def _get_curr_state(self):
@@ -538,30 +539,6 @@ class ReplyGenerator:
                 if not met:
                     return False
             return True
-
-        # Useful
-        # Recursively looks in dicts for nested dicts until finds values.
-        def dive_for_values(c_list, c_dir, failzero = False):
-                out = {}
-                for valname in c_list:
-                    if isinstance(valname, list):
-                        nextdirname, nestlist = valname
-                        if not nextdirname in c_dir:
-                            print("ERROR! Cannot find subdict<{}> in {}".format(nextdirname,c_dir))
-                            return {}
-                        nextdir = c_dir[nextdirname]
-                        out.update(dive_for_values(nestlist,nextdir))
-                    else:
-                        if valname in c_dir:
-                            rawval = c_dir[valname]
-                            out[valname] = rawval
-                        elif failzero:
-                            # Returns 0
-                            return {valname:0}
-                        else:
-                            print("ERROR! Cannot find variable<{}> in {}".format(valname,c_dir))
-                            
-                return out
 
         def resolve_formula(f):
             reqvars = "req_vars"

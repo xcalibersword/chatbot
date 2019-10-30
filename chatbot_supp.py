@@ -1,12 +1,12 @@
 import cbsv
 import re
+import chatbot_utils as cu
 
 DEBUG = 1
 
-
 # Have a message class? Or some sort of flag for messages. Indicate state-changing messages.
 PREV_STATE_F = {"key":"299 PREV_STATE", "gated": False}
-PENDING_STATE_F = {"key":"PENDING_STATE", "gated": False}
+# PENDING_STATE_F = {"key":"PENDING_STATE", "gated": False}
 SAME_STATE_F = {"key":"same_state","gated":False}
 
 # SIP = State Info Packet
@@ -46,7 +46,6 @@ class SIP:
     def get_slots(self):
         return self.state_slots.copy()
 
-    # This is a repeated method 
     def get_reqs(self):
         return ReqGatekeeper.slots_to_reqs(self.state_slots)    
 
@@ -62,10 +61,10 @@ class SIP:
         obj.go_back = True
         return obj
     
-    @classmethod
-    def goto_pending_state(cls):
-         obj = cls(PENDING_STATE_F, cs=False)
-         return obj
+    # @classmethod
+    # def goto_pending_state(cls):
+    #      obj = cls(PENDING_STATE_F, cs=False)
+    #      return obj
     
     @classmethod
     def exit_pocket(cls):
@@ -79,10 +78,6 @@ class SIP:
     def is_pocket_state(self):
         return self.pocket_state
 
-    # For cases when a state requires some intermediate step
-    # Once the current stage is done, we immediately go to the pstate
-    # How do we store this pstate?
-
     def is_go_back(self):
         return self.go_back == True
 
@@ -90,10 +85,11 @@ class SIP:
         return ("State key",self.state_key,"cs",self.state_change, "slots",self.state_slots)
 
 class ReqGatekeeper:
-    def __init__(self):
+    def __init__(self, conds):
         self.requirements = []
         self.slots = []
         self.gate_closed = False
+        self.conds = conds
 
     def open_gate(self):
         self.gate_closed = False
@@ -103,11 +99,25 @@ class ReqGatekeeper:
     def close_gate(self):
         self.gate_closed = True
 
-    def get_slots(self):
+    def get_slots(self):        
         return self.slots.copy()
 
     def is_gated(self):
         return self.gate_closed
+
+    def _add_cond_reqs(self, info):
+        # Additional reqs
+        for detail, conditions in list(self.conds.items()):
+            fetch = cu.dive_for_values([detail,],info,DEBUG=1)
+            if len(fetch) > 0:
+                for c in conditions:
+                    val, slot = c
+                    fetched = list(fetch.values())
+                    print("f,fval,val",fetch, fetched,val)
+                    if fetched[0] == val and not slot in self.slots:
+                        print("Updating slots...", slot)
+                        self.slots.extend(slot)
+                        break
 
     @classmethod
     def slots_to_reqs(cls, slots):
@@ -134,30 +144,21 @@ class ReqGatekeeper:
         if not self.gate_closed:
             return []
 
+        self._add_cond_reqs(info)
         print("Trying gate with info:",info, "required:",self.get_requirements())
         unfilled_slots = self.get_slots()
-        for catgry in list(info.keys()):
-            for s in unfilled_slots:
-                if catgry == s[0]:
-                    unfilled_slots.remove(s)
+
+        # for catgry in list(info.keys()):
+        for s in unfilled_slots:
+            detail = s[0]
+            if detail in info:
+                unfilled_slots.remove(s)
         
         if DEBUG: print("unfilled_slots:",unfilled_slots)
         if len(unfilled_slots) == 0:
             self.open_gate()
         
         return unfilled_slots
-        
-    # def build_info_SIP(self, req_slots):
-    #     # BUILD STATE OBJECT
-    #     info_gather_state = {
-    #         "key": cbsv.INFO_GATHER_STATE_KEY(),
-    #         "gated": True,
-    #         "req_info": req_slots,
-    #         "replies": cbsv.INFO_GATHER_STATE_REPLIES()
-    #     }
-    #     out = SIP(info_gather_state, cs=False)
-    #     return out
-        
 
 # A vehicle to house SIP, intent and details.
 # TODO: Clean up usages of Understanding
