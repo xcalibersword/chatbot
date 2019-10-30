@@ -20,6 +20,8 @@ embedding_vector_length = 300
 max_intents = 100
 VDLIMIT = 60000
 
+USE_WORD2VECTOR = False
+
 #read csv
 dataset_fp = "data_in2.csv"
 count = 0
@@ -118,52 +120,62 @@ def myTokenize(nparr):
         jbseq = pad_sequences([jbseq,], maxlen = max_review_length, dtype = object, value="_NA")
         outarr.append(jbseq)
     return np.array(outarr)
-    # return text_to_word_sequence(arr,lower = False) # Lower causes problems
 
 # EMBEDDING
-embed_dict = get_vector_dict(w2v_filepath,limit = VDLIMIT)
-zero_vector = [0] * embedding_vector_length
-
 prep_xvals = myTokenize(xval)
 ut = get_unique_tokens(prep_xvals)
-word2int = buildWordToInt(embed_dict,ut)
-prep_xvals = arrayWordToInt(prep_xvals,word2int)
-print("split",prep_xvals[100:105])
-# prep_xvals = pad_sequences(prep_xvals, maxlen = max_review_length, dtype = object, value="0")
-# print("padd",prep_xvals[100:105])
-prep_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) # Remove the 1 in the middle
-print("shape", prep_xvals.shape)
 
-# print("WORD INDEX", word2int)
+if USE_WORD2VECTOR:
+    embed_dict = get_vector_dict(w2v_filepath,limit = VDLIMIT)
+    zero_vector = [0] * embedding_vector_length
+    word2int = buildWordToInt(embed_dict,ut)
+    prep_xvals = arrayWordToInt(prep_xvals,word2int)
+    print("split",prep_xvals[100:105])
+    # prep_xvals = pad_sequences(prep_xvals, maxlen = max_review_length, dtype = object, value="0")
+    # print("padd",prep_xvals[100:105])
+    embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) # Remove the 1 in the middle
+    print("shape", prep_xvals.shape)
 
+    # prepare embedding matrix
+    num_words = len(embed_dict) + embed_xvals.shape[0]
+    embedding_matrix = np.zeros((num_words, embedding_vector_length))
+    idx = 0
 
-# prepare embedding matrix
-num_words = len(embed_dict) + prep_xvals.shape[0]
-embedding_matrix = np.zeros((num_words, embedding_vector_length))
-idx = 0
+    # Build dict for VECTORS
+    for word, i in word2int.items():
+        if word in embed_dict:
+            embedding_matrix[i] = embed_dict[word]
+        else:
+            # words not found in embedding index will be all-zeros.
+            embedding_matrix[i] = zero_vector
+        # word_to_int[word] = i
+        idx += 1
 
-# Build dict for VECTORS
-for word, i in word2int.items():
-    if word in embed_dict:
-        embedding_matrix[i] = embed_dict[word]
-    else:
-        # words not found in embedding index will be all-zeros.
-        embedding_matrix[i] = zero_vector
-    # word_to_int[word] = i
-    idx += 1
+    print("embedding mat shape",embedding_matrix.shape)
+    # for k,v in word_to_int.items(): embed_xvals[prep_xvals==k] = v # Dict lookup for npArrays
 
-print("embedding mat shape",embedding_matrix.shape)
+    my_embedding = Embedding(
+        num_words,
+        embedding_vector_length,
+        embeddings_initializer=Constant(embedding_matrix),
+        input_length=max_review_length,
+        trainable = False
+        )
 
-embed_xvals = prep_xvals
-# for k,v in word_to_int.items(): embed_xvals[prep_xvals==k] = v # Dict lookup for npArrays
+else:
+    num_words = len(ut)
+    word_index = buildWordToInt(ut,[])
+    prep_xvals = arrayWordToInt(prep_xvals,word_index)
+    embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) # Remove the 1 in the middle
 
-my_embedding = Embedding(
-    num_words,
-    embedding_vector_length,
-    embeddings_initializer=Constant(embedding_matrix),
-    input_length=max_review_length,
-    trainable = False
-    )
+    print("word index", word_index.items())
+
+    my_embedding = Embedding(
+        num_words,
+        embedding_vector_length,
+        input_length=max_review_length,
+        trainable = True
+        )
 
 print('Shape of data tensor:', embed_xvals.shape)
 print("xval sample", embed_xvals[156])
@@ -203,7 +215,7 @@ model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 
-model.fit(x=embed_xvals,y=cat_yval,epochs=80,verbose=1,validation_split=0.0,batch_size=8)
+model.fit(x=embed_xvals,y=cat_yval,epochs=80,verbose=1,validation_split=0.0,batch_size=16)
 
 # Post Training
 model.save('291019_JB_model.h5')

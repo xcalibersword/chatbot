@@ -149,7 +149,7 @@ class ReqGatekeeper:
         unfilled_slots = self.get_slots()
 
         # for catgry in list(info.keys()):
-        for s in unfilled_slots:
+        for s in unfilled_slots.copy():
             detail = s[0]
             if detail in info:
                 unfilled_slots.remove(s)
