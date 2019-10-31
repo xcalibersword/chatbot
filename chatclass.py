@@ -349,8 +349,9 @@ class ChatManager:
 # Keeps policies
 # Also deciphers messages
 class PolicyKeeper:
-    def __init__(self, policy_rules, intent_dict, state_lib,pp):
+    def __init__(self, policy_rules, zone_policies, intent_dict, state_lib,pp):
         self.POLICY_RULES = policy_rules
+        self.ZONE_POLICIES = zone_policies
         self.INTENT_DICT = intent_dict
         self.STATE_DICT = state_lib
         self.predictor = pp
@@ -388,19 +389,48 @@ class PolicyKeeper:
         uds = self.intent_to_next_state(curr_state, intent, zones)
         return uds, breakdown
 
+    def _create_SIP(self, state):
+        if not state in self.STATE_DICT:
+            print("<PolicyKeeper> Illegal state:",state)
+            return SIP.same_state()
+        state_obj = self.STATE_DICT[state]
+        return SIP(state_obj)
+
     # METHOD FOR NLP
-    def intent_to_next_state(self, curr_state, intent, zones):
-        policy = self.POLICY_RULES[curr_state]
-        uds = Understanding.make_null()
-        for intent_lst in policy.get_intents():
-            print("intent_list",list(map(lambda x: x[0],intent_lst)))
-            for pair in intent_lst:
-                c_int, next_sip = pair
-                if intent == c_int:
-                    print("MATCH",intent)
-                    intent_obj = self.INTENT_DICT[intent]
-                    uds = Understanding(intent_obj, next_sip)
-                    break
+    def intent_to_next_state(self, curr_state, intent, chat_zones):
+        if intent in self.INTENT_DICT:
+            intent_obj = self.INTENT_DICT[intent]
+        else:
+            intent_obj = False
+
+        # Zone policy
+        if curr_state in self.ZONE_POLICIES:
+            # string, dict is returned
+            z, paths = self.ZONE_POLICIES[curr_state]
+            if z in chat_zones:
+                z_val = chat_zones[z]
+                if z_val in paths:
+                    target = paths[z_val]
+                else:
+                    target = paths["DEFAULT"]
+
+                next_sip = self._create_SIP(target)
+            else:
+                next_sip = SIP.same_state()
+            uds = Understanding(intent_obj, next_sip)
+
+        # General policy
+        else:   
+            policy = self.POLICY_RULES[curr_state]
+            uds = Understanding.make_null()
+            for intent_lst in policy.get_intents():
+                print("intent_list",list(map(lambda x: x[0],intent_lst)))
+                for pair in intent_lst:
+                    c_int, next_sip = pair
+                    if intent == c_int:
+                        print("MATCH",intent)
+                        uds = Understanding(intent_obj, next_sip)
+                        break
 
         return uds
 
