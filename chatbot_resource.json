@@ -1627,6 +1627,7 @@
         }
     },
     "info_parser": {
+        "zones":["city"],
         "defaults": [
             [
                 "要公积金",

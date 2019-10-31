@@ -62,7 +62,7 @@ class StateThreader():
             self.threadmap.pop(deadthreadID)
 
             new_headID = self.threadIDstack[-1]
-            if DEBUG or 1: print("KILLING THREAD:",deadthreadID,"NEW HEAD:",new_headID)
+            if DEBUG : print("KILLING THREAD:",deadthreadID,"NEW HEAD:",new_headID)
 
     def switch_thread_to(self, threadID):
         # Push to front of stack
@@ -164,6 +164,29 @@ class ConvoThread:
         self._clear_pending()
         return
 
+# Keeps track of zones like city
+class ZoneTracker:
+    def __init__(self):
+        self.zones = {}
+
+    def _add_zone(self, z, val):
+        if z in self.zones:
+            print("<ADD_ZONE> Existing zone {}:{}. Did not write {}.".format(z,self.zones[z],val))
+            return
+        self.zones[z] = val
+
+    def update_zones(self, zone_d):
+        for z, val in list(zone_d.items()):
+            self._add_zone(z, val)
+
+    def get_zones(self):
+        return self.zones.copy()
+
+    def get_zone_val(self, z):
+        if not z in self.zones:
+            return None
+        return self.zones[z]
+
 # Coordinates everything about a chat
 class ChatManager:
     def __init__(self, chat, iparser, pkeeper, replygen, dmanager, gkeeper):
@@ -179,6 +202,7 @@ class ChatManager:
         self.dmanager = dmanager.clone(self.chatID)
         self.gatekeeper = gkeeper
         self.statethreader = StateThreader(pkeeper.GET_INITIAL_STATE())
+        self.ztracker = ZoneTracker()
 
     def _get_curr_state(self):
         return self.statethreader.get_curr_thread_state()
@@ -301,8 +325,10 @@ class ChatManager:
 
     # Asks iparser to parse the message
     def _parse_message_details(self, msg):
-        slots = self.gatekeeper.get_slots() # Best is to only look out for what is needed
+        slots = self.gatekeeper.get_slots() # Only look out for what is needed
         details = self.iparser.parse(msg, slots)
+        zones = details["zones"]
+        self.ztracker.update_zones(zones)
         self.push_detail_to_dm(details)
         return
 
@@ -652,7 +678,7 @@ class ReplyGenerator:
         # info.update(enhanced) # Write to info
         return enhanced
 
-
+    # Returns the a reply database either from intent or from state
     def getreplydb(self, intent, curr_state, issamestate):
         def get_replylist(obj):
             # print("get replies from obj",obj)
@@ -660,7 +686,6 @@ class ReplyGenerator:
     
         LOCALDEBUG = 0 or DEBUG
         
-
         if LOCALDEBUG: print("csk", curr_state["key"],curr_state["thread"])
 
         # Decides priority of lookup. 
@@ -682,7 +707,6 @@ class ReplyGenerator:
         if LOCALDEBUG: print("rdb:",rdb)
 
         if rdb == []:
-            # call the NLP AI here.
             rdb = cbsv.DEFAULT_CONFUSED() # TODO fix bad OOP
 
         return rdb

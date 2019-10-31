@@ -306,6 +306,7 @@ class InfoParser():
         self.regexDB = {}
         self.perm_slots = json_dict["permanent_slots"]
         slots = json_dict["slots"]
+        self.zonelist = json_dict["zones"]
         self._build_slots_DB(slots)
 
     def _build_slots_DB(self, jdata):
@@ -351,6 +352,7 @@ class InfoParser():
         
         return value
 
+    # Returns a dict of values
     def parse(self, text, slots):
         if len(slots) < 1:
             out = self._default_parse(text)
@@ -363,7 +365,13 @@ class InfoParser():
                 entry = {slotname: self.get_category_value(text, catgry)}
                 out.update(entry)
 
-        # update uds
+        # Adds on a zone dict to the returned dict
+        # E.g. "zones":{"city":"shanghai"}
+        for zone in self.zonelist:
+            zones_d = {}
+            if zone in out:
+                zones_d[zone] = out[zone]
+        out["zones"] = zones_d
         return out
 
     # Converts a python array to a string delimited by the '|' character
