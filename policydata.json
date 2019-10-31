@@ -3,7 +3,6 @@
     "zone_policies":{
         "city_crossroad":[
             "city",{
-                "上海": "propose_plan_sh",
                 "北京": "propose_plan_bj",
                 "苏州": "propose_plan_sz",
                 "DEFAULT": "propose_plan"

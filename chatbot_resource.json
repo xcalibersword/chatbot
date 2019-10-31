@@ -422,12 +422,10 @@
             "thread": "t_amt_query",
             "terminal_state": true,
             "calcs": [
-                "flag_gongjijin",
-                "flag_shebao",
-                "not_shouci",
-                "yes_shouci",
+                "flag_sb_gjj",
+                "flag_shouci",
                 "sum_svc_fee",
-                "shebao_basic",
+                "gen_shebao_amt",
                 "shebao_basic_calc",
                 "bj_shebao_basic",
                 "bj_shebao_basic2"
@@ -530,12 +528,10 @@
                 ]
             ],
             "calcs": [
-                "flag_gongjijin",
-                "flag_shebao",
-                "not_shouci",
-                "yes_shouci",
+                "flag_sb_gjj",
+                "flag_shouci",
                 "sum_svc_fee",
-                "shebao_basic",
+                "gen_shebao_amt",
                 "shebao_basic_calc"
             ],
             "replies": [
@@ -566,12 +562,10 @@
                 ]
             ],
             "calcs": [
-                "flag_gongjijin",
-                "flag_shebao",
-                "not_shouci",
-                "yes_shouci",
+                "flag_sb_gjj",
+                "flag_shouci",
                 "sum_svc_fee",
-                "shebao_basic",
+                "gen_shebao_amt",
                 "bj_shebao_basic",
                 "bj_shebao_basic2"
             ],
@@ -603,10 +597,8 @@
                 ]
             ],
             "calcs": [
-                "flag_gongjijin",
-                "flag_shebao",
-                "not_shouci",
-                "yes_shouci",
+                "flag_sb_gjj",
+                "flag_shouci",
                 "sum_svc_fee",
                 "苏州园区_shebao",
                 "苏州市区_shebao",
@@ -638,10 +630,8 @@
             "thread": "t_presale",
             "terminal_state": false,
             "calcs": [
-                "flag_gongjijin",
-                "flag_shebao",
-                "not_shouci",
-                "yes_shouci",
+                "flag_sb_gjj",
+                "flag_shouci",
                 "sum_svc_fee",
                 "shebao_basic_calc",
                 "bj_shebao_basic",
@@ -1093,9 +1083,8 @@
                 "if_value": {}
             },
             {
-                "writeto": "首次ext",
+                "writeto": "long首次ext",
                 "states": [
-                    "propose_plan_wxyj"
                 ],
                 "lookfor": [
                     "首次",
@@ -1231,21 +1220,7 @@
             }
         ],
         "calcs": {
-            "UNUSED reset_flag_sb_gjj": {
-                "writeto": "flag_sb_gjj",
-                "conditions": {},
-                "req_vars": [],
-                "steps": {
-                    "1,add": [
-                        [
-                            0,
-                            0
-                        ],
-                        "OUTCOME"
-                    ]
-                }
-            },
-            "flag_gongjijin": {
+            "oldflag_gongjijin": {
                 "writeto": "flag_sb_gjj",
                 "conditions": [
                     [
@@ -1264,7 +1239,7 @@
                     ]
                 }
             },
-            "flag_shebao": {
+            "oldflag_shebao": {
                 "writeto": "flag_sb_gjj",
                 "conditions": [
                     [
@@ -1290,34 +1265,37 @@
                     ]
                 }
             },
-            "yes_shouci": {
+            "flag_sb_gjj": {
+                "writeto": "flag_sb_gjj",
                 "conditions": [
                     [
-                        "首次",
-                        "yes"
+                        "要社保",
+                        "yes",["w_sb",1,0]
+                    ],
+                    [
+                        "要公积金",
+                        "yes",["w_gjj",10,0]
                     ]
                 ],
                 "req_vars": [
-                    [
-                        "city_info",
-                        [
-                            "shouci_fee"
-                        ]
-                    ]
                 ],
                 "steps": {
                     "1,add": [
                         [
-                            "shouci_fee",
-                            0
+                            "w_sb",
+                            "w_gjj"
                         ],
                         "OUTCOME"
                     ]
-                },
-                "writeto": "w_shouci_fee"
+                }
             },
-            "not_shouci": {
-                "conditions": [],
+            "flag_shouci": {
+                "conditions": [
+                    [
+                        "首次",
+                        "yes",["w_sc",1,0]
+                    ]
+                ],
                 "req_vars": [
                     [
                         "city_info",
@@ -1329,8 +1307,8 @@
                 "steps": {
                     "1,multi": [
                         [
-                            "OUTCOME",
-                            0
+                            "shouci_fee",
+                            "w_sc"
                         ],
                         "OUTCOME"
                     ]
@@ -1378,7 +1356,7 @@
                 },
                 "writeto": "svc_fee_total"
             },
-            "gen_shebao":{
+            "gen_shebao_amt":{
                 "conditions": [],
                 "req_vars": [
                     [

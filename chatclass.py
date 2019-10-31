@@ -592,20 +592,22 @@ class ReplyGenerator:
             return "calcs" in state
 
         def fcondition_met(f):
-            # This assumes all conditions are linked by AND
+            ret = {}
+            # This assumes all conditions are joined by AND
             conds = f["conditions"]
             for cond in conds:
-                k, v = cond
+                k, v, setval = cond
                 if not k in enhanced:
                     print("ERROR {} not in info".format(k))
                     return False
                 
                 met = (enhanced[k] == v) # Simple match
-                if not met:
-                    return False
-            return True
+                vkey, tval, fval = setval
+                ret[vkey] = tval if met else fval
 
-        def resolve_formula(f):
+            return ret
+
+        def resolve_formula(f, condvals):
             reqvars = "req_vars"
             dz_rv = "dz_req_vars"
             def op_on_all(vnames, op, vdic):
@@ -629,10 +631,10 @@ class ReplyGenerator:
             if DEBUG: print("aft sort",steps)
             req_vars = f[reqvars]
             vd = dive_for_values(req_vars,enhanced)
-            if dz_rv in f:
-                dz_vals = dive_for_values(f[dz_rv], enhanced,failzero = True)
-                vd.update(dz_vals)
-
+            # if dz_rv in f:
+            #     dz_vals = dive_for_values(f[dz_rv], enhanced,failzero = True)
+            #     vd.update(dz_vals)
+            vd.update(condvals)
             if DEBUG: print("vd",vd)
 
             #CALCULATIONS 
@@ -670,10 +672,10 @@ class ReplyGenerator:
                     print("ERROR! No such formula:{}".format(fname))
                 else:
                     formula = calcDB[fname]
-                    if fcondition_met(formula):
-                        target_key = formula["writeto"]
-                        result = resolve_formula(formula)
-                        add_calc_enh(target_key,result)
+                    cond_val_d = fcondition_met(formula)
+                    target_key = formula["writeto"]
+                    result = resolve_formula(formula, cond_val_d)
+                    add_calc_enh(target_key,result)
         else:
             iamnotused = True
             if DEBUG: print("No calculation performed")
