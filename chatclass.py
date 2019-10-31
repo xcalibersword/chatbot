@@ -399,18 +399,39 @@ class PolicyKeeper:
         return SIP(state_obj)
 
     # METHOD FOR NLP
-    def intent_to_next_state(self, curr_state, intent, chat_zones):
+    def intent_to_next_state(self, curr_state_key, intent, chat_zones):
+        def check_zonepolicies(state_key):
+            return state_key in self.ZONE_POLICIES
+
         if intent in self.INTENT_DICT:
             intent_obj = self.INTENT_DICT[intent]
         else:
             intent_obj = False
 
+        zp_key = ""
         # Zone policy
-        if curr_state in self.ZONE_POLICIES:
-            # string, dict is returned
-            z, paths = self.ZONE_POLICIES[curr_state]
+        if check_zonepolicies(curr_state_key):
+            zp_key = curr_state_key
+        # General policy
+        else:   
+            policy = self.POLICY_RULES[curr_state_key]
+            uds = Understanding.make_null()
+            for intent_lst in policy.get_intents():
+                print("intent_list",list(map(lambda x: x[0],intent_lst)))
+                for pair in intent_lst:
+                    c_int, next_sip = pair
+                    if intent == c_int:
+                        zp_key = next_sip.get_state_key()
+                        print("MATCH",intent)
+                        uds = Understanding(intent_obj, next_sip)
+                        break
+
+        # string, dict is returned
+        if check_zonepolicies(zp_key):
+            z, paths = self.ZONE_POLICIES[zp_key]
             if z in chat_zones:
                 z_val = chat_zones[z]
+                print("zonepolicy",chat_zones, z, z_val)
                 if z_val in paths:
                     target = paths[z_val]
                 else:
@@ -420,19 +441,6 @@ class PolicyKeeper:
             else:
                 next_sip = SIP.same_state()
             uds = Understanding(intent_obj, next_sip)
-
-        # General policy
-        else:   
-            policy = self.POLICY_RULES[curr_state]
-            uds = Understanding.make_null()
-            for intent_lst in policy.get_intents():
-                print("intent_list",list(map(lambda x: x[0],intent_lst)))
-                for pair in intent_lst:
-                    c_int, next_sip = pair
-                    if intent == c_int:
-                        print("MATCH",intent)
-                        uds = Understanding(intent_obj, next_sip)
-                        break
 
         return uds
 
@@ -609,7 +617,6 @@ class ReplyGenerator:
 
         def resolve_formula(f, condvals):
             reqvars = "req_vars"
-            dz_rv = "dz_req_vars"
             def op_on_all(vnames, op, vdic):
                 def operate(a,b,op):
                     if 0: print("a,b", a, b)
@@ -631,9 +638,6 @@ class ReplyGenerator:
             if DEBUG: print("aft sort",steps)
             req_vars = f[reqvars]
             vd = dive_for_values(req_vars,enhanced)
-            # if dz_rv in f:
-            #     dz_vals = dive_for_values(f[dz_rv], enhanced,failzero = True)
-            #     vd.update(dz_vals)
             vd.update(condvals)
             if DEBUG: print("vd",vd)
 
