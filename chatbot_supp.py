@@ -135,12 +135,13 @@ class ReqGatekeeper:
         return self.requirements.copy()
 
     def scan_state_obj(self, state_obj):
-        if "req_info" not in state_obj:
-            return
-        slots = state_obj["req_info"]
-        if len(slots) < 1:
+        if "gated" not in state_obj:
             return
 
+        slots = state_obj['req_info']
+        if not state_obj["gated"] or len(slots) < 1:
+            return
+       
         self.close_gate()
         self.slots = slots
         print("slots from scanning obj:",slots)

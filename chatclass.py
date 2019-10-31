@@ -227,7 +227,7 @@ class ChatManager:
 
             # Digest and internalize the new info
             repeat = self._digest_uds(full_uds)
-            if repeat: print("HELLO IM REPEATING")
+            # if repeat: print("HELLO IM REPEATING")
 
         # Request a reply text
         intent = full_uds.get_intent()
