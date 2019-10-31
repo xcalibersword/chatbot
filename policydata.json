@@ -31,6 +31,9 @@
         "propose_plan_sz": [
             ["affirm", "confirm_plan"]
         ],
+        "propose_plan_bj": [
+            ["affirm", "confirm_plan"]
+        ],
         "confirm_plan": [
             ["affirm", "inform_pai"],
             ["query_pay_process", "inform_pai"],

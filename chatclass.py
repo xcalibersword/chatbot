@@ -175,9 +175,12 @@ class ZoneTracker:
             return
         self.zones[z] = val
 
-    def update_zones(self, zone_d):
-        for z, val in list(zone_d.items()):
-            self._add_zone(z, val)
+    def update_zones_from_d(self, deets):
+        zkey = "zones"
+        if zkey in deets:
+            zone_d = deets[zkey]
+            for z, val in list(zone_d.items()):
+                self._add_zone(z, val)
 
     def get_zones(self):
         return self.zones.copy()
@@ -330,8 +333,7 @@ class ChatManager:
     def _parse_message_details(self, msg):
         slots = self.gatekeeper.get_slots() # Only look out for what is needed
         details = self.iparser.parse(msg, slots)
-        zones = details["zones"]
-        self.ztracker.update_zones(zones)
+        self.ztracker.update_zones_from_d(details)
         self.push_detail_to_dm(details)
         return
 

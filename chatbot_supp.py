@@ -362,8 +362,10 @@ class InfoParser():
             out = {}
             for slot in slots:
                 slotname, catgry = slot
-                entry = {slotname: self.get_category_value(text, catgry)}
-                out.update(entry)
+                value = self.get_category_value(text, catgry)
+                if len(value) > 0:
+                    entry = {slotname: value}
+                    out.update(entry)
 
         # Adds on a zone dict to the returned dict
         # E.g. "zones":{"city":"shanghai"}
@@ -371,7 +373,8 @@ class InfoParser():
             zones_d = {}
             if zone in out:
                 zones_d[zone] = out[zone]
-        out["zones"] = zones_d
+        if not zones_d == {}: out["zones"] = zones_d
+        
         return out
 
     # Converts a python array to a string delimited by the '|' character
