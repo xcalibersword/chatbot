@@ -388,6 +388,16 @@
                 "不好意思，我是新手，现在给你转到服务员"
             ]
         },
+        "city_crossroad":{
+            "key": "city_crossroad",
+            "gated": false,
+            "thread": "t_presale",
+            "terminal_state": false,
+            "req_info": [["city","city"]],
+            "replies": [
+                "可以，那么亲是哪个城市呢？"
+            ]
+        },
         "ask_if_issue": {
             "key": "251 whats wrong",
             "gated": false,
@@ -418,6 +428,7 @@
                 "yes_shouci",
                 "sum_svc_fee",
                 "shebao_basic",
+                "shebao_basic_calc",
                 "bj_shebao_basic",
                 "bj_shebao_basic2"
             ],
@@ -525,15 +536,14 @@
                 "yes_shouci",
                 "sum_svc_fee",
                 "shebao_basic",
-                "bj_shebao_basic",
-                "bj_shebao_basic2"
+                "shebao_basic_calc"
             ],
             "replies": [
                 "{rep_ext[entire_plan_proposal]}"
             ]
         },
-        "propose_plan_gjj": {
-            "key": "propose_plan_gjj",
+        "propose_plan_bj": {
+            "key": "propose_plan_bj",
             "gated": true,
             "thread": "t_presale",
             "terminal_state": false,
@@ -548,17 +558,65 @@
                 ],
                 [
                     "要公积金",
-                    "default_yes"
+                    "wantnot"
                 ],
                 [
                     "要社保",
-                    "default_no"
+                    "default_yes"
                 ]
             ],
+            "calcs": [
+                "flag_gongjijin",
+                "flag_shebao",
+                "not_shouci",
+                "yes_shouci",
+                "sum_svc_fee",
+                "shebao_basic",
+                "bj_shebao_basic",
+                "bj_shebao_basic2"
+            ],
             "replies": [
-                "亲{rep_ext[首次ornot]}哦。那么目前{city}社保按照最低基数{city_info[jishu]}，缴纳{city_info[payment]}, 公积金{city_info[gongjijin_fee]}, 服务费{calc_ext[svc_fee_total]}元每月 {rep_ext[首次ext]}。"
+                "{rep_ext[bj_entire_plan_proposal]}"
             ]
         },
+        "propose_plan_sz": {
+            "key": "propose_plan_bj",
+            "gated": true,
+            "thread": "t_presale",
+            "terminal_state": false,
+            "req_info": [
+                [
+                    "city",
+                    "city"
+                ],
+                [
+                    "首次",
+                    "yesno"
+                ],
+                [
+                    "要公积金",
+                    "wantnot"
+                ],
+                [
+                    "要社保",
+                    "default_yes"
+                ]
+            ],
+            "calcs": [
+                "flag_gongjijin",
+                "flag_shebao",
+                "not_shouci",
+                "yes_shouci",
+                "sum_svc_fee",
+                "苏州园区_shebao",
+                "苏州市区_shebao",
+                "shebao_basic_calc"
+            ],
+            "replies": [
+                "{rep_ext[sz_entire_plan_proposal]}"
+            ]
+        },
+
         "confirm_plan": {
             "key": "282 confirm plan",
             "gated": false,
@@ -585,7 +643,7 @@
                 "not_shouci",
                 "yes_shouci",
                 "sum_svc_fee",
-                "shebao_basic",
+                "shebao_basic_calc",
                 "bj_shebao_basic",
                 "bj_shebao_basic2"
             ],
@@ -914,6 +972,8 @@
                 "writeto": "product",
                 "states": [
                     "propose_plan",
+                    "propose_plan_sz",
+                    "propose_plan_sh",
                     "general_payment",
                     "short_ask_amt_month_fee_total"
                 ],
@@ -938,6 +998,8 @@
                 "writeto": "proposal",
                 "states": [
                     "propose_plan",
+                    "propose_plan_sz",
+                    "propose_plan_sh",
                     "propose_plan_wxyj"
                 ],
                 "lookfor": [
@@ -947,29 +1009,30 @@
                         [
                             "sb_jishu",
                             "gjj_jishu",
-                            "shebao_payment",
                             "gongjijin_fee"
                         ]
                     ],
                     [
                         "calc_ext",
                         [
-                            "flag_sb_gjj"
+                            "flag_sb_gjj",
+                            "w_shebao_payment"
                         ]
                     ]
                 ],
                 "if_present": {},
                 "if_value": {
                     "flag_sb_gjj": {
-                        "1": "最低基数为{city_info[sb_jishu]}元, 应缴纳{city_info[shebao_payment]}元",
+                        "1": "最低基数为{city_info[sb_jishu]}元, 应缴纳{calc_ext[w_shebao_payment]}元",
                         "10": "最低基数为{city_info[gjj_jishu]}元, 应缴纳{city_info[gongjijin_fee]}元",
-                        "11": "最低缴费{city_info[shebao_payment]}元（按最低基数{city_info[sb_jishu]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
+                        "11": "最低缴费{calc_ext[w_shebao_payment]}元（按最低基数{city_info[sb_jishu]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
                     }
                 }
             },
             {
                 "writeto": "proposal2",
                 "states": [
+                    "for beijing",
                     "propose_plan",
                     "propose_plan_wxyj"
                 ],
@@ -1102,7 +1165,7 @@
                 "writeto": "entire_plan_proposal",
                 "states": [
                     "propose_plan",
-                    "propose_plan_wxyj"
+                    "propose_plan_sh"
                 ],
                 "lookfor": [
                     "city",
@@ -1125,13 +1188,45 @@
                 "if_present": {},
                 "if_value": {
                     "city": {
-                        "北京": "农业户口：{rep_ext[product]}{rep_ext[proposal]}，共计{rep_ext[calc_str_total]}\n 城镇户口：{rep_ext[product]}{rep_ext[proposal2]}，共计{calc_ext[shebao_basic_total2]}\n服务费单项{city_info[svc_fee]}元，双项{city_info[dbl_svc_fee]}元（23号之后最低缴纳基数会提高、服务费会贵一些）北京首保：需要开户费50元，公司统一制卡，周期6个月左右，制卡完成会联系邮寄给你",
                         "上海": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。",
-                        "苏州园区": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。",
-                        "苏州市区": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。",
                         "昆山": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。",
-                        "杭州": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。"
+                        "杭州": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。",
+                        "苏州": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。"
                     }
+                }
+            },
+            {
+                "writeto": "bj_entire_plan_proposal",
+                "states": [
+                    "propose_plan_bj"
+                ],
+                "lookfor": [
+                    "city",
+                    [
+                        "city_info",
+                        [
+                            "sb_jishu",
+                            "gjj_jishu",
+                            "shebao_payment",
+                            "gongjijin_fee",
+                            "svc_fee",
+                            "dbl_svc_fee"
+                        ]
+                    ],
+                    [
+                        "calc_ext",
+                        [
+                            "flag_sb_gjj",
+                            "shebao_basic_total2"
+
+                        ]
+                    ]
+                ],
+                "if_present": {},
+                "if_value": {
+                    "city": {
+                        "北京": "农业户口：{rep_ext[product]}{rep_ext[proposal]}，共计{rep_ext[calc_str_total]}\n 城镇户口：{rep_ext[product]}{rep_ext[proposal2]}，共计{calc_ext[shebao_basic_total2]}\n服务费单项{city_info[svc_fee]}元，双项{city_info[dbl_svc_fee]}元（23号之后最低缴纳基数会提高、服务费会贵一些）北京首保：需要开户费50元，公司统一制卡，周期6个月左右，制卡完成会联系邮寄给你"
+                        }
                 }
             }
         ],
@@ -1283,13 +1378,75 @@
                 },
                 "writeto": "svc_fee_total"
             },
-            "shebao_basic": {
+            "gen_shebao":{
                 "conditions": [],
                 "req_vars": [
                     [
                         "city_info",
                         [
+                            "shebao_payment"
+                        ]
+                    ]
+                ],
+                "steps": {
+                    "1,add": [
+                        [
                             "shebao_payment",
+                            0
+                        ],
+                        "OUTCOME"
+                    ]
+                },
+                "writeto": "w_shebao_payment"
+            },
+            "苏州园区_shebao":{
+                "conditions": [["苏州区","园区"]],
+                "req_vars": [
+                    [
+                        "city_info",
+                        [
+                            "园区shebao_payment"
+                        ]
+                    ]
+                ],
+                "steps": {
+                    "1,add": [
+                        [
+                            "园区shebao_payment",
+                            0
+                        ],
+                        "OUTCOME"
+                    ]
+                },
+                "writeto": "w_shebao_payment"
+            },
+            "苏州市区_shebao":{
+                "conditions": [["苏州区","市区"]],
+                "req_vars": [
+                    [
+                        "city_info",
+                        [
+                            "市区shebao_payment"
+                        ]
+                    ]
+                ],
+                "steps": {
+                    "1,add": [
+                        [
+                            "市区shebao_payment",
+                            0
+                        ],
+                        "OUTCOME"
+                    ]
+                },
+                "writeto": "w_shebao_payment"
+            },
+            "shebao_basic_calc": {
+                "conditions": [],
+                "req_vars": [
+                    [
+                        "city_info",
+                        [
                             "gongjijin_fee"
                         ]
                     ],
@@ -1298,7 +1455,8 @@
                         [
                             "w_shouci_fee",
                             "flag_sb_gjj",
-                            "svc_fee_total"
+                            "svc_fee_total",
+                            "w_shebao_payment"
                         ]
                     ]
                 ],
@@ -1340,7 +1498,7 @@
                     ],
                     "11,multi": [
                         [
-                            "shebao_payment",
+                            "w_shebao_payment",
                             "w_sb_flag"
                         ],
                         "w_sb_jiaona"
@@ -1553,28 +1711,12 @@
             "pay_deadline": 20,
             "gongjijin_fee": 498
         },
-        "苏州园区": {
-            "sb_jishu": 3125,
-            "gjj_jishu": 0,
-            "shebao_payment": 878.14,
-            "svc_fee": 40,
-            "shouci_fee": 50,
-            "pay_deadline": 15,
-            "gongjijin_fee": 500
-        },
         "苏州": {
-            "sb_jishu": 3368,
+            "市区sb_jishu": 3368,
+            "园区sb_jishu": 3125,
             "gjj_jishu": 0,
-            "shebao_payment": 1277.57,
-            "svc_fee": 40,
-            "shouci_fee": 50,
-            "pay_deadline": 15,
-            "gongjijin_fee": 540
-        },
-        "苏州市区": {
-            "sb_jishu": 3368,
-            "gjj_jishu": 0,
-            "shebao_payment": 1277.57,
+            "市区shebao_payment": 1277.57,
+            "园区shebao_payment": 878.14,
             "svc_fee": 40,
             "shouci_fee": 50,
             "pay_deadline": 15,
@@ -1785,10 +1927,6 @@
             [
                 "苏州",
                 [
-                    [
-                        "city",
-                        "suzhou_qu_slot"
-                    ],
                     [
                         "苏州区",
                         "suzhou_qu_slot"

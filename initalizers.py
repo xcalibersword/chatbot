@@ -91,10 +91,12 @@ def init_policykeeper(jdata, pdata):
             continue # Don't overwrite existing policy lookup values
         POLICY_RULES[k] = make_policy([])
 
+    ZONE_POLICIES = pdata["zone_policies"]
+
     ## INITALIZE NLP_API here
     pp = Predictor() 
 
-    return PolicyKeeper(POLICY_RULES, INTENTS, STATES, pp)
+    return PolicyKeeper(POLICY_RULES, ZONE_POLICIES, INTENTS, STATES, pp)
 
 def init_infoparser(jdata):
     relevant = jdata["info_parser"]
