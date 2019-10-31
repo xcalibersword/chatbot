@@ -574,7 +574,7 @@
             ]
         },
         "propose_plan_sz": {
-            "key": "propose_plan_bj",
+            "key": "propose_plan_sz",
             "gated": true,
             "thread": "t_presale",
             "terminal_state": false,
@@ -599,9 +599,8 @@
             "calcs": [
                 "flag_sb_gjj",
                 "flag_shouci",
+                "苏州_shebao_amt",
                 "sum_svc_fee",
-                "苏州园区_shebao",
-                "苏州市区_shebao",
                 "shebao_basic_calc"
             ],
             "replies": [
@@ -1377,42 +1376,39 @@
                 },
                 "writeto": "w_shebao_payment"
             },
-            "苏州园区_shebao":{
-                "conditions": [["苏州区","园区"]],
+            "苏州_shebao_amt":{
+                "conditions": [
+                    ["苏州区","苏州园区",["yq",1,0]],
+                    ["苏州区","苏州市区",["sq",1,0]]
+                ],
                 "req_vars": [
                     [
                         "city_info",
-                        [
-                            "园区shebao_payment"
-                        ]
-                    ]
-                ],
-                "steps": {
-                    "1,add": [
                         [
                             "园区shebao_payment",
-                            0
-                        ],
-                        "OUTCOME"
-                    ]
-                },
-                "writeto": "w_shebao_payment"
-            },
-            "苏州市区_shebao":{
-                "conditions": [["苏州区","市区"]],
-                "req_vars": [
-                    [
-                        "city_info",
-                        [
                             "市区shebao_payment"
                         ]
                     ]
                 ],
                 "steps": {
-                    "1,add": [
+                    "1,multi": [
+                        [
+                            "园区shebao_payment",
+                            "yq"
+                        ],
+                        "w_yq_shebao"
+                    ],
+                    "2,multi": [
                         [
                             "市区shebao_payment",
-                            0
+                            "sq"
+                        ],
+                        "w_sq_shebao"
+                    ],
+                    "3,add": [
+                        [
+                            "w_yq_shebao",
+                            "w_sq_shebao"
                         ],
                         "OUTCOME"
                     ]

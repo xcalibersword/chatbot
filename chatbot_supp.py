@@ -134,6 +134,19 @@ class ReqGatekeeper:
     def get_requirements(self):
         return self.requirements.copy()
 
+    def scan_state_obj(self, state_obj):
+        if "req_info" not in state_obj:
+            return
+        slots = state_obj["req_info"]
+        if len(slots) < 1:
+            return
+
+        self.close_gate()
+        self.slots = slots
+        print("slots from scanning obj:",slots)
+        self.requirements = ReqGatekeeper.slots_to_reqs(self.slots)    
+
+
     def scan_SIP(self, sip):
         if sip.is_gated():
             self.close_gate()
@@ -147,9 +160,9 @@ class ReqGatekeeper:
             return []
 
         self._add_cond_reqs(info)
-        print("Trying gate with info:",info, "required:",self.get_requirements())
         unfilled_slots = self.get_slots()
 
+        print("Trying gate with info:",info, "required:",self.get_requirements())
         # for catgry in list(info.keys()):
         for s in unfilled_slots.copy():
             detail = s[0]
@@ -318,14 +331,19 @@ class InfoParser():
                 regexlist = self.list_to_regexList(termlist)
                 self.regexDB[catkey][value] = regexlist
 
+    def _real_parse(self, text, slot, d):
+        slotname, catgry = slot
+        value = self.get_category_value(text, catgry)
+        if len(value) > 0:
+            entry = {slotname: value}
+            d.update(entry)
+
     # Returns a dict of info
     def _default_parse(self, text):
         # Default parser
         out = {}
         for ps in self.perm_slots:
-            key, slot = ps
-            entry = {key:self.get_category_value(text,slot)}
-            out.update(entry)
+            self._real_parse(text, ps, out)
         return out
 
     # Get the value in the text related to the specified category
@@ -354,18 +372,12 @@ class InfoParser():
 
     # Returns a dict of values
     def parse(self, text, slots):
-        if len(slots) < 1:
-            out = self._default_parse(text)
+        out = {}
+        out = self._default_parse(text)
 
-        else:
-            # slotted parse
-            out = {}
-            for slot in slots:
-                slotname, catgry = slot
-                value = self.get_category_value(text, catgry)
-                if len(value) > 0:
-                    entry = {slotname: value}
-                    out.update(entry)
+        # slotted parse        
+        for slot in slots:
+            self._real_parse(text, slot, out)
 
         # Adds on a zone dict to the returned dict
         # E.g. "zones":{"city":"shanghai"}
@@ -374,7 +386,7 @@ class InfoParser():
             if zone in out:
                 zones_d[zone] = out[zone]
         if not zones_d == {}: out["zones"] = zones_d
-        
+
         return out
 
     # Converts a python array to a string delimited by the '|' character

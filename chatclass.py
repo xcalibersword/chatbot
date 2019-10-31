@@ -210,7 +210,7 @@ class ChatManager:
     def _get_curr_state(self):
         return self.statethreader.get_curr_thread_state()
 
-    def _get_curr_state_key(self):
+    def _get_csk(self):
         return cbsv.getstatekey(self._get_curr_state())
 
     def _get_zones(self):
@@ -220,11 +220,14 @@ class ChatManager:
     # Takes in a message, returns a text reply.
     def respond_to_message(self, msg):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") # For clarity in terminal
-        # Parse the message and get an understanding
-        full_uds, bd = self._parse_message_overall(msg)
+        repeat = True
+        while repeat:
+            # Parse the message and get an understanding
+            full_uds, bd = self._parse_message_overall(msg)
 
-        # Digest and internalize the new info
-        self._digest_uds(full_uds)
+            # Digest and internalize the new info
+            repeat = self._digest_uds(full_uds)
+            if repeat: print("HELLO IM REPEATING")
 
         # Request a reply text
         intent = full_uds.get_intent()
@@ -239,7 +242,7 @@ class ChatManager:
         uds, bd = self._fetch_understanding(msg)
         if DEBUG: print("Initial UDS:")
         if DEBUG: uds.printout()
-        self.gatekeeper.scan_SIP(uds.get_sip())
+        # self.gatekeeper.scan_SIP(uds.get_sip()) # TODO CHECK IF THIS IS USEFUL
 
         # Try to mine message details. 
         # This is after gatekeep because gatekeep sets the slots.
@@ -256,7 +259,7 @@ class ChatManager:
         # if sip.is_go_back():
         #     self.go_back_a_state()
         #     return final_intent
-
+        
         if sip.is_same_state():
             if DEBUG: print("SAME STATE FLAGGED")
             self.samestateflag = True
@@ -264,10 +267,17 @@ class ChatManager:
         else:
             self.samestateflag = False
             state = sip.get_state_obj()
-        
+
+        ow_flag, state = self._zone_policy_overwrite(state)
+
+        self.gatekeeper.scan_state_obj(state)
+
         self._gatekeep_state(state)
 
-        return
+        return ow_flag
+
+    def _move_forward_state(self, state):
+            self.statethreader.move_forward(state)
 
     # Updates state according to outcome
     def _gatekeep_state(self, nextstate):
@@ -277,12 +287,9 @@ class ChatManager:
 
         def _set_thread_pending(hs, ps):
             self.statethreader.set_thread_pending(hs, ps)
-
-        def _move_forward_state(state):
-            self.statethreader.move_forward(state)
         
         curr_info = self._get_current_info()
-        # print("Current info:",curr_info)
+        print("Current info:",curr_info)
         required_slots = self.gatekeeper.try_gate(curr_info)
 
         passed = (required_slots == []) #TODO fix bad SE
@@ -293,7 +300,7 @@ class ChatManager:
         # print("sip", sip.toString(), "nextsip", constructed_sip.toString())
         if DEBUG: print("Gate passed:",passed)
         if passed:
-            _move_forward_state(nextstate)
+            self._move_forward_state(nextstate)
 
         else:
             # Didnt pass
@@ -301,6 +308,16 @@ class ChatManager:
             infostate = constructed_sip.get_state_obj()
             _set_thread_pending(infostate, nextstate)
 
+    # Overwrites 
+    def _zone_policy_overwrite(self, og_nxt_state):
+        csk = og_nxt_state["key"]
+        zones = self._get_zones()
+        overwrite_flag, ow_state = self.pkeeper.zone_policy_overwrite(csk,zones)
+        print("ZONE POLICY",overwrite_flag,ow_state)
+        if overwrite_flag:
+            return (True, ow_state)
+        else:
+            return (False, og_nxt_state)
 
     def push_req_slots_to_dm(self, required_slots):
         if len(required_slots) > 0:
@@ -325,9 +342,8 @@ class ChatManager:
 
      # Gets the next state according to policy
     def _fetch_understanding(self, msg):
-        curr_state_key = self._get_curr_state_key()
-        curr_zones = self._get_zones()
-        return self.pkeeper.get_understanding(msg, curr_state_key, curr_zones)
+        csk = self._get_csk()
+        return self.pkeeper.get_understanding(msg, csk)
 
     # Asks iparser to parse the message
     def _parse_message_details(self, msg):
@@ -383,52 +399,53 @@ class PolicyKeeper:
         return intent, breakdown
 
     # MAIN METHOD
-    def get_understanding(self, msg, curr_state, zones):
+    def get_understanding(self, msg, curr_state):
         # Call NLP Model predict
         intent, breakdown = self._NLP_predict(msg)
         print("NLP intent:",intent)
         # Check intent against background info
-        uds = self.intent_to_next_state(curr_state, intent, zones)
+        uds = self.intent_to_next_state(curr_state, intent)
         return uds, breakdown
 
-    def _create_SIP(self, state):
-        if not state in self.STATE_DICT:
-            print("<PolicyKeeper> Illegal state:",state)
-            return SIP.same_state()
-        state_obj = self.STATE_DICT[state]
-        return SIP(state_obj)
+    def _create_state_obj(self, sk):
+        if not sk in self.STATE_DICT:
+            print("<PolicyKeeper> Illegal state:",sk)
+            return SIP.same_state().get_state_key() # Bad.
+        state_obj = self.STATE_DICT[sk]
+        return state_obj
 
     # METHOD FOR NLP
-    def intent_to_next_state(self, curr_state_key, intent, chat_zones):
-        def check_zonepolicies(state_key):
-            return state_key in self.ZONE_POLICIES
-
+    def intent_to_next_state(self, csk, intent):
         if intent in self.INTENT_DICT:
             intent_obj = self.INTENT_DICT[intent]
         else:
             intent_obj = False
 
-        zp_key = ""
-        # Zone policy
-        if check_zonepolicies(curr_state_key):
-            zp_key = curr_state_key
-        # General policy
-        else:   
-            policy = self.POLICY_RULES[curr_state_key]
-            uds = Understanding.make_null()
-            for intent_lst in policy.get_intents():
-                print("intent_list",list(map(lambda x: x[0],intent_lst)))
-                for pair in intent_lst:
-                    c_int, next_sip = pair
-                    if intent == c_int:
-                        zp_key = next_sip.get_state_key()
-                        print("MATCH",intent)
-                        uds = Understanding(intent_obj, next_sip)
-                        break
+        policy = self.POLICY_RULES[csk]
+        uds = Understanding.make_null()
+        for intent_lst in policy.get_intents():
+            print("intent_list",list(map(lambda x: x[0],intent_lst)))
+            for pair in intent_lst:
+                c_int, next_sip = pair
+                if intent == c_int:
+                    print("MATCH",intent)
+                    uds = Understanding(intent_obj, next_sip)
+                    break
+        return uds
+
+    def zone_policy_overwrite(self, csk, chat_zones):
+        def check_zonepolicies(state_key):
+            return state_key in self.ZONE_POLICIES
+
+        print("chat_zones",chat_zones)
 
         # string, dict is returned
-        if check_zonepolicies(zp_key):
-            z, paths = self.ZONE_POLICIES[zp_key]
+        # Zone policy
+        print("zpkey", csk)
+        if check_zonepolicies(csk):
+            z, paths = self.ZONE_POLICIES[csk]
+            print("zpoliciy",z,paths)
+        
             if z in chat_zones:
                 z_val = chat_zones[z]
                 print("zonepolicy",chat_zones, z, z_val)
@@ -436,13 +453,11 @@ class PolicyKeeper:
                     target = paths[z_val]
                 else:
                     target = paths["DEFAULT"]
+                next_sip = self._create_state_obj(target)
+                return (True, next_sip)
 
-                next_sip = self._create_SIP(target)
-            else:
-                next_sip = SIP.same_state()
-            uds = Understanding(intent_obj, next_sip)
+        return (False, "")
 
-        return uds
 
     # FUNCTION NOT USED
     # def _get_state_replies(self, statekey):
