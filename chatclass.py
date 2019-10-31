@@ -9,7 +9,7 @@ from datetime import datetime
 from chatbot_supp import *
 from chatbot_utils import dive_for_values
 
-DEBUG = 0
+DEBUG = 1
 
 # A conversation thread manager using stack and dict
 class StateThreader():
@@ -94,7 +94,7 @@ class StateThreader():
         if UPDATE_STATE_BOOL:
             self.get_curr_thread().update_state(new_state)
 
-        if DEBUG: print("Statestack", self.threadIDstack)
+        if DEBUG: print("<STATETHREADER>Statestack", self.threadIDstack)
 
         return UPDATE_STATE_BOOL
 
@@ -149,9 +149,9 @@ class ConvoThread:
 
     def set_pending_state(self, holdstate, pstate):
         if self.has_pending_state():
-            if DEBUG: print("ConvoThread already has pending:{} new:{}".format(self.get_pending_state(), pstate))
+            if DEBUG: print("<ConvoThread> Existing pend state:{} new:{}".format(self.get_pending_state(), pstate))
             return
-        if DEBUG: print("Setting pending state:",pstate)
+        if DEBUG: print("<ConvoThread> Setting pending state:",pstate)
         self.pend_state = pstate
         self.update_state(holdstate)
         return
@@ -209,6 +209,9 @@ class ChatManager:
 
     def _get_curr_state_key(self):
         return cbsv.getstatekey(self._get_curr_state())
+
+    def _get_zones(self):
+        return self.ztracker.get_zones()
     
     ############### PRIMARY METHOD ###############
     # Takes in a message, returns a text reply.
@@ -265,6 +268,16 @@ class ChatManager:
 
     # Updates state according to outcome
     def _gatekeep_state(self, nextstate):
+        def _make_info_sip(req_info):
+            con_sip = self.pkeeper.make_info_req_sip(req_info)
+            return con_sip
+
+        def _set_thread_pending(hs, ps):
+            self.statethreader.set_thread_pending(hs, ps)
+
+        def _move_forward_state(state):
+            self.statethreader.move_forward(state)
+        
         curr_info = self._get_current_info()
         # print("Current info:",curr_info)
         required_slots = self.gatekeeper.try_gate(curr_info)
@@ -277,30 +290,19 @@ class ChatManager:
         # print("sip", sip.toString(), "nextsip", constructed_sip.toString())
         if DEBUG: print("Gate passed:",passed)
         if passed:
-            self._move_forward_state(nextstate)
+            _move_forward_state(nextstate)
 
         else:
             # Didnt pass
-            constructed_sip = self._make_info_sip(required_slots)
+            constructed_sip = _make_info_sip(required_slots)
             infostate = constructed_sip.get_state_obj()
-            self._set_thread_pending(infostate, nextstate)
-           
+            _set_thread_pending(infostate, nextstate)
 
-    # REMOVAL
-    def _make_info_sip(self, req_info):
-        con_sip = self.pkeeper.make_info_req_sip(req_info)
-        return con_sip
-
-    def _set_thread_pending(self, hs, ps):
-         self.statethreader.set_thread_pending(hs, ps)
-
-    def _move_forward_state(self, state):
-        self.statethreader.move_forward(state)
 
     def push_req_slots_to_dm(self, required_slots):
         if len(required_slots) > 0:
             required_info = list(map(lambda x: x[0],required_slots)) # First element
-            print("pushinfotodm Reqinfo",required_info)
+            print("pushslotstodm Reqinfo",required_info)
             info_entry = {"requested_info": required_info}
             self.push_detail_to_dm(info_entry)
 
@@ -321,7 +323,8 @@ class ChatManager:
      # Gets the next state according to policy
     def _fetch_understanding(self, msg):
         curr_state_key = self._get_curr_state_key()
-        return self.pkeeper.get_understanding(curr_state_key, msg)
+        curr_zones = self._get_zones()
+        return self.pkeeper.get_understanding(msg, curr_state_key, curr_zones)
 
     # Asks iparser to parse the message
     def _parse_message_details(self, msg):
@@ -370,27 +373,23 @@ class PolicyKeeper:
         out = SIP(ig_state, cs=False)
         return out
 
-    # FUNCTION NOT USED BY ANYONE
-    def _get_state_replies(self, statekey):
-        if not statekey in self.STATE_DICT:
-            raise Exception("No such state as {}".format(statekey))
-        state = self.STATE_DICT[statekey]
-        replies = state["replies"]
-        return replies
-
-    # Right now just a wrapper for decipher message
-    def get_understanding(self, curr_state, msg):
+    def _NLP_predict(self,msg):
         pack = self.predictor.predict(msg)
         intent = pack["prediction"]
         breakdown = pack["breakdown"]
+        return intent, breakdown
+
+    # MAIN METHOD
+    def get_understanding(self, msg, curr_state, zones):
+        # Call NLP Model predict
+        intent, breakdown = self._NLP_predict(msg)
         print("NLP intent:",intent)
-        uds = self.intent_to_next_state(curr_state, intent)
-        # !!!!!!!!!!!!!!!!!!!! IN PROGRESS
-        # uds = self.decipher_message(curr_state, msg)
+        # Check intent against background info
+        uds = self.intent_to_next_state(curr_state, intent, zones)
         return uds, breakdown
 
     # METHOD FOR NLP
-    def intent_to_next_state(self, curr_state, intent):
+    def intent_to_next_state(self, curr_state, intent, zones):
         policy = self.POLICY_RULES[curr_state]
         uds = Understanding.make_null()
         for intent_lst in policy.get_intents():
@@ -405,30 +404,38 @@ class PolicyKeeper:
 
         return uds
 
+    # FUNCTION NOT USED
+    # def _get_state_replies(self, statekey):
+    #     if not statekey in self.STATE_DICT:
+    #         raise Exception("No such state as {}".format(statekey))
+    #     state = self.STATE_DICT[statekey]
+    #     replies = state["replies"]
+    #     return replies
+
     # OLD METHOD USING SEARCH. NOT USED
-    def decipher_message(self,curr_state,msg):
-        def get_intent_matchdb(intent):
-            if not "matchdb" in intent:
-                raise Exception("intent missing matchdb, {}".format(intent))
-            return intent["matchdb"]
+    # def decipher_message(self,curr_state,msg):
+    #     def get_intent_matchdb(intent):
+    #         if not "matchdb" in intent:
+    #             raise Exception("intent missing matchdb, {}".format(intent))
+    #         return intent["matchdb"]
 
-        # Returns an Understanding minus details
-        def uds_from_policies(state, msg):
-            if DEBUG: print("uds from state:",state)
-            policy = self.POLICY_RULES[state]
-            # print("policy list intents", policy.get_intents())
-            for intent_lst in policy.get_intents():
-                for pair in intent_lst:
-                    intent, next_sip = pair
-                    assert isinstance(next_sip, SIP)
-                    keyword_db = get_intent_matchdb(intent)
-                    if cbsv.check_input_against_db(msg, keyword_db):
-                        return Understanding(intent, next_sip)
-            return Understanding.make_null()
+    #     # Returns an Understanding minus details
+    #     def uds_from_policies(state, msg):
+    #         if DEBUG: print("uds from state:",state)
+    #         policy = self.POLICY_RULES[state]
+    #         # print("policy list intents", policy.get_intents())
+    #         for intent_lst in policy.get_intents():
+    #             for pair in intent_lst:
+    #                 intent, next_sip = pair
+    #                 assert isinstance(next_sip, SIP)
+    #                 keyword_db = get_intent_matchdb(intent)
+    #                 if cbsv.check_input_against_db(msg, keyword_db):
+    #                     return Understanding(intent, next_sip)
+    #         return Understanding.make_null()
         
-        uds = uds_from_policies(curr_state,msg)
+    #     uds = uds_from_policies(curr_state,msg)
 
-        return uds
+    #     return uds
 
 # MANAGES DETAILS (previously held by Chat)
 # TODO: Differentiate between contextual chat info and user info?
@@ -681,7 +688,7 @@ class ReplyGenerator:
     # Returns the a reply database either from intent or from state
     def getreplydb(self, intent, curr_state, issamestate):
         def get_replylist(obj):
-            # print("get replies from obj",obj)
+            if DEBUG: print("<replydb> Pulling reply from:", obj["key"])
             return obj["replies"]
     
         LOCALDEBUG = 0 or DEBUG
@@ -750,7 +757,6 @@ class Chat:
         self.curr_chatlog[self.convo_index+1] = robotify(sent)
         self.convo_index = self.convo_index + 2
 
-    ## Commonly called methods
     def pop_prev_msg(self):
         # TODO failsafe when empty?
         # Need to get the previous previous message
@@ -759,7 +765,7 @@ class Chat:
         return self.curr_chatlog[self.convo_index - 2]
     
 
-    ## Database interaction?
+    ## TODO Database interaction?
     def get_previous_issues(self):
         pass
         # return self.user.get_issues()
