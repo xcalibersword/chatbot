@@ -24,6 +24,7 @@ USE_WORD2VECTOR = False
 
 #read csv
 dataset_fp = "data_in2.csv"
+save_model_name = 'trained_JB_model.h5'
 count = 0
 with open(dataset_fp, 'r',encoding='gb18030') as f:
     rows = csv.reader(f, delimiter = ',')
@@ -218,7 +219,7 @@ model.summary()
 model.fit(x=embed_xvals,y=cat_yval,epochs=80,verbose=1,validation_split=0.0,batch_size=16)
 
 # Post Training
-model.save('291019_JB_model.h5')
+model.save(save_model_name)
 print("This Model has been saved! Rejoice")
 
 test_in = ["我在上海","我要付社保","我是想要付社保","您好","哦了解了", "填好了呀", "拍好了", "怎么拍", "一共多少钱啊", "我好爱您哦", "代缴社保", "落户上海", "上海社保可以吗", "我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
