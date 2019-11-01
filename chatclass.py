@@ -614,23 +614,24 @@ class ReplyGenerator:
         def needs_calc(state):
             return "calcs" in state
 
-        def fcondition_met(f):
+        def add_conditional_vars(f,vd):
             ret = {}
             # This assumes all conditions are joined by AND
             conds = f["conditions"]
             for cond in conds:
                 k, v, setval = cond
-                if not k in enhanced:
+                if not k in vd:
                     print("ERROR {} not in info".format(k))
                     return False
                 
-                met = (enhanced[k] == v) # Simple match
+                met = (vd[k] == v) # Simple match
                 vkey, tval, fval = setval
                 ret[vkey] = tval if met else fval
 
-            return ret
+            vd.update(ret)
+            return
 
-        def resolve_formula(f, condvals):
+        def resolve_formula(f):
             reqvars = "req_vars"
             def op_on_all(vnames, op, vdic):
                 def operate(a,b,op):
@@ -645,7 +646,7 @@ class ReplyGenerator:
                     else:
                         out = operate(out,rel_val,op)
                 return out
-                    
+                
             instr = f["steps"]
             steps = list(instr.keys())
             steps = list(map(lambda x: (x.split(","), instr[x]),steps))
@@ -653,7 +654,9 @@ class ReplyGenerator:
             if DEBUG: print("aft sort",steps)
             req_vars = f[reqvars]
             vd = dive_for_values(req_vars,enhanced)
-            vd.update(condvals)
+            
+            # Conditional values
+            add_conditional_vars(f,vd)
             if DEBUG: print("vd",vd)
 
             #CALCULATIONS 
@@ -681,7 +684,7 @@ class ReplyGenerator:
                 vd[tkey] = op_on_all(valnames,opr,vd)
             return vd["OUTCOME"]
 
-        ### MAIN FUNCTION ###
+        ### MAIN ENHANCE FUNCTION ###
         # Calculations
         if needs_calc(curr_state):
             state_calcs = curr_state["calcs"]
@@ -691,12 +694,12 @@ class ReplyGenerator:
                     print("ERROR! No such formula:{}".format(fname))
                 else:
                     formula = calcDB[fname]
-                    cond_val_d = fcondition_met(formula)
                     target_key = formula["writeto"]
-                    result = resolve_formula(formula, cond_val_d)
+                    result = resolve_formula(formula)
                     add_calc_enh(target_key,result)
+                if 1: print("<Intermediate> enh",enhanced)
+
         else:
-            iamnotused = True
             if DEBUG: print("No calculation performed")
 
         if DEBUG: print("postcalc enh",enhanced)
