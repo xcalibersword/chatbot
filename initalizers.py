@@ -107,7 +107,8 @@ def init_infoparser(jdata):
 
 def init_detailmanager(jdata):
     vault = InfoVault(jdata)
-    return DetailManager(vault)
+    ss = jdata["secondary_slots"]
+    return DetailManager(vault,ss)
 
 def init_gatekeeper(jdata):
     conds = jdata["conditional_reqs"]

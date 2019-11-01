@@ -179,7 +179,7 @@ class ZoneTracker:
         zkey = "zones"
         if zkey in deets:
             zone_d = deets[zkey]
-            for z, val in list(zone_d.items()):
+            for z, val in zone_d.items():
                 self._add_zone(z, val)
 
     def get_zones(self):
@@ -430,7 +430,7 @@ class PolicyKeeper:
                 if intent == c_int:
                     print("MATCH",intent)
                     uds = Understanding(intent_obj, next_sip)
-                    break
+                    return uds
         return uds
 
     def zone_policy_overwrite(self, csk, chat_zones):
@@ -495,12 +495,14 @@ class PolicyKeeper:
 # MANAGES DETAILS (previously held by Chat)
 # TODO: Differentiate between contextual chat info and user info?
 class DetailManager:
-    def __init__(self, info_vault):
+    def __init__(self, info_vault,secondary_slots):
         self.vault = info_vault
-        self.chat_prov_info = {}
+        self.inital_dict = {"s_slots":{}}
+        self.chat_prov_info = self.inital_dict
         self.dbr = {"dummy"}
         self.dbrset = False
         self.chatID = "PLACEHOLDER_USERID"
+        self.second_slots = secondary_slots
 
     def set_runner(self, runner):
         self.dbr = runner
@@ -519,7 +521,9 @@ class DetailManager:
             if not deet == "":
                 self.chat_prov_info[d] = new_info[d]
 
-        self.write_info_to_db() #TESTING
+        self._add_secondary_slots(self.fetch_info())
+
+        self.write_info_to_db()
         return
 
     # Info without vault
@@ -530,6 +534,30 @@ class DetailManager:
             if i in dic: 
                 dic.pop(i)
         return dic
+    
+    def _add_secondary_slots(self, curr_info):
+        def tree_search(tree, info):
+            slot, sub_dict = list(tree.items())[0]
+            # default_val = tree["DEFAULT_VALUE"]
+            while slot in info:
+                slot_val = info[slot]
+                if slot_val in sub_dict:
+                    if isinstance(slot_val, dict):
+                        slot, sub_dict = list(slot_val.items())[0]
+                    else:
+                        return (True, slot_val)
+
+            return (False, "")
+
+        entries = {}
+        for ss in self.second_slots:
+            target = ss["writeto"]
+            tree = ss["search_tree"]
+            f, val = tree_search(tree, curr_info)
+            if f: entries[target] = val
+        
+        self.chat_prov_info["s_slots"].update(entries)
+        return 
 
     # Called to get chat info + vault info
     def fetch_info(self):
@@ -542,12 +570,11 @@ class DetailManager:
             out["city_info"] = self.vault.lookup_city(cityname)
         
         return out
-
-    def clone(self, chatID):
-        # This is called during the creation of a new chat
+    # This is called during the creation of a new chat
+    def clone(self, chatID):   
         if not self.dbrset:
             raise Exception("DatabaseRunner not initalized for DetailManager!")
-        clonetrooper = DetailManager(self.vault)
+        clonetrooper = DetailManager(self.vault, self.second_slots)
         clonetrooper._set_chatID(chatID)
         clonetrooper.set_runner(self.dbr)
         prev_info = self.dbr.fetch_user_info(chatID)

@@ -147,7 +147,7 @@
             ]
         },
         "explore_option": {
-            "key": "change options",
+            "key": "explore_option",
             "default_set": true,
             "default_target": "SAME_STATE",
             "replies": []

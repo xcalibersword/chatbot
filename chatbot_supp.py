@@ -107,7 +107,7 @@ class ReqGatekeeper:
 
     def _add_cond_reqs(self, info):
         # Additional reqs
-        for detail, conditions in list(self.conds.items()):
+        for detail, conditions in self.conds.items():
             fetch = cu.dive_for_values([detail,],info,DEBUG=1)
             if len(fetch) > 0:
                 for c in conditions:
