@@ -335,12 +335,52 @@ def readData():
     w.processQNdata()
     return w
 
+#convert csv from wps online to data for training
+def csv2data():
+    csv_list_list = []
+    #insert path
+    df = pd.read_csv(r"D:\chatbot\data\test.csv",encoding="gb18030")
+    list_list = df.values.tolist()
+    label_list = list_list[0]
+    length = len(label_list)
+    for i in range(length):
+        if str(label_list[i]) != "nan":
+            for l in list_list[1:]:
+                if str(l[i]) != "nan":
+                    csv_list_list.append([l[i],label_list[i]])
+    new_df = pd.DataFrame(data=csv_list_list)
+    #insert path
+    new_df.to_csv(r"D:\chatbot\data\test1.csv",index=False,encoding="gb18030")
+
+#remove spaces
+def remove_spaces():
+    df = pd.read_csv(r"D:\chatbot\data\test.csv",encoding="gb18030",header=None)
+    list_list=df.values.tolist()
+    new_list_list = []
+    for list1 in list_list:
+        new_list = []
+        for sent in list1:
+            if str(sent) != "nan":
+                new_list.append("".join(sent.split()))
+            else:
+                new_list.append("")
+        new_list_list.append(new_list)
+    new_df = pd.DataFrame(data=new_list_list)
+    #insert path
+    new_df.to_csv(r"D:\chatbot\data\test1.csv",index=False,encoding="gb18030")
+#add slot and label
+#json to csv
+#csv to json
+
+
 def main():
     #w = readData()
     #clist = w.save2label()
-    print("Label Done")
+    #print("Label Done")
     #train_test_eval(clist)
-    train_test_eval(r"D:\chatbot\data\b.csv")
+    #train_test_eval(r"D:\chatbot\data\b.csv")
+
+    remove_spaces()
 
 if __name__ == "__main__":
     main()

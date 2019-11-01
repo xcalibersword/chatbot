@@ -1,3 +1,6 @@
+#convert csv from wps online to data for training
+
+
 import pandas as pd
 csv_list_list = []
 #insert path
