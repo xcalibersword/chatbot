@@ -711,11 +711,8 @@ class ReplyGenerator:
                 target_key = tmp["writeto"]
                 lookout = tmp["lookfor"].copy()
                 vd = dive_for_values(lookout, enhanced)
-                # vks = list(vd.keys())
                 
                 print("TMP",tmp)
-                # assert ("if_present" in tmp)
-                # assert ("if value" in tmp)
 
                 if "if_present" in tmp:
                     ifpr = tmp["if_present"]
