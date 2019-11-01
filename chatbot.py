@@ -25,6 +25,12 @@ DEBUG = 0
 # EXTENSIONS:
 # Looking at a deeper history rather than just the previous state. LOC: decide_action
 
+# NLU libraries:
+# - jieba
+#.add_word() + edit the internal jieba files to enable detection of pattern
+# - tf 1.14
+# - keras
+
 # This text replacer should be put in a class or smth
 SUB_LIST = [
     ("'s"," is"),
