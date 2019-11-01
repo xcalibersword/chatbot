@@ -723,6 +723,8 @@ class ReplyGenerator:
                 if "if_value" in tmp:
                     ifvl = tmp["if_value"]
                     for deet in list(ifvl.keys()):
+                        if not deet in vd:
+                            continue
                         formatmap = ifvl[deet]
                         if isinstance(vd[deet],list):
                             # E.g. reqinfo is a list
@@ -732,7 +734,10 @@ class ReplyGenerator:
 
                         for deetval in contents:
                             dstr = str(cbsv.conv_numstr(deetval,wantint=1)) # Because json keys can only be str
-                            enstr = formatmap[dstr]
+                            if dstr in formatmap:
+                                enstr = formatmap[dstr]
+                            else:
+                                enstr = formatmap["DEFAULT"]
                             add_txt_enh(target_key,enstr)
         
         # info.update(enhanced) # Write to info
