@@ -221,8 +221,6 @@ class Humanizer():
                         human_msg = txt + human_msg
                     elif pos == "END":
                         human_msg = human_msg + txt
-
-        print("Humanified?",human_msg)
         return human_msg
         
 

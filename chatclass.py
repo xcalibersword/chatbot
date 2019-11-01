@@ -595,6 +595,7 @@ class ReplyGenerator:
         self.formatDB = formattingDB
         self.formatter = string.Formatter()
         self.humanizer = humanizer
+        self.hflag = True
         
     # OVERALL METHOD
     def get_reply(self, curr_state, intent, ss, info = -1):
@@ -775,6 +776,12 @@ class ReplyGenerator:
 
     # Returns the a reply database either from intent or from state
     def getreplydb(self, intent, curr_state, issamestate):
+        def get_hflag(obj):
+            # Default is true
+            if "humanify" in obj:
+                return obj["humanify"]
+            return True
+
         def get_replylist(obj):
             if DEBUG: print("<replydb> Pulling reply from:", obj["key"])
             return obj["replies"]
@@ -796,6 +803,7 @@ class ReplyGenerator:
 
             if rdb == []:
                 rdb = get_replylist(obj)
+                self.hflag = get_hflag(obj)
             else:
                 break
         
@@ -822,7 +830,7 @@ class ReplyGenerator:
             # Uses kwargs to fill this space
             final_msg = reply_template.format(**info)
 
-        final_msg = _humanify(final_msg, info)
+        if self.hflag: final_msg = _humanify(final_msg, info)
         return final_msg
 
 # Deals only with text
