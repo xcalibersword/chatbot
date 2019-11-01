@@ -591,9 +591,10 @@ class DetailManager:
 
 # Generates reply text based on current state info
 class ReplyGenerator:
-    def __init__(self, formattingDB):
+    def __init__(self, formattingDB, humanizer):
         self.formatDB = formattingDB
         self.formatter = string.Formatter()
+        self.humanizer = humanizer
         
     # OVERALL METHOD
     def get_reply(self, curr_state, intent, ss, info = -1):
@@ -809,6 +810,8 @@ class ReplyGenerator:
     def generate_reply_message(self, rdb, info):
         def rand_response(response_list):
             return random.choice(response_list)
+        def _humanify(msg, i):
+            return self.humanizer.humanify(msg,i)
 
         reply_template = rand_response(rdb)
         if DEBUG: print("template",reply_template)
@@ -819,6 +822,7 @@ class ReplyGenerator:
             # Uses kwargs to fill this space
             final_msg = reply_template.format(**info)
 
+        final_msg = _humanify(final_msg, info)
         return final_msg
 
 # Deals only with text

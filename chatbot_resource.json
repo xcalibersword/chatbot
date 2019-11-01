@@ -336,11 +336,11 @@
                 "小店不能补个税哦亲"
             ]
         },
-        "confusion": {
-            "key": 193,
-            "default_set": false,
-            "default_target": "NA",
-            "replies": []
+        "get_back_later": {
+            "key": "get_back_later",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": ["亲，小店的价格真的相当划算哦；亲有需要可以来找小店，期待亲亲的光顾哦"]
         },
         "goodbye": {
             "key": "195 goodbyes",
@@ -414,7 +414,7 @@
             "terminal_state": false,
             "req_info": [["city","city"]],
             "replies": [
-                "可以，那么亲是哪个城市呢？"
+                "那么亲是哪个城市呢？"
             ]
         },
         "ask_if_issue": {
@@ -1163,15 +1163,19 @@
                     [
                         "city_info",
                         [
-                            "shebao_payment",
                             "svc_fee",
                             "shouci_fee",
                             "gongjijin_fee"
                         ]
+                    ],
+                    [
+                        "calc_ext",[
+                            "w_shebao_payment"
+                        ]
                     ]
                 ],
                 "if_present": {
-                    "shebao_payment": "{city_info[shebao_payment]}最低缴费",
+                    "shebao_payment": "{calc_ext[w_shebao_payment]}最低缴费",
                     "svc_fee": " + {calc_ext[svc_fee_total]}服务费"
                 },
                 "if_value": {
@@ -1761,13 +1765,13 @@
             "gongjijin_fee": 100
         },
         "成都": {
-            "sb_jishu": 1300,
-            "gjj_jishu": 1101,
-            "shebao_payment": 0,
-            "svc_fee": 0,
+            "sb_jishu": 2697,
+            "gjj_jishu": 1780,
+            "shebao_payment": 1022.01,
+            "svc_fee": 40,
             "shouci_fee": 50,
             "pay_deadline": 20,
-            "gongjijin_fee": 100
+            "gongjijin_fee": 214
         },
         "昆山": {
             "sb_jishu": 2940,
@@ -1967,5 +1971,6 @@
             ]
         ]
     },
-    "policy_data_location": "policydata.json"
+    "policy_data_location": "policydata.json",
+    "sideinfo_location": "sideinfo.json"
 }

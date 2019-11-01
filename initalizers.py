@@ -2,7 +2,7 @@ import json
 import os
 from cbsv import read_json
 from embedding.nlp_api import Predictor
-from chatbot_supp import SIP, Policy, InfoVault, InfoParser, ReqGatekeeper
+from chatbot_supp import SIP, Policy, InfoVault, InfoParser, ReqGatekeeper, Humanizer
 from chatclass import DetailManager, ReplyGenerator, PolicyKeeper
 
 # Converts a dict of states to a dict of state keys
@@ -13,9 +13,13 @@ def state_key_dict(states):
         out[k] = states[k]["key"]
     return out
 
-def init_replygen(jdata):
+def init_replygen(jdata, inf):
+    def _init_humanizer(info):
+        i = info["humanizer"]
+        return Humanizer(i)
+    hz = _init_humanizer(inf)
     FORMAT_DB = jdata["reply_formatting"]
-    return ReplyGenerator(FORMAT_DB)
+    return ReplyGenerator(FORMAT_DB,hz)
 
 def init_policykeeper(jdata, pdata):
     INTENTS = jdata["intents"]
@@ -126,11 +130,13 @@ def master_initalize(filename = ""):
     jdata = read_json(filename)
     pr_filepath = os.path.join(direct,jdata["policy_data_location"])
     pdata = read_json(pr_filepath)
+    si_filepath = os.path.join(direct,jdata["sideinfo_location"])
+    sideinfo = read_json(si_filepath)
 
     components = {}
     components["dmanager"] = init_detailmanager(jdata)
     components["iparser"] = init_infoparser(jdata)
-    components["replygen"] = init_replygen(jdata)
+    components["replygen"] = init_replygen(jdata,sideinfo)
     components["pkeeper"] = init_policykeeper(jdata,pdata)
     components["gkeeper"] = init_gatekeeper(jdata)
     return components
