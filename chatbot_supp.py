@@ -61,11 +61,6 @@ class SIP:
         obj.go_back = True
         return obj
     
-    # @classmethod
-    # def goto_pending_state(cls):
-    #      obj = cls(PENDING_STATE_F, cs=False)
-    #      return obj
-    
     @classmethod
     def exit_pocket(cls):
         # TODO this
@@ -147,12 +142,12 @@ class ReqGatekeeper:
         print("slots from scanning obj:",slots)
         self.requirements = ReqGatekeeper.slots_to_reqs(self.slots)    
 
-
-    def scan_SIP(self, sip):
-        if sip.is_gated():
-            self.close_gate()
-            self.slots = sip.get_slots()
-            self.requirements = ReqGatekeeper.slots_to_reqs(self.slots)    
+    # Unused
+    # def scan_SIP(self, sip):
+    #     if sip.is_gated():
+    #         self.close_gate()
+    #         self.slots = sip.get_slots()
+    #         self.requirements = ReqGatekeeper.slots_to_reqs(self.slots)    
 
     # If pass, returns True, (Pending state)
     # If fail, returns False, (Next state)
@@ -199,12 +194,6 @@ class Understanding:
     def get_intent(self):
         return self.intent
 
-    # NOT BEING USED
-    def copy_swap_sip(self,new_sip):
-        new = Understanding(self.intent, new_sip)
-        new.set_details(self.get_details())
-        return new
-
     def get_sip(self):
         return self.sip
     
@@ -217,31 +206,22 @@ class Understanding:
     def printout(self):
         print("UNDERSTANDING PRINTOUT: Intent: ", self.intent, " SIP: ", self.sip.toString(), " details: ", self.details)
 
-# Action that includes string for replies
-class Action:
-    def __init__(self):
-        self.message = ""
-        self.log_data_bool = False
-        self.data = []
-
-    @classmethod
-    def reply(cls, msg):
-        act = cls()
-        act.set_message(msg)
-        return act
-
-    def set_message(self, msg):
-        self.message = msg
-
-    def log_data(self, data):
-        self.data = data
-        self.log_data_bool = True
+class Humanizer():
+    def __init__(self,human_dict):
+        self.hd = human_dict.items()
     
-    def has_data(self):
-        return self.log_data_bool
-
-    def set_details(self, d):
-        self.details = d
+    def humanify(self, msg, info):
+        human_msg = msg
+        for key, d in self.hd:
+            if key in info:
+                if info[key] == d["value"]:
+                    pos = d["location"]
+                    txt = d["text"]
+                    if pos == "START":
+                        human_msg = txt + human_msg
+                    elif pos == "END":
+                        human_msg = human_msg + txt
+        return human_msg
         
 
 class Policy():

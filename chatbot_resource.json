@@ -33,6 +33,7 @@
         "unknown": {
             "key": "1099 unknown",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "不好意思,我听不懂",
@@ -42,6 +43,7 @@
         "unsupported_request": {
             "key": "unsupported_request",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "抱歉哦亲，小店暂时不提供这项业务哦"
@@ -93,12 +95,14 @@
         "ask_can_pay_later": {
             "key": "ask_can_pay_later",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": ["不行，要先付款亲"]
         },
         "ask_shebao_status": {
             "key": "ask_shebao_status",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "亲 我是值班客服 看不到系统数据 你白天上班时间联系我们吧 谢谢亲"
@@ -170,12 +174,12 @@
             "key": "info_weixin",
             "default_set": true,
             "default_target": "inform_weixin",
-            "replies": [
-            ]
+            "replies": []
         },
         "query_pregnant": {
             "key": "info_pregnant",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "怀孕的我们不接受代缴哦"
@@ -184,6 +188,7 @@
         "query_phone": {
             "key": "info phone number",
             "default_set": true,
+            "humanify": true,
             "default_target": "SAME_STATE",
             "replies": [
                 "亲亲在白天上班时间联系哦：15221004815",
@@ -193,6 +198,7 @@
         "query_bujiao": {
             "key": "query_bujiao",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "补缴不算连续的，也不算正常缴纳，可以算累计缴纳的月份"
@@ -201,6 +207,7 @@
         "query_pay_part_only": {
             "key": "query_pay_part_only",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "不可以哦亲，必须5险一起缴纳哦"
@@ -229,6 +236,7 @@
         "query_shebao_components": {
             "key": "info_shebao_components",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "社保包括：养老保险、医疗保险、生育保险、工伤保险和失业保险"
@@ -237,6 +245,7 @@
         "query_housing": {
             "key": "info_housing",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "这个亲亲咨询下购房中介哦，小店只负责代缴哈"
@@ -245,6 +254,7 @@
         "daikuan": {
             "key": "daikuan (same as housing)",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "这个亲亲咨询下购房中介哦，小店只负责代缴哈"
@@ -253,6 +263,7 @@
         "query_various_effects": {
             "key": "query_various_effects",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "这个小店不太清楚哦，小店只负责代缴哈"
@@ -261,6 +272,7 @@
         "question_reliability": {
             "key": "question_reliability",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "亲，小店是正规的人力资源公司哦，挂靠公司，不会有代缴痕迹哦"
@@ -336,11 +348,11 @@
                 "小店不能补个税哦亲"
             ]
         },
-        "confusion": {
-            "key": 193,
-            "default_set": false,
-            "default_target": "NA",
-            "replies": []
+        "get_back_later": {
+            "key": "get_back_later",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": ["亲，小店的价格真的相当划算哦；亲有需要可以来找小店，期待亲亲的光顾哦"]
         },
         "goodbye": {
             "key": "195 goodbyes",
@@ -391,6 +403,7 @@
             "key": "pass_to_human",
             "gated": false,
             "thread": "EXIT",
+            "humanify": false,
             "terminal_state": false,
             "req_info": "",
             "replies": [
@@ -401,6 +414,7 @@
             "key": "night_time_cannot",
             "gated": false,
             "thread": "EXIT",
+            "humanify": false,
             "terminal_state": false,
             "req_info": "",
             "replies": [
@@ -411,10 +425,11 @@
             "key": "city_crossroad",
             "gated": false,
             "thread": "t_presale",
+            "humanify": true,
             "terminal_state": false,
             "req_info": [["city","city"]],
             "replies": [
-                "可以，那么亲是哪个城市呢？"
+                "那么亲是哪个城市呢？"
             ]
         },
         "ask_if_issue": {
@@ -471,27 +486,12 @@
                 "亲在{city}一共要付{rep_ext[calc_str_working]} = {rep_ext[calc_str_total]}块"
             ]
         },
-        "gen_query": {
-            "key": 213,
-            "gated": false,
-            "thread": "NONE",
-            "terminal_state": false,
-            "req_info": "",
-            "replies": []
-        },
-        "confirm_query": {
-            "key": 218,
-            "gated": false,
-            "thread": "NONE",
-            "terminal_state": false,
-            "req_info": "",
-            "replies": []
-        },
         "TMP_recv_info": {
             "key": "TMP_recv_info",
             "gated": true,
             "thread": "NONE",
             "terminal_state": false,
+            "humanify":false,
             "req_info": "",
             "replies": [
                 "亲,{rep_ext[request_string]}"
@@ -788,6 +788,7 @@
             "key": "inform_weixin",
             "gated": true,
             "thread": "t_weixin",
+            "humanify": true,
             "terminal_state": true,
             "req_info": [
                 [
@@ -1163,15 +1164,19 @@
                     [
                         "city_info",
                         [
-                            "shebao_payment",
                             "svc_fee",
                             "shouci_fee",
                             "gongjijin_fee"
                         ]
+                    ],
+                    [
+                        "calc_ext",[
+                            "w_shebao_payment"
+                        ]
                     ]
                 ],
                 "if_present": {
-                    "shebao_payment": "{city_info[shebao_payment]}最低缴费",
+                    "shebao_payment": "{calc_ext[w_shebao_payment]}最低缴费",
                     "svc_fee": " + {calc_ext[svc_fee_total]}服务费"
                 },
                 "if_value": {
@@ -1761,13 +1766,13 @@
             "gongjijin_fee": 100
         },
         "成都": {
-            "sb_jishu": 1300,
-            "gjj_jishu": 1101,
-            "shebao_payment": 0,
-            "svc_fee": 0,
+            "sb_jishu": 2697,
+            "gjj_jishu": 1780,
+            "shebao_payment": 1022.01,
+            "svc_fee": 40,
             "shouci_fee": 50,
             "pay_deadline": 20,
-            "gongjijin_fee": 100
+            "gongjijin_fee": 214
         },
         "昆山": {
             "sb_jishu": 2940,
@@ -1967,5 +1972,6 @@
             ]
         ]
     },
-    "policy_data_location": "policydata.json"
+    "policy_data_location": "policydata.json",
+    "sideinfo_location": "sideinfo.json"
 }
