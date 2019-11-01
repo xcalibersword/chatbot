@@ -1,0 +1,9 @@
+{
+    "humanizer":{
+        "ask_keyi": {
+            "value":"可以",
+            "location":"START",
+            "text":"可以啊亲。"
+        }
+    }
+}

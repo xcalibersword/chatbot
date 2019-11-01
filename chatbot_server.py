@@ -40,14 +40,12 @@ def get_qingyunke(query):
 
 def get_bot_reply(bot, cid, message):
     replypack = bot.get_bot_reply(cid,message)
-    text, bd = replypack
-    # if replytext == '不好意思，我听不懂':
-    #     if get_qingyunke(message) == None:
-    #         replytext = '我收到' + message
-    #     else:
-    #         replytext = get_qingyunke(message)
+    text, bd, info = replypack
+    
+    infostr = str(info)
+    
     reply = robotify(text)
-    return (reply, bd)
+    return (reply, bd, infostr)
 
 def index(request):
     indexfilepath = 'testing_server/index.html'
@@ -78,10 +76,10 @@ async def chat_message(sid, msg):
     else:
         uid = idmap[sid] if sid in idmap else sid
         print("Recieved from",uid,"Content:",msg)
-        replypack = get_bot_reply(bot, uid, msg)
-        text, bd = replypack
+        text, bd, curr_info = get_bot_reply(bot, uid, msg)
         await sio.emit('message', text, room=sid)
         await sio.emit('message', bd, room=sid)
+        await sio.emit('message', curr_info, room=sid)
 
 
 app.router.add_get('/', index)

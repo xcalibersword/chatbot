@@ -14,28 +14,33 @@ def dump_to_json(filename, data, DEBUG = 0):
     if DEBUG:
         print("Finished writing to " + str(filename))
 
+test = {"abc":123,"memem":7461}
 
-json_data = read_json("chatbot_resource.json")
+print(test)
+tt = str(test)
+print(tt)
 
-things = json_data["states"] # CHANGE TARGETS
+# json_data = read_json("chatbot_resource.json")
 
-thinglist = list(things.keys())
+# things = json_data["states"] # CHANGE TARGETS
 
-new_dict  = {}
-for t in thinglist:
-    oldentry = things[t]
-    entry = {}
-    existingkeys = list(oldentry.keys())
-    for ek in existingkeys:
-        entry[ek] = oldentry[ek]
+# thinglist = list(things.keys())
 
-    # ACTION HAPPENS HERE
-    if not "replies" in entry:
-        entry["replies"] = []
-    new_dict[t] = entry
+# new_dict  = {}
+# for t in thinglist:
+#     oldentry = things[t]
+#     entry = {}
+#     existingkeys = list(oldentry.keys())
+#     for ek in existingkeys:
+#         entry[ek] = oldentry[ek]
 
-output_filename = "dump.json"
+#     # ACTION HAPPENS HERE
+#     if not "replies" in entry:
+#         entry["replies"] = []
+#     new_dict[t] = entry
 
-dump_to_json(output_filename, new_dict)
+# output_filename = "dump.json"
+
+# dump_to_json(output_filename, new_dict)
 
 print("Done")
