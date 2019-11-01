@@ -12,7 +12,7 @@ from keras.models import load_model
 from keras.preprocessing.sequence import pad_sequences 
 
 # model_filename = 'embedding/241019_1600_model.h5'
-rootpath = '/Users/davidgoh/Desktop/chatbot/embedding/'
+rootpath = 'embedding/'
 model_filename = rootpath+'JB_model.h5'
 w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
 VDLIMIT = 60000 #35000 includes gongjijin

@@ -269,7 +269,7 @@
         "luohu": {
             "key": "4040 luohu complicated",
             "default_set": true,
-            "default_target": "pass_to_human",
+            "default_target": "night_time_cannot",
             "replies": []
         },
         "how_to_pai": {
@@ -283,6 +283,12 @@
             "default_set": true,
             "default_target": "log_issue",
             "replies": []
+        },
+        "request_link": {
+            "key": "request_link",
+            "default_set": true,
+            "default_target": "night_time_cannot",
+            "replies": ["不好意思，暂时不能给链接"]
         },
         "inform_paid": {
             "key": "180 inform_paid",
@@ -382,7 +388,17 @@
             "terminal_state": false,
             "req_info": "",
             "replies": [
-                "不好意思，我是新手，现在给你转到服务员"
+                "不好意思，我是新手，现在给你转到负责同事"
+            ]
+        },
+        "night_time_cannot": {
+            "key": "night_time_cannot",
+            "gated": false,
+            "thread": "EXIT",
+            "terminal_state": false,
+            "req_info": "",
+            "replies": [
+                "亲 我是值班客服 看不到系统数据 您白天上班时间联系我们吧 谢谢亲"
             ]
         },
         "city_crossroad":{
@@ -900,7 +916,8 @@
                     "city": {
                         "上海": "上海社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp. 公积金缴费查询：次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。）",
                         "北京": "北京社保查询：① 进入http://www.bjrbj.gov.cn/csibiz/indinfo/login.jsp →“城镇职工个人用户登录”→个人基本信息查询→5险状态显示正常缴费→参保成功；② 缴费明细隔月可查，如4月份的社保明细，6月后可查到账 → 个人缴费信息查询",
-                        "苏州": ""                        
+                        "苏州": "",
+                        "DEFAULT": "亲 不好意思，目前没有信息 :("           
                     },
                     "苏州区":{
                         "苏州市区":"苏州市区: 正常参保月的当月底到账，次月可查；苏州市社会保险基金管理中心。左侧下拉可以看到有个网上办事大厅，输入社保编号，身份证号码和验证码就可以看到个人的社保记录；也可以在网上打印参保记录证明",
@@ -1898,7 +1915,26 @@
                     "唯洛店"
                 ]
             }
-        }
+        },
+        "secondary_slots":[
+            {   
+                "writeto":"city_district",
+                "search_tree":{
+                    "city":{
+                        "上海": "上海城市",
+                        "北京": "北京城市",
+                        "广州": "广州城市",
+                        "成都": "成都城市",
+                        "苏州": {
+                            "苏州区":{
+                                "苏州园区": "苏州园区",
+                                "苏州市区": "苏州市区"
+                            }
+                        }
+                    }
+                }
+            }
+        ]
     },
     "conditional_reqs": {
         "city": [
