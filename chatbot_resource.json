@@ -90,6 +90,12 @@
             "default_target": "inform_topup",
             "replies": []
         },
+        "ask_can_pay_later": {
+            "key": "ask_can_pay_later",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": ["不行，要先付款亲"]
+        },
         "ask_shebao_status": {
             "key": "ask_shebao_status",
             "default_set": true,
@@ -149,7 +155,7 @@
         "query_company_name": {
             "key": "info company name",
             "default_set": true,
-            "default_target": "SAME_STATE",
+            "default_target": "inform_company_name",
             "replies": [
                 "我们公司叫做 58社保"
             ]
@@ -703,11 +709,21 @@
             "req_info": "",
             "replies": []
         },
+        "inform_company_name":{
+            "key": "inform_company_name",
+            "gated": true,
+            "thread": "t_company_name",
+            "terminal_state": true,
+            "req_info": [["city","city"]],
+            "replies": [
+                "上海: 忠彧企业咨询管理有限公司 杭州: 分公司"
+            ]
+        },
         "inform_topup": {
             "key": "inform_topup",
             "gated": true,
             "thread": "t_topup",
-            "terminal_state": false,
+            "terminal_state": true,
             "req_info": [["city","city"]],
             "replies": [
                 "亲，{rep_ext[topup_info]}"
@@ -717,7 +733,7 @@
             "key": "260 inform pai",
             "gated": false,
             "thread": "t_pai",
-            "terminal_state": false,
+            "terminal_state": true,
             "req_info": "",
             "replies": [
                 "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
@@ -1059,7 +1075,7 @@
             {
                 "writeto": "proposal2",
                 "states": [
-                    "for beijing",
+                    "COMMENT for beijing",
                     "propose_plan",
                     "propose_plan_wxyj"
                 ],
@@ -1200,13 +1216,6 @@
                 "lookfor": [
                     "city",
                     [
-                        "city_info",
-                        [
-                            "gjj_jishu",
-                            "gongjijin_fee"
-                        ]
-                    ],
-                    [
                         "rep_ext",
                         [
                             "product",
@@ -1224,7 +1233,7 @@
                 "if_present": {},
                 "if_value": {
                     "city": {
-                        "苏州": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。",
+                        "杭州": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。",
                         "DEFAULT": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。"
                     }
                 }
@@ -1915,27 +1924,27 @@
                     "唯洛店"
                 ]
             }
-        },
-        "secondary_slots":[
-            {   
-                "writeto":"city_district",
-                "search_tree":{
-                    "city":{
-                        "上海": "上海城市",
-                        "北京": "北京城市",
-                        "广州": "广州城市",
-                        "成都": "成都城市",
-                        "苏州": {
-                            "苏州区":{
-                                "苏州园区": "苏州园区",
-                                "苏州市区": "苏州市区"
-                            }
+        }
+    },
+    "secondary_slots":[
+        {   
+            "writeto":"city_district",
+            "search_tree":{
+                "city":{
+                    "上海": "上海城市",
+                    "北京": "北京城市",
+                    "广州": "广州城市",
+                    "成都": "成都城市",
+                    "苏州": {
+                        "苏州区":{
+                            "苏州园区": "苏州园区",
+                            "苏州市区": "苏州市区"
                         }
                     }
                 }
             }
-        ]
-    },
+        }
+    ],
     "conditional_reqs": {
         "city": [
             [
