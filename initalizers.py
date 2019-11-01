@@ -70,16 +70,19 @@ def init_policykeeper(jdata, pdata):
     make_policy = lambda s_ints: Policy(default_policy_set,s_ints)
 
     terminal_pair = create_policy_tuple(["affirm", "initplus"])
-
+   
     POLICY_RULES = {}
-    for state_key in policy_states:
+    for state_key in list(STATES.keys()):
         tuplelist = []
         state_obj = STATES[state_key]
+        
         terminal = state_obj["terminal_state"]
         if terminal:
             tuplelist.append(terminal_pair)
-        for pair in policy_rules[state_key]:
-            tuplelist.append(create_policy_tuple(pair))
+
+        if state_key in policy_states:
+            for pair in policy_rules[state_key]:
+                tuplelist.append(create_policy_tuple(pair))
         POLICY_RULES[STATE_KEYS[state_key]] = make_policy(tuplelist)
 
     # Loop to make all policies for those without specific paths
@@ -91,10 +94,12 @@ def init_policykeeper(jdata, pdata):
             continue # Don't overwrite existing policy lookup values
         POLICY_RULES[k] = make_policy([])
 
+    ZONE_POLICIES = pdata["zone_policies"]
+
     ## INITALIZE NLP_API here
     pp = Predictor() 
 
-    return PolicyKeeper(POLICY_RULES, INTENTS, STATES, pp)
+    return PolicyKeeper(POLICY_RULES, ZONE_POLICIES, INTENTS, STATES, pp)
 
 def init_infoparser(jdata):
     relevant = jdata["info_parser"]
