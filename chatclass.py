@@ -604,7 +604,7 @@ class ReplyGenerator:
             return add_enh(key,enhstr,rep_ext,"rep_ext")
         
         def add_calc_enh(key, rawstr):
-            flt = float(rawstr)
+            flt = round(float(rawstr),2)
             return add_enh(key,flt,l_calc_ext,"calc_ext",overwrite = True)
 
         def needs_txt_enh(tmp,csk):
