@@ -233,8 +233,10 @@ class ChatManager:
         intent = full_uds.get_intent()
         reply = self._fetch_reply(intent)
 
+        curr_info = self._get_current_info()
+
         self._record_messages_in_chat(msg,reply)
-        return (reply, bd)
+        return (reply, bd, curr_info)
 
     # Takes in message text, returns a full understanding
     def _parse_message_overall(self,msg):
