@@ -548,7 +548,8 @@ class DetailManager:
                     if isinstance(slot_val, dict):
                         slot, sub_dict = list(slot_val.items())[0]
                     else:
-                        return (True, slot_val)
+                        ss_val = sub_dict[slot_val]
+                        return (True, ss_val)
                 else:
                     if DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
                     break

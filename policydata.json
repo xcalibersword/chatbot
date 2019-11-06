@@ -1,5 +1,5 @@
 {
-    "COMMENTS":"File to decide state transition logic. Called policies. CONSIDER: Changeing from list of pairs to dict",
+    "COMMENTS":"File to decide state transition logic. Called policies. CONSIDER: Changing from list of pairs to dict",
     "zone_policies":{
         "city_crossroad":[
             "city",{
@@ -41,14 +41,17 @@
         ],
         "inform_pai": [
             ["affirm", "finished_payment"],
-            ["next_step", "finished_payment"]
+            ["next_step", "finished_payment"],
+            ["thankyou","initplus"]
         ],
         "finished_payment": [
             ["affirm", "initplus"],
+            ["thankyou","initplus"],
             ["goodbye", "goodbye"]
         ],
         "pass_to_human": [
-            ["affirm","initplus"]
+            ["affirm","initplus"],
+            ["greet","initplus"]
         ],
         "goodbye":[
             ["greet", "init"]
