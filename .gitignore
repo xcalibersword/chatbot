@@ -14,9 +14,9 @@ sikuliX/
 
 id_data/
 
-test_NLU/model/
+test_NLU/
 
-test_NLU/vocab/
+test_label/
 
 .vscode/
 

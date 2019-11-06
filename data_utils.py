@@ -353,7 +353,7 @@ def csv2data():
     new_df.to_csv(r"D:\chatbot\data\test1.csv",index=False,encoding="gb18030")
 
 #remove spaces
-def remove_spaces():
+def clean_csv_column_text():
     df = pd.read_csv(r"D:\chatbot\data\test.csv",encoding="gb18030",header=None)
     list_list=df.values.tolist()
     new_list_list = []
@@ -361,7 +361,9 @@ def remove_spaces():
         new_list = []
         for sent in list1:
             if str(sent) != "nan":
-                new_list.append("".join(sent.split()))
+#                clean_text = sent[8:]
+                clean_text = "".join(sent.split())
+                new_list.append(clean_text)
             else:
                 new_list.append("")
         new_list_list.append(new_list)
@@ -380,7 +382,7 @@ def main():
     #train_test_eval(clist)
     #train_test_eval(r"D:\chatbot\data\b.csv")
 
-    remove_spaces()
+    clean_csv_column_text()
 
 if __name__ == "__main__":
     main()
