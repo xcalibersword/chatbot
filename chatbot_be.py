@@ -15,7 +15,8 @@ class DatabaseRunner():
         
         base_directry = os.getcwd()
         dbfilename = "database.json"
-        self.dbfilepath = os.path.join(base_directry,dbfolder,dbfilename)
+        # self.dbfilepath = os.path.join(base_directry,dbfolder,dbfilename)
+        self.dbfilepath = os.path.join(base_directry,dbfilename) # For testing purpose
         if DEBUG: print("Loading info from", self.dbfilepath)
         if not check_file_exists(self.dbfilepath):
             print("Creating empty database file")
