@@ -220,14 +220,15 @@ class ChatManager:
     # Takes in a message, returns a text reply.
     def respond_to_message(self, msg):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") # For clarity in terminal
+        rcount = 0
         repeat = True
         while repeat:
             # Parse the message and get an understanding
             full_uds, bd = self._parse_message_overall(msg)
-
             # Digest and internalize the new info
             repeat = self._digest_uds(full_uds)
-            # if repeat: print("HELLO IM REPEATING")
+            if repeat and DEBUG: print("REPEATING",rcount)
+            if rcount > 5: break
 
         # Request a reply text
         intent = full_uds.get_intent()

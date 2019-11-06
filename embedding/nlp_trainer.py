@@ -1,6 +1,6 @@
 #encoding = utf-8
-
 import csv
+import json
 import numpy as np
 import jieba as jb
 
@@ -22,8 +22,22 @@ VDLIMIT = 60000
 
 USE_WORD2VECTOR = False
 
+def save_to_json(filename, data):
+    try:
+        with open(filename,'w', encoding='utf8') as f:
+            json.dump(data, f, indent = 4, ensure_ascii=0)
+    except FileNotFoundError as fnf_error:
+        print(fnf_error)
+
+    print("Finished writing to " + str(filename))
+
+def save_tokenizer(t, filename):
+    json_yval = t.to_json()
+    save_to_json(filename,json_yval)
+
 #read csv
-dataset_fp = "data_in2.csv"
+# dataset_fp = "data_in2.csv"
+dataset_fp = "generated_data.csv"
 save_model_name = 'trained_JB_model.h5'
 count = 0
 with open(dataset_fp, 'r',encoding='gb18030') as f:
@@ -34,21 +48,25 @@ with open(dataset_fp, 'r',encoding='gb18030') as f:
             data.append(r)
         count += 1
     print("Read {} rows".format(count))
-    npdata = np.array(data)
+    npdata = np.array(data,dtype=str)
 
 xval = npdata[:,0]
 yval = npdata[:,1]
+yval = np.reshape(yval,(count-1))
 
-intent_tokenizer = Tokenizer(max_intents,filters='',oov_token=0)
+intent_tokenizer = Tokenizer(max_intents,filters="",oov_token=0)
 intent_tokenizer.fit_on_texts(yval)
 ints_yval = intent_tokenizer.texts_to_sequences(yval)
+# print(ints_yval[:50])
 cat_yval = to_categorical(ints_yval)
+
+# SAVE Y VAL TOKENIZER
+save_tokenizer(intent_tokenizer, "yval_tokens.json")
 
 num_intents = len(intent_tokenizer.word_index) + 1
 print('Found %s unique intents.' %num_intents)
 
 reverse_word_map = dict(map(reversed, intent_tokenizer.word_index.items()))
-print(reverse_word_map)
 
 def pred_to_word(pred):
     top = 3
@@ -65,12 +83,12 @@ def pred_to_word(pred):
         idx = np.where(pred == curr)[0][0]
         intent = reverse_word_map[idx]
         if (best == None): best = intent 
-        conf = (curr*100/total)//0.1/10
+        conf = round(curr*100/total,2)
         breakdown = breakdown + "<{}> Intent:{} Confidence:{}%\n".format(i+1, intent, conf)
     out = {"prediction":best,"breakdown":breakdown}
     print(out)
 
-# ### Test reverse lookup for intent
+### Test reverse lookup for intent
 # print("testing for",yval[415])
 # test_reverse = cat_yval[415]
 # print(pred_to_word(test_reverse))
@@ -103,12 +121,15 @@ def buildWordToInt(w2v,ut):
     return d
 
 
-def arrayWordToInt(nparr, d):
+def arrayWordToInt(nparr, d, dbg=0):
+    nparr = np.array(nparr)
     newArray = np.copy(nparr)
     for k, v in d.items(): newArray[nparr==k] = v
     newArray[isinstance(newArray,str)] = 0
+    if dbg: print(newArray)
     return newArray
 
+# Returns an nparray of sequences, padded
 def myTokenize(nparr):
     pyarr = nparr.tolist() if isinstance(nparr, np.ndarray) else nparr
     outarr = []
@@ -120,63 +141,75 @@ def myTokenize(nparr):
         jbseq = jb.lcut(seq, cut_all=True)
         jbseq = pad_sequences([jbseq,], maxlen = max_review_length, dtype = object, value="_NA")
         outarr.append(jbseq)
-    return np.array(outarr)
+    return outarr
+
+def tokenizer_fit_xvals(t_xvals):
+    t = Tokenizer(num_words=None,lower=False, oov_token="_NA")
+    t.fit_on_sequences(t_xvals)
+    return t
+
+def convert_txvals(t_xvals):
+    t = tokenizer_fit_xvals(t_xvals)
+    ints_xvals = t.texts_to_sequences(t_xvals)
+    return (ints_xvals, t)
 
 # EMBEDDING
 prep_xvals = myTokenize(xval)
+# embed_xvals, xvt = convert_txvals(prep_xvals)
+# save_tokenizer(xvt, "xval_tokens.json")
+# embed_xvals = np.array(embed_xvals)
+
 ut = get_unique_tokens(prep_xvals)
+# if USE_WORD2VECTOR:
+    # embed_dict = get_vector_dict(w2v_filepath,limit = VDLIMIT)
+    # zero_vector = [0] * embedding_vector_length
+    # word2int = buildWordToInt(embed_dict,ut)
+    # prep_xvals = arrayWordToInt(prep_xvals,word2int)
+    # print("split",prep_xvals[100:105])
+    # # prep_xvals = pad_sequences(prep_xvals, maxlen = max_review_length, dtype = object, value="0")
+    # # print("padd",prep_xvals[100:105])
+    # embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) # Remove the 1 in the middle
+    # print("shape", prep_xvals.shape)
 
-if USE_WORD2VECTOR:
-    embed_dict = get_vector_dict(w2v_filepath,limit = VDLIMIT)
-    zero_vector = [0] * embedding_vector_length
-    word2int = buildWordToInt(embed_dict,ut)
-    prep_xvals = arrayWordToInt(prep_xvals,word2int)
-    print("split",prep_xvals[100:105])
-    # prep_xvals = pad_sequences(prep_xvals, maxlen = max_review_length, dtype = object, value="0")
-    # print("padd",prep_xvals[100:105])
-    embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) # Remove the 1 in the middle
-    print("shape", prep_xvals.shape)
+    # # prepare embedding matrix
+    # num_words = len(embed_dict) + embed_xvals.shape[0]
+    # embedding_matrix = np.zeros((num_words, embedding_vector_length))
+    # idx = 0
 
-    # prepare embedding matrix
-    num_words = len(embed_dict) + embed_xvals.shape[0]
-    embedding_matrix = np.zeros((num_words, embedding_vector_length))
-    idx = 0
+    # # Build dict for VECTORS
+    # for word, i in word2int.items():
+    #     if word in embed_dict:
+    #         embedding_matrix[i] = embed_dict[word]
+    #     else:
+    #         # words not found in embedding index will be all-zeros.
+    #         embedding_matrix[i] = zero_vector
+    #     # word_to_int[word] = i
+    #     idx += 1
 
-    # Build dict for VECTORS
-    for word, i in word2int.items():
-        if word in embed_dict:
-            embedding_matrix[i] = embed_dict[word]
-        else:
-            # words not found in embedding index will be all-zeros.
-            embedding_matrix[i] = zero_vector
-        # word_to_int[word] = i
-        idx += 1
+    # print("embedding mat shape",embedding_matrix.shape)
+    # # for k,v in word_to_int.items(): embed_xvals[prep_xvals==k] = v # Dict lookup for npArrays
 
-    print("embedding mat shape",embedding_matrix.shape)
-    # for k,v in word_to_int.items(): embed_xvals[prep_xvals==k] = v # Dict lookup for npArrays
+    # my_embedding = Embedding(
+    #     num_words,
+    #     embedding_vector_length,
+    #     embeddings_initializer=Constant(embedding_matrix),
+    #     input_length=max_review_length,
+    #     trainable = False
+    #     )
+# else:
+num_words = len(ut)
+word_index = buildWordToInt(ut,[])
+prep_xvals = arrayWordToInt(prep_xvals,word_index)
+embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) # Remove the 1 in the middle
 
-    my_embedding = Embedding(
-        num_words,
-        embedding_vector_length,
-        embeddings_initializer=Constant(embedding_matrix),
-        input_length=max_review_length,
-        trainable = False
-        )
+save_to_json("xval_man_tokens.json",str(word_index))
 
-else:
-    num_words = len(ut)
-    word_index = buildWordToInt(ut,[])
-    prep_xvals = arrayWordToInt(prep_xvals,word_index)
-    embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) # Remove the 1 in the middle
-
-    print("word index", word_index.items())
-
-    my_embedding = Embedding(
-        num_words,
-        embedding_vector_length,
-        input_length=max_review_length,
-        trainable = True
-        )
+my_embedding = Embedding(
+    num_words,
+    embedding_vector_length,
+    input_length=max_review_length,
+    trainable = True
+    )
 
 print('Shape of data tensor:', embed_xvals.shape)
 print("xval sample", embed_xvals[156])
@@ -189,7 +222,7 @@ embed = my_embedding(main_input)
 embed = BatchNormalization(momentum=0.99)(embed)
 
 # 词窗大小分别为 2 3 4
-cnnUnits = 128 # 
+cnnUnits = 64 # 
 cnn1 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu')(embed)
 cnn2 = Conv1D(cnnUnits, 3, padding='same', strides=1, activation='relu')(embed)
 cnn3 = Conv1D(cnnUnits, 4, padding='same', strides=1, activation='relu')(embed)
@@ -205,28 +238,28 @@ cnn = BatchNormalization(momentum=0.99)(cnn)
 
 flat = Flatten()(cnn)
 flat = Dropout(0.2)(flat)
-# flat = Dense(units=256, activation='relu')(flat) # 
+flat = Dense(units=256, activation='relu')(flat) # 
 outs = Dense(units=num_intents, activation='sigmoid')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
 
-LEARN_RATE = 0.00005
+LEARN_RATE = 0.00004
 optimizer = Adam(learning_rate=LEARN_RATE)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 
-model.fit(x=embed_xvals,y=cat_yval,epochs=80,verbose=1,validation_split=0.0,batch_size=16)
+model.fit(x=embed_xvals,y=cat_yval,epochs=50,verbose=1,validation_split=0.0,batch_size=16)
 
 # Post Training
 model.save(save_model_name)
 print("This Model has been saved! Rejoice")
 
-test_in = ["我在上海","我要付社保","我是想要付社保","您好","哦了解了", "填好了呀", "拍好了", "怎么拍", "一共多少钱啊", "我好爱您哦", "代缴社保", "落户上海", "上海社保可以吗", "我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
+test_in = ["我在上海","我要付社保","我是要付社保","您好","哦了解了", "填好了呀", "拍好了", "怎么拍", "一共多少钱啊", "我好社保您哦", "代缴社保", "落户上海", "上海社保可以吗", "我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
 
 ti = myTokenize(test_in)
 # print("input",test_in)
-input_array = arrayWordToInt(ti,word_index)
+input_array = arrayWordToInt(ti,word_index,1)
 input_array = np.reshape(input_array,(input_array.shape[0],input_array.shape[2])) # Remove the 1 in the middle
 output_array = model.predict(input_array)
 # print("raw",output_array)

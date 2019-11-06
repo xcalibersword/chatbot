@@ -92,8 +92,8 @@ def check_input_against_db(msg, db, exact = False):
             break
     return match
 
-def dump_to_json(filename, data, DEBUG = 0):
-    if not WRITE_TO_FILE: 
+def dump_to_json(filename, data, DEBUG = 0, OVERRIDE = 0):
+    if not WRITE_TO_FILE and not OVERRIDE: 
         print("<BACKEND WARNING: Writing to file has been disabled> Restore it in cbsv.py\n {} remains unchanged".format(filename))
         return
     try:

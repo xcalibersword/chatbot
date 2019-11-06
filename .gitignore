@@ -22,3 +22,7 @@ test_label/
 
 
 *.h5
+
+embedding/~$raw1106.xlsx
+
+embedding/.DS_Store
