@@ -298,12 +298,6 @@
             "default_target": "inform_pai",
             "replies": []
         },
-        "report_issue": {
-            "key": 151,
-            "default_set": true,
-            "default_target": "log_issue",
-            "replies": []
-        },
         "request_link": {
             "key": "request_link",
             "default_set": true,
