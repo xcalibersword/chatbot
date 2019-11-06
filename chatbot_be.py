@@ -19,7 +19,7 @@ class DatabaseRunner():
         if DEBUG: print("Loading info from", self.dbfilepath)
         if not check_file_exists(self.dbfilepath):
             print("Creating empty database file")
-            dump_to_json(self.dbfilepath,{}) # Create an empty file
+            dump_to_json(self.dbfilepath,{}, OVERRIDE = 1) # Create an empty file
         self.database = read_json(self.dbfilepath)
         
     def fetch_user_info(self, user):
