@@ -4,7 +4,7 @@
 import pandas as pd
 csv_list_list = []
 #insert path
-df = pd.read_csv(r"D:\test.csv",encoding="gb18030")
+df = pd.read_csv(r"raw.csv",encoding="gb18030")
 list_list = df.values.tolist()
 #read to dict
 a = {}
@@ -17,4 +17,6 @@ for i in range(length):
                 csv_list_list.append([l[i],label_list[i]])
 new_df = pd.DataFrame(data=csv_list_list)
 #insert path
-new_df.to_csv(r"D:\test1.csv",index=False,encoding="gb18030")
+new_df.to_csv(r"generated_data.csv",index=False,encoding="gb18030")
+
+print("Done")
