@@ -47,10 +47,6 @@
             ["affirm", "initplus"],
             ["goodbye", "goodbye"]
         ],
-        "ask_if_issue": [
-            ["affirm", "log_issue"],
-            ["deny", "EXIT_POCKET_STATE"]
-        ],
         "pass_to_human": [
             ["affirm","initplus"]
         ],
