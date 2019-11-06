@@ -105,8 +105,8 @@ def init_policykeeper(jdata, pdata):
 
     return PolicyKeeper(POLICY_RULES, ZONE_POLICIES, INTENTS, STATES, pp)
 
-def init_infoparser(jdata):
-    relevant = jdata["info_parser"]
+def init_infoparser(sideinfo):
+    relevant = sideinfo["info_parser"]
     return InfoParser(relevant)
 
 def init_detailmanager(jdata):
@@ -135,7 +135,7 @@ def master_initalize(filename = ""):
 
     components = {}
     components["dmanager"] = init_detailmanager(jdata)
-    components["iparser"] = init_infoparser(jdata)
+    components["iparser"] = init_infoparser(sideinfo)
     components["replygen"] = init_replygen(jdata,sideinfo)
     components["pkeeper"] = init_policykeeper(jdata,pdata)
     components["gkeeper"] = init_gatekeeper(jdata)

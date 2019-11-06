@@ -549,7 +549,9 @@ class DetailManager:
                         slot, sub_dict = list(slot_val.items())[0]
                     else:
                         return (True, slot_val)
-
+                else:
+                    if DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
+                    break
             return (False, "")
 
         entries = {}

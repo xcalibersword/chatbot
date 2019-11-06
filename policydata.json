@@ -44,7 +44,8 @@
             ["next_step", "finished_payment"]
         ],
         "finished_payment": [
-            ["affirm", "initplus"]
+            ["affirm", "initplus"],
+            ["goodbye", "goodbye"]
         ],
         "ask_if_issue": [
             ["affirm", "log_issue"],

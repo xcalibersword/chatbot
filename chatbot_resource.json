@@ -97,7 +97,9 @@
             "default_set": true,
             "humanify": false,
             "default_target": "SAME_STATE",
-            "replies": ["不行，要先付款亲"]
+            "replies": [
+                "不行，要先付款亲"
+            ]
         },
         "ask_shebao_status": {
             "key": "ask_shebao_status",
@@ -161,7 +163,7 @@
             "default_set": true,
             "default_target": "inform_company_name",
             "replies": [
-                "我们公司叫做 58社保"
+                "上海: 忠彧企业咨询管理有限公司 杭州: 分公司"
             ]
         },
         "query_pay_deadline": {
@@ -306,7 +308,9 @@
             "key": "request_link",
             "default_set": true,
             "default_target": "night_time_cannot",
-            "replies": ["不好意思，暂时不能给链接"]
+            "replies": [
+                "不好意思，暂时不能给链接"
+            ]
         },
         "inform_paid": {
             "key": "180 inform_paid",
@@ -352,7 +356,9 @@
             "key": "get_back_later",
             "default_set": true,
             "default_target": "SAME_STATE",
-            "replies": ["亲，小店的价格真的相当划算哦；亲有需要可以来找小店，期待亲亲的光顾哦"]
+            "replies": [
+                "亲，小店的价格真的相当划算哦；亲有需要可以来找小店，期待亲亲的光顾哦"
+            ]
         },
         "goodbye": {
             "key": "195 goodbyes",
@@ -460,9 +466,7 @@
                 "flag_shouci",
                 "sum_svc_fee",
                 "gen_shebao_amt",
-                "shebao_basic_calc",
-                "bj_shebao_basic",
-                "bj_shebao_basic2"
+                "shebao_basic_calc"
             ],
             "req_info": [
                 [
@@ -491,28 +495,10 @@
             "gated": true,
             "thread": "NONE",
             "terminal_state": false,
-            "humanify":false,
+            "humanify": false,
             "req_info": "",
             "replies": [
                 "亲,{rep_ext[request_string]}"
-            ]
-        },
-        "log_issue": {
-            "key": 251,
-            "gated": false,
-            "thread": "t_issue",
-            "terminal_state": true,
-            "req_info": "",
-            "replies": []
-        },
-        "recommend": {
-            "key": 271,
-            "gated": false,
-            "thread": "NONE",
-            "terminal_state": false,
-            "req_info": [],
-            "replies": [
-                "本人推存社保套餐 A"
             ]
         },
         "init_sale": {
@@ -530,20 +516,16 @@
             "terminal_state": false,
             "req_info": [
                 [
-                    "city",
-                    "city"
+                    "city","city"
                 ],
                 [
-                    "首次",
-                    "default_yes"
+                    "首次","default_yes"
                 ],
                 [
-                    "要公积金",
-                    "wantnot"
+                    "要公积金","wantnot"
                 ],
                 [
-                    "要社保",
-                    "default_yes"
+                    "要社保", "default_yes"
                 ]
             ],
             "calcs": [
@@ -564,10 +546,7 @@
             "thread": "t_presale",
             "terminal_state": false,
             "req_info": [
-                [
-                    "city",
-                    "city"
-                ],
+                ["city", "city"],
                 [
                     "首次",
                     "default_yes"
@@ -601,26 +580,20 @@
             "terminal_state": false,
             "req_info": [
                 [
-                    "city",
-                    "city"
+                    "city","city"
                 ],
                 [
-                    "首次",
-                    "default_yes"
+                    "首次","default_yes"
                 ],
                 [
-                    "要公积金",
-                    "wantnot"
+                    "要公积金","wantnot"
                 ],
                 [
-                    "要社保",
-                    "default_yes"
+                    "要社保","default_yes"
                 ],
                 [
-                    "苏州区",
-                    "苏州区_slot"
+                    "苏州区","苏州区_slot"
                 ]
-
             ],
             "calcs": [
                 "flag_sb_gjj",
@@ -634,7 +607,6 @@
                 "{rep_ext[entire_plan_proposal]}"
             ]
         },
-
         "confirm_plan": {
             "key": "282 confirm plan",
             "gated": false,
@@ -666,32 +638,21 @@
             ],
             "req_info": [
                 [
-                    "city",
-                    "city"
+                    "city","city"
                 ],
                 [
-                    "首次",
-                    "yesno"
+                    "首次","yesno"
                 ],
                 [
-                    "要公积金",
-                    "wantnot"
+                    "要公积金","wantnot"
                 ]
             ],
             "replies": [
                 "{city}{rep_ext[product]}一共要付{rep_ext[calc_str_working]} = {rep_ext[calc_str_total]}块，亲确认下哦"
             ]
         },
-        "finish_sale": {
-            "key": 289,
-            "gated": false,
-            "thread": "NONE",
-            "terminal_state": false,
-            "req_info": "",
-            "replies": []
-        },
         "goodbye": {
-            "key": "209 bye",
+            "key": "STATE 209 bye",
             "gated": false,
             "thread": "NONE",
             "terminal_state": false,
@@ -746,8 +707,7 @@
             "terminal_state": true,
             "req_info": [
                 [
-                    "city",
-                    "city"
+                    "city","city"
                 ]
             ],
             "replies": [
@@ -761,8 +721,7 @@
             "terminal_state": true,
             "req_info": [
                 [
-                    "city",
-                    "city"
+                    "city","city"
                 ]
             ],
             "replies": [
@@ -776,8 +735,7 @@
             "terminal_state": true,
             "req_info": [
                 [
-                    "city",
-                    "city"
+                    "city","city"
                 ]
             ],
             "replies": [
@@ -792,8 +750,7 @@
             "terminal_state": true,
             "req_info": [
                 [
-                    "city",
-                    "city"
+                    "city","city"
                 ]
             ],
             "replies": [
@@ -807,8 +764,7 @@
             "terminal_state": true,
             "req_info": [
                 [
-                    "city",
-                    "city"
+                    "city","city"
                 ]
             ],
             "replies": [
@@ -822,8 +778,7 @@
             "terminal_state": true,
             "req_info": [
                 [
-                    "city",
-                    "city"
+                    "city","city"
                 ]
             ],
             "replies": [
@@ -837,8 +792,7 @@
             "terminal_state": true,
             "req_info": [
                 [
-                    "city",
-                    "city"
+                    "city","city"
                 ]
             ],
             "replies": [
@@ -914,8 +868,8 @@
                         "DEFAULT": "亲 不好意思，暂时没有那边的微信"
                     },
                     "苏州区": {
-                        "苏州园区":"<TO BE ADDED>",
-                        "苏州市区":"<TO BE ADDED>"
+                        "苏州园区": "<TO BE ADDED>",
+                        "苏州市区": "<TO BE ADDED>"
                     }
                 }
             },
@@ -934,11 +888,11 @@
                         "上海": "上海社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp. 公积金缴费查询：次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。）",
                         "北京": "北京社保查询：① 进入http://www.bjrbj.gov.cn/csibiz/indinfo/login.jsp →“城镇职工个人用户登录”→个人基本信息查询→5险状态显示正常缴费→参保成功；② 缴费明细隔月可查，如4月份的社保明细，6月后可查到账 → 个人缴费信息查询",
                         "苏州": "",
-                        "DEFAULT": "亲 不好意思，目前没有信息 :("           
+                        "DEFAULT": "亲 不好意思，目前没有信息 :("
                     },
-                    "苏州区":{
-                        "苏州市区":"苏州市区: 正常参保月的当月底到账，次月可查；苏州市社会保险基金管理中心。左侧下拉可以看到有个网上办事大厅，输入社保编号，身份证号码和验证码就可以看到个人的社保记录；也可以在网上打印参保记录证明",
-                        "苏州园区":"亲 不好意思，目前没有信息 :("
+                    "苏州区": {
+                        "苏州市区": "苏州市区: 正常参保月的当月底到账，次月可查；苏州市社会保险基金管理中心。左侧下拉可以看到有个网上办事大厅，输入社保编号，身份证号码和验证码就可以看到个人的社保记录；也可以在网上打印参保记录证明",
+                        "苏州园区": "亲 不好意思，目前没有信息 :("
                     }
                 }
             },
@@ -998,7 +952,6 @@
                 "states": [
                     "propose_plan",
                     "propose_plan_sz",
-                    "propose_plan_sh",
                     "propose_plan_wxyj"
                 ],
                 "lookfor": [
@@ -1017,7 +970,6 @@
                 "states": [
                     "propose_plan",
                     "propose_plan_sz",
-                    "propose_plan_sh",
                     "general_payment",
                     "short_ask_amt_month_fee_total"
                 ],
@@ -1043,7 +995,6 @@
                 "states": [
                     "propose_plan",
                     "propose_plan_sz",
-                    "propose_plan_sh",
                     "propose_plan_wxyj"
                 ],
                 "lookfor": [
@@ -1068,7 +1019,6 @@
                 "states": [
                     "propose_plan",
                     "propose_plan_sz",
-                    "propose_plan_sh",
                     "propose_plan_wxyj"
                 ],
                 "lookfor": [
@@ -1087,8 +1037,11 @@
                             "w_shebao_jishu"
                         ]
                     ],
-                    ["rep_ext",
-                        ["str_gjj_jishu"]
+                    [
+                        "rep_ext",
+                        [
+                            "str_gjj_jishu"
+                        ]
                     ]
                 ],
                 "if_present": {},
@@ -1103,7 +1056,7 @@
             {
                 "writeto": "proposal2",
                 "states": [
-                    "COMMENT for beijing",
+                    "<COMMENT> for beijing",
                     "propose_plan",
                     "propose_plan_wxyj"
                 ],
@@ -1159,7 +1112,12 @@
                 ],
                 "lookfor": [
                     "city",
-                    "city_info"
+                    [
+                        "city_info",
+                        [
+                            "pay_deadline"
+                        ]
+                    ]
                 ],
                 "if_present": {
                     "city": "{city}最好在{city_info[pay_deadline]}号前拍下宝贝，在小程序上提交参保资料哦"
@@ -1168,8 +1126,7 @@
             },
             {
                 "writeto": "long首次ext",
-                "states": [
-                ],
+                "states": [],
                 "lookfor": [
                     "首次",
                     "city_info"
@@ -1199,7 +1156,8 @@
                         ]
                     ],
                     [
-                        "calc_ext",[
+                        "calc_ext",
+                        [
                             "w_shebao_payment"
                         ]
                     ]
@@ -1224,7 +1182,6 @@
                 "states": [
                     "propose_plan",
                     "propose_plan_sz",
-                    "propose_plan_sh",
                     "general_payment"
                 ],
                 "lookfor": [
@@ -1244,8 +1201,7 @@
                 "writeto": "entire_plan_proposal",
                 "states": [
                     "propose_plan",
-                    "propose_plan_sz",
-                    "propose_plan_sh"
+                    "propose_plan_sz"
                 ],
                 "lookfor": [
                     "city",
@@ -1259,7 +1215,8 @@
                         ]
                     ],
                     [
-                        "calc_ext",[
+                        "calc_ext",
+                        [
                             "svc_fee_total"
                         ]
                     ]
@@ -1281,12 +1238,16 @@
                     [
                         "city_info",
                         [
-                            "sb_jishu",
-                            "gjj_jishu",
-                            "shebao_payment",
-                            "gongjijin_fee",
                             "svc_fee",
                             "dbl_svc_fee"
+                        ]
+                    ],
+                    [
+                        "rep_ext",
+                        [
+                            "product",
+                            "proposal",
+                            "calc_str_total"
                         ]
                     ],
                     [
@@ -1294,7 +1255,6 @@
                         [
                             "flag_sb_gjj",
                             "shebao_basic_total2"
-
                         ]
                     ]
                 ],
@@ -1302,7 +1262,7 @@
                 "if_value": {
                     "city": {
                         "北京": "农业户口：{rep_ext[product]}{rep_ext[proposal]}，共计{rep_ext[calc_str_total]}\n 城镇户口：{rep_ext[product]}{rep_ext[proposal2]}，共计{calc_ext[shebao_basic_total2]}\n服务费单项{city_info[svc_fee]}元，双项{city_info[dbl_svc_fee]}元（23号之后最低缴纳基数会提高、服务费会贵一些）北京首保：需要开户费50元，公司统一制卡，周期6个月左右，制卡完成会联系邮寄给你"
-                        }
+                    }
                 }
             }
         ],
@@ -1401,7 +1361,7 @@
                 },
                 "writeto": "svc_fee_total"
             },
-            "gen_shebao_jishu":{
+            "gen_shebao_jishu": {
                 "conditions": [],
                 "req_vars": [
                     [
@@ -1422,7 +1382,7 @@
                 },
                 "writeto": "w_shebao_jishu"
             },
-            "gen_shebao_amt":{
+            "gen_shebao_amt": {
                 "conditions": [],
                 "req_vars": [
                     [
@@ -1812,158 +1772,11 @@
             "gongjijin_fee": 472
         }
     },
-    "info_parser": {
-        "zones":["city"],
-        "defaults": [
-            [
-                "要公积金",
-                "no"
-            ]
-        ],
-        "permanent_slots": [
-            [
-                "city",
-                "city"
-            ],
-            [
-                "要公积金",
-                "gongjijin_slot"
-            ],
-            [
-                "首次",
-                "gen_shouci_slot"
-            ],
-            [
-                "ask_keyi",
-                "keyi_slot"
-            ]
-        ],
-        "slots": {
-            "city": {
-                "上海": [
-                    "山海",
-                    "上海",
-                    "shanghai"
-                ],
-                "北京": [
-                    "北京",
-                    "beijing"
-                ],
-                "深圳": [
-                    "shenzhen",
-                    "深圳"
-                ],
-                "广州": [
-                    "广州",
-                    "guangzhou"
-                ],
-                "杭州": [
-                    "杭州",
-                    "hangzhou"
-                ],
-                "成都": [
-                    "成都",
-                    "chengdu"
-                ],
-                "昆山": [
-                    "昆山"
-                ],
-                "苏州": [
-                    "苏州",
-                    "suzhou"
-                ]
-            },
-            "keyi_slot": {
-                "可以": [
-                    "(行|可以)(.*)(么|吗|嚒|吧)"
-                ],
-                "NULL": [
-                    "(?<!(可以)).$"
-                ]
-            },
-            "paile": {
-                "拍好了": [
-                    "拍了",
-                    "好了",
-                    "拍好了",
-                    "付(.*)(好|了)",
-                    "已付",
-                    "已拍"
-                ]
-            },
-            "gen_shouci_slot": {
-                "yes": [
-                    "没(有*)(交|付|缴|代缴)(.*)过",
-                    "(?<!不)(.*)首次"
-                ],
-                "no": [
-                    "(?<!没)(交|付|缴)(.+)过",
-                    "不(.*)首次"
-                ]
-            },
-            "苏州区_slot": {
-                "苏州园区": [
-                    "园区"
-                ],
-                "苏州市区": [
-                    "市区"
-                ]
-            },
-            "gongjijin_slot": {
-                "yes": [
-                    "(?<!(没|不))(要|交|付)公积金",
-                    "和公积金"
-                ],
-                "no": [
-                    "不(要|交|付)公积金",
-                    "只(交|付|要)社保"
-                ]
-            },
-            "default_yes": {
-                "yes": [
-                    "."
-                ]
-            },
-            "default_no": {
-                "no": [
-                    "."
-                ]
-            },
-            "wantnot": {
-                "yes": [
-                    "(?<!不)(要|交)"
-                ],
-                "no": [
-                    "(不要|不交|没交)"
-                ]
-            },
-            "yesno": {
-                "yes": [
-                    "yes",
-                    "(?<!没)有",
-                    "(?<!不)是",
-                    "(?<!不)对"
-                ],
-                "no": [
-                    "no",
-                    "nope",
-                    "不是",
-                    "没有",
-                    "不$"
-                ]
-            },
-            "shop": {
-                "唯洛店": [
-                    "唯洛店"
-                ]
-            }
-        }
-    },
-    "secondary_slots":[
-        {   
-            "writeto":"city_district",
-            "search_tree":{
-                "city":{
+    "secondary_slots": [
+        {
+            "writeto": "city_district",
+            "search_tree": {
+                "city": {
                     "上海": "上海城市",
                     "北京": "北京城市",
                     "广州": "广州城市",
@@ -1972,7 +1785,7 @@
                     "深圳": "深圳城市",
                     "昆山": "昆山城市",
                     "苏州": {
-                        "苏州区":{
+                        "苏州区": {
                             "苏州园区": "苏州园区",
                             "苏州市区": "苏州市区"
                         }
