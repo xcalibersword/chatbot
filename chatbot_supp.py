@@ -26,9 +26,6 @@ class SIP:
         self.state_slots = self.state_obj["req_info"] if self.state_obj["gated"] else []
         self.pending_state = ""
 
-    def set_backtrack(self):
-        self.backtrack = True
-
     def set_actions(self, action, pending_act = None):
         self.action = action
         self.pending_act = pending_act
@@ -53,13 +50,6 @@ class SIP:
     def same_state(cls):
         obj = cls(SAME_STATE_F, cs=False)
         return obj
- 
-    @classmethod
-    def go_back_state(cls):
-        obj = cls(PREV_STATE_F, cs=False)
-        obj.set_backtrack()
-        obj.go_back = True
-        return obj
     
     @classmethod
     def exit_pocket(cls):
@@ -78,6 +68,30 @@ class SIP:
 
     def toString(self):
         return ("State key",self.state_key,"cs",self.state_change, "slots",self.state_slots)
+
+# A vehicle to house SIP and intent.
+class Understanding:
+    def __init__(self, intent, sip):
+        self.intent = intent
+        self.sip = sip
+        self.details = {}
+
+    @classmethod
+    def make_null(cls):
+        n = cls(cbsv.NO_INTENT(), SIP.same_state())
+        return n
+
+    def get_intent(self):
+        return self.intent
+
+    def get_sip(self):
+        return self.sip
+    
+    def get_sip_slots(self):
+        return self.sip.get_slots()
+
+    def printout(self):
+        print("UNDERSTANDING PRINTOUT: Intent: ", self.intent, " SIP: ", self.sip.toString())
 
 class ReqGatekeeper:
     def __init__(self, conds):
@@ -123,7 +137,7 @@ class ReqGatekeeper:
         reqlist = []
         for slot in slots.copy():
             reqlist.append(getname(slot))
-        print("get_requirements returning", reqlist)
+        if DEBUG: print("get_requirements returning", reqlist)
         return reqlist  
 
     def get_requirements(self):
@@ -168,43 +182,9 @@ class ReqGatekeeper:
         if DEBUG: print("unfilled_slots:",unfilled_slots)
         if len(unfilled_slots) == 0:
             self.open_gate()
-        
-        return unfilled_slots
-
-# A vehicle to house SIP, intent and details.
-# TODO: Clean up usages of Understanding
-class Understanding:
-    def __init__(self, intent, sip):
-        self.intent = intent
-        self.sip = sip
-        self.details = {}
-
-    @classmethod
-    def make_null(cls):
-        n = cls(cbsv.NO_INTENT(), SIP.same_state())
-        return n
-
-    def set_details(self, d):
-        print("UDS Details set",d)
-        self.details = d
-    
-    def get_details(self):
-        return self.details.copy()
-
-    def get_intent(self):
-        return self.intent
-
-    def get_sip(self):
-        return self.sip
-    
-    def get_sip_slots(self):
-        return self.sip.get_slots()
-
-    def set_intent(self, i):
-        self.intent = i
-
-    def printout(self):
-        print("UNDERSTANDING PRINTOUT: Intent: ", self.intent, " SIP: ", self.sip.toString(), " details: ", self.details)
+            
+        passed = (len(unfilled_slots) == 0)
+        return (passed, unfilled_slots)
 
 class Humanizer():
     def __init__(self,human_dict):
