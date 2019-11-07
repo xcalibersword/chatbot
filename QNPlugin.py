@@ -86,12 +86,10 @@ def check_new_message(userID,QN_output_hwnd):
             for line in processed_text_list[last_not_user_idx_list[0]:]:
                 if not date_time_pattern.search(line):
                     unanswered_convo.append(line)
-                if unanswered_convo == []:
-                    print("Emoji detected!")
-                    unanswered_convo.append("T.T")
-    
+                # if unanswered_convo == []:
+                #     print("Emoji detected!")
+                #     unanswered_convo.append("[emoji]")
     query = ".".join(unanswered_convo)
-
     print("Query: {}".format(query))
     print("Customer ID: {}".format(cust_QN_ID))
     return query, cust_QN_ID
@@ -108,14 +106,17 @@ def SeekNewMessage(clickImage):
         print("No new chat")
 
 def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):   
+
     query, custID = check_new_message(userID,text_out_hwnd)
     
     if query == "":
         SeekNewMessage(SeekImagePath)
     else:
-        reply = bot.get_bot_reply(custID,query)
+        reply_template = bot.get_bot_reply(custID,query)
+        reply = reply_template[0]
+#        reply = query
         send_message_QN(reply,text_in_hwnd,button_hwnd)
-    timer = threading.Timer(2,main,[text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath])
+    timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath])
     #add something to stop the program
     timer.start()
 
