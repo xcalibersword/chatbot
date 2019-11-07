@@ -92,6 +92,12 @@
             "default_target": "inform_topup",
             "replies": []
         },
+        "ask_can_topup_gjj": {
+            "key": "ask_can_topup_gjj",
+            "default_set": true,
+            "default_target": "inform_topup_gjj",
+            "replies": []
+        },
         "ask_can_pay_later": {
             "key": "ask_can_pay_later",
             "default_set": true,
@@ -130,12 +136,6 @@
             "key": "114 ziliao query",
             "default_set": true,
             "default_target": "inform_req_resources",
-            "replies": []
-        },
-        "ask_can_topup_gjj": {
-            "key": "ask_can_topup_gjj",
-            "default_set": true,
-            "default_target": "inform_topup_gjj",
             "replies": []
         },
         "ask_amt_month_fee_total": {
@@ -243,6 +243,13 @@
             "replies": [
                 "社保包括：养老保险、医疗保险、生育保险、工伤保险和失业保险"
             ]
+        },
+        "query_shebao_card": {
+            "key": "info_shebao_card",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "inform_shebao_card",
+            "replies": []
         },
         "query_housing": {
             "key": "info_housing",
@@ -705,7 +712,7 @@
                 ]
             ],
             "replies": [
-                "补充公积金需要和基本公积金一起缴纳，基数保持一致；补充公积金服务费80元每月"
+                "亲，{rep_ext[topup_gjj_info]}"
             ]
         },
         "inform_req_resources": {
@@ -720,6 +727,20 @@
             ],
             "replies": [
                 "{rep_ext[req_resource_info]}"
+            ]
+        },
+        "inform_shebao_card": {
+            "key": "inform_shebao_card",
+            "gated": true,
+            "thread": "t_shebao_card",
+            "terminal_state": true,
+            "req_info": [
+                [
+                    "city","city"
+                ]
+            ],
+            "replies": [
+                "{rep_ext[shebao_card_info]}"
             ]
         },
         "inform_weixin": {
@@ -823,6 +844,7 @@
                     "city": {
                         "DEFAULT": "亲 不好意思，目前没有信息 😢",
                         "上海": "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料",
+                        "杭州": "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料",
                         "苏州": "新开户公司办理市民卡，制卡周期6个月左右，需要2寸白底电子照片。\n近期2寸白底正面免冠照片,不着制式服装或白色上衣,常戴眼镜的人员应配戴眼镜。\n格式为jpg或jpeg,照片大小在10-40K之间,长宽分别为441像素(高)*385像素(宽),\n以姓名+身份证命名,不符合条件的相片会导致制卡失败。",
                         "北京": "1、 员工一寸白底免冠照片；（要求：jpg格式，宽度：358像素，高度：441像素，不小于9KB，不大于20KB；白底免冠，头部占照片2/3，不佩戴眼镜，衣服和背景反差大\n2、 身份证复印件（1：1大小）清晰有底纹；（要求：身份证复印件要跟原件大小一致、身份证复印件有边框、有底纹、身份证复印件字迹、照片清晰、复印件正反面顺序一致）；\n3、 员工的【北京当地】银行卡信息，借记卡卡号和银行名称（必须和参保人信息保持一致）。用于社保局记录向员工支付打款用；（可选：工商银行、光大银行、华夏银行、建设银行、交通银行、民生银行、农业银行、邮政储蓄银行、招商银行、中国银行、中信银行、兴业银行12家）\n4、 告知户口性质（城镇/农业）；\n5、 新参人员的资料准备时间截止至每月13日。"
                     }
@@ -1088,6 +1110,39 @@
                 }
             },
             {
+                "writeto": "topup_gjj_info",
+                "states": [
+                    "inform_gjj_topup"
+                ],
+                "lookfor": [
+                    ["s_slots",["city_district"]]
+                ],
+                "if_value": {
+                    "city_district": {
+                        "杭州城市": "可补缴最近3个月的社保公积金，补缴费30元/月；（不做跨年补缴）有补缴的请注意：补缴的月份：个人查不到生育工伤，社保局只收个人部分，地税收取单位部分，地税扣缴时五险是一并征收的，还有疑问可0571-12366确认。且补缴不算连续哦！",
+                        "上海城市": "补充公积金需要和基本公积金一起缴纳，基数保持一致；补充公积金服务费80元每月",
+                        "DEFAULT": "亲 不好意思，目前没有信息 😢"
+                    }
+                }
+            },
+            {
+                "writeto": "shebao_card_info",
+                "states": [
+                    "inform_shebao_card"
+                ],
+                "lookfor": [
+                    "city",
+                    ["s_slots",["city_district"]]
+                ],
+                "if_value": {
+                    "city_district": {
+                        "DEFAULT": "亲 {city}目前没有社保卡",
+                        "广州城市": "社保卡公司办，周期6个月左右，正常现在微信个人也可以申领了，可以关注微信号“广州社保卡”自己领领看",
+                        "成都城市": "携带有效身份证件原件及复印件、近期2寸证件照一张备用（正面免冠、深色上衣、白色背景）。在市本级、区（市）县社保服务大厅、全市街道（乡镇）劳动就业社会保障服务中心和部分社区（村）劳动就业社会保障服务站，以及悬挂“社会保障卡成都市服务网点”标牌的银行网点（工商银行、农业银行、建设银行、邮储银行、成都银行、成都农商银行）都可以办理。"
+                    }
+                }
+            },
+            {
                 "writeto": "pay_deadline_info",
                 "states": [
                     "inform_pay_deadline"
@@ -1213,7 +1268,7 @@
                         "DEFAULT": "{city}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。"
                     }
                 }
-            },
+            }, 
             {
                 "writeto": "bj_entire_plan_proposal",
                 "states": [
