@@ -17,7 +17,7 @@ from keras.models import load_model
 from keras.preprocessing.sequence import pad_sequences 
 
 # model_filename = 'embedding/241019_1600_model.h5'
-model_filename = rootpath+'trained_JB_model.h5'
+model_filename = rootpath+'API_JB_model.h5'
 w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
 VDLIMIT = 60000 #35000 includes gongjijin
 
