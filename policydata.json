@@ -20,6 +20,7 @@
     },
     "policy_rules":{  
         "init": [
+            ["greet","SAME_STATE"],
             ["purchase", "city_crossroad"],
             ["affirm", "initplus"],
             ["deny", "goodbye"]

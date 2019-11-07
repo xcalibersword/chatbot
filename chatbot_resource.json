@@ -14,7 +14,7 @@
         },
         "greet": {
             "key": "100 greetings",
-            "default_set": true,
+            "default_set": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "您好 有什么能帮助您的?",
