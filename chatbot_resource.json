@@ -50,7 +50,7 @@
             ]
         },
         "forget_it": {
-            "key": "12 forget_it",
+            "key": "12 forget_it NOT USED ANYMORE",
             "default_set": true,
             "default_target": "initplus",
             "replies": []

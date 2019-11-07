@@ -59,7 +59,7 @@ def fetch_from_con(con, sql, sqlvals):
 def fetch_all_from_con(tabnam, columns = "*", condition = ""):
     if not SQL_ENABLED:
         print("<BACKEND WARNING: Reading from SQL has been disabled> Restore it in cb_sql.py.\n")
-        return {}
+        return ()
     query = "SELECT {} FROM {} {}".format(columns,tabnam,condition)
     print("Q:", query)
     with stdcon.cursor() as cursor:
@@ -87,6 +87,12 @@ def commit_to_con(con, comcmd, comvals):
 def fetch_uid_from_sqltable(userID):
     cond = "WHERE userID='" + str(userID) + "'"
     f = fetch_all_from_con(tablename, condition = cond)
+    if len(f) > 0:
+        f = f[0]
+    return f
+
+def fetch_all_from_sqltable():
+    f = fetch_all_from_con(tablename)
     if len(f) > 0:
         f = f[0]
     return f

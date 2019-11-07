@@ -14,7 +14,8 @@
         "terminal_state":[
             ["affirm", "initplus"],
             ["thankyou", "initplus"],
-            ["goodbye", "goodbye"]
+            ["goodbye", "goodbye"],
+            ["purchase", "city_crossroad"]
         ]
     },
     "policy_rules":{  
