@@ -188,7 +188,7 @@
             ]
         },
         "query_phone": {
-            "key": "info phone number",
+            "key": "info phone number NEED TO UPATE",
             "default_set": true,
             "humanify": true,
             "default_target": "SAME_STATE",
@@ -313,6 +313,12 @@
                 "不好意思，暂时不能给链接 😞"
             ]
         },
+        "inform_done":{
+            "key": "182 inform_done",
+            "default_set": false,
+            "default_target": "NA",
+            "replies": []
+        },
         "inform_paid": {
             "key": "180 inform_paid",
             "default_set": true,
@@ -373,9 +379,6 @@
             "key": 12345,
             "default_set": true,
             "default_target": "init",
-            "matchdb": [
-                "resetchat1"
-            ],
             "replies": [
                 "CHAT HAS BEEN RESET"
             ]

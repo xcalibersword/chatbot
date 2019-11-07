@@ -22,12 +22,14 @@
         "init": [
             ["greet","SAME_STATE"],
             ["purchase", "city_crossroad"],
+            ["explore_option","city_crossroad"],
             ["affirm", "initplus"],
             ["deny", "goodbye"]
         ],
         "initplus": [
             ["greet", "init"],
             ["purchase", "city_crossroad"],
+            ["explore_option","city_crossroad"],
             ["deny", "goodbye"]
         ],
         "init_sale": [
@@ -51,12 +53,15 @@
         ],
         "inform_pai": [
             ["affirm", "finished_payment"],
+            ["inform_done", "finished_payment"],
             ["next_step", "finished_payment"],
+            ["explore_option","city_crossroad"],
             ["thankyou","initplus"]
         ],
         "finished_payment": [
             ["affirm", "initplus"],
             ["thankyou","initplus"],
+            ["explore_option","city_crossroad"],
             ["goodbye", "goodbye"]
         ],
         "pass_to_human": [
