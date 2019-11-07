@@ -49,7 +49,7 @@ def get_bot_reply(bot, cid, message):
 
 def index(request):
     indexfilepath = 'testing_server/index.html'
-    with open(indexfilepath) as f:
+    with open(indexfilepath,encoding="utf-8") as f:
         return web.Response(text = f.read(), content_type = 'text/html')
 
 @sio.event
