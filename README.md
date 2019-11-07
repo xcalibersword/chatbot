@@ -1,5 +1,13 @@
 > # **Project Q!i@a#n$N%i^u Chatbot**
 
+## Project Dependencies
+- tensorflow 1.14
+- pypiwin32
+- jdk 12.0.2
+- pywin32
+- 
+
+
 ## File directory
 - chatbot_server : deploy bot for testing locally
 - QNPlugin.py : test the plugin
