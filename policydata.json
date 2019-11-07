@@ -5,6 +5,7 @@
             "city",{
                 "北京": "propose_plan_bj",
                 "苏州": "propose_plan_sz",
+                "湖南": "unsupported_city",
                 "DEFAULT": "propose_plan"
             }
         ]
@@ -48,7 +49,6 @@
         "confirm_plan": [
             ["affirm", "inform_pai"],
             ["query_pay_process", "inform_pai"],
-            ["how_to_pai", "inform_pai"],
             ["explore_option","city_crossroad"]
         ],
         "inform_pai": [

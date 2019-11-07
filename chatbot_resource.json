@@ -436,6 +436,15 @@
                 "那么亲是哪个城市呢？"
             ]
         },
+        "unsupported_city":{
+            "key": "unsupported_city",
+            "gated": true,
+            "thread": "T_BASE",
+            "humanify": true,
+            "terminal_state": false,
+            "req_info": [["city","city"]],
+            "replies": ["不好意思 亲 我们不贷款{city}社保"]
+        },
         "ask_if_issue": {
             "key": "251 whats wrong",
             "gated": false,
@@ -648,8 +657,7 @@
             "terminal_state": false,
             "req_info": "",
             "replies": [
-                "好的，谢谢光临 😘",
-                "好的，欢迎使用淘宝 ❤️"
+                "好的，谢谢光临 😘"
             ]
         },
         "PREV_STATE": {
