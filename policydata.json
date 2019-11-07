@@ -9,6 +9,14 @@
             }
         ]
     },
+    "class_policy_rules":{
+        "master_list":["terminal_state"],
+        "terminal_state":[
+            ["affirm", "initplus"],
+            ["thankyou", "initplus"],
+            ["goodbye", "goodbye"]
+        ]
+    },
     "policy_rules":{  
         "init": [
             ["purchase", "city_crossroad"],

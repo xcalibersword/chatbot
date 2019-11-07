@@ -25,6 +25,8 @@ def init_policykeeper(jdata, pdata):
     INTENTS = jdata["intents"]
     STATES = jdata["states"]
     STATE_KEYS = state_key_dict(jdata["states"]) # state_index: state_key
+    state_type_policies = pdata["class_policy_rules"]
+    state_type_list = class_policies["master_list"]
 
     def in_default_set(intent):
         return intent["default_set"]
@@ -72,17 +74,17 @@ def init_policykeeper(jdata, pdata):
     #     default_policy_set.append(pol)
 
     make_policy = lambda s_ints: Policy(default_policy_set,s_ints)
-
-    terminal_pair = create_policy_tuple(["affirm", "initplus"])
    
     POLICY_RULES = {}
     for state_key in list(STATES.keys()):
         tuplelist = []
         state_obj = STATES[state_key]
         
-        terminal = state_obj["terminal_state"]
-        if terminal:
-            tuplelist.append(terminal_pair)
+        for state_type in state_type_list:
+            flag = state_obj[state_type]
+            if flag:
+                state_type_pairs = create_policy_tuple([state_type_policies[state_type]])
+                tuplelist.append(state_type_pairs)
 
         if state_key in policy_states:
             for pair in policy_rules[state_key]:
