@@ -27,3 +27,5 @@ embedding/.DS_Store
 .DS_Store
 
 *.h5
+
+*.bat
