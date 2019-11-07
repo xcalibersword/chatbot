@@ -7,20 +7,25 @@ from cb_sql import write_to_sqltable, fetch_uid_from_sqltable
 
 dbfolder = "userdata"
 DEBUG = 0
+JSON_DATABASE = 0
 
 class DatabaseRunner():
     def __init__(self):
         self.backup_delay = 60
         self.timer_on = False
         
-        base_directry = os.getcwd()
-        dbfilename = "database.json"
-        self.dbfilepath = os.path.join(base_directry,dbfolder,dbfilename)
-        if DEBUG: print("Loading info from", self.dbfilepath)
-        if not check_file_exists(self.dbfilepath):
-            print("Creating empty database file")
-            dump_to_json(self.dbfilepath,{}) # Create an empty file
-        self.database = read_json(self.dbfilepath)
+        if JSON_DATABASE:
+            base_directry = os.getcwd()
+            dbfilename = "database.json"
+            # self.dbfilepath = os.path.join(base_directry,dbfolder,dbfilename)
+            self.dbfilepath = os.path.join(base_directry,dbfilename) # For testing purpose
+            if DEBUG: print("Loading info from", self.dbfilepath)
+            if not check_file_exists(self.dbfilepath):
+                print("Creating empty database file")
+                dump_to_json(self.dbfilepath,{}, OVERRIDE = 1) # Create an empty file
+            self.database = read_json(self.dbfilepath)
+        else:
+            self.database = {}
         
     def fetch_user_info(self, user):
         if not user in self.database:

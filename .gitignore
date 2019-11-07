@@ -20,9 +20,10 @@ test_label/
 
 .vscode/
 
-
-*.h5
-
 embedding/~$raw1106.xlsx
 
 embedding/.DS_Store
+
+.DS_Store
+
+*.h5

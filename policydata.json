@@ -1,5 +1,5 @@
 {
-    "COMMENTS":"File to decide state transition logic. Called policies. CONSIDER: Changeing from list of pairs to dict",
+    "COMMENTS":"File to decide state transition logic. Called policies. CONSIDER: Changing from list of pairs to dict",
     "zone_policies":{
         "city_crossroad":[
             "city",{
@@ -7,6 +7,15 @@
                 "苏州": "propose_plan_sz",
                 "DEFAULT": "propose_plan"
             }
+        ]
+    },
+    "class_policy_rules":{
+        "master_list":["terminal_state"],
+        "terminal_state":[
+            ["affirm", "initplus"],
+            ["thankyou", "initplus"],
+            ["goodbye", "goodbye"],
+            ["purchase", "city_crossroad"]
         ]
     },
     "policy_rules":{  
@@ -41,17 +50,17 @@
         ],
         "inform_pai": [
             ["affirm", "finished_payment"],
-            ["next_step", "finished_payment"]
+            ["next_step", "finished_payment"],
+            ["thankyou","initplus"]
         ],
         "finished_payment": [
-            ["affirm", "initplus"]
-        ],
-        "ask_if_issue": [
-            ["affirm", "log_issue"],
-            ["deny", "EXIT_POCKET_STATE"]
+            ["affirm", "initplus"],
+            ["thankyou","initplus"],
+            ["goodbye", "goodbye"]
         ],
         "pass_to_human": [
-            ["affirm","initplus"]
+            ["affirm","initplus"],
+            ["greet","initplus"]
         ],
         "goodbye":[
             ["greet", "init"]

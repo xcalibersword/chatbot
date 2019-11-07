@@ -91,6 +91,12 @@ def fetch_uid_from_sqltable(userID):
         f = f[0]
     return f
 
+def fetch_all_from_sqltable():
+    f = fetch_all_from_con(tablename)
+    if len(f) > 0:
+        f = f[0]
+    return f
+
 # Writes to a predefined table
 def write_to_sqltable(info):
     if not SQL_ENABLED:
