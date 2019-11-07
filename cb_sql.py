@@ -59,7 +59,7 @@ def fetch_from_con(con, sql, sqlvals):
 def fetch_all_from_con(tabnam, columns = "*", condition = ""):
     if not SQL_ENABLED:
         print("<BACKEND WARNING: Reading from SQL has been disabled> Restore it in cb_sql.py.\n")
-        return ()
+        return {}
     query = "SELECT {} FROM {} {}".format(columns,tabnam,condition)
     print("Q:", query)
     with stdcon.cursor() as cursor:
