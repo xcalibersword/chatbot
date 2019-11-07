@@ -89,7 +89,7 @@ def check_new_message(userID,QN_output_hwnd):
                 # if unanswered_convo == []:
                 #     print("Emoji detected!")
                 #     unanswered_convo.append("[emoji]")
-    query = ".".join(unanswered_convo)
+    query = " ".join(unanswered_convo)
     print("Query: {}".format(query))
     print("Customer ID: {}".format(cust_QN_ID))
     return query, cust_QN_ID
@@ -116,9 +116,10 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
         reply = reply_template[0]
 #        reply = query
         send_message_QN(reply,text_in_hwnd,button_hwnd)
-    timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath])
+        SeekNewMessage(SeekImagePath)
+    #timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath])
     #add something to stop the program
-    timer.start()
+    #timer.start()
 
 if __name__ == "__main__":
     try:    
@@ -141,4 +142,6 @@ if __name__ == "__main__":
     
     userID = "tb584238398"
     print("Starting program....") 
-    main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath)
+    while True:
+        main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath)
+        time.sleep(5)
