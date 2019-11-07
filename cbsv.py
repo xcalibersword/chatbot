@@ -47,7 +47,7 @@ def conv_numstr(n,wantint = False):
 
 def NO_INTENT():
     return {
-        "key":"no_intent",
+        "key":"unknown",
         "replies": DEFAULT_CONFUSED()
     }
 

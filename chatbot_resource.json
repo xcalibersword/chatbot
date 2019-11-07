@@ -40,6 +40,13 @@
                 "不好意思,我不明白"
             ]
         },
+        "inform":{
+            "key": "inform",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "SAME_STATE",
+            "replies": []
+        },
         "unsupported_request": {
             "key": "unsupported_request",
             "default_set": true,
