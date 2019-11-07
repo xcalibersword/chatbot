@@ -76,11 +76,6 @@ class Understanding:
         self.sip = sip
         self.details = {}
 
-    @classmethod
-    def make_null(cls):
-        n = cls(cbsv.NO_INTENT(), SIP.same_state())
-        return n
-
     def get_intent(self):
         return self.intent
 

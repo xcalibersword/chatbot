@@ -433,7 +433,8 @@ class PolicyKeeper:
             intent_obj = False
 
         policy = self.POLICY_RULES[csk]
-        uds = Understanding.make_null()
+        default_null_int = self.INTENT_DICT["unknown"]
+        uds = Understanding(default_null_int,SIP.same_state())
         for intent_lst in policy.get_intents():
             print("intent_list",list(map(lambda x: x[0],intent_lst)))
             for pair in intent_lst:
