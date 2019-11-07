@@ -14,7 +14,7 @@
         },
         "greet": {
             "key": "100 greetings",
-            "default_set": true,
+            "default_set": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "您好 有什么能帮助您的?",
@@ -163,7 +163,7 @@
             "default_set": true,
             "default_target": "inform_company_name",
             "replies": [
-                "上海: 忠彧企业咨询管理有限公司 杭州: 分公司"
+                "上海: 上海来有信信息技术有限公司"
             ]
         },
         "query_pay_deadline": {
@@ -332,12 +332,6 @@
             "default_target": "NA",
             "replies": []
         },
-        "purchase_wxyj": {
-            "key": "purchase_wxyj",
-            "default_set": false,
-            "default_target": "NA",
-            "replies": []
-        },
         "pay_shui": {
             "key": "pay_shui",
             "default_set": true,
@@ -441,14 +435,6 @@
             "replies": [
                 "有事吗？"
             ]
-        },
-        "sales_query": {
-            "key": "211 saleq",
-            "gated": false,
-            "thread": "NONE",
-            "terminal_state": false,
-            "req_info": "",
-            "replies": []
         },
         "amt_month_fee_total": {
             "key": "amt_month_fee_total",
@@ -613,7 +599,7 @@
                 ]
             ],
             "replies": [
-                "确认要{city}的宝贝吗?"
+                "确认要{s_slots[city_district]}的宝贝吗?"
             ]
         },
         "general_payment": {
@@ -848,20 +834,14 @@
                     "inform_weixin"
                 ],
                 "lookfor": [
-                    "city",
-                    "苏州区"
+                    ["s_slots",["city_district"]]
                 ],
                 "if_present": {},
                 "if_value": {
-                    "city": {
-                        "上海": "上海wei信号：iHR-7531，备注填写：店铺名称+上海+淘宝会员名",
-                        "苏州": "",
-                        "北京": "北京wei信号：iHR-8091， 备注填写：唯洛+北京+淘宝会员名",
+                    "city_district": {
+                        "上海城市": "上海wei信号：iHR-7531，备注填写：店铺名称+上海+淘宝会员名",
+                        "北京城市": "北京wei信号：iHR-8091， 备注填写：唯洛+北京+淘宝会员名",
                         "DEFAULT": "亲 不好意思，暂时没有那边的微信"
-                    },
-                    "苏州区": {
-                        "苏州园区": "<TO BE ADDED>",
-                        "苏州市区": "<TO BE ADDED>"
                     }
                 }
             },
@@ -871,20 +851,16 @@
                     "inform_how_check_shebao"
                 ],
                 "lookfor": [
-                    "city",
-                    "苏州区"
+                    ["s_slots",["city_district"]]
                 ],
                 "if_present": {},
                 "if_value": {
-                    "city": {
-                        "上海": "上海社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp. 公积金缴费查询：次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。）",
-                        "北京": "北京社保查询：① 进入http://www.bjrbj.gov.cn/csibiz/indinfo/login.jsp →“城镇职工个人用户登录”→个人基本信息查询→5险状态显示正常缴费→参保成功；② 缴费明细隔月可查，如4月份的社保明细，6月后可查到账 → 个人缴费信息查询",
-                        "苏州": "",
-                        "DEFAULT": "亲 不好意思，目前没有信息 :("
-                    },
-                    "苏州区": {
+                    "city_district":{
+                        "上海城市": "上海社保查询：次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费；次次月15日可以在网上查询到实缴款；社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp. 公积金缴费查询：次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。）",
                         "苏州市区": "苏州市区: 正常参保月的当月底到账，次月可查；苏州市社会保险基金管理中心。左侧下拉可以看到有个网上办事大厅，输入社保编号，身份证号码和验证码就可以看到个人的社保记录；也可以在网上打印参保记录证明",
-                        "苏州园区": "亲 不好意思，目前没有信息 :("
+                        "苏州园区": "亲 不好意思，目前没有信息 :(",
+                        "北京城市": "北京社保查询：① 进入http://www.bjrbj.gov.cn/csibiz/indinfo/login.jsp →“城镇职工个人用户登录”→个人基本信息查询→5险状态显示正常缴费→参保成功；② 缴费明细隔月可查，如4月份的社保明细，6月后可查到账 → 个人缴费信息查询",
+                        "DEFAULT": "亲 不好意思，目前没有信息 :("
                     }
                 }
             },
@@ -919,23 +895,6 @@
                         "上海": "社保查询: \n次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费\n次次月15日可以在网上查询到实缴款;\n社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp\n公积金缴费查询：\n次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。",
                         "苏州": "参保月的次月7日前到账，可以打电话0512-62888222 人工服务查询；参保公司名字：苏州英格玛服务外包股份有限公司园区分公司",
                         "DEFAULT": "亲 不好意思，目前没有信息 :("
-                    }
-                }
-            },
-            {
-                "writeto": "首次ornot",
-                "states": [
-                    "propose_plan",
-                    "propose_plan_wxyj"
-                ],
-                "lookfor": [
-                    "首次"
-                ],
-                "if_present": {},
-                "if_value": {
-                    "首次": {
-                        "yes": "是第一次",
-                        "no": "不是首次"
                     }
                 }
             },
@@ -987,8 +946,7 @@
                 "writeto": "str_gjj_jishu",
                 "states": [
                     "propose_plan",
-                    "propose_plan_sz",
-                    "propose_plan_wxyj"
+                    "propose_plan_sz"
                 ],
                 "lookfor": [
                     "city",
@@ -1011,8 +969,7 @@
                 "writeto": "proposal",
                 "states": [
                     "propose_plan",
-                    "propose_plan_sz",
-                    "propose_plan_wxyj"
+                    "propose_plan_sz"
                 ],
                 "lookfor": [
                     "city",
@@ -1137,6 +1094,7 @@
                 ],
                 "lookfor": [
                     "city",
+                    ["s_slots",["city_district"]],
                     [
                         "city_info",
                         [
@@ -1144,10 +1102,13 @@
                         ]
                     ]
                 ],
-                "if_present": {
-                    "city": "{city}最好在{city_info[pay_deadline]}号前拍下宝贝，在小程序上提交参保资料哦"
-                },
-                "if_value": {}
+                "if_present": {},
+                "if_value": {
+                    "city_district":{
+                        "苏州市区": "每月10日前拍下次月费用，最晚不能超过20号，老客户20号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
+                        "DEFAULT":"{s_slots[city_district]}最好在{city_info[pay_deadline]}号前拍下宝贝，在小程序上提交参保资料哦"
+                    }
+                }
             },
             {
                 "writeto": "long首次ext",
