@@ -29,3 +29,5 @@ embedding/.DS_Store
 embedding/JB_model.h5
 
 embedding/0611trained_JB_model.h5
+
+*.h5
