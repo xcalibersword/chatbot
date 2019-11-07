@@ -13,6 +13,10 @@ from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences 
 from keras.utils import to_categorical
 
+#### NOTES ####
+# Run from 'embedding' folder
+
+
 w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
 
 max_review_length = 15 #maximum length of the sentence
@@ -222,7 +226,7 @@ embed = my_embedding(main_input)
 embed = BatchNormalization(momentum=0.99)(embed)
 
 # 词窗大小分别为 2 3 4
-cnnUnits = 64 # 
+cnnUnits = 128 # 
 cnn1 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu')(embed)
 cnn2 = Conv1D(cnnUnits, 3, padding='same', strides=1, activation='relu')(embed)
 cnn3 = Conv1D(cnnUnits, 4, padding='same', strides=1, activation='relu')(embed)
@@ -238,7 +242,7 @@ cnn = BatchNormalization(momentum=0.99)(cnn)
 
 flat = Flatten()(cnn)
 flat = Dropout(0.2)(flat)
-flat = Dense(units=256, activation='relu')(flat) # 
+# flat = Dense(units=256, activation='relu')(flat) # 
 outs = Dense(units=num_intents, activation='sigmoid')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
@@ -249,13 +253,13 @@ model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 
-model.fit(x=embed_xvals,y=cat_yval,epochs=50,verbose=1,validation_split=0.0,batch_size=16)
+model.fit(x=embed_xvals,y=cat_yval,epochs=50,verbose=1,validation_split=0.0,batch_size=8)
 
 # Post Training
 model.save(save_model_name)
 print("This Model has been saved! Rejoice")
 
-test_in = ["我在上海","我要付社保","我是要付社保","您好","哦了解了", "填好了呀", "拍好了", "怎么拍", "一共多少钱啊", "我好社保您哦", "代缴社保", "落户上海", "上海社保可以吗", "我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
+test_in = ["我在苏州的的不是首次","我是要付社保行吗","您好","哦了解了", "我已经填好了", "我拍好了", "流程是怎么样", "一共多少钱啊", "我好社保您哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
 
 ti = myTokenize(test_in)
 # print("input",test_in)

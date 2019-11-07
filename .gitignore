@@ -20,11 +20,12 @@ test_NLU/vocab/
 
 .vscode/
 
-
-*.h5
-
 embedding/~$raw1106.xlsx
 
 embedding/.DS_Store
 
 .DS_Store
+
+embedding/JB_model.h5
+
+embedding/0611trained_JB_model.h5
