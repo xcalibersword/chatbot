@@ -167,7 +167,7 @@ class ReqGatekeeper:
     # If fail, returns False, (Next state)
     def try_gate(self, info):
         if not self.gate_closed:
-            return []
+            return (True, [])
 
         self._add_cond_reqs(info)
         unfilled_slots = self.get_slots()
@@ -182,7 +182,7 @@ class ReqGatekeeper:
         if DEBUG: print("unfilled_slots:",unfilled_slots)
         if len(unfilled_slots) == 0:
             self.open_gate()
-            
+
         passed = (len(unfilled_slots) == 0)
         return (passed, unfilled_slots)
 
