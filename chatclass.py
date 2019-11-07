@@ -70,29 +70,29 @@ class StateThreader():
         self.threadIDstack.append(threadID)
         return
 
-    def update_thread_state(self, new_state):
+    def update_thread_state(self, new_state_obj):
         def _is_terminal_state(state):
             return state["terminal_state"]
 
         def need_switch_thread(threadID):
             return not (threadID == "NONE" or self._thread_same_id(threadID))
 
-        ns_threadID = self._get_threadID(new_state)
+        ns_threadID = self._get_threadID(new_state_obj)
         UPDATE_STATE_BOOL = True
         curr_state = self.get_curr_thread_state()
 
         if _is_terminal_state(curr_state):
-            UPDATE_STATE_BOOL = not self._thread_same_state(new_state)
+            UPDATE_STATE_BOOL = not self._thread_same_state(new_state_obj)
             self.kill_curr_thread()
         
         if need_switch_thread(ns_threadID):
             if ns_threadID in self.threadmap:
                 self.switch_thread_to(ns_threadID)
             else:
-                self.spawn_thread(new_state, ns_threadID)
+                self.spawn_thread(new_state_obj, ns_threadID)
         
         if UPDATE_STATE_BOOL:
-            self.get_curr_thread().update_state(new_state)
+            self.get_curr_thread().update_state(new_state_obj)
 
         if DEBUG: print("<STATETHREADER>Statestack", self.threadIDstack)
 
@@ -217,7 +217,7 @@ class ChatManager:
         return self.ztracker.get_zones()
     
     ############### PRIMARY METHOD ###############
-    # Takes in a message, returns a text reply.
+    # Takes in a message, returns (text reply, intent breakdown, current info)
     def respond_to_message(self, msg):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") # For clarity in terminal
         rcount = 0
@@ -225,9 +225,14 @@ class ChatManager:
         while repeat:
             # Parse the message and get an understanding
             full_uds, bd = self._parse_message_overall(msg)
+
             # Digest and internalize the new info
-            repeat = self._digest_uds(full_uds)
+            sip = full_uds.get_sip()
+            repeat = self._digest_sip(sip)
+
             if repeat and DEBUG: print("REPEATING",rcount)
+
+            rcount += 1
             if rcount > 5: break
 
         # Request a reply text
@@ -239,7 +244,7 @@ class ChatManager:
         self._record_messages_in_chat(msg,reply)
         return (reply, bd, curr_info)
 
-    # Takes in message text, returns a full understanding
+    # Takes in message text, returns (understanding object, nlp breakdown)
     def _parse_message_overall(self,msg):
         # Inital understanding
         uds, bd = self._fetch_understanding(msg)
@@ -247,7 +252,7 @@ class ChatManager:
         if DEBUG: uds.printout()
         # self.gatekeeper.scan_SIP(uds.get_sip()) # TODO CHECK IF THIS IS USEFUL
 
-        # Try to mine message details. 
+        # Mine message details. 
         # This is after gatekeep because gatekeep sets the slots.
         self._parse_message_details(msg)
 
@@ -255,35 +260,36 @@ class ChatManager:
     
     # Process, gatekeep then internalize changes
     # Results in change in chat details and change in state
-    def _digest_uds(self, uds):
-        sip = uds.get_sip()
-
-        # FEATURE NOT IMPLEMENTED
-        # if sip.is_go_back():
-        #     self.go_back_a_state()
-        #     return final_intent
+    # Returns boolean indicating whether or not the state was overwritten.
+    def _digest_sip(self, sip):
         
         if sip.is_same_state():
             if DEBUG: print("SAME STATE FLAGGED")
             self.samestateflag = True
-            state = self._get_curr_state()
+            stateobj = self._get_curr_state()
         else:
             self.samestateflag = False
-            state = sip.get_state_obj()
+            stateobj = sip.get_state_obj()
 
-        ow_flag, state = self._zone_policy_overwrite(state)
+        # Check if current target state is in a zone_policy crossroad 
+        ow_flag, stateobj = self._zone_policy_overwrite(stateobj)
 
-        self.gatekeeper.scan_state_obj(state)
-
-        self._gatekeep_state(state)
+        # Gatekeeper gets the requirements from the state
+        self._get_slots_from_state(stateobj)
+        # Gatekeeper tries the gate
+        self._advance_to_new_state(stateobj)
 
         return ow_flag
 
     def _move_forward_state(self, state):
-            self.statethreader.move_forward(state)
+        self.statethreader.move_forward(state)
 
+    def _get_slots_from_state(self, stateobj):
+        self.gatekeeper.scan_state_obj(stateobj)
+
+    # CHANGES STATE
     # Updates state according to outcome
-    def _gatekeep_state(self, nextstate):
+    def _advance_to_new_state(self, nextstate):
         def _make_info_sip(req_info):
             con_sip = self.pkeeper.make_info_req_sip(req_info)
             return con_sip
@@ -293,25 +299,23 @@ class ChatManager:
         
         curr_info = self._get_current_info()
         print("Current info:",curr_info)
-        required_slots = self.gatekeeper.try_gate(curr_info)
+        passed, required_slots = self.gatekeeper.try_gate(curr_info)
 
-        passed = (required_slots == []) #TODO fix bad SE
 
-        # Update DM
-        self.push_req_slots_to_dm(required_slots)
-
-        # print("sip", sip.toString(), "nextsip", constructed_sip.toString())
         if DEBUG: print("Gate passed:",passed)
+
         if passed:
             self._move_forward_state(nextstate)
-
         else:
-            # Didnt pass
+            # Update DetailManager
+            self.push_req_slots_to_dm(required_slots)
+
+            # Didnt pass gate
             constructed_sip = _make_info_sip(required_slots)
             infostate = constructed_sip.get_state_obj()
             _set_thread_pending(infostate, nextstate)
 
-    # Overwrites 
+    # Overwrites state if in zone policy
     def _zone_policy_overwrite(self, og_nxt_state):
         csk = og_nxt_state["key"]
         zones = self._get_zones()
@@ -328,6 +332,7 @@ class ChatManager:
             print("pushslotstodm Reqinfo",required_info)
             info_entry = {"requested_info": required_info}
             self.push_detail_to_dm(info_entry)
+        return
 
     ### Ask Helpers
     # Ask replygen for a reply
@@ -363,9 +368,11 @@ class ChatManager:
     ### Chat logging
     def _record_messages_in_chat(self,recv, sent):
         self.chat.record_messages(recv,sent)
+        return
     
     def backup_chat(self):
         self.chat.record_to_database()
+        return
 
 # Keeps policies
 # Also deciphers messages
@@ -402,6 +409,7 @@ class PolicyKeeper:
         return intent, breakdown
 
     # MAIN METHOD
+    # Returns an understanding and NLP breakdown
     def get_understanding(self, msg, curr_state):
         # Call NLP Model predict
         intent, breakdown = self._NLP_predict(msg)
@@ -440,18 +448,13 @@ class PolicyKeeper:
         def check_zonepolicies(state_key):
             return state_key in self.ZONE_POLICIES
 
-        print("chat_zones",chat_zones)
-
-        # string, dict is returned
         # Zone policy
-        print("zpkey", csk)
         if check_zonepolicies(csk):
             z, paths = self.ZONE_POLICIES[csk]
-            print("zpoliciy",z,paths)
         
             if z in chat_zones:
                 z_val = chat_zones[z]
-                print("zonepolicy",chat_zones, z, z_val)
+                if DEBUG: print("zonepolicy",chat_zones, z, z_val)
                 if z_val in paths:
                     target = paths[z_val]
                 else:
@@ -666,6 +669,9 @@ class ReplyGenerator:
             vd.update(ret)
             return
 
+        # Big method.
+        # Takes in a formula (dict)
+        # Returns a value of the result
         def resolve_formula(f):
             reqvars = "req_vars"
             def op_on_all(vnames, op, vdic):
@@ -719,7 +725,7 @@ class ReplyGenerator:
                 vd[tkey] = op_on_all(valnames,opr,vd)
             return vd["OUTCOME"]
 
-        ### MAIN ENHANCE FUNCTION ###
+        ### MAIN METHOD LOGIC ###
         # Calculations
         if needs_calc(curr_state):
             state_calcs = curr_state["calcs"]
@@ -782,9 +788,12 @@ class ReplyGenerator:
     def getreplydb(self, intent, curr_state, issamestate):
         def get_hflag(obj):
             # Default is true
+            hflag = True
+
             if "humanify" in obj:
-                return obj["humanify"]
-            return True
+                hflag = obj["humanify"]
+
+            return hflag
 
         def get_replylist(obj):
             if DEBUG: print("<replydb> Pulling reply from:", obj["key"])
