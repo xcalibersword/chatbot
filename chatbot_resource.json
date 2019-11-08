@@ -48,6 +48,12 @@
             "default_target": "SAME_STATE",
             "replies": []
         },
+        "explore_option": {
+            "key": "explore_option",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": []
+        },
         "inform":{
             "key": "inform",
             "default_set": true,
@@ -142,7 +148,7 @@
         "ask_amt_month_fee_total": {
             "key": "ask_amt_month_fee_total",
             "default_set": true,
-            "default_target": "amt_month_fee_total",
+            "default_target": "ctx_inform_how_much",
             "replies": []
         },
         "ask_alt_payment_method": {
@@ -164,7 +170,7 @@
         "explore_option": {
             "key": "explore_option",
             "default_set": true,
-            "default_target": "SAME_STATE",
+            "default_target": "ctx_inform_how_much",
             "replies": []
         },
         "query_pay_process": {
@@ -887,6 +893,28 @@
                 "{rep_ext[when_check_shebao]}"
             ]
         },
+        "ctx_inform_how_much":{
+            "key": "ctx_inform_how_much",
+            "gated": true,
+            "thread": "t_whencheck",
+            "terminal_state": true,
+            "calcs":[
+                "flag_shouci",
+                "flag_sb_gjj",
+                "sum_svc_fee",
+                "gen_shebao_jishu",
+                "gen_shebao_amt",
+                "shebao_basic_calc"
+            ],
+            "req_info": [
+                [
+                    "chosen_fee","fee_slot"
+                ]
+            ],
+            "replies": [
+                "{rep_ext[how_much_reply]}"
+            ]
+        },
         "inform_xufei": {
             "key": "inform_xufei",
             "gated": true,
@@ -1335,6 +1363,7 @@
                 "writeto": "calc_str_working",
                 "states": [
                     "general_payment",
+                    "ctx_inform_how_much",
                     "short_ask_amt_month_fee_total"
                 ],
                 "lookfor": [
@@ -1458,6 +1487,28 @@
                 "if_value": {
                     "city": {
                         "北京": "农业户口：{rep_ext[product]}{rep_ext[bj_proposal]} {rep_ext[首次ext]}，共计{calc_ext[bj_shebao_basic_total]}\n 城镇户口：{rep_ext[product]}{rep_ext[bj_proposal2]} {rep_ext[首次ext]}，共计{calc_ext[bj_shebao_basic_total2]}\n服务费单项{city_info[svc_fee]}元，双项{city_info[dbl_svc_fee]}元（23号之后最低缴纳基数会提高、服务费会贵一些）北京首保：需要开户费{city_info[shouci_fee]}元，公司统一制卡，周期6个月左右，制卡完成会联系邮寄给你"
+                    }
+                }
+            },
+            {
+                "writeto": "how_much_reply",
+                "states": [
+                    "ctx_inform_how_much"
+                ],
+                "lookfor": [
+                    "chosen_fee",
+                    ["calc_ext",["svc_fee_total"]],
+                    ["rep_ext",["calc_str_working"]]
+                ],
+                "if_present": {},
+                "if_value": {
+                    "chosen_fee":{
+                        "服务费":["服务费：{city_info[svc_fee_total]}"],
+                        "社保缴纳":["社保缴纳: {city_info[shebao_payment]}"],
+                        "社保基数":["社保基数: {city_info[sb_jishu]}"],
+                        "公积金缴纳":["公积金缴纳: {city_info[gongjijin_fee]}"],
+                        "公积金基数":["公积金基数: {city_info[gjj_jishu]}"],
+                        "一共":["一共: {calc_str_working}"]
                     }
                 }
             }
