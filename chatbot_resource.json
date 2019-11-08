@@ -40,6 +40,13 @@
                 "不好意思,我不明白"
             ]
         },
+        "no_intent": {
+            "key": "1000 no intent",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "SAME_STATE",
+            "replies": []
+        },
         "inform":{
             "key": "inform",
             "default_set": true,

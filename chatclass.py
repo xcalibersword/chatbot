@@ -339,6 +339,7 @@ class ChatManager:
     def _fetch_reply(self,intent):
         information = self._get_current_info()
         curr_state = self._get_curr_state()
+        if DEBUG: print("Current State",curr_state)
         # samestateflag = self.statethreader.state_never_change()
         samestateflag = self.samestateflag
         # print("curr_state", curr_state['key'], "samestate",samestateflag)
@@ -433,7 +434,7 @@ class PolicyKeeper:
             intent_obj = False
 
         policy = self.POLICY_RULES[csk]
-        default_null_int = self.INTENT_DICT["unknown"]
+        default_null_int = self.INTENT_DICT["no_intent"]
         uds = Understanding(default_null_int,SIP.same_state())
         for intent_lst in policy.get_intents():
             print("intent_list",list(map(lambda x: x[0],intent_lst)))
