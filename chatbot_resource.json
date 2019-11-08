@@ -1004,7 +1004,7 @@
                 "if_present": {},
                 "if_value": {
                     "首次": {
-                        "yes": "首次参保额外收取{city_info[shouci_fee]}元开户费 ",
+                        "yes": "首次缴纳额外收取{city_info[shouci_fee]}元开户费 ",
                         "no": ""
                     }
                 }
@@ -1277,7 +1277,7 @@
                 ],
                 "if_value": {
                     "首次": {
-                        "yes": "如果以前在{city}没有缴纳过社保，需要付开户费{city_info[shouci_fee]}元",
+                        "yes": "如果以前在{city}没有缴纳过，需要付开户费{city_info[shouci_fee]}元",
                         "no": ""
                     }
                 }
