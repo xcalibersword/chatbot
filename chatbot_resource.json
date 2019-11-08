@@ -729,7 +729,7 @@
             "key": "260 inform pai",
             "gated": false,
             "thread": "t_pai",
-            "terminal_state": true,
+            "terminal_state": false,
             "req_info": "",
             "replies": [
                 "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
