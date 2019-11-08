@@ -268,7 +268,7 @@
             "key": "info_shebao_card",
             "default_set": true,
             "humanify": false,
-            "default_target": "inform_shebao_card",
+            "default_target": "inform_shebao_card_process",
             "replies": []
         },
         "query_gjj_card": {
@@ -791,8 +791,8 @@
                 "{rep_ext[req_resource_info]}"
             ]
         },
-        "inform_shebao_card": {
-            "key": "inform_shebao_card",
+        "inform_shebao_card_process": {
+            "key": "inform_shebao_card_process",
             "gated": true,
             "thread": "t_shebao_card",
             "terminal_state": true,

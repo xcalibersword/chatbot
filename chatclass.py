@@ -541,11 +541,11 @@ class DetailManager:
             while slot in info:
                 slot_val = info[slot]
                 if slot_val in sub_dict:
-                    if isinstance(slot_val, dict):
-                        slot, sub_dict = list(slot_val.items())[0]
+                    ss_branch = sub_dict[slot_val]
+                    if isinstance(ss_branch, dict):
+                        slot, sub_dict = list(ss_branch.items())[0]
                     else:
-                        ss_val = sub_dict[slot_val]
-                        return (True, ss_val)
+                        return (True, ss_branch)
                 else:
                     if DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
                     break
