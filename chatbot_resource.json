@@ -36,8 +36,9 @@
             "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
-                "不好意思,我听不懂",
-                "不好意思,我不明白"
+                "？？？",
+                "？",
+                "你说啥？"
             ]
         },
         "no_intent": {
@@ -62,12 +63,6 @@
             "replies": [
                 "抱歉哦亲😞，小店暂时不提供这项业务哦"
             ]
-        },
-        "forget_it": {
-            "key": "12 forget_it NOT USED ANYMORE",
-            "default_set": true,
-            "default_target": "initplus",
-            "replies": []
         },
         "doublecheck": {
             "key": "107 doublecheck",
@@ -268,7 +263,7 @@
             "key": "info_shebao_card",
             "default_set": true,
             "humanify": false,
-            "default_target": "inform_shebao_card",
+            "default_target": "inform_shebao_card_process",
             "replies": []
         },
         "query_gjj_card": {
@@ -729,7 +724,7 @@
             "key": "260 inform pai",
             "gated": false,
             "thread": "t_pai",
-            "terminal_state": true,
+            "terminal_state": false,
             "req_info": "",
             "replies": [
                 "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"
@@ -791,8 +786,8 @@
                 "{rep_ext[req_resource_info]}"
             ]
         },
-        "inform_shebao_card": {
-            "key": "inform_shebao_card",
+        "inform_shebao_card_process": {
+            "key": "inform_shebao_card_process",
             "gated": true,
             "thread": "t_shebao_card",
             "terminal_state": true,
@@ -1009,7 +1004,7 @@
                 "if_present": {},
                 "if_value": {
                     "首次": {
-                        "yes": "首次参保额外收取{city_info[shouci_fee]}元开户费 ",
+                        "yes": "首次缴纳额外收取{city_info[shouci_fee]}元开户费 ",
                         "no": ""
                     }
                 }
@@ -1282,7 +1277,7 @@
                 ],
                 "if_value": {
                     "首次": {
-                        "yes": "如果以前在{city}没有缴纳过社保，需要付开户费{city_info[shouci_fee]}元",
+                        "yes": "如果以前在{city}没有缴纳过，需要付开户费{city_info[shouci_fee]}元",
                         "no": ""
                     }
                 }

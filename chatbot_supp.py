@@ -329,11 +329,13 @@ class InfoParser():
     # Returns a dict of values
     def parse(self, text, slots):
         out = {}
-        out = self._default_parse(text)
 
         # slotted parse        
         for slot in slots:
             self._real_parse(text, slot, out)
+
+        # Default parse (overwrite slots)
+        out.update(self._default_parse(text))
 
         # Adds on a zone dict to the returned dict
         # E.g. "zones":{"city":"shanghai"}
