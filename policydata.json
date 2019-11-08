@@ -6,6 +6,7 @@
                 "北京": "propose_plan_bj",
                 "苏州": "propose_plan_sz",
                 "湖南": "unsupported_city",
+                "聊城": "unsupported_city",
                 "DEFAULT": "propose_plan"
             }
         ]

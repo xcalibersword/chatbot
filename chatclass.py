@@ -465,15 +465,6 @@ class PolicyKeeper:
 
         return (False, "")
 
-
-    # FUNCTION NOT USED
-    # def _get_state_replies(self, statekey):
-    #     if not statekey in self.STATE_DICT:
-    #         raise Exception("No such state as {}".format(statekey))
-    #     state = self.STATE_DICT[statekey]
-    #     replies = state["replies"]
-    #     return replies
-
     # OLD METHOD USING SEARCH. NOT USED
     # def decipher_message(self,curr_state,msg):
     #     def get_intent_matchdb(intent):

@@ -82,9 +82,9 @@
             "default_set": true,
             "default_target": "SAME_STATE",
             "replies": [
-                "我是回音机器人",
+                "我是客服机器人",
                 "他们叫我王俊杰！",
-                "我名回音，姓机器人"
+                "我名客服，姓机器人"
             ]
         },
         "indicate_query": {
@@ -123,6 +123,12 @@
                 "不好意思😞 亲 我是值班客服 看不到系统数据 你白天上班时间联系我们吧 谢谢亲"
             ]
         },
+        "ask_shebao_card_status": {
+            "key": "ask_shebao_card_status",
+            "default_set": true,
+            "default_target": "inform_shebao_card_status",
+            "replies": []
+        },
         "ask_pay_continuation": {
             "key": "ask_pay_continuation",
             "default_set": true,
@@ -130,20 +136,6 @@
             "replies": [
                 "成都续费说明：每月10日前拍下宝贝，老客户10号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。"
             ]
-        },
-        "query_pay_process": {
-            "key": "112 query_pay_process",
-            "default_set": true,
-            "default_target": "SAME_STATE",
-            "replies": [
-                "缴纳流程：和客服明确缴纳城市以及缴纳月份，拍下链接付款---小程序提供资料---申报参保手续---手续办理成功发货---确认收货请注意：参保手续完成后，不可以申请退款！！！"
-            ]
-        },
-        "query_req_resources": {
-            "key": "114 ziliao query",
-            "default_set": true,
-            "default_target": "inform_req_resources",
-            "replies": []
         },
         "ask_amt_month_fee_total": {
             "key": "ask_amt_month_fee_total",
@@ -163,6 +155,20 @@
             "key": "explore_option",
             "default_set": true,
             "default_target": "SAME_STATE",
+            "replies": []
+        },
+        "query_pay_process": {
+            "key": "112 query_pay_process",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "缴纳流程：和客服明确缴纳城市以及缴纳月份，拍下链接付款---小程序提供资料---申报参保手续---手续办理成功发货---确认收货请注意：参保手续完成后，不可以申请退款！！！"
+            ]
+        },
+        "query_req_resources": {
+            "key": "114 ziliao query",
+            "default_set": true,
+            "default_target": "inform_req_resources",
             "replies": []
         },
         "query_company_name": {
@@ -257,6 +263,22 @@
             "humanify": false,
             "default_target": "inform_shebao_card",
             "replies": []
+        },
+        "query_gjj_card": {
+            "key": "info_gjj_card",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "inform_gjj_card",
+            "replies": []
+        },
+        "query_break_gjj":{
+            "key": "info_break_gjj",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "主要是影响贷款"
+            ]
         },
         "query_housing": {
             "key": "info_housing",
@@ -407,7 +429,7 @@
             "terminal_state": false,
             "req_info": "",
             "replies": [
-                "亲有别的要问吗？"
+                "亲 还有别的要问吗？"
             ]
         },
         "pass_to_human": {
@@ -450,7 +472,7 @@
             "humanify": true,
             "terminal_state": false,
             "req_info": [["city","city"]],
-            "replies": ["不好意思 亲 我们不贷款{city}社保"]
+            "replies": ["不好意思 亲 我们不贷款{city}"]
         },
         "ask_if_issue": {
             "key": "251 whats wrong",
@@ -733,6 +755,20 @@
                 "亲，{rep_ext[topup_gjj_info]}"
             ]
         },
+        "inform_shebao_card_status":{
+            "key": "inform_shebao_card_status",
+            "gated": true,
+            "thread": "t_shebao_card",
+            "terminal_state": true,
+            "req_info": [
+                [
+                    "city","city"
+                ]
+            ],
+            "replies": [
+                "亲，{rep_ext[shebao_card_status_info]}"
+            ]
+        },
         "inform_req_resources": {
             "key": "inform_req_resources",
             "gated": true,
@@ -758,7 +794,21 @@
                 ]
             ],
             "replies": [
-                "{rep_ext[shebao_card_info]}"
+                "{rep_ext[shebao_card_process_info]}"
+            ]
+        },
+        "inform_gjj_card": {
+            "key": "inform_gjj_card",
+            "gated": true,
+            "thread": "t_gjj_card",
+            "terminal_state": true,
+            "req_info": [
+                [
+                    "city","city"
+                ]
+            ],
+            "replies": [
+                "{rep_ext[gjj_card_process_info]}"
             ]
         },
         "inform_weixin": {
@@ -1144,9 +1194,25 @@
                 }
             },
             {
-                "writeto": "shebao_card_info",
+                "writeto": "gjj_card_process_info",
                 "states": [
-                    "inform_shebao_card"
+                    "inform_gjj_card_process"
+                ],
+                "lookfor": [
+                    "city",
+                    ["s_slots",["city_district"]]
+                ],
+                "if_value": {
+                    "city_district": {
+                        "DEFAULT": "亲 {city}目前没有公积金卡",
+                        "北京城市": "北京公积金联名卡办理，员工本人持身份证原件前往北京任意一家名下无个人储蓄卡的银行。十五家银行包括：工商银行、邮储银行、建设银行、中信银行、中国银行、交通银行、北京银行、广发银行、农商银行、农业银行、光大银行、招商银行、民生银行、兴业银行、浦发银行"
+                    }
+                }
+            },
+            {
+                "writeto": "shebao_card_process_info",
+                "states": [
+                    "inform_shebao_card_process"
                 ],
                 "lookfor": [
                     "city",
@@ -1157,6 +1223,22 @@
                         "DEFAULT": "亲 {city}目前没有社保卡",
                         "广州城市": "社保卡公司办，周期6个月左右，正常现在微信个人也可以申领了，可以关注微信号“广州社保卡”自己领领看",
                         "成都城市": "携带有效身份证件原件及复印件、近期2寸证件照一张备用（正面免冠、深色上衣、白色背景）。在市本级、区（市）县社保服务大厅、全市街道（乡镇）劳动就业社会保障服务中心和部分社区（村）劳动就业社会保障服务站，以及悬挂“社会保障卡成都市服务网点”标牌的银行网点（工商银行、农业银行、建设银行、邮储银行、成都银行、成都农商银行）都可以办理。"
+                    }
+                }
+            },
+            {
+                "writeto": "shebao_card_status_info",
+                "states": [
+                    "inform_shebao_card_status"
+                ],
+                "lookfor": [
+                    ["s_slots",["city_district"]]
+                ],
+                "if_present": {},
+                "if_value": {
+                    "city_district": {
+                        "苏州园区": "亲，关于密码函或者社保卡的领取进度麻烦添加我们的weixin客服咨询哦，WEIXIN号：iHR-7531， 备注填写：唯洛+淘宝会员名",
+                        "DEFAULT": "亲 不好意思，暂时没有提供那边的服务"
                     }
                 }
             },
