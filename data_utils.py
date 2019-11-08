@@ -3,6 +3,7 @@ import pandas as pd
 from cbsv import *
 import jieba_fast as jieba
 import numpy as np
+import string
 
 os.getcwd()
 
@@ -363,6 +364,9 @@ def clean_csv_column_text():
             if str(sent) != "nan":
 #                clean_text = sent[8:]
                 clean_text = "".join(sent.split())
+                for i in clean_text:
+                    if i in string.punctuation + "，？。":  #如果字符是标点符号的话就将其替换为空格
+                        clean_text = clean_text.replace(i,"")
                 new_list.append(clean_text)
             else:
                 new_list.append("")
