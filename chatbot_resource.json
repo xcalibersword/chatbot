@@ -36,8 +36,9 @@
             "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
-                "不好意思,我听不懂",
-                "不好意思,我不明白"
+                "？？？",
+                "？",
+                "你说啥？"
             ]
         },
         "no_intent": {
@@ -62,12 +63,6 @@
             "replies": [
                 "抱歉哦亲😞，小店暂时不提供这项业务哦"
             ]
-        },
-        "forget_it": {
-            "key": "12 forget_it NOT USED ANYMORE",
-            "default_set": true,
-            "default_target": "initplus",
-            "replies": []
         },
         "doublecheck": {
             "key": "107 doublecheck",
