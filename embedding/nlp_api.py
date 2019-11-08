@@ -17,7 +17,7 @@ from keras.models import load_model
 from keras.preprocessing.sequence import pad_sequences 
 
 # model_filename = 'embedding/241019_1600_model.h5'
-model_filename = rootpath+'API_JB_model.h5'
+model_filename = rootpath+'0811_model.h5'
 w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
 VDLIMIT = 60000 #35000 includes gongjijin
 
@@ -32,10 +32,10 @@ def read_json(json_filename):
         print("Exception opening{}".format(json_filename), e)
 
 class Predictor:
-    def __init__(self):
-        self.max_review_length = 15
+    def __init__(self, mf = model_filename):
+        self.max_review_length = 20
         print("Initalizing Predictor...")
-        self.pmodel = load_model(model_filename)
+        self.pmodel = load_model(mf)
         self.pmodel.summary()
         # self.word2int = self._buildWordToInt()
         self.ignore_chars = {" ", ",", "?","？","。","，"}
@@ -135,7 +135,12 @@ if MAIN:
     #     print(jb.lcut(testin,cut_all=True))
     # exit()
 
-    pp = Predictor()
+    print("Please enter the model filename")
+    nmf = input()
+    if len(nmf) < 2:
+        nmf = model_filename
+
+    pp = Predictor(nmf)
 
     for testin in test_ins:
         out = pp.predict(testin)

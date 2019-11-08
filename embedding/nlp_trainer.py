@@ -5,12 +5,14 @@ import numpy as np
 import jieba as jb
 
 from unzipper import get_vector_dict
-from keras.initializers import Constant
+from keras.constraints import MaxNorm
+from keras.initializers import Constant, RandomNormal, RandomUniform, glorot_normal, glorot_uniform
 from keras.layers import Concatenate, Dropout, Embedding, LSTM, Dense, Conv1D, Flatten, BatchNormalization, MaxPooling1D
 from keras.models import Model, Input
-from keras.optimizers import Adam
+from keras.optimizers import Adam, RMSprop
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences 
+from keras.regularizers import l1,l2
 from keras.utils import to_categorical
 
 #### NOTES ####
@@ -19,10 +21,10 @@ from keras.utils import to_categorical
 
 w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
 
-max_review_length = 15 #maximum length of the sentence
-embedding_vector_length = 300
+max_review_length = 20 #maximum length of the sentence
+embedding_vector_length = 128
 max_intents = 100
-VDLIMIT = 60000
+VDLIMIT = 30000
 
 USE_WORD2VECTOR = False
 
@@ -208,9 +210,16 @@ embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) #
 
 save_to_json("xval_man_tokens.json",str(word_index))
 
+reg = l2(0.01)
+embed_init = glorot_uniform(seed=714)
+embed_init = RandomUniform(seed=123)
+
 my_embedding = Embedding(
     num_words,
     embedding_vector_length,
+    embeddings_initializer = embed_init,
+    activity_regularizer = None,
+    embeddings_constraint = MaxNorm(max_value=2,axis=0),
     input_length=max_review_length,
     trainable = True
     )
@@ -247,19 +256,20 @@ outs = Dense(units=num_intents, activation='sigmoid')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
 
-LEARN_RATE = 0.00004
+LEARN_RATE = 2.5e-5
 optimizer = Adam(learning_rate=LEARN_RATE)
+# optimizer = RMSprop(learning_rate = 3e-5)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 
-model.fit(x=embed_xvals,y=cat_yval,epochs=50,verbose=1,validation_split=0.0,batch_size=8)
+model.fit(x=embed_xvals,y=cat_yval,epochs=50,verbose=1,validation_split=0.0,batch_size=4)
 
 # Post Training
 model.save(save_model_name)
 print("This Model has been saved! Rejoice")
 
-test_in = ["我在苏州的的不是首次","我是要付社保行吗","您好","哦了解了", "我已经填好了", "我拍好了", "流程是怎么样", "一共多少钱啊", "我好社保您哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
+test_in = ["我在苏州的的不是首次","我是要付社保行吗","您好","哦了解了", "我已经填好了", "我拍好了", "流程是怎么样", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
 
 ti = myTokenize(test_in)
 # print("input",test_in)
