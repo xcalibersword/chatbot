@@ -399,6 +399,7 @@
         "thankyou": {
             "key": "194 thankyou",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
                 "不客气的亲 😊"
