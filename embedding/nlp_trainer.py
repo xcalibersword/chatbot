@@ -21,7 +21,7 @@ from keras.utils import to_categorical
 
 w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
 
-max_review_length = 20 #maximum length of the sentence
+max_review_length = 30 #maximum length of the sentence
 embedding_vector_length = 128
 max_intents = 100
 VDLIMIT = 30000
@@ -44,7 +44,7 @@ def save_tokenizer(t, filename):
 #read csv
 # dataset_fp = "data_in2.csv"
 dataset_fp = "generated_data.csv"
-save_model_name = 'trained_JB_model.h5'
+save_model_name = 'trained.h5'
 count = 0
 with open(dataset_fp, 'r',encoding='gb18030') as f:
     rows = csv.reader(f, delimiter = ',')
@@ -127,7 +127,7 @@ def buildWordToInt(w2v,ut):
     return d
 
 
-def arrayWordToInt(nparr, d, dbg=0):
+def arrayWordToInt(nparr, d, dbg=False):
     nparr = np.array(nparr)
     newArray = np.copy(nparr)
     for k, v in d.items(): newArray[nparr==k] = v
@@ -211,8 +211,8 @@ embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) #
 save_to_json("xval_man_tokens.json",str(word_index))
 
 reg = l2(0.01)
-embed_init = glorot_uniform(seed=714)
-embed_init = RandomUniform(seed=123)
+# embed_init = glorot_uniform(seed=714)
+embed_init = RandomUniform(seed=331)
 
 my_embedding = Embedding(
     num_words,
@@ -256,14 +256,14 @@ outs = Dense(units=num_intents, activation='sigmoid')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
 
-LEARN_RATE = 2.5e-5
+LEARN_RATE = 2.0e-5
 optimizer = Adam(learning_rate=LEARN_RATE)
 # optimizer = RMSprop(learning_rate = 3e-5)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 
-model.fit(x=embed_xvals,y=cat_yval,epochs=50,verbose=1,validation_split=0.0,batch_size=4)
+model.fit(x=embed_xvals,y=cat_yval,epochs=90,verbose=1,validation_split=0.0,batch_size=16,shuffle=True)
 
 # Post Training
 model.save(save_model_name)

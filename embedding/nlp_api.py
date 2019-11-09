@@ -33,7 +33,7 @@ def read_json(json_filename):
 
 class Predictor:
     def __init__(self, mf = model_filename):
-        self.max_review_length = 20
+        self.max_review_length = 30
         print("Initalizing Predictor...")
         self.pmodel = load_model(mf)
         self.pmodel.summary()

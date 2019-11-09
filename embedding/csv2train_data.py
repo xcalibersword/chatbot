@@ -8,11 +8,12 @@ df = pd.read_csv(r"raw.csv",encoding="gb18030")
 list_list = df.values.tolist()
 #read to dict
 a = {}
-label_list = list_list[0]
+label_list = list_list[1]
 length = len(label_list)
+skip = 2 # Skip 2 rows after the first
 for i in range(length):
     if str(label_list[i]) != "nan":
-        for l in list_list[1:]:
+        for l in list_list[skip:]:
             if str(l[i]) != "nan":
                 csv_list_list.append([l[i],label_list[i]])
 new_df = pd.DataFrame(data=csv_list_list)
