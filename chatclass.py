@@ -5,6 +5,7 @@ import random
 import cbsv
 import string
 import os
+from chatbot_be import record_chatlog_to_json
 from datetime import datetime
 from chatbot_supp import *
 from chatbot_utils import dive_for_values
@@ -241,6 +242,7 @@ class ChatManager:
 
         curr_info = self._get_current_info()
 
+        # Records message logs
         self._record_messages_in_chat(msg,reply)
         return (reply, bd, curr_info)
 
@@ -847,6 +849,7 @@ class Chat:
         self.curr_chatlog = {}
         self.convo_history = convo_history
         self.convo_index = 0
+        self.save_chat_logs = True
         # self.info = {}
 
     def getID(self):
@@ -855,7 +858,7 @@ class Chat:
     # Records conversation
     def record_messages(self, recieved, sent):
         dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        username = "用户"
+        username = self.chatID + "(客户)"
         humanify = lambda user, m: dt+ " > " + user + ": " + m
         robotify = lambda x: dt + " > " + "机器人: " + x
         self.curr_chatlog[self.convo_index] = humanify(username, recieved)
@@ -877,14 +880,10 @@ class Chat:
 
     # Writes to a file eventually
     def record_to_database(self):
-        direct = os.getcwd()
-        if not os.path.isdir(os.path.join(direct,"chatlogs")):
-            if DEBUG: print("Creating chatlogs folder...")
-            os.mkdir(os.path.join(direct,"chatlogs")) # If no folder, make a folder
-        filepath = os.path.join(direct,"chatlogs/" + self.chatID + ".json")
-      
-        # write chatlog
-        cbsv.dump_to_json(filepath,self.get_chatlog(),1)
+        if self.save_chat_logs:
+            log = self.get_chatlog()
+            chatid = self.chatID
+            record_chatlog_to_json(chatid, log)
         return
 
     def get_chatlog(self):
