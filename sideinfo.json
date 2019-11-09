@@ -5,7 +5,7 @@
         ],
         "defaults": [
             ["<COMMENT>", "NOT IMPLEMENTED YET"],
-            ["要公积金","no"]
+            ["首次","yes"]
         ],
         "permanent_slots": [
             ["city","city"],

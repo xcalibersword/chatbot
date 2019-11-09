@@ -870,7 +870,6 @@
             "thread": "t_whencheck",
             "terminal_state": true,
             "calcs":[
-                "flag_shouci",
                 "flag_sb_gjj",
                 "sum_svc_fee",
                 "gen_shebao_jishu",
@@ -878,6 +877,7 @@
                 "shebao_basic_calc"
             ],
             "req_info": [
+                ["首次","DEFAULT_VAL"],
                 [
                     "chosen_fee","fee_slot"
                 ]
@@ -1046,7 +1046,6 @@
                     "propose_plan",
                     "propose_plan_bj",
                     "propose_plan_sz",
-                    "general_payment",
                     "short_ask_amt_month_fee_total"
                 ],
                 "lookfor": [
@@ -1121,9 +1120,9 @@
                 "if_present": {},
                 "if_value": {
                     "flag_sb_gjj": {
-                        "1": "最低基数为{calc_ext[w_shebao_jishu]}元, 应缴纳{calc_ext[w_shebao_payment]}元",
-                        "10": "最低基数为{rep_ext[str_gjj_jishu]}, 应缴纳{city_info[gongjijin_fee]}元",
-                        "11": "最低缴费{calc_ext[w_shebao_payment]}元（按最低基数{calc_ext[w_shebao_jishu]}），公积金{city_info[gongjijin_fee]}元 {rep_ext[str_gjj_jishu]}"
+                        "1": "应缴{calc_ext[w_shebao_payment]}元（按最低基数{calc_ext[w_shebao_jishu]}）",
+                        "10": "公积金{city_info[gongjijin_fee]}元 {rep_ext[str_gjj_jishu]}",
+                        "11": "应缴{calc_ext[w_shebao_payment]}元（按最低基数{calc_ext[w_shebao_jishu]}），公积金{city_info[gongjijin_fee]}元 {rep_ext[str_gjj_jishu]}"
                     }
                 }
             },
@@ -1154,8 +1153,8 @@
                 "if_present": {},
                 "if_value": {
                     "flag_sb_gjj": {
-                        "1": "最低基数为{city_info[sb_jishu]}元, 应缴纳{city_info[shebao_payment]}元",
-                        "10": "最低基数为{city_info[gjj_jishu]}元, 应缴纳{city_info[gongjijin_fee]}元",
+                        "1": "最低缴费{city_info[shebao_payment]}元（按最低基数{city_info[sb_jishu]}）",
+                        "10": "公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）",
                         "11": "最低缴费{city_info[shebao_payment]}元（按最低基数{city_info[sb_jishu]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
                     }
                 }
@@ -1478,7 +1477,7 @@
                         "公积金缴纳":["公积金缴纳: {city_info[gongjijin_fee]}"],
                         "公积金基数":["公积金基数: {city_info[gjj_jishu]}"],
                         "两个":["社保缴纳: {city_info[shebao_payment]}, 公积金缴纳: {city_info[gongjijin_fee]}"],
-                        "一共":["一共: {city}{rep_ext[product]}: {calc_str_working} = {rep_ext[calc_str_total]}块"]
+                        "一共":["一共: {city}{rep_ext[product]}: {calc_str_working} 首次缴纳额外收取{city_info[shouci_fee]}元开户费"]
                     }
                 }
             }
