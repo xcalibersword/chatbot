@@ -159,10 +159,10 @@
             "location":"START",
             "text":"可以啊亲。"
         },
-        "give_thanks":{
+        "say_thanks":{
             "value":"谢谢",
             "location":"START",
-            "text":"不客气的"
+            "text":"不客气的，"
         }
     }
 }

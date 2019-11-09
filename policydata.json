@@ -56,12 +56,15 @@
             ["affirm", "finished_payment"],
             ["inform_done", "finished_payment"],
             ["next_step", "finished_payment"],
+            ["inform", "city_crossroad"],
             ["explore_option","city_crossroad"],
-            ["thankyou","initplus"]
+            ["thankyou","finished_payment"]
         ],
         "finished_payment": [
             ["affirm", "initplus"],
             ["thankyou","initplus"],
+            ["inform_done", "initplus"],
+            ["inform", "city_crossroad"],
             ["explore_option","city_crossroad"],
             ["goodbye", "goodbye"]
         ],

@@ -429,6 +429,7 @@
             "key": "202 state_init++",
             "gated": false,
             "thread": "BASE",
+            "humanify":true,
             "terminal_state": false,
             "req_info": "",
             "replies": [
