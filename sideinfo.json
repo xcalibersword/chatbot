@@ -1,11 +1,34 @@
 {
+    "conditional_reqs": {
+        "city": [
+            [
+                "TEMPLATE value",
+                [
+                    [
+                        "TEMPLATE additional_requirement",
+                        "yesno"
+                    ]
+                ]
+            ],
+            [
+                "苏州",
+                [
+                    [
+                        "苏州区",
+                        "苏州区_slot"
+                    ]
+                ]
+            ]
+        ]
+    },
+    "default_slot_vals": {
+        "首次":"yes",
+        "要社保":"yes",
+        "要公积金":"yes"
+    },
     "info_parser": {
         "zones": [
             "city"
-        ],
-        "defaults": [
-            ["<COMMENT>", "NOT IMPLEMENTED YET"],
-            ["要公积金","no"]
         ],
         "permanent_slots": [
             ["city","city"],
@@ -14,7 +37,8 @@
             ["要公积金","gongjijin_slot"],
             ["首次","gen_shouci_slot"],
             ["ask_keyi","keyi_slot"],
-            ["say_thanks","thanks_slot"]
+            ["say_thanks","thanks_slot"],
+            ["chosen_fee","fee_slot"]
         ],
         "slots": {
             "month_slot":{
@@ -30,6 +54,15 @@
                 "10":["(十|10)月"],
                 "11":["(十一|11)月"],
                 "12":["(十二|12)月"]
+            },
+            "fee_slot": {
+                "服务费":["服务费|手续费"],
+                "社保缴纳":["(五险|社保)(缴纳)*"],
+                "社保基数":["社保基数","缴(纳|费)基数"],
+                "公积金缴纳":["公积金(缴纳)*"],
+                "公积金基数":["公积金基数"],
+                "两个":["社保(.*)公积金","五险一金"],
+                "一共":["全部|一共|一起|一个月是*多少"]
             },
             "city": {
                 "上海": ["山海","上海","shanghai"],

@@ -301,8 +301,9 @@ class ChatManager:
         
         curr_info = self._get_current_info()
         print("Current info:",curr_info)
-        passed, required_slots = self.gatekeeper.try_gate(curr_info)
+        passed, req_slots, info_topup = self.gatekeeper.try_gate(curr_info)
 
+        self.push_detail_to_dm(info_topup, ow=False) # Detail update. No Overwrite
 
         if DEBUG: print("Gate passed:",passed)
 
@@ -310,10 +311,10 @@ class ChatManager:
             self._move_forward_state(nextstate)
         else:
             # Update DetailManager
-            self.push_req_slots_to_dm(required_slots)
+            self.push_req_slots_to_dm(req_slots)
 
             # Didnt pass gate
-            constructed_sip = _make_info_sip(required_slots)
+            constructed_sip = _make_info_sip(req_slots)
             infostate = constructed_sip.get_state_obj()
             _set_thread_pending(infostate, nextstate)
 
@@ -365,8 +366,8 @@ class ChatManager:
         return
 
     ### Detail logging
-    def push_detail_to_dm(self, d):
-        return self.dmanager.log_detail(d)
+    def push_detail_to_dm(self, d, ow=1):
+        return self.dmanager.log_detail(d, OVERWRITE=1)
 
     ### Chat logging
     def _record_messages_in_chat(self,recv, sent):
@@ -514,14 +515,17 @@ class DetailManager:
         # prev_info = self.dbr.fetch_user_info(chatID)
         # self.chat_prov_info.update(prev_info)
 
-    def log_detail(self, new_info, DEBUG = 0):
+    def log_detail(self, new_info, OVERWRITE = 1, DEBUG = 0):
         if DEBUG: print("Logging", new_info)
         for d in new_info:
             deet = new_info[d]
             # Check to make sure its not empty
             if not deet == "":
-                self.chat_prov_info[d] = new_info[d]
-
+                if d in self.chat_prov_info and not OVERWRITE:
+                    continue
+                else:
+                    self.chat_prov_info[d] = new_info[d]
+                
         self._add_secondary_slots(self.fetch_info())
 
         self.write_info_to_db()

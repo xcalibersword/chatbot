@@ -48,6 +48,12 @@
             "default_target": "SAME_STATE",
             "replies": []
         },
+        "explore_option": {
+            "key": "explore_option",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": []
+        },
         "inform":{
             "key": "inform",
             "default_set": true,
@@ -142,7 +148,7 @@
         "ask_amt_month_fee_total": {
             "key": "ask_amt_month_fee_total",
             "default_set": true,
-            "default_target": "amt_month_fee_total",
+            "default_target": "ctx_inform_how_much",
             "replies": []
         },
         "ask_alt_payment_method": {
@@ -161,10 +167,10 @@
                 "亲可以白天来小店找客服核实是否来的及哈"
             ]
         },
-        "explore_option": {
-            "key": "explore_option",
+        "ask_how_much": {
+            "key": "ask_how_much",
             "default_set": true,
-            "default_target": "SAME_STATE",
+            "default_target": "ctx_inform_how_much",
             "replies": []
         },
         "query_pay_process": {
@@ -669,35 +675,6 @@
                 "确认要{s_slots[city_district]}的宝贝吗?"
             ]
         },
-        "general_payment": {
-            "key": "general_payment",
-            "gated": true,
-            "thread": "t_presale",
-            "terminal_state": false,
-            "calcs": [
-                "flag_sb_gjj",
-                "flag_shouci",
-                "sum_svc_fee",
-                "gen_shebao_jishu",
-                "shebao_basic_calc",
-                "bj_shebao_basic",
-                "bj_shebao_basic2"
-            ],
-            "req_info": [
-                [
-                    "city","city"
-                ],
-                [
-                    "首次","yesno"
-                ],
-                [
-                    "要公积金","wantnot"
-                ]
-            ],
-            "replies": [
-                "{city}{rep_ext[product]}一共要付{rep_ext[calc_str_working]} = {rep_ext[calc_str_total]}块，亲确认下哦"
-            ]
-        },
         "goodbye": {
             "key": "STATE 209 bye",
             "gated": false,
@@ -887,6 +864,32 @@
                 "{rep_ext[when_check_shebao]}"
             ]
         },
+        "ctx_inform_how_much":{
+            "key": "ctx_inform_how_much",
+            "gated": true,
+            "thread": "t_whencheck",
+            "terminal_state": true,
+            "calcs":[
+                "flag_sb_gjj",
+                "flag_shouci",
+                "sum_svc_fee",
+                "gen_shebao_jishu",
+                "gen_shebao_amt",
+                "shebao_basic_calc"
+            ],
+            "req_info": [
+                ["city","city"],
+                ["首次","DEFAULT_SV"],
+                ["要社保","DEFAULT_SV"],
+                ["要公积金","DEFAULT_SV"],
+                [
+                    "chosen_fee","fee_slot"
+                ]
+            ],
+            "replies": [
+                "{rep_ext[how_much_reply]}"
+            ]
+        },
         "inform_xufei": {
             "key": "inform_xufei",
             "gated": true,
@@ -928,7 +931,8 @@
                         "city": "您是哪个城市呢？",
                         "首次": "是首次吗？",
                         "要公积金": "交公积金吗？",
-                        "苏州区": "是市区还是园区呢？"
+                        "苏州区": "是市区还是园区呢？",
+                        "chosen_fee": "您问的是哪个部分？"
                     }
                 }
             },
@@ -943,7 +947,7 @@
                 "if_present": {},
                 "if_value": {
                     "city": {
-                        "DEFAULT": "亲 不好意思，目前没有信息 😢",
+                        "DEFAULT": "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料",
                         "上海": "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料",
                         "杭州": "亲拍好宝贝后，在weixin小程序（58人才服务中心）提交参保信息哦，包括姓名、身份证号及身份证照片等基本资料",
                         "苏州": "新开户公司办理市民卡，制卡周期6个月左右，需要2寸白底电子照片。\n近期2寸白底正面免冠照片,不着制式服装或白色上衣,常戴眼镜的人员应配戴眼镜。\n格式为jpg或jpeg,照片大小在10-40K之间,长宽分别为441像素(高)*385像素(宽),\n以姓名+身份证命名,不符合条件的相片会导致制卡失败。",
@@ -1047,7 +1051,6 @@
                     "propose_plan",
                     "propose_plan_bj",
                     "propose_plan_sz",
-                    "general_payment",
                     "short_ask_amt_month_fee_total"
                 ],
                 "lookfor": [
@@ -1086,7 +1089,7 @@
                 "if_value": {
                     "gjj_jishu": {
                         "0": "",
-                        "DEFAULT": "（按最低基数为{city_info[gjj_jishu]}元）"
+                        "DEFAULT": "（按照最低基数为{city_info[gjj_jishu]}元）"
                     }
                 }
             },
@@ -1122,9 +1125,9 @@
                 "if_present": {},
                 "if_value": {
                     "flag_sb_gjj": {
-                        "1": "最低基数为{calc_ext[w_shebao_jishu]}元, 应缴纳{calc_ext[w_shebao_payment]}元",
-                        "10": "最低基数为{rep_ext[str_gjj_jishu]}, 应缴纳{city_info[gongjijin_fee]}元",
-                        "11": "最低缴费{calc_ext[w_shebao_payment]}元（按最低基数{calc_ext[w_shebao_jishu]}），公积金{city_info[gongjijin_fee]}元 {rep_ext[str_gjj_jishu]}"
+                        "1": "应缴{calc_ext[w_shebao_payment]}元（按照最低基数{calc_ext[w_shebao_jishu]}）",
+                        "10": "公积金{city_info[gongjijin_fee]}元 {rep_ext[str_gjj_jishu]}",
+                        "11": "应缴{calc_ext[w_shebao_payment]}元（按照最低基数{calc_ext[w_shebao_jishu]}），公积金{city_info[gongjijin_fee]}元 {rep_ext[str_gjj_jishu]}"
                     }
                 }
             },
@@ -1155,9 +1158,9 @@
                 "if_present": {},
                 "if_value": {
                     "flag_sb_gjj": {
-                        "1": "最低基数为{city_info[sb_jishu]}元, 应缴纳{city_info[shebao_payment]}元",
-                        "10": "最低基数为{city_info[gjj_jishu]}元, 应缴纳{city_info[gongjijin_fee]}元",
-                        "11": "最低缴费{city_info[shebao_payment]}元（按最低基数{city_info[sb_jishu]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
+                        "1": "最低缴费{city_info[shebao_payment]}元（按照最低基数{city_info[sb_jishu]}）",
+                        "10": "公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）",
+                        "11": "最低缴费{city_info[shebao_payment]}元（按照最低基数{city_info[sb_jishu]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
                     }
                 }
             },
@@ -1190,7 +1193,7 @@
                     "flag_sb_gjj": {
                         "1": "最低基数为{city_info[sb_jishu2]}元, 应缴纳{city_info[shebao_payment2]}元",
                         "10": "最低基数为{city_info[gjj_jishu]}元, 应缴纳{city_info[gongjijin_fee]}元",
-                        "11": "最低缴费{city_info[shebao_payment2]}元（按最低基数{city_info[sb_jishu2]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
+                        "11": "最低缴费{city_info[shebao_payment2]}元（按照最低基数{city_info[sb_jishu2]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
                     }
                 }
             },
@@ -1334,7 +1337,7 @@
             {
                 "writeto": "calc_str_working",
                 "states": [
-                    "general_payment",
+                    "ctx_inform_how_much",
                     "short_ask_amt_month_fee_total"
                 ],
                 "lookfor": [
@@ -1374,8 +1377,7 @@
                 "writeto": "calc_str_total",
                 "states": [
                     "propose_plan",
-                    "propose_plan_sz",
-                    "general_payment"
+                    "propose_plan_sz"
                 ],
                 "lookfor": [
                     [
@@ -1458,6 +1460,29 @@
                 "if_value": {
                     "city": {
                         "北京": "农业户口：{rep_ext[product]}{rep_ext[bj_proposal]} {rep_ext[首次ext]}，共计{calc_ext[bj_shebao_basic_total]}\n 城镇户口：{rep_ext[product]}{rep_ext[bj_proposal2]} {rep_ext[首次ext]}，共计{calc_ext[bj_shebao_basic_total2]}\n服务费单项{city_info[svc_fee]}元，双项{city_info[dbl_svc_fee]}元（23号之后最低缴纳基数会提高、服务费会贵一些）北京首保：需要开户费{city_info[shouci_fee]}元，公司统一制卡，周期6个月左右，制卡完成会联系邮寄给你"
+                    }
+                }
+            },
+            {
+                "writeto": "how_much_reply",
+                "states": [
+                    "ctx_inform_how_much"
+                ],
+                "lookfor": [
+                    "chosen_fee",
+                    ["calc_ext",["svc_fee_total"]],
+                    ["rep_ext",["calc_str_working"]]
+                ],
+                "if_present": {},
+                "if_value": {
+                    "chosen_fee":{
+                        "服务费":"服务费：{calc_ext[svc_fee_total]}",
+                        "社保缴纳":"社保缴纳: {city_info[shebao_payment]}",
+                        "社保基数":"社保基数: {city_info[sb_jishu]}",
+                        "公积金缴纳":"公积金缴纳: {city_info[gongjijin_fee]}",
+                        "公积金基数":"公积金基数: {city_info[gjj_jishu]}",
+                        "两个":"社保缴纳: {city_info[shebao_payment]}, 公积金缴纳: {city_info[gongjijin_fee]}",
+                        "一共":"一共: {city}{rep_ext[product]}: {calc_str_working} 首次缴纳额外收取{city_info[shouci_fee]}元开户费"
                     }
                 }
             }
@@ -1988,28 +2013,6 @@
             }
         }
     ],
-    "conditional_reqs": {
-        "city": [
-            [
-                "TEMPLATE value",
-                [
-                    [
-                        "TEMPLATE additional_requirement",
-                        "yesno"
-                    ]
-                ]
-            ],
-            [
-                "苏州",
-                [
-                    [
-                        "苏州区",
-                        "苏州区_slot"
-                    ]
-                ]
-            ]
-        ]
-    },
     "policy_data_location": "policydata.json",
     "sideinfo_location": "sideinfo.json"
 }

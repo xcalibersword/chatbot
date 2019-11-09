@@ -119,9 +119,10 @@ def init_detailmanager(jdata):
     ss = jdata["secondary_slots"]
     return DetailManager(vault,ss)
 
-def init_gatekeeper(jdata):
-    conds = jdata["conditional_reqs"]
-    return ReqGatekeeper(conds)
+def init_gatekeeper(sideinfo):
+    conds = sideinfo["conditional_reqs"]
+    default_vals = sideinfo["default_slot_vals"]
+    return ReqGatekeeper(conds,default_vals)
 
 def master_initalize(filename = ""):
     # INTENTS = jdata["intents"]
@@ -143,5 +144,5 @@ def master_initalize(filename = ""):
     components["iparser"] = init_infoparser(sideinfo)
     components["replygen"] = init_replygen(jdata,sideinfo)
     components["pkeeper"] = init_policykeeper(jdata,pdata)
-    components["gkeeper"] = init_gatekeeper(jdata)
+    components["gkeeper"] = init_gatekeeper(sideinfo)
     return components
