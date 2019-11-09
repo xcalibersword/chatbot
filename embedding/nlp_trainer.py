@@ -44,7 +44,7 @@ def save_tokenizer(t, filename):
 #read csv
 # dataset_fp = "data_in2.csv"
 dataset_fp = "generated_data.csv"
-save_model_name = 'API_model.h5'
+save_model_name = 'trained.h5'
 count = 0
 with open(dataset_fp, 'r',encoding='gb18030') as f:
     rows = csv.reader(f, delimiter = ',')
