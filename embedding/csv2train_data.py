@@ -20,4 +20,4 @@ new_df = pd.DataFrame(data=csv_list_list)
 #insert path
 new_df.to_csv(r"generated_data.csv",index=False,encoding="gb18030")
 
-print("Done")
+print("Done converting")

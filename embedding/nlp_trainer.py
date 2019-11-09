@@ -18,16 +18,7 @@ from keras.utils import to_categorical
 #### NOTES ####
 # Run from 'embedding' folder
 
-
-w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
-
-max_review_length = 30 #maximum length of the sentence
-embedding_vector_length = 128
-max_intents = 100
-VDLIMIT = 30000
-
-USE_WORD2VECTOR = False
-
+# Helpful functions
 def save_to_json(filename, data):
     try:
         with open(filename,'w', encoding='utf8') as f:
@@ -41,10 +32,21 @@ def save_tokenizer(t, filename):
     json_yval = t.to_json()
     save_to_json(filename,json_yval)
 
-#read csv
-# dataset_fp = "data_in2.csv"
+# Word 2 vec
+USE_WORD2VECTOR = False
+VDLIMIT = 30000
+w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
+
+# Dataset and save location
 dataset_fp = "generated_data.csv"
 save_model_name = 'trained.h5'
+
+# Parameters
+max_review_length = 30 #maximum length of the sentence
+embedding_vector_length = 128
+max_intents = 100
+
+### Information preprocessing ###
 count = 0
 with open(dataset_fp, 'r',encoding='gb18030') as f:
     rows = csv.reader(f, delimiter = ',')
@@ -212,7 +214,7 @@ save_to_json("xval_man_tokens.json",str(word_index))
 
 reg = l2(0.01)
 # embed_init = glorot_uniform(seed=714)
-embed_init = RandomUniform(seed=331)
+embed_init = RandomUniform(seed=313)
 
 my_embedding = Embedding(
     num_words,
@@ -256,20 +258,20 @@ outs = Dense(units=num_intents, activation='sigmoid')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
 
-LEARN_RATE = 2.0e-5
+LEARN_RATE = 2.5e-5
 optimizer = Adam(learning_rate=LEARN_RATE)
 # optimizer = RMSprop(learning_rate = 3e-5)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 
-model.fit(x=embed_xvals,y=cat_yval,epochs=90,verbose=1,validation_split=0.0,batch_size=16,shuffle=True)
+model.fit(x=embed_xvals,y=cat_yval,epochs=70,verbose=1,validation_split=0.0,batch_size=8,shuffle=True)
 
 # Post Training
 model.save(save_model_name)
 print("This Model has been saved! Rejoice")
 
-test_in = ["我在苏州的的不是首次","我是要付社保行吗","您好","哦了解了", "我已经填好了", "我拍好了", "流程是怎么样", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
+test_in = ["我在苏州的不是首次","我是要付社保行吗","您好","哦了解了", "我已经填好了", "我拍好了", "流程是怎么样", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
 
 ti = myTokenize(test_in)
 # print("input",test_in)

@@ -129,8 +129,32 @@ class Predictor:
             p_out = self.pred_to_word(out)
             print(p_out)
 
-if MAIN:    
-    test_ins = ["我在上海","我要付社保","交公积金","您好","哦了解", "拍好了", "怎么拍", "一共多少钱啊", "我好爱您哦", "代缴社保", "落户苏州", "上海社保可以吗", "我不太懂哦","社保可以补交吗","需要我提供什东西吗","要啥材料吗","请问可以代缴上海社保吗"]
+if MAIN:
+    # Test suite    
+    test_ins = [
+        ("我在上海，以前交过","inform"),
+        ("我在北京，不是首次","inform"),
+        ("哦了解了","affirm"),
+        ("我是想要代缴","purchase"),
+        ("社保基数怎么算","ask_how_much"),
+        ("服务费怎么算","ask_how_much"),
+        ("怀孕了还可以代缴吗","query_pregnant"),
+        ("怀孕了还可以买吗","query_pregnant"),
+        ("怎么去拍啊","how_to_pai"),
+        ("怎么去拍啊","how_to_pai"),
+        ("我想在北京买房","query_housing"),
+        ("落户苏州","luohu"),
+        ("我不太懂哦","confused"),
+        ("没了，谢谢","deny"),
+        ("没","deny"),
+        ("怎么去拍啊","how_to_pai"),
+        ("社保可以补交吗","ask_can_topup"),
+        ("需要我提供什东西吗","query_req_resources"),
+        ("要啥材料吗","query_req_resources"),
+        ("请问可以代缴上海社保吗","purchase"),
+        ("我真的很爱您哦","complicated"),
+        ("我想交5月社保不断的可以吗","purchase")
+    ]
     # for testin in testins:
     #     print(jb.lcut(testin,cut_all=True))
     # exit()
@@ -138,13 +162,24 @@ if MAIN:
     print("Please enter the model filename")
     nmf = input()
     if len(nmf) < 2:
+        print("No name given,using", model_filename)
         nmf = model_filename
 
     pp = Predictor(nmf)
 
-    for testin in test_ins:
+    score = 0
+    for testin, ans in test_ins:
+        
         out = pp.predict(testin)
-        print("In:",testin,"Predicted Intent:",out)
+        pred = out["prediction"]
+        passed = pred == ans
+        if passed: score+=1
+        passedstr = "PASSED TEST" if passed else "@@@ FAILED TEST @@@"
+
+        print("In:",testin)
+        print(passedstr)
+        print("Predicted Intent:",out)
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
-    pp.predict_loop()
+    print("Performance:{}/{}".format(score,len(test_ins)))
+    # pp.predict_loop()
