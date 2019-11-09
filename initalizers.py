@@ -19,7 +19,8 @@ def init_replygen(jdata, inf):
         return Humanizer(i)
     hz = _init_humanizer(inf)
     FORMAT_DB = jdata["reply_formatting"]
-    return ReplyGenerator(FORMAT_DB,hz)
+    DEFAULT_RESPONSE = jdata["intents"]["unknown"]["replies"]
+    return ReplyGenerator(FORMAT_DB,hz,DEFAULT_RESPONSE)
 
 def init_policykeeper(jdata, pdata):
     INTENTS = jdata["intents"]

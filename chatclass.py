@@ -593,11 +593,12 @@ class DetailManager:
 
 # Generates reply text based on current state info
 class ReplyGenerator:
-    def __init__(self, formattingDB, humanizer):
+    def __init__(self, formattingDB, humanizer, def_confused):
         self.formatDB = formattingDB
         self.formatter = string.Formatter()
         self.humanizer = humanizer
         self.hflag = True
+        self.default_confused = def_confused
         
     # OVERALL METHOD
     def get_reply(self, curr_state, intent, ss, info = -1):
@@ -818,7 +819,7 @@ class ReplyGenerator:
         if LOCALDEBUG: print("rdb:",rdb)
 
         if rdb == []:
-            rdb = cbsv.DEFAULT_CONFUSED() # TODO fix bad OOP
+            rdb = self.default_confused # OP
 
         return rdb
 
