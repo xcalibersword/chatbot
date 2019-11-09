@@ -1063,7 +1063,7 @@
                     "flag_sb_gjj": {
                         "1": "社保",
                         "10": "公积金",
-                        "11": "社保+公积金"
+                        "11": "社保"
                     }
                 }
             },
@@ -1086,7 +1086,7 @@
                 "if_value": {
                     "gjj_jishu": {
                         "0": "",
-                        "DEFAULT": "最低基数为{city_info[gjj_jishu]}元"
+                        "DEFAULT": "（按最低基数为{city_info[gjj_jishu]}元）"
                     }
                 }
             },
