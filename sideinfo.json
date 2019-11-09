@@ -1,11 +1,34 @@
 {
+    "conditional_reqs": {
+        "city": [
+            [
+                "TEMPLATE value",
+                [
+                    [
+                        "TEMPLATE additional_requirement",
+                        "yesno"
+                    ]
+                ]
+            ],
+            [
+                "苏州",
+                [
+                    [
+                        "苏州区",
+                        "苏州区_slot"
+                    ]
+                ]
+            ]
+        ]
+    },
+    "default_slot_vals": {
+        "首次":"yes",
+        "要社保":"yes",
+        "要公积金":"yes"
+    },
     "info_parser": {
         "zones": [
             "city"
-        ],
-        "defaults": [
-            ["<COMMENT>", "NOT IMPLEMENTED YET"],
-            ["首次","yes"]
         ],
         "permanent_slots": [
             ["city","city"],

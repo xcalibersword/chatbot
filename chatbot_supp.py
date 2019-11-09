@@ -89,11 +89,13 @@ class Understanding:
         print("UNDERSTANDING PRINTOUT: Intent: ", self.intent, " SIP: ", self.sip.toString())
 
 class ReqGatekeeper:
-    def __init__(self, conds):
+    def __init__(self, conds, default_slot_vals):
         self.requirements = []
         self.slots = []
         self.gate_closed = False
         self.conds = conds
+        self.default_slot_vals = default_slot_vals
+        self.def_slot_flag = "DEFAULT_SV"
 
     def open_gate(self):
         self.gate_closed = False
@@ -106,6 +108,20 @@ class ReqGatekeeper:
     def get_slots(self):        
         return self.slots.copy()
 
+    def _get_slots_name_list(self, sl):
+        return list(map(lambda x: x[0],sl))
+
+    def get_slot_names(self):
+        return self._get_slots_name_list(self.get_slots())
+
+    def get_default_slots(self):
+        slots = self.get_slots()
+        out = list(filter(lambda x: x[1] == self.def_slot_flag,slots))
+        return out
+
+    def get_def_slot_names(self):
+        return self._get_slots_name_list(self.get_default_slots())
+
     def is_gated(self):
         return self.gate_closed
 
@@ -117,10 +133,10 @@ class ReqGatekeeper:
                 for c in conditions:
                     val, slots_list = c
                     fetched = list(fetch.values())
-                    print("f,fval,val",fetch, fetched,val) 
+                    print("<CONDITIONAL REQS>f,fval,val",fetch, fetched,val) 
                     if fetched[0] == val:
                         for slot in slots_list:
-                            if not slot[0] in list(map(lambda x: x[0],self.slots)):
+                            if not slot[0] in self.get_slot_names():
                                 print("Updating slots...", slot)
                                 self.slots.append(slot)
                         break
@@ -162,7 +178,7 @@ class ReqGatekeeper:
     # If fail, returns False, (Next state)
     def try_gate(self, info):
         if not self.gate_closed:
-            return (True, [])
+            return (True, [], {})
 
         self._add_cond_reqs(info)
         unfilled_slots = self.get_slots()
@@ -174,12 +190,35 @@ class ReqGatekeeper:
             if detail in info:
                 unfilled_slots.remove(s)
         
+        # Fill slots with default values if needed
+        unfilled_slots, info_topup = self.assign_default_values(unfilled_slots)
+
         if DEBUG: print("unfilled_slots:",unfilled_slots)
         if len(unfilled_slots) == 0:
             self.open_gate()
 
         passed = (len(unfilled_slots) == 0)
-        return (passed, unfilled_slots)
+        return (passed, unfilled_slots, info_topup)
+
+    def assign_default_values(self, unfilled):
+        def is_default(s):
+            return s[1] == self.def_slot_flag
+
+        post_unfilled = unfilled.copy()
+        info_topup = {}
+        print("assdefval",self.get_def_slot_names(),post_unfilled,self.default_slot_vals)
+        for slot in unfilled.copy():
+            print("curr",slot,is_default(slot))
+            if is_default(slot):
+                slotname, NA = slot
+                if slotname in self.default_slot_vals:
+                    val = self.default_slot_vals[slotname]
+                    info_topup[slotname] = val
+                    post_unfilled.remove(slot)
+                else:
+                    print("<DEFAULT VALS> {} does not have a default value".format(slot))
+        print("<DEFAULT VALS> post top up", info_topup)
+        return (post_unfilled, info_topup)
 
 class Humanizer():
     def __init__(self,human_dict):

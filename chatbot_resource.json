@@ -167,8 +167,8 @@
                 "亲可以白天来小店找客服核实是否来的及哈"
             ]
         },
-        "explore_option": {
-            "key": "explore_option",
+        "ask_how_much": {
+            "key": "ask_how_much",
             "default_set": true,
             "default_target": "ctx_inform_how_much",
             "replies": []
@@ -871,13 +871,17 @@
             "terminal_state": true,
             "calcs":[
                 "flag_sb_gjj",
+                "flag_shouci",
                 "sum_svc_fee",
                 "gen_shebao_jishu",
                 "gen_shebao_amt",
                 "shebao_basic_calc"
             ],
             "req_info": [
-                ["首次","DEFAULT_VAL"],
+                ["city","city"],
+                ["首次","DEFAULT_SV"],
+                ["要社保","DEFAULT_SV"],
+                ["要公积金","DEFAULT_SV"],
                 [
                     "chosen_fee","fee_slot"
                 ]
@@ -927,7 +931,8 @@
                         "city": "您是哪个城市呢？",
                         "首次": "是首次吗？",
                         "要公积金": "交公积金吗？",
-                        "苏州区": "是市区还是园区呢？"
+                        "苏州区": "是市区还是园区呢？",
+                        "chosen_fee": "您问的是哪个部分？"
                     }
                 }
             },
@@ -1084,7 +1089,7 @@
                 "if_value": {
                     "gjj_jishu": {
                         "0": "",
-                        "DEFAULT": "（按最低基数为{city_info[gjj_jishu]}元）"
+                        "DEFAULT": "（按照最低基数为{city_info[gjj_jishu]}元）"
                     }
                 }
             },
@@ -1120,9 +1125,9 @@
                 "if_present": {},
                 "if_value": {
                     "flag_sb_gjj": {
-                        "1": "应缴{calc_ext[w_shebao_payment]}元（按最低基数{calc_ext[w_shebao_jishu]}）",
+                        "1": "应缴{calc_ext[w_shebao_payment]}元（按照最低基数{calc_ext[w_shebao_jishu]}）",
                         "10": "公积金{city_info[gongjijin_fee]}元 {rep_ext[str_gjj_jishu]}",
-                        "11": "应缴{calc_ext[w_shebao_payment]}元（按最低基数{calc_ext[w_shebao_jishu]}），公积金{city_info[gongjijin_fee]}元 {rep_ext[str_gjj_jishu]}"
+                        "11": "应缴{calc_ext[w_shebao_payment]}元（按照最低基数{calc_ext[w_shebao_jishu]}），公积金{city_info[gongjijin_fee]}元 {rep_ext[str_gjj_jishu]}"
                     }
                 }
             },
@@ -1153,9 +1158,9 @@
                 "if_present": {},
                 "if_value": {
                     "flag_sb_gjj": {
-                        "1": "最低缴费{city_info[shebao_payment]}元（按最低基数{city_info[sb_jishu]}）",
+                        "1": "最低缴费{city_info[shebao_payment]}元（按照最低基数{city_info[sb_jishu]}）",
                         "10": "公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）",
-                        "11": "最低缴费{city_info[shebao_payment]}元（按最低基数{city_info[sb_jishu]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
+                        "11": "最低缴费{city_info[shebao_payment]}元（按照最低基数{city_info[sb_jishu]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
                     }
                 }
             },
@@ -1188,7 +1193,7 @@
                     "flag_sb_gjj": {
                         "1": "最低基数为{city_info[sb_jishu2]}元, 应缴纳{city_info[shebao_payment2]}元",
                         "10": "最低基数为{city_info[gjj_jishu]}元, 应缴纳{city_info[gongjijin_fee]}元",
-                        "11": "最低缴费{city_info[shebao_payment2]}元（按最低基数{city_info[sb_jishu2]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
+                        "11": "最低缴费{city_info[shebao_payment2]}元（按照最低基数{city_info[sb_jishu2]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
                     }
                 }
             },
@@ -1471,13 +1476,13 @@
                 "if_present": {},
                 "if_value": {
                     "chosen_fee":{
-                        "服务费":["服务费：{city_info[svc_fee_total]}"],
-                        "社保缴纳":["社保缴纳: {city_info[shebao_payment]}"],
-                        "社保基数":["社保基数: {city_info[sb_jishu]}"],
-                        "公积金缴纳":["公积金缴纳: {city_info[gongjijin_fee]}"],
-                        "公积金基数":["公积金基数: {city_info[gjj_jishu]}"],
-                        "两个":["社保缴纳: {city_info[shebao_payment]}, 公积金缴纳: {city_info[gongjijin_fee]}"],
-                        "一共":["一共: {city}{rep_ext[product]}: {calc_str_working} 首次缴纳额外收取{city_info[shouci_fee]}元开户费"]
+                        "服务费":"服务费：{calc_ext[svc_fee_total]}",
+                        "社保缴纳":"社保缴纳: {city_info[shebao_payment]}",
+                        "社保基数":"社保基数: {city_info[sb_jishu]}",
+                        "公积金缴纳":"公积金缴纳: {city_info[gongjijin_fee]}",
+                        "公积金基数":"公积金基数: {city_info[gjj_jishu]}",
+                        "两个":"社保缴纳: {city_info[shebao_payment]}, 公积金缴纳: {city_info[gongjijin_fee]}",
+                        "一共":"一共: {city}{rep_ext[product]}: {calc_str_working} 首次缴纳额外收取{city_info[shouci_fee]}元开户费"
                     }
                 }
             }
@@ -2008,28 +2013,6 @@
             }
         }
     ],
-    "conditional_reqs": {
-        "city": [
-            [
-                "TEMPLATE value",
-                [
-                    [
-                        "TEMPLATE additional_requirement",
-                        "yesno"
-                    ]
-                ]
-            ],
-            [
-                "苏州",
-                [
-                    [
-                        "苏州区",
-                        "苏州区_slot"
-                    ]
-                ]
-            ]
-        ]
-    },
     "policy_data_location": "policydata.json",
     "sideinfo_location": "sideinfo.json"
 }
