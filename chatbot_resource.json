@@ -659,35 +659,6 @@
                 "确认要{s_slots[city_district]}的宝贝吗?"
             ]
         },
-        "general_payment": {
-            "key": "general_payment",
-            "gated": true,
-            "thread": "t_presale",
-            "terminal_state": false,
-            "calcs": [
-                "flag_sb_gjj",
-                "flag_shouci",
-                "sum_svc_fee",
-                "gen_shebao_jishu",
-                "shebao_basic_calc",
-                "bj_shebao_basic",
-                "bj_shebao_basic2"
-            ],
-            "req_info": [
-                [
-                    "city","city"
-                ],
-                [
-                    "首次","yesno"
-                ],
-                [
-                    "要公积金","wantnot"
-                ]
-            ],
-            "replies": [
-                "{city}{rep_ext[product]}一共要付{rep_ext[calc_str_working]} = {rep_ext[calc_str_total]}块，亲确认下哦"
-            ]
-        },
         "goodbye": {
             "key": "STATE 209 bye",
             "gated": false,
@@ -1313,7 +1284,6 @@
             {
                 "writeto": "calc_str_working",
                 "states": [
-                    "general_payment",
                     "ctx_inform_how_much",
                     "short_ask_amt_month_fee_total"
                 ],
@@ -1354,8 +1324,7 @@
                 "writeto": "calc_str_total",
                 "states": [
                     "propose_plan",
-                    "propose_plan_sz",
-                    "general_payment"
+                    "propose_plan_sz"
                 ],
                 "lookfor": [
                     [
@@ -1460,7 +1429,7 @@
                         "公积金缴纳":["公积金缴纳: {city_info[gongjijin_fee]}"],
                         "公积金基数":["公积金基数: {city_info[gjj_jishu]}"],
                         "两个":["社保缴纳: {city_info[shebao_payment]}, 公积金缴纳: {city_info[gongjijin_fee]}"],
-                        "一共":["一共: {calc_str_working}"]
+                        "一共":["一共: {city}{rep_ext[product]}: {calc_str_working} = {rep_ext[calc_str_total]}块"]
                     }
                 }
             }
