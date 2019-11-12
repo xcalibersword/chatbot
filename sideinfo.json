@@ -42,26 +42,10 @@
             ["yourenma","yourenma_slot"]
         ],
         "COMMENT":"ctx slots are always permanent",
-        "contextual_slots":{
-            "ctx_month_slot":{
-                "this_month":[
-                    "当月",
-                    "现在"
-                ],
-                "next_month":[
-                    "下(个*)月"
-                ]
-            },
-            "ctx_day_slot":{
-                "today":[
-                    "今天",
-                    "现在"
-                ],
-                "tomorrow":[
-                    "明天"
-                ]
-            }
-        },
+        "contextual_slots":[
+            ["target_month","ctx_month_slot"],
+            ["date","ctx_day_slot"]
+        ],
         "slots": {
             "month_slot":{
                 "1":["(?<!(十|1))(一|1)月"],
@@ -210,6 +194,24 @@
                     "不是",
                     "没有",
                     "不$"
+                ]
+            },
+            "ctx_month_slot":{
+                "ctx_this_month":[
+                    "当月",
+                    "现在"
+                ],
+                "ctx_next_month":[
+                    "下(个*)月"
+                ]
+            },
+            "ctx_day_slot":{
+                "ctx_today":[
+                    "今天",
+                    "现在"
+                ],
+                "ctx_tomorrow":[
+                    "明天"
                 ]
             }
         }

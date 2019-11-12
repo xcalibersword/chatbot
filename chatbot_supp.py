@@ -208,7 +208,7 @@ class ReqGatekeeper:
         info_topup = {}
         print("assdefval",self.get_def_slot_names(),post_unfilled,self.default_slot_vals)
         for slot in unfilled.copy():
-            print("curr",slot,is_default(slot))
+            print("<DEFAULT VALS curr slot",slot,"is def:", is_default(slot))
             if is_default(slot):
                 slotname, NA = slot
                 if slotname in self.default_slot_vals:
@@ -356,6 +356,7 @@ class InfoParser():
     def _contextual_parse(self, text, d):
         if not self.ctxsk in d:
             d[self.ctxsk] = {}
+        print("CTX",self.ctx_slots)
         self._parse_function(text,d[self.ctxsk],self.ctx_slots)
         return
 
@@ -373,8 +374,8 @@ class InfoParser():
     # Returns a pure value
     def get_category_value(self, text, category):
         if not category in self.regexDB:
-            print("No such category:{}".format(category))
-            return {category: ""}
+            print("<GET CAT VAL> No such category:{}".format(category))
+            return ""
         catDB = self.regexDB[category]
         value = self._no_match_val(catDB)
         found = False
@@ -406,7 +407,7 @@ class InfoParser():
     def parse(self, text, slots):
         out = {}
         # Intent Slot parse
-        self._parse_function(text,out,slots)
+        self._parse_function(text, out, slots)
         # Default parse (overwrite slots)
         self._default_parse(text,out)
         # Contextual parse
