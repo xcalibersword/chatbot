@@ -144,4 +144,4 @@ if __name__ == "__main__":
     print("Starting program....") 
     while True:
         main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath)
-        time.sleep(5)
+        time.sleep(10)
