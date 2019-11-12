@@ -442,7 +442,6 @@
             "gated": false,
             "thread": "BASE",
             "humanify": true,
-            "terminal_state": false,
             "req_info": "",
             "replies": []
         },
@@ -451,7 +450,6 @@
             "gated": false,
             "thread": "BASE",
             "humanify":true,
-            "terminal_state": false,
             "req_info": "",
             "replies": [
                 "亲 还有别的要问吗？"
@@ -462,7 +460,6 @@
             "gated": false,
             "thread": "EXIT",
             "humanify": false,
-            "terminal_state": false,
             "req_info": "",
             "replies": [
                 "不好意思😞，我是新手，现在给你转到负责同事"
@@ -473,7 +470,6 @@
             "gated": false,
             "thread": "EXIT",
             "humanify": false,
-            "terminal_state": false,
             "req_info": "",
             "replies": [
                 "亲 我是值班客服 看不到系统数据 😞 您白天上班时间联系我们吧 谢谢亲"
@@ -484,7 +480,6 @@
             "gated": false,
             "thread": "t_presale",
             "humanify": true,
-            "terminal_state": false,
             "req_info": [["city","city"]],
             "replies": [
                 "那么亲是哪个城市呢？"
@@ -495,7 +490,6 @@
             "gated": true,
             "thread": "T_BASE",
             "humanify": true,
-            "terminal_state": false,
             "req_info": [["city","city"]],
             "replies": ["不好意思 亲 我们不贷款{city}"]
         },
@@ -547,7 +541,6 @@
             "key": "TMP_recv_info",
             "gated": true,
             "thread": "NONE",
-            "terminal_state": false,
             "humanify": false,
             "req_info": "",
             "replies": [
@@ -558,7 +551,6 @@
             "key": 280,
             "gated": false,
             "thread": "NONE",
-            "terminal_state": false,
             "req_info": [],
             "replies": []
         },
@@ -566,7 +558,7 @@
             "key": "propose_plan",
             "gated": true,
             "thread": "t_presale",
-            "terminal_state": false,
+            "propose_plan_state": true,
             "req_info": [
                 [
                     "city","city"
@@ -597,7 +589,7 @@
             "key": "propose_plan_bj",
             "gated": true,
             "thread": "t_presale",
-            "terminal_state": false,
+            "propose_plan_state": true,
             "req_info": [
                 ["city", "city"],
                 [
@@ -630,7 +622,7 @@
             "key": "propose_plan_sz",
             "gated": true,
             "thread": "t_presale",
-            "terminal_state": false,
+            "propose_plan_state": true,
             "req_info": [
                 [
                     "city","city"
@@ -664,7 +656,6 @@
             "key": "282 confirm plan",
             "gated": false,
             "thread": "t_presale",
-            "terminal_state": false,
             "req_info": [
                 [
                     "city",
@@ -679,7 +670,6 @@
             "key": "STATE 209 bye",
             "gated": false,
             "thread": "NONE",
-            "terminal_state": false,
             "req_info": "",
             "replies": [
                 "好的，谢谢光临 😘"
@@ -689,7 +679,6 @@
             "key": "299 PREV_STATE",
             "gated": false,
             "thread": "NONE",
-            "terminal_state": false,
             "req_info": "",
             "replies": []
         },
@@ -717,7 +706,6 @@
             "key": "260 inform pai",
             "gated": false,
             "thread": "t_pai",
-            "terminal_state": false,
             "req_info": "",
             "replies": [
                 "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。"

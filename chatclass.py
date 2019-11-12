@@ -73,7 +73,11 @@ class StateThreader():
 
     def update_thread_state(self, new_state_obj):
         def _is_terminal_state(state):
-            return state["terminal_state"]
+            tskey = "terminal_state"
+            if tskey in state:
+                return state["terminal_state"]
+            else:
+                return False
 
         def need_switch_thread(threadID):
             return not (threadID == "NONE" or self._thread_same_id(threadID))

@@ -82,6 +82,8 @@ def init_policykeeper(jdata, pdata):
         state_obj = STATES[state_key]
         
         for state_type in state_type_list:
+            if not state_type in state_obj:
+                continue
             flag = state_obj[state_type]
             if flag:
                 pair_lst = state_type_policies[state_type]

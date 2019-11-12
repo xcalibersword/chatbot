@@ -12,11 +12,15 @@
         ]
     },
     "class_policy_rules":{
-        "master_list":["terminal_state"],
+        "master_list":["terminal_state","propose_plan_state"],
         "terminal_state":[
             ["affirm", "initplus"],
             ["thankyou", "initplus"],
             ["goodbye", "goodbye"],
+            ["purchase", "city_crossroad"]
+        ],
+        "propose_plan_state":[
+            ["affirm", "confirm_plan"],
             ["purchase", "city_crossroad"]
         ]
     },
@@ -37,15 +41,6 @@
         "init_sale": [
             ["affirm", "city_crossroad"],
             ["purchase", "city_crossroad"]
-        ],
-        "propose_plan": [
-            ["affirm", "confirm_plan"]
-        ],
-        "propose_plan_sz": [
-            ["affirm", "confirm_plan"]
-        ],
-        "propose_plan_bj": [
-            ["affirm", "confirm_plan"]
         ],
         "confirm_plan": [
             ["affirm", "inform_pai"],
