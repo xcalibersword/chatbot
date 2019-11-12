@@ -313,13 +313,14 @@ class InfoVault():
             return 1
 
 # Takes in a message and returns some info (if any)
-# Thing to note about re.search is that only the first match is pulled.
+# Note: thing about re.search is that only the first match is pulled.
 class InfoParser():
     def __init__(self, json_dict):
         self.digits = cbsv.DIGITS()
-
+        self.ctxsk = "cxt_slots"
         self.regexDB = {}
         self.perm_slots = json_dict["permanent_slots"]
+        self.ctx_slots = json_dict["contextual_slots"]
         slots = json_dict["slots"]
         self.zonelist = json_dict["zones"]
         self._build_slots_DB(slots)
@@ -333,6 +334,8 @@ class InfoParser():
                 regexlist = self.list_to_regexList(termlist)
                 self.regexDB[catkey][value] = regexlist
 
+
+    # Updates dict directly
     def _match_slot(self, text, slot, d):
         slotname, catgry = slot
         value = self.get_category_value(text, catgry)
@@ -340,13 +343,22 @@ class InfoParser():
             entry = {slotname: value}
             d.update(entry)
 
-    # Returns a dict of info
-    def _default_parse(self, text):
-        # Default parser
-        out = {}
-        for ps in self.perm_slots:
-            self._match_slot(text, ps, out)
-        return out
+    def _parse_function(self, text, d, slots):
+        for s in slots:
+            self._match_slot(text, s, d)
+        
+    # Searches in permanent aka default slots
+    def _default_parse(self, text, d):
+        self._parse_function(text,d,self.perm_slots)
+        return
+
+    # Searches in contextual slots
+    def _contextual_parse(self, text, d):
+        if not self.ctxsk in d:
+            d[self.ctxsk] = {}
+        self._parse_function(text,d[self.ctxsk],self.ctx_slots)
+        return
+
 
     def _no_match_val(self, catDB):
         keyword = "NO_MATCH"
@@ -380,24 +392,26 @@ class InfoParser():
         
         return value
 
-    # Returns a dict of values
-    def parse(self, text, slots):
-        out = {}
-
-        # slotted parse        
-        for slot in slots:
-            self._match_slot(text, slot, out)
-
-        # Default parse (overwrite slots)
-        out.update(self._default_parse(text))
-
-        # Adds on a zone dict to the returned dict
-        # E.g. "zones":{"city":"shanghai"}
+    # Adds on a zone dict to the returned dict
+    # E.g. "zones":{"city":"shanghai"}
+    def _update_zones(self, d):
         for zone in self.zonelist:
             zones_d = {}
-            if zone in out:
-                zones_d[zone] = out[zone]
-        if not zones_d == {}: out["zones"] = zones_d
+            if zone in d:
+                zones_d[zone] = d[zone]
+        if not zones_d == {}: d["zones"] = zones_d
+
+    ### MAIN FUNCTION ### 
+    # Returns a dict of primary information including zones.
+    def parse(self, text, slots):
+        out = {}
+        # Intent Slot parse
+        self._parse_function(text,out,slots)
+        # Default parse (overwrite slots)
+        self._default_parse(text,out)
+        # Contextual parse
+        self._contextual_parse(text, out)
+        self._update_zones(out)
 
         return out
 

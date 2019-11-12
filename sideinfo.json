@@ -41,6 +41,27 @@
             ["say_thanks","thanks_slot"],
             ["yourenma","yourenma_slot"]
         ],
+        "COMMENT":"ctx slots are always permanent",
+        "contextual_slots":{
+            "ctx_month_slot":{
+                "this_month":[
+                    "当月",
+                    "现在"
+                ],
+                "next_month":[
+                    "下(个*)月"
+                ]
+            },
+            "ctx_day_slot":{
+                "today":[
+                    "今天",
+                    "现在"
+                ],
+                "tomorrow":[
+                    "明天"
+                ]
+            }
+        },
         "slots": {
             "month_slot":{
                 "1":["(?<!(十|1))(一|1)月"],
@@ -105,11 +126,11 @@
             },
             "yourenma_slot":{
                 "youma":[
-                    "有人(吗|么|嘛|不)$"
+                    "有人(吗|么|嘛|不|没)$"
                 ],
                 "zaima":[
                     
-                    "在(吗|么|嘛|不)$"
+                    "在(吗|么|嘛|不|没)$"
                 ],
                 "NO_MATCH":["not_asked"]
             },
