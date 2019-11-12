@@ -225,22 +225,22 @@ class Humanizer():
         self.hd = human_dict.items()
     
     def humanify(self, msg, info):
-        def add_humanlike_text(iv, in_msg):
-            if iv in d:
-                specific_dict = d[iv]
-                pos = specific_dict["location"]
-                txt = specific_dict["text"]
-                if pos == "START":
-                    out_msg = txt + in_msg
-                elif pos == "END":
-                    out_msg = in_msg + txt
-            return out_msg
+        def add_humanlike_text(iv, d, in_msg):
+            specific_dict = d[iv]
+            pos = specific_dict["location"]
+            txt = specific_dict["text"]
+            if pos == "START":
+                return txt + in_msg
+            elif pos == "END":
+                return in_msg + txt
+            return in_msg
 
         human_msg = msg
-        for key, d in self.hd:
+        for key, dic in self.hd:
             if key in info:
                 inf_val = info[key]
-                human_msg = add_humanlike_text(inf_val, human_msg)
+                if inf_val in dic:
+                    human_msg = add_humanlike_text(inf_val, dic, human_msg)
             
         return human_msg
         

@@ -101,7 +101,7 @@
                     "能不能",
                     "可不可以"
                 ],
-                "NO_MATCH": "not_asked"
+                "NO_MATCH": ["not_asked"]
             },
             "yourenma_slot":{
                 "youma":[
@@ -111,14 +111,14 @@
                     
                     "在(吗|么|嘛|不)$"
                 ],
-                "NO_MATCH":"not_asked"
+                "NO_MATCH":["not_asked"]
             },
             "thanks_slot": {
                 "thanked": [
                     "谢了",
                     "(感|谢|真)谢"
                 ],
-                "NO_MATCH": "not_thanked"
+                "NO_MATCH": ["not_thanked"]
             },
             "gen_shouci_slot": {
                 "yes": [
@@ -161,10 +161,10 @@
                 ]
             },
             "default_yes": {
-                "yes": ["."]
+                "NO_MATCH": ["yes"]
             },
             "default_no": {
-                "no": ["."]
+                "NO_MATCH": ["no"]
             },
             "wantnot": {
                 "yes": [
