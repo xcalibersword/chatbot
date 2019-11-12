@@ -17,8 +17,7 @@
             "default_set": false,
             "default_target": "SAME_STATE",
             "replies": [
-                "您好 有什么能帮助您的?",
-                "Hello 有什么能帮助您的?"
+                "您好 有什么能帮助您的?"
             ]
         },
         "confused": {

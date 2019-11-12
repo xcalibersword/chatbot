@@ -225,16 +225,23 @@ class Humanizer():
         self.hd = human_dict.items()
     
     def humanify(self, msg, info):
+        def add_humanlike_text(iv, in_msg):
+            if iv in d:
+                specific_dict = d[iv]
+                pos = specific_dict["location"]
+                txt = specific_dict["text"]
+                if pos == "START":
+                    out_msg = txt + in_msg
+                elif pos == "END":
+                    out_msg = in_msg + txt
+            return out_msg
+
         human_msg = msg
         for key, d in self.hd:
             if key in info:
-                if info[key] == d["value"]:
-                    pos = d["location"]
-                    txt = d["text"]
-                    if pos == "START":
-                        human_msg = txt + human_msg
-                    elif pos == "END":
-                        human_msg = human_msg + txt
+                inf_val = info[key]
+                human_msg = add_humanlike_text(inf_val, human_msg)
+            
         return human_msg
         
 
@@ -326,7 +333,7 @@ class InfoParser():
                 regexlist = self.list_to_regexList(termlist)
                 self.regexDB[catkey][value] = regexlist
 
-    def _real_parse(self, text, slot, d):
+    def _match_slot(self, text, slot, d):
         slotname, catgry = slot
         value = self.get_category_value(text, catgry)
         if len(value) > 0:
@@ -338,8 +345,16 @@ class InfoParser():
         # Default parser
         out = {}
         for ps in self.perm_slots:
-            self._real_parse(text, ps, out)
+            self._match_slot(text, ps, out)
         return out
+
+    def _no_match_val(self, catDB):
+        keyword = "NO_MATCH"
+        defval = ""
+        if keyword in catDB:
+            defval = catDB[keyword]
+        
+        return defval
 
     # Get the value in the text related to the specified category
     # Enumerated by dictionary key
@@ -349,7 +364,7 @@ class InfoParser():
             print("No such category:{}".format(category))
             return {category: ""}
         catDB = self.regexDB[category]
-        value = ""
+        value = self._no_match_val(catDB)
         found = False
         vals = list(catDB.keys())
         for v in vals:
@@ -371,7 +386,7 @@ class InfoParser():
 
         # slotted parse        
         for slot in slots:
-            self._real_parse(text, slot, out)
+            self._match_slot(text, slot, out)
 
         # Default parse (overwrite slots)
         out.update(self._default_parse(text))

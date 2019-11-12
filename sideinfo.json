@@ -36,9 +36,10 @@
             ["要社保","shebao_slot"],
             ["要公积金","gongjijin_slot"],
             ["首次","gen_shouci_slot"],
+            ["chosen_fee","fee_slot"],
             ["ask_keyi","keyi_slot"],
             ["say_thanks","thanks_slot"],
-            ["chosen_fee","fee_slot"]
+            ["yourenma","yourenma_slot"]
         ],
         "slots": {
             "month_slot":{
@@ -95,23 +96,29 @@
                 ]
             },
             "keyi_slot": {
-                "可以": [
+                "asked": [
                     "(能|行|可以)(.*)(么|吗|嚒|吧|不|嘛)",
                     "能不能",
                     "可不可以"
                 ],
-                "NULL": [
-                    "(?<!(可以)).$"
-                ]
+                "NO_MATCH": "not_asked"
+            },
+            "yourenma_slot":{
+                "youma":[
+                    "有人(吗|么|嘛|不)$"
+                ],
+                "zaima":[
+                    
+                    "在(吗|么|嘛|不)$"
+                ],
+                "NO_MATCH":"not_asked"
             },
             "thanks_slot": {
-                "谢谢": [
+                "thanked": [
                     "谢了",
                     "(感|谢|真)谢"
                 ],
-                "NULL": [
-                    "(?<!(谢)).$"
-                ]
+                "NO_MATCH": "not_thanked"
             },
             "gen_shouci_slot": {
                 "yes": [
@@ -188,14 +195,28 @@
     },
     "humanizer":{
         "ask_keyi": {
-            "value":"可以",
-            "location":"START",
-            "text":"可以啊亲。"
+            "asked":{
+                "location":"START",
+                "text":"可以啊亲。"
+            }
         },
         "say_thanks":{
-            "value":"谢谢",
-            "location":"START",
-            "text":"不客气的，"
+            "thanked":{
+                "location":"START",
+                "text":"不客气的，"
+            }
+        },
+        "yourenma":{
+            "zaima":
+            {
+                "location":"START",
+                "text":"在啊，"
+            },
+            "youma":
+            {
+                "location":"START",
+                "text":"有啊，"
+            }
         }
     }
 }
