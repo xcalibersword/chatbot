@@ -31,7 +31,7 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
     #type text
     SendMessage(QN_input_hwnd, 0x000C, 0, text)
     #send text
-    SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
+    #SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
     print("Message Sent: {}".format(text))
 
 def check_new_message(userID,QN_output_hwnd):
