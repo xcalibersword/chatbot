@@ -9,9 +9,10 @@ list_list = df.values.tolist()
 #read to dict
 a = {}
 label_list = list_list[1]
-length = len(label_list)
+num_intents = len(label_list)
+
 skip = 2 # Skip 2 rows after the first
-for i in range(length):
+for i in range(num_intents):
     if str(label_list[i]) != "nan":
         for l in list_list[skip:]:
             if str(l[i]) != "nan":
@@ -20,4 +21,4 @@ new_df = pd.DataFrame(data=csv_list_list)
 #insert path
 new_df.to_csv(r"generated_data.csv",index=False,encoding="gb18030")
 
-print("Done converting")
+print("Done converting. Processed", str(num_intents),"intents")
