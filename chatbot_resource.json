@@ -871,9 +871,7 @@
                 ["首次","DEFAULT_SV"],
                 ["要社保","DEFAULT_SV"],
                 ["要公积金","DEFAULT_SV"],
-                [
-                    "chosen_fee","fee_slot"
-                ]
+                ["chosen_fee","fee_slot"]
             ],
             "replies": [
                 "{rep_ext[how_much_reply]}"
