@@ -177,7 +177,7 @@ if MAIN:
         passedstr = "PASSED TEST" if passed else "@@@ FAILED TEST @@@"
 
         print("In:",testin)
-        print(passedstr)
+        print(passedstr, "Expected:", ans)
         print("Predicted Intent:",out)
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 

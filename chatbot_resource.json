@@ -442,6 +442,7 @@
             "key": "201 state_init",
             "gated": false,
             "thread": "BASE",
+            "humanify": true,
             "terminal_state": false,
             "req_info": "",
             "replies": []
@@ -528,7 +529,7 @@
                 ],
                 [
                     "首次",
-                    "yesno"
+                    "DEFAULT_SV"
                 ],
                 [
                     "要公积金",
@@ -536,7 +537,7 @@
                 ],
                 [
                     "要社保",
-                    "default_yes"
+                    "DEFAULT_SV"
                 ]
             ],
             "replies": [
@@ -572,13 +573,13 @@
                     "city","city"
                 ],
                 [
-                    "首次","default_yes"
+                    "首次","DEFAULT_SV"
                 ],
                 [
                     "要公积金","wantnot"
                 ],
                 [
-                    "要社保", "default_yes"
+                    "要社保", "DEFAULT_SV"
                 ]
             ],
             "calcs": [
@@ -602,7 +603,7 @@
                 ["city", "city"],
                 [
                     "首次",
-                    "default_yes"
+                    "DEFAULT_SV"
                 ],
                 [
                     "要公积金",
@@ -636,13 +637,13 @@
                     "city","city"
                 ],
                 [
-                    "首次","default_yes"
+                    "首次","DEFAULT_SV"
                 ],
                 [
-                    "要公积金","wantnot"
+                    "要公积金","DEFAULT_SV"
                 ],
                 [
-                    "要社保","default_yes"
+                    "要社保","DEFAULT_SV"
                 ],
                 [
                     "苏州区","苏州区_slot"
@@ -811,7 +812,7 @@
             "key": "inform_weixin",
             "gated": true,
             "thread": "t_weixin",
-            "humanify": true,
+            "humanify": false,
             "terminal_state": true,
             "req_info": [
                 [
@@ -825,6 +826,7 @@
         "inform_how_check_shebao": {
             "key": "inform_how_check_shebao",
             "gated": true,
+            "humanify": false,
             "thread": "t_howcheck",
             "terminal_state": true,
             "req_info": [
@@ -1100,7 +1102,6 @@
                     "propose_plan_sz"
                 ],
                 "lookfor": [
-                    "city",
                     [
                         "city_info",
                         [
