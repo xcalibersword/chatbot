@@ -7,7 +7,7 @@ DEBUG = 1
 # Have a message class? Or some sort of flag for messages. Indicate state-changing messages.
 PREV_STATE_F = {"key":"299 PREV_STATE", "gated": False}
 # PENDING_STATE_F = {"key":"PENDING_STATE", "gated": False}
-SAME_STATE_F = {"key":"same_state","gated":False}
+SAME_STATE_F_OBJ = {"key":"same_state","gated":False}
 
 # SIP = State Info Packet
 # A packet that has info about state and has constructors for set states like go_back
@@ -48,7 +48,7 @@ class SIP:
 
     @classmethod
     def same_state(cls):
-        obj = cls(SAME_STATE_F, cs=False)
+        obj = cls(SAME_STATE_F_OBJ, cs=False)
         return obj
     
     @classmethod
@@ -86,7 +86,7 @@ class Understanding:
         return self.sip.get_slots()
 
     def printout(self):
-        print("UNDERSTANDING PRINTOUT: Intent: ", self.intent, " SIP: ", self.sip.toString())
+        print("UNDERSTANDING OBJ PRINTOUT... Intent: ", self.intent, " SIP: ", self.sip.toString())
 
 class ReqGatekeeper:
     def __init__(self, conds, default_slot_vals):
@@ -137,7 +137,7 @@ class ReqGatekeeper:
                     if fetched[0] == val:
                         for slot in slots_list:
                             if not slot[0] in self.get_slot_names():
-                                print("Updating slots...", slot)
+                                print("Update COND slots: ", slot)
                                 self.slots.append(slot)
                         break
 
@@ -148,7 +148,7 @@ class ReqGatekeeper:
         reqlist = []
         for slot in slots.copy():
             reqlist.append(getname(slot))
-        if DEBUG: print("get_requirements returning", reqlist)
+        if DEBUG: print("<slots_to_reqs> return:", reqlist)
         return reqlist  
 
     def get_requirements(self):
@@ -164,15 +164,8 @@ class ReqGatekeeper:
        
         self.close_gate()
         self.slots = slots
-        print("slots from scanning obj:",slots)
-        self.requirements = ReqGatekeeper.slots_to_reqs(self.slots)    
-
-    # Unused
-    # def scan_SIP(self, sip):
-    #     if sip.is_gated():
-    #         self.close_gate()
-    #         self.slots = sip.get_slots()
-    #         self.requirements = ReqGatekeeper.slots_to_reqs(self.slots)    
+        if DEBUG: print("<SCAN STATE OBJ> slots:",slots)
+        self.requirements = ReqGatekeeper.slots_to_reqs(self.slots)      
 
     # If pass, returns True, (Pending state)
     # If fail, returns False, (Next state)
@@ -193,7 +186,7 @@ class ReqGatekeeper:
         # Fill slots with default values if needed
         unfilled_slots, info_topup = self.assign_default_values(unfilled_slots)
 
-        if DEBUG: print("unfilled_slots:",unfilled_slots)
+        if DEBUG: print("<TRY GATE> Unfilled_slots:",unfilled_slots)
         if len(unfilled_slots) == 0:
             self.open_gate()
 
@@ -206,9 +199,8 @@ class ReqGatekeeper:
 
         post_unfilled = unfilled.copy()
         info_topup = {}
-        print("assdefval",self.get_def_slot_names(),post_unfilled,self.default_slot_vals)
         for slot in unfilled.copy():
-            print("<DEFAULT VALS curr slot",slot,"is def:", is_default(slot))
+            if DEBUG: print("<DEFAULT VALS curr slot",slot,"is def:", is_default(slot))
             if is_default(slot):
                 slotname, NA = slot
                 if slotname in self.default_slot_vals:
@@ -217,7 +209,7 @@ class ReqGatekeeper:
                     post_unfilled.remove(slot)
                 else:
                     print("<DEFAULT VALS> {} does not have a default value".format(slot))
-        print("<DEFAULT VALS> post top up", info_topup)
+        if DEBUG: print("<DEFAULT VALS> post top up", info_topup)
         return (post_unfilled, info_topup)
 
 class Humanizer():
@@ -374,7 +366,7 @@ class InfoParser():
     # Returns a pure value
     def get_category_value(self, text, category):
         if not category in self.regexDB:
-            print("<GET CAT VAL> No such category:{}".format(category))
+            if DEBUG: print("<GET CAT VAL> No such category:{}".format(category))
             return ""
         catDB = self.regexDB[category]
         value = self._no_match_val(catDB)
@@ -385,11 +377,11 @@ class InfoParser():
             m = re.search(reDB, text)
             if m:
                 if found:
-                    print("Double value. Prev:", value, ", Current:",v)
+                    print("<GET CAT VAL> Double value. Prev:", value, ", Current:",v)
                 # token = m.group(0)
                 value = v
                 found = True
-                print("Found a ", category, ":", v)
+                if DEBUG: print("<PARSER> Found a ", category, ":", v)
         
         return value
 
@@ -473,8 +465,6 @@ class InfoParser():
             output = output.replace(haoma, get_decimal(haoma))
 
         return output
-
-# 八十一
 
 if __name__ == "__main__":
     print("Number Converter On!")
