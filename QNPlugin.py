@@ -2,6 +2,7 @@ import threading,re
 from win32gui import *
 from chatbot import Chatbot
 from win32api import *
+import win32com.client
 import win32clipboard as w
 import time
 from jpype import *
@@ -34,24 +35,26 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
     #type text
     SendMessage(QN_input_hwnd, 0x000C, 0, text)
     #send text
-    #SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
+    SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
     print("Message Sent: {}".format(text))
 
 def check_new_message(userID,QN_output_hwnd):
     print('Checking for new message...')
+
+    shell = win32com.client.Dispatch("WScript.Shell")
+    shell.SendKeys('%')
     SetForegroundWindow(QN_output_hwnd)
     
     #ctrl a
     keybd_event(0x11, 0, 0, 0)
     keybd_event(65, 0, 0, 0)
-    time.sleep(0.5)
+    time.sleep(0.2)
     keybd_event(0x11, 0, 2, 0)
     keybd_event(65, 0, 2, 0)
     #ctrl c
-    time.sleep(0.5)
     keybd_event(0x11, 0, 0, 0)
     keybd_event(67, 0, 0, 0)
-    time.sleep(0.5)
+    time.sleep(0.2)
     keybd_event(0x11, 0, 2, 0)
     keybd_event(67, 0, 2, 0)
 
@@ -129,7 +132,7 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
 if __name__ == "__main__":
 #    userID = "tb584238398"
 #    userID = "唯洛服务旗舰店:茜茜"
-    userID = "女人最爱:小梅"
+    userID = "女人罪爱:小梅"
 
     try:    
         text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(userID)
