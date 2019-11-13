@@ -73,7 +73,13 @@ class Predictor:
         print("Found {} unique tokens".format(count+1))
         if MAIN: print(d)
         return d
+
+    def _remove_symbols(self, s):
+        for symbol in self.ignore_chars:
+            s = s.replace(symbol,"")
+        return s
     
+    # MAIN METHOD
     def predict(self, raw):
         arr = self.tokenize(raw)
         print("input_arr",arr)
@@ -83,6 +89,7 @@ class Predictor:
 
     # Tokenizes and converts to int
     def tokenize(self, string):
+        string = self._remove_symbols(string)
         jbstring = jb.cut(string,cut_all=True)
         word2int = self.word2int
         out = []
