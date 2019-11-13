@@ -196,6 +196,8 @@ if MAIN:
         ("怎么去查社保有没有交上了","query_how_check_shebao_status"),
         ("怎么查杭州社保是否交了","query_how_check_shebao_status"),
         ("你们是交哪几个区的","query_region_coverage"),
+        ("可以同时代缴两地吗", "query_multiple_locations"),
+        ("能交两个地方的社保吗", "query_multiple_locations"),
         ("下月还得这里拍吗","query_xufei"),
         ("我真的很爱您哦","complicated"),
         ("我这个月失业了还能继续代缴吗","complicated"),
