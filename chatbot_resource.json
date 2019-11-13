@@ -914,7 +914,7 @@
                     "inform_weixin"
                 ],
                 "lookfor": [
-                    ["city_district"]
+                    "city_district"
                 ],
                 "if_present": {},
                 "if_value": {
@@ -932,7 +932,7 @@
                     "inform_how_check_shebao"
                 ],
                 "lookfor": [
-                    ["city_district"]
+                    "city_district"
                 ],
                 "if_present": {},
                 "if_value": {
@@ -1051,12 +1051,7 @@
                     "propose_plan"
                 ],
                 "lookfor": [
-                    [
-                        "city_info",
-                        [
-                            "gongjijin_fee"
-                        ]
-                    ],
+                    ["city_info",["gongjijin_fee"]],
                     [
                         "calc_ext",
                         [
@@ -1153,8 +1148,8 @@
                     "inform_topup"
                 ],
                 "lookfor": [
-                    ["city_info",["bujiao_period"]],
-                    ["city_district"]
+                    "city_district",
+                    ["city_info",["bujiao_period"]]
                 ],
                 "if_value": {
                     "city_district": {
@@ -1174,7 +1169,7 @@
                     "inform_gjj_topup"
                 ],
                 "lookfor": [
-                    ["city_district"]
+                    "city_district"
                 ],
                 "if_value": {
                     "city_district": {
@@ -1191,7 +1186,7 @@
                 ],
                 "lookfor": [
                     "city",
-                    ["city_district"]
+                    "city_district"
                 ],
                 "if_value": {
                     "city_district": {
@@ -1207,7 +1202,7 @@
                 ],
                 "lookfor": [
                     "city",
-                    ["city_district"]
+                    "city_district"
                 ],
                 "if_value": {
                     "city_district": {
@@ -1223,7 +1218,7 @@
                     "inform_shebao_card_status"
                 ],
                 "lookfor": [
-                    ["city_district"]
+                    "city_district"
                 ],
                 "if_present": {},
                 "if_value": {
@@ -1240,7 +1235,7 @@
                 ],
                 "lookfor": [
                     "city",
-                    ["city_district"],
+                    "city_district",
                     [
                         "city_info",
                         [
@@ -1262,7 +1257,7 @@
                     "inform_xufei"
                 ],
                 "lookfor": [
-                    ["city_district"]
+                    "city_district"
                 ],
                 "if_value": {
                     "city_district": {
