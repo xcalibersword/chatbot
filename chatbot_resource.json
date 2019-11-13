@@ -919,7 +919,7 @@
                         "首次": "是首次吗？",
                         "要公积金": "交公积金吗？",
                         "苏州区": "是市区还是园区呢？",
-                        "chosen_fee": "您问的是哪个部分？"
+                        "chosen_fee": "哪个部分啊 亲？"
                     }
                 }
             },
@@ -975,6 +975,7 @@
                         "苏州市区": "苏州市区: 正常参保月的当月底到账，次月可查；苏州市社会保险基金管理中心。左侧下拉可以看到有个网上办事大厅，输入社保编号，身份证号码和验证码就可以看到个人的社保记录；也可以在网上打印参保记录证明",
                         "苏州园区": "亲 不好意思，目前没有信息 😢",
                         "北京城市": "北京社保查询：① 进入http://www.bjrbj.gov.cn/csibiz/indinfo/login.jsp →“城镇职工个人用户登录”→个人基本信息查询→5险状态显示正常缴费→参保成功；② 缴费明细隔月可查，如4月份的社保明细，6月后可查到账 → 个人缴费信息查询",
+                        "广州城市": "广州社保查询：正常参保月的当月底或次月初可查，可以通过广州市人力资源社保保障局网上服务大厅查询，账号为身份证号，初始密码为社保号；或者可以通过微信-钱包-城市服务 - 广东社保查询。",
                         "DEFAULT": "亲 不好意思，目前没有信息 😢"
                     }
                 }
@@ -1010,6 +1011,7 @@
                         "上海": "社保查询: \n次月15日官网上能查询到上月的社保应缴款; 社保中心可打印上月的视同缴费\n次次月15日可以在网上查询到实缴款;\n社保中心可打印正常缴费（首次查询之前需要持身份证先到附近的社保中心开通网上查询功能）http://www.12333sh.gov.cn/sbsjb/wzb/226.jsp\n公积金缴费查询：\n次月中旬左右完成汇缴 ， 次月18-23日 网上可查 http://www.shgjj.com/（公积金查询可以通过公积金账号及身份证在网上开通。",
                         "苏州": "参保月的次月7日前到账，可以打电话0512-62888222 人工服务查询；参保公司名字：苏州英格玛服务外包股份有限公司园区分公司",
                         "杭州": "社保系统审核成功后，一般1-3天可以在支付宝查询参保状态以及参保公司。社保到账记录在正常参保月的次月底左右。公积金在正常参保月的当月底左右到账。① 0571-12333选择人工服务或自动语音信息查询；②支付宝城市服务查询；③柜面查询；",
+                        "广州": "正常参保月的当月底或次月初可查，可以通过广州市人力资源社保保障局网上服务大厅查询，账号为身份证号，初始密码为社保号；或者可以通过微信-钱包-城市服务 - 广东社保查询。",
                         "DEFAULT": "亲 不好意思，目前没有信息 😢"
                     }
                 }
@@ -1189,15 +1191,17 @@
                     "inform_topup"
                 ],
                 "lookfor": [
+                    ["city_info",["bujiao_period"]],
                     ["s_slots",["city_district"]]
                 ],
                 "if_value": {
                     "city_district": {
-                        "上海城市": "可以补缴最近6个月，补缴不算连续哦，望知悉",
+                        "上海城市": "可以补缴最近{city_info[bujiao_period]}个月，补缴不算连续哦，望知悉",
                         "杭州城市": "可补缴最近3个月的社保公积金，补缴费30元/月；（不做跨年补缴）有补缴的请注意：补缴的月份：个人查不到生育工伤，社保局只收个人部分，地税收取单位部分，地税扣缴时五险是一并征收的，还有疑问可0571-12366确认。且补缴不算连续哦！",
                         "北京城市": "可补缴最近3个月的社保公积金，补缴费40元/月；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
                         "苏州园区": "可补缴最近2个月的社保公积金；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
                         "苏州市区": "可补缴最近3个月的社保公积金；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
+                        "广州城市": "可补缴最近1个月的社保公积金，额外收取补缴费40元/月；可以单独缴纳公积金；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
                         "DEFAULT": "亲 不好意思，目前没有信息 😢"
                     }
                 }
@@ -1302,6 +1306,8 @@
                     "city_district": {
                         "杭州城市": "杭州续费说明：每月10日前拍下宝贝，老客户10号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
                         "成都城市": "成都续费说明：每月10日前拍下宝贝，老客户10号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
+                        "广州城市": "广州续费说明：每月10日前拍下宝贝，老客户10号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
+                        "苏州市区": "市区续费说明：每月10日前拍下次月费用，最晚不能超过20号，老客户20号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
                         "DEFAULT": "亲 不好意思，目前没有信息 😢"
                     }
                 }
@@ -1898,83 +1904,89 @@
             }
         }
     },
-    "plans": {
-        "上海": {
-            "sb_jishu": 4927,
-            "gjj_jishu": 2420,
-            "shebao_payment": 1937.7,
-            "svc_fee": 40,
-            "shouci_fee": 50,
-            "pay_deadline": 20,
-            "gongjijin_fee": 338
-        },
-        "北京": {
-            "sb_jishu": 3613,
-            "shebao_payment": 1629.17,
-            "sb_jishu2": 3613,
-            "shebao_payment2": 1636.4,
-            "gjj_jishu": 2409,
-            "svc_fee": 40,
-            "dbl_svc_fee": 80,
-            "shouci_fee": 50,
-            "pay_deadline": 20,
-            "gongjijin_fee": 498
-        },
-        "苏州": {
-            "市区sb_jishu": 3368,
-            "园区sb_jishu": 3125,
-            "gjj_jishu": 0,
-            "市区shebao_payment": 1277.57,
-            "园区shebao_payment": 878.14,
-            "svc_fee": 40,
-            "shouci_fee": 50,
-            "pay_deadline": 15,
-            "gongjijin_fee": 540
-        },
-        "杭州": {
-            "sb_jishu": 3321.6,
-            "gjj_jishu": 2010,
-            "shebao_payment": 1288.79,
-            "svc_fee": 40,
-            "shouci_fee": 50,
-            "pay_deadline": 20,
-            "gongjijin_fee": 482
-        },
-        "深圳": {
-            "sb_jishu": 2335,
-            "gjj_jishu": 1101,
-            "shebao_payment": 0,
-            "svc_fee": 999,
-            "shouci_fee": 50,
-            "pay_deadline": 20,
-            "gongjijin_fee": 100
-        },
-        "广州": {
-            "sb_jishu": 2100,
-            "shebao_payment": 1437.56,
-            "gjj_jishu": 0,
-            "gongjijin_fee": 210,
-            "svc_fee": 40,
-            "shouci_fee": 50,
-            "pay_deadline": 20
-        },
-        "成都": {
-            "sb_jishu": 2697,
-            "gjj_jishu": 1780,
-            "shebao_payment": 1022.01,
-            "svc_fee": 40,
-            "shouci_fee": 50,
-            "pay_deadline": 20,
-            "gongjijin_fee": 214
-        },
-        "昆山": {
-            "sb_jishu": 2940,
-            "gjj_jishu": 0,
-            "shebao_payment": 1037.82,
-            "svc_fee": 40,
-            "shouci_fee": 50,
-            "pay_deadline": 20,
-            "gongjijin_fee": 472
+    "vault_info": {
+        "city_district":{
+            "上海": {
+                "sb_jishu": 4927,
+                "gjj_jishu": 2420,
+                "shebao_payment": 1937.7,
+                "svc_fee": 40,
+                "shouci_fee": 50,
+                "pay_deadline": 20,
+                "gongjijin_fee": 338,
+                "bujiao_period": 6
+            },
+            "北京": {
+                "sb_jishu": 3613,
+                "shebao_payment": 1629.17,
+                "sb_jishu2": 3613,
+                "shebao_payment2": 1636.4,
+                "gjj_jishu": 2409,
+                "svc_fee": 40,
+                "dbl_svc_fee": 80,
+                "shouci_fee": 50,
+                "pay_deadline": 20,
+                "gongjijin_fee": 498,
+                "bujiao_period": 3
+            },
+            "苏州": {
+                "市区sb_jishu": 3368,
+                "园区sb_jishu": 3125,
+                "gjj_jishu": 0,
+                "市区shebao_payment": 1277.57,
+                "园区shebao_payment": 878.14,
+                "svc_fee": 40,
+                "shouci_fee": 50,
+                "pay_deadline": 15,
+                "gongjijin_fee": 540
+            },
+            "杭州": {
+                "sb_jishu": 3321.6,
+                "gjj_jishu": 2010,
+                "shebao_payment": 1288.79,
+                "svc_fee": 40,
+                "shouci_fee": 50,
+                "pay_deadline": 20,
+                "gongjijin_fee": 482,
+                "bujiao_period": 3
+            },
+            "深圳": {
+                "sb_jishu": 2335,
+                "gjj_jishu": 1101,
+                "shebao_payment": 0,
+                "svc_fee": 999,
+                "shouci_fee": 50,
+                "pay_deadline": 20,
+                "gongjijin_fee": 100
+            },
+            "广州": {
+                "sb_jishu": 2100,
+                "shebao_payment": 1437.56,
+                "gjj_jishu": 0,
+                "gongjijin_fee": 210,
+                "svc_fee": 40,
+                "shouci_fee": 50,
+                "pay_deadline": 20,
+                "bujiao_period": 1
+            },
+            "成都": {
+                "sb_jishu": 2697,
+                "gjj_jishu": 1780,
+                "shebao_payment": 1022.01,
+                "svc_fee": 40,
+                "shouci_fee": 50,
+                "pay_deadline": 20,
+                "gongjijin_fee": 214
+            },
+            "昆山": {
+                "sb_jishu": 2940,
+                "gjj_jishu": 0,
+                "shebao_payment": 1037.82,
+                "svc_fee": 40,
+                "shouci_fee": 50,
+                "pay_deadline": 20,
+                "gongjijin_fee": 472
+            }
         }
     },
     "secondary_slots": [
