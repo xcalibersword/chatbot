@@ -21,7 +21,8 @@
         "propose_plan_state":[
             ["affirm", "confirm_plan"],
             ["purchase", "city_crossroad"],
-            ["inform", "city_crossroad"]
+            ["inform", "city_crossroad"],
+            ["next_step", "confirm_plan"]
         ]
     },
     "policy_rules":{  
@@ -45,6 +46,7 @@
         "confirm_plan": [
             ["purchase","city_crossroad"],
             ["inform","city_crossroad"],
+            ["next_step", "inform_pai"],
             ["affirm", "inform_pai"],
             ["query_pay_process", "inform_pai"]
         ],

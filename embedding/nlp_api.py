@@ -141,26 +141,31 @@ if MAIN:
     test_ins = [
         ("我在上海，以前交过","inform"),
         ("我在北京，不是首次","inform"),
-        ("哦了解了","affirm"),
-        ("我是想要代缴","purchase"),
+        ("苏州的，之前有开户口","inform"),
+        ("哦好滴，解了","affirm"),
         ("社保基数怎么算","ask_how_much"),
         ("服务费怎么算","ask_how_much"),
         ("怀孕了还可以代缴吗","query_pregnant"),
         ("怀孕了还可以买吗","query_pregnant"),
         ("怎么去拍啊","how_to_pai"),
-        ("怎么去拍啊","how_to_pai"),
+        ("我应该怎么拍","how_to_pai"),
+        ("有没有链接？","request_link"),
+        ("拍哪个宝贝？","request_link"),
         ("我想在北京买房","query_housing"),
         ("落户苏州","luohu"),
         ("我不太懂哦","confused"),
         ("没了，谢谢","deny"),
         ("没","deny"),
-        ("怎么去拍啊","how_to_pai"),
-        ("社保可以补交吗","ask_can_topup"),
+        ("之前交的社保可以补吗","ask_can_topup"),
+        ("社保可不可以补缴？","ask_can_topup"),
+        ("首次要提供什材料吗？","query_req_resources"),
         ("需要我提供什东西吗","query_req_resources"),
         ("要啥材料吗","query_req_resources"),
         ("请问可以代缴上海社保吗","purchase"),
+        ("我想交5月社保不断的可以吗","purchase"),
+        ("我是想要代缴","purchase"),
         ("我真的很爱您哦","complicated"),
-        ("我想交5月社保不断的可以吗","purchase")
+        ("社保交了之后可以改基数吗？","complicated")
     ]
     # for testin in testins:
     #     print(jb.lcut(testin,cut_all=True))
@@ -181,12 +186,14 @@ if MAIN:
         pred = out["prediction"]
         passed = pred == ans
         if passed: score+=1
-        passedstr = "PASSED TEST" if passed else "@@@ FAILED TEST @@@"
+        passedstr = "PASSED TEST" if passed else "@@@@@@@@@ FAILED TEST"
 
         print("In:",testin)
         print(passedstr, "Expected:", ans)
         print("Predicted Intent:",out)
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
+    print("---------------------------")
     print("Performance:{}/{}".format(score,len(test_ins)))
+    print("---------------------------")
     # pp.predict_loop()
