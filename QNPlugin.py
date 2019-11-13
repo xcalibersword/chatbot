@@ -10,7 +10,7 @@ import os
 def find_handle(userid):
     #window handle | hard coded | spy++ | different for CSO and customer interface
     #have to change as version update | or convert to automated search version
-    a = FindWindow("StandardFrame",userid+ " - 接待中心")
+    a = FindWindow("StandardFrame",userid + " - 接待中心")
     aa = FindWindowEx(a, 0, "StandardWindow", "")
     aaa = FindWindowEx(aa, 0, "StandardWindow", "")
     aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
@@ -34,7 +34,7 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
     #type text
     SendMessage(QN_input_hwnd, 0x000C, 0, text)
     #send text
-    SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
+    #SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
     print("Message Sent: {}".format(text))
 
 def check_new_message(userID,QN_output_hwnd):
@@ -126,7 +126,9 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
 
 if __name__ == "__main__":
 #    userID = "tb584238398"
-    userID = "唯洛服务旗舰店:茜茜"
+#    userID = "唯洛服务旗舰店:茜茜"
+    userID = "女人最爱:小梅"
+
     try:    
         text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(userID)
     except Exception:
