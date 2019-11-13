@@ -7,11 +7,14 @@ import time
 from jpype import *
 import os
 
-def find_handle():
-    #window handle | hard coded | spy++
-    a = FindWindow("StandardFrame","tb584238398 - 接待中心")
+def find_handle(userid):
+    #window handle | hard coded | spy++ | different for CSO and customer interface
+    #have to change as version update | or convert to automated search version
+    a = FindWindow("StandardFrame",userid+ " - 接待中心")
     aa = FindWindowEx(a, 0, "StandardWindow", "")
     aaa = FindWindowEx(aa, 0, "StandardWindow", "")
+    aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
+    #added for cso
     aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
     aaaa = FindWindowEx(aaa, 0, "SplitterBar", "")
 
@@ -112,9 +115,9 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
     if query == "":
         SeekNewMessage(SeekImagePath)
     else:
-        #reply_template = bot.get_bot_reply(custID,query)
-        #reply = reply_template[0]
-        reply = query
+        reply_template = bot.get_bot_reply(custID,query)
+        reply = reply_template[0]
+        #reply = query
         send_message_QN(reply,text_in_hwnd,button_hwnd)
         SeekNewMessage(SeekImagePath)
     #timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath])
@@ -122,8 +125,10 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
     #timer.start()
 
 if __name__ == "__main__":
+#    userID = "tb584238398"
+    userID = "唯洛服务旗舰店:茜茜"
     try:    
-        text_in_hwnd,text_out_hwnd,button_hwnd = find_handle()
+        text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(userID)
     except Exception:
         print("Window Handle cannot be found!")
 
@@ -140,7 +145,6 @@ if __name__ == "__main__":
     bot = Chatbot()
     bot.start()
     
-    userID = "tb584238398"
     print("Starting program....") 
     while True:
         main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath)
