@@ -31,7 +31,7 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
     #type text
     SendMessage(QN_input_hwnd, 0x000C, 0, text)
     #send text
-    #SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
+    SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
     print("Message Sent: {}".format(text))
 
 def check_new_message(userID,QN_output_hwnd):
@@ -112,9 +112,9 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
     if query == "":
         SeekNewMessage(SeekImagePath)
     else:
-        reply_template = bot.get_bot_reply(custID,query)
-        reply = reply_template[0]
-#        reply = query
+        #reply_template = bot.get_bot_reply(custID,query)
+        #reply = reply_template[0]
+        reply = query
         send_message_QN(reply,text_in_hwnd,button_hwnd)
         SeekNewMessage(SeekImagePath)
     #timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath])
