@@ -503,7 +503,7 @@ class PolicyKeeper:
 class DetailManager:
     def __init__(self, info_vault,secondary_slots):
         self.vault = info_vault
-        self.inital_dict = {"s_slots":{}}
+        self.inital_dict = {}
         self.chat_prov_info = self.inital_dict
         self.dbr = {"dummy"}
         self.dbrset = False
@@ -568,20 +568,16 @@ class DetailManager:
             f, val = tree_search(tree, curr_info)
             if f: entries[target] = val
         
-        self.chat_prov_info["s_slots"].update(entries)
+        self.chat_prov_info.update(entries)
         return 
 
     # Called to get chat info + vault info
     def fetch_info(self):
         out = {}
         out.update(self.chat_prov_info)
-
-        # Add City info lookup
-        if cbsv.CITY() in self.chat_prov_info:
-            cityname = self.chat_prov_info[cbsv.CITY()]
-            out["city_info"] = self.vault.lookup_city(cityname)
-        
+        self.vault.add_vault_info(out)
         return out
+
     # This is called during the creation of a new chat
     def clone(self, chatID):   
         if not self.dbrset:

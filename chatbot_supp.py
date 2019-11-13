@@ -284,26 +284,26 @@ class Customer:
 # Globally accessed object. Singleton but not really cuz it needs to be initalized
 class InfoVault():
     def __init__(self, json_data):
-        self.plans = json_data["plans"]
-        self.city_keys = list(self.plans.keys())
-        self.other_keys = ["asd"]
-        
-    # General query
-    def lookup(self, q):
-        if q in self.city_keys:
-            return self.lookup_city(q)
-        if q in self.other_keys:
-            return self.lookup_other(q)
-        return False
-        
-    def lookup_city(self, city):
-        if city in self.city_keys:
-            return self.plans[city]
-
-    def lookup_other(self, thing):
-        if thing in self.other_keys:
-            return 1
-
+        self.information = json_data["vault_info"]
+        self.slot_list = list(self.information.keys())
+    
+    # Modifies the dict directly
+    def add_vault_info(self, chatinfo):
+        def add_entry(s):
+            chatval = chatinfo[s] # Chat provided value
+            v_subdict = self.information[s]
+            t_key = v_subdict["writeto"]
+            if chatval in v_subdict:
+                v_info = v_subdict[chatval]
+                entry = {t_key:v_info}
+                print("<ADD VAULT INFO> entry",entry,t_key,":",v_info)
+                chatinfo.update(entry)
+        print("<ADD VAULT INFO> list:",self.slot_list)
+        for s in self.slot_list:
+            if s in chatinfo:
+                add_entry(s)
+                
+        return
 # Takes in a message and returns some info (if any)
 # Note: thing about re.search is that only the first match is pulled.
 class InfoParser():
