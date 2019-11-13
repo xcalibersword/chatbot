@@ -140,31 +140,74 @@ if MAIN:
     # Test suite    
     test_ins = [
         ("我在上海，以前交过","inform"),
+        ("上海的以前没交过","inform"),
         ("我在北京，不是首次","inform"),
-        ("哦了解了","affirm"),
-        ("我是想要代缴","purchase"),
-        ("社保基数怎么算","ask_how_much"),
+        ("苏州的，之前有开户口","inform"),
+        ("我之前有开户口","inform"),
+        ("哦，没开过户口","inform"),
+        ("加上一金的话？","inform"),
+        ("支付过了哦","inform_paid"),
+        ("已经付好啦","inform_paid"),
+        ("费用已付注意查收","inform_paid"),
+        ("哦好滴，了解","affirm"),
+        ("喔好的","affirm"),
+        ("之前交的社保可以补吗","ask_can_topup"),
+        ("成都社保可不可以补缴？","ask_can_topup"),
+        ("社保可不可以补缴？","ask_can_topup"),
+        ("以前缴的公积金能补吗","ask_can_topup"),
+        ("社保加公积金上海的一个月差不多要多少","ask_how_much"),
         ("服务费怎么算","ask_how_much"),
+        ("你们可以看到成功了吗","ask_shebao_status"),
+        ("社保公积金一起做收多少服务费啊","ask_how_much"),
+        ("请问多久才到账", "ask_turnaround_time"),
+        ("一般要多久才交上", "ask_turnaround_time"),
+        ("交上社保要多久", "ask_turnaround_time"),
         ("怀孕了还可以代缴吗","query_pregnant"),
         ("怀孕了还可以买吗","query_pregnant"),
         ("怎么去拍啊","how_to_pai"),
-        ("怎么去拍啊","how_to_pai"),
+        ("我应该怎么拍","how_to_pai"),
+        ("有没有链接？","request_link"),
+        ("我该拍哪个？","request_link"),
+        ("拍哪个宝贝？","request_link"),
         ("我想在北京买房","query_housing"),
+        ("这个会影响购房么？","query_housing"),
         ("落户苏州","luohu"),
+        ("落户可以办理吗","luohu"),
+        ("我要交杭州社保落户用的","luohu"),
         ("我不太懂哦","confused"),
+        ("你说了啥？","confused"),
         ("没了，谢谢","deny"),
         ("没","deny"),
-        ("怎么去拍啊","how_to_pai"),
-        ("社保可以补交吗","ask_can_topup"),
+        ("首次要提供什材料吗？","query_req_resources"),
         ("需要我提供什东西吗","query_req_resources"),
+        ("要参保的话需要什么资料","query_req_resources"),
         ("要啥材料吗","query_req_resources"),
+        ("什么时候能查到","query_when_check_shebao_status"),
+        ("要多久能查到呢？","query_when_check_shebao_status"),
         ("请问可以代缴上海社保吗","purchase"),
+        ("我想交11月社保不断的可以吗","purchase"),
+        ("我是想要代缴9月的","purchase"),
+        ("想要代缴昆山社保的","purchase"),
+        ("这里能代缴广州五险一金吗","purchase"),
+        ("方便用电话讲吗","query_phone"),
+        ("怎么看到缴纳记录？","query_how_check_shebao_status"),
+        ("缴纳之后能查看记录吗？","query_how_check_shebao_status"),
+        ("在哪里能查到社保","query_how_check_shebao_status"),
+        ("怎么去查社保有没有交上了","query_how_check_shebao_status"),
+        ("怎么查杭州社保是否交了","query_how_check_shebao_status"),
+        ("你们是交哪几个区的","query_region_coverage"),
+        ("下月还得这里拍吗","query_xufei"),
         ("我真的很爱您哦","complicated"),
-        ("我想交5月社保不断的可以吗","purchase")
+        ("我这个月失业了还能继续代缴吗","complicated"),
+        ("外地人能交社保吗","complicated"),
+        ("您好我这个月离职","complicated"),
+        ("我准备离职中间两个月不交社保。这里可以帮我代缴吗","complicated"),
+        ("我给朋友推荐了你们公司","complicated"),
+        ("社保交了之后可以改基数吗？","complicated"),
+        ("不缴公积金会有什么影响啊","query_various_effects"),
+        ("会有什么影响吗？","query_various_effects"),
+        ("断了会怎么样","query_break_effects")
     ]
-    # for testin in testins:
-    #     print(jb.lcut(testin,cut_all=True))
-    # exit()
 
     print("Please enter the model filename")
     nmf = input()
@@ -174,6 +217,7 @@ if MAIN:
 
     pp = Predictor(nmf)
 
+    fail_dict = {}
     score = 0
     for testin, ans in test_ins:
         
@@ -181,12 +225,24 @@ if MAIN:
         pred = out["prediction"]
         passed = pred == ans
         if passed: score+=1
-        passedstr = "PASSED TEST" if passed else "@@@ FAILED TEST @@@"
+        if passed:
+            passedstr = "PASSED" 
+        else:
+            passedstr = "@@@@@@@@@@@@@@@@@@ FAILED TEST"
+            if ans in fail_dict:
+                fail_dict[ans] = fail_dict[ans] + 1
+            else:
+                fail_dict[ans] = 1
 
         print("In:",testin)
         print(passedstr, "Expected:", ans)
         print("Predicted Intent:",out)
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
+    print("---------------------------")
     print("Performance:{}/{}".format(score,len(test_ins)))
+    print("Failed topics:")
+    for t, c in fail_dict.items():
+        print(t,c)
+    print("---------------------------")
     # pp.predict_loop()

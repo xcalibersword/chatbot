@@ -1,1 +1,0 @@
-E:\Anaconda\envs\nlp\python.exe QNPlugin.py
