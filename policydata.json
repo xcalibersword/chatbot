@@ -4,7 +4,6 @@
         "city_crossroad":[
             "city",{
                 "北京": "propose_plan_bj",
-                "苏州": "propose_plan_sz",
                 "湖南": "unsupported_city",
                 "聊城": "unsupported_city",
                 "DEFAULT": "propose_plan"
@@ -44,9 +43,10 @@
             ["purchase", "city_crossroad"]
         ],
         "confirm_plan": [
+            ["purchase","city_crossroad"],
+            ["inform","city_crossroad"],
             ["affirm", "inform_pai"],
-            ["query_pay_process", "inform_pai"],
-            ["purchase","city_crossroad"]
+            ["query_pay_process", "inform_pai"]
         ],
         "inform_pai": [
             ["inform", "city_crossroad"],

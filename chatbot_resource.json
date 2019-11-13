@@ -618,40 +618,6 @@
                 "{rep_ext[bj_entire_plan_proposal]}"
             ]
         },
-        "propose_plan_sz": {
-            "key": "propose_plan_sz",
-            "gated": true,
-            "thread": "t_presale",
-            "propose_plan_state": true,
-            "req_info": [
-                [
-                    "city","city"
-                ],
-                [
-                    "首次","DEFAULT_SV"
-                ],
-                [
-                    "要公积金","DEFAULT_SV"
-                ],
-                [
-                    "要社保","DEFAULT_SV"
-                ],
-                [
-                    "苏州区","苏州区_slot"
-                ]
-            ],
-            "calcs": [
-                "flag_sb_gjj",
-                "flag_shouci",
-                "苏州_shebao_amt",
-                "苏州_shebao_jishu",
-                "sum_svc_fee",
-                "shebao_basic_calc"
-            ],
-            "replies": [
-                "{rep_ext[entire_plan_proposal]}"
-            ]
-        },
         "confirm_plan": {
             "key": "282 confirm plan",
             "gated": false,
@@ -1020,8 +986,7 @@
                 "writeto": "首次ext",
                 "states": [
                     "propose_plan",
-                    "propose_plan_bj",
-                    "propose_plan_sz"
+                    "propose_plan_bj"
                 ],
                 "lookfor": [
                     "首次"
@@ -1039,7 +1004,6 @@
                 "states": [
                     "propose_plan",
                     "propose_plan_bj",
-                    "propose_plan_sz",
                     "short_ask_amt_month_fee_total"
                 ],
                 "lookfor": [
@@ -1062,8 +1026,7 @@
             {
                 "writeto": "str_gjj_jishu",
                 "states": [
-                    "propose_plan",
-                    "propose_plan_sz"
+                    "propose_plan"
                 ],
                 "lookfor": [
                     "city",
@@ -1085,8 +1048,7 @@
             {
                 "writeto": "proposal",
                 "states": [
-                    "propose_plan",
-                    "propose_plan_sz"
+                    "propose_plan"
                 ],
                 "lookfor": [
                     [
@@ -1368,8 +1330,7 @@
             {
                 "writeto": "calc_str_total",
                 "states": [
-                    "propose_plan",
-                    "propose_plan_sz"
+                    "propose_plan"
                 ],
                 "lookfor": [
                     [
@@ -1387,8 +1348,7 @@
             {
                 "writeto": "entire_plan_proposal",
                 "states": [
-                    "propose_plan",
-                    "propose_plan_sz"
+                    "propose_plan"
                 ],
                 "lookfor": [
                     "city",
@@ -1615,86 +1575,6 @@
                     ]
                 },
                 "writeto": "w_shebao_payment"
-            },
-            "苏州_shebao_amt":{
-                "conditions": [
-                    ["苏州区","苏州园区",["yq",1,0]],
-                    ["苏州区","苏州市区",["sq",1,0]]
-                ],
-                "req_vars": [
-                    "苏州区",
-                    [
-                        "city_info",
-                        [
-                            "园区shebao_payment",
-                            "市区shebao_payment"
-                        ]
-                    ]
-                ],
-                "steps": {
-                    "1,multi": [
-                        [
-                            "园区shebao_payment",
-                            "yq"
-                        ],
-                        "w_yq_shebao"
-                    ],
-                    "2,multi": [
-                        [
-                            "市区shebao_payment",
-                            "sq"
-                        ],
-                        "w_sq_shebao"
-                    ],
-                    "3,add": [
-                        [
-                            "w_yq_shebao",
-                            "w_sq_shebao"
-                        ],
-                        "OUTCOME"
-                    ]
-                },
-                "writeto": "w_shebao_payment"
-            },
-            "苏州_shebao_jishu":{
-                "conditions": [
-                    ["苏州区","苏州园区",["yq",1,0]],
-                    ["苏州区","苏州市区",["sq",1,0]]
-                ],
-                "req_vars": [
-                    "苏州区",
-                    [
-                        "city_info",
-                        [
-                            "园区sb_jishu",
-                            "市区sb_jishu"
-                        ]
-                    ]
-                ],
-                "steps": {
-                    "1,multi": [
-                        [
-                            "园区sb_jishu",
-                            "yq"
-                        ],
-                        "w_yq_jishu"
-                    ],
-                    "2,multi": [
-                        [
-                            "市区sb_jishu",
-                            "sq"
-                        ],
-                        "w_sq_jishu"
-                    ],
-                    "3,add": [
-                        [
-                            "w_yq_jishu",
-                            "w_sq_jishu"
-                        ],
-                        "OUTCOME"
-                    ]
-                },
-                "writeto": "w_shebao_jishu"
             },
             "shebao_basic_calc": {
                 "conditions": [
