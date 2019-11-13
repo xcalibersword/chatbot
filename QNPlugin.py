@@ -40,6 +40,7 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
 def check_new_message(userID,QN_output_hwnd):
     print('Checking for new message...')
     SetForegroundWindow(QN_output_hwnd)
+    
     #ctrl a
     keybd_event(0x11, 0, 0, 0)
     keybd_event(65, 0, 0, 0)
@@ -47,6 +48,7 @@ def check_new_message(userID,QN_output_hwnd):
     keybd_event(0x11, 0, 2, 0)
     keybd_event(65, 0, 2, 0)
     #ctrl c
+    time.sleep(0.5)
     keybd_event(0x11, 0, 0, 0)
     keybd_event(67, 0, 0, 0)
     time.sleep(0.5)
