@@ -697,7 +697,7 @@
             "gated": true,
             "thread": "t_can_make_it",
             "terminal_state": true,
-            "calcs": ["flag_cmi"],
+            "calcs": ["flag_sb_day_cmi"],
             "req_info": [["city","city"]],
             "replies": [
                 "亲{rep_ext[can_make_it_info]}"
@@ -758,7 +758,7 @@
             "gated": true,
             "thread": "t_pay_deadline",
             "terminal_state": true,
-            "calcs":["flag_cmi"],
+            "calcs":["flag_sb_day_cmi"],
             "req_info": [
                 ["city","city"]
             ],
@@ -1242,11 +1242,11 @@
                 "lookfor": [
                     "city_district",
                     ["city_info",["pay_deadline"]],
-                    ["calc_ext",["w_cmi_flag"]]
+                    ["calc_ext",["w_sb_cmi_flag"]]
                 ],
                 "if_present": {},
                 "if_value": {
-                    "w_cmi_flag":{
+                    "w_sb_cmi_flag":{
                         "1":"亲 现在还可以交。",
                         "0":"亲 要交当月现在来不及。"
                     },
@@ -1511,8 +1511,8 @@
                 },
                 "writeto": "w_shouci_fee"
             },
-            "flag_cmi":{
-                "writeto": "w_cmi_flag",
+            "flag_sb_day_cmi":{
+                "writeto": "w_sb_cmi_flag",
                 "conditions": [],
                 "req_vars": [
                     "state_curr_day",
@@ -1840,7 +1840,7 @@
                 "shebao_payment": 1937.7,
                 "svc_fee": 40,
                 "shouci_fee": 50,
-                "pay_deadline": 20,
+                "pay_deadline": 26,
                 "gongjijin_fee": 338,
                 "bujiao_period": 6
             },
@@ -1883,7 +1883,7 @@
                 "shebao_payment": 1288.79,
                 "svc_fee": 40,
                 "shouci_fee": 50,
-                "pay_deadline": 10,
+                "pay_deadline": 15,
                 "gongjijin_fee": 482,
                 "bujiao_period": 3
             },
