@@ -1,12 +1,11 @@
-import threading,re
+import threading,re,os
 from win32gui import *
-from chatbot import Chatbot
 from win32api import *
-import win32com.client
-import win32clipboard as w
-import time
+from win32clipboard import *
+from win32con import *
+from time import *
 from jpype import *
-import os
+from chatbot import Chatbot
 
 def find_handle(userid):
     #window handle | hard coded | spy++ | different for CSO and customer interface
@@ -41,26 +40,32 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
 def check_new_message(userID,QN_output_hwnd):
     print('Checking for new message...')
 
-    shell = win32com.client.Dispatch("WScript.Shell")
-    shell.SendKeys('%')
+    #use mouse to click on the spot to replace this method
     SetForegroundWindow(QN_output_hwnd)
-    
-    #ctrl a
-    keybd_event(0x11, 0, 0, 0)
-    keybd_event(65, 0, 0, 0)
-    time.sleep(0.2)
-    keybd_event(0x11, 0, 2, 0)
-    keybd_event(65, 0, 2, 0)
-    #ctrl c
-    keybd_event(0x11, 0, 0, 0)
-    keybd_event(67, 0, 0, 0)
-    time.sleep(0.2)
-    keybd_event(0x11, 0, 2, 0)
-    keybd_event(67, 0, 2, 0)
+    SetCursorPos((800,500))
+    sleep(0.05)
+    mouse_event(MOUSEEVENTF_LEFTDOWN,0,0,0,0)
+    mouse_event(MOUSEEVENTF_LEFTUP,0,0,0,0)
+    sleep(0.05)
 
-    w.OpenClipboard()
-    raw_text = w.GetClipboardData()
-    w.CloseClipboard()
+    #ctrl a
+    keybd_event(17, 0, 0, 0)
+    keybd_event(65, 0, 0, 0)
+    sleep(0.05)
+    keybd_event(65, 0, 2, 0)
+    keybd_event(17, 0, 2, 0)
+    #ctrl c
+    sleep(0.05)
+    keybd_event(17, 0, 0, 0)
+    keybd_event(67, 0, 0, 0)
+    sleep(0.05)
+    keybd_event(67, 0, 2, 0)
+    keybd_event(17, 0, 2, 0)
+    sleep(0.05)
+    
+    OpenClipboard()
+    raw_text = GetClipboardData()
+    CloseClipboard()
     raw_text_list = raw_text.splitlines()
 
     processed_text_list = []
@@ -78,7 +83,7 @@ def check_new_message(userID,QN_output_hwnd):
     cust_QN_ID = ""
     for word in processed_text_list:
         if date_time_pattern.search(word):
-            if not user_pattern.search(word):
+            if not user_pattern.search(word) and not word == "以上为历史消息":
                 last_not_user_idx_list.append(count)
                 if cust_QN_ID == "":
                     cust_QN_ID = date_time_pattern.sub("",processed_text_list[last_not_user_idx_list[0]])
@@ -155,4 +160,4 @@ if __name__ == "__main__":
     print("Starting program....") 
     while True:
         main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath)
-        time.sleep(10)
+        sleep(10)
