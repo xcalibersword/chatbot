@@ -73,8 +73,11 @@
             ["goodbye", "goodbye"]
         ],
         "pass_to_human": [
+            ["affirm","initplus"]
+        ],
+        "night_time_cannot": [
             ["affirm","initplus"],
-            ["greet","initplus"]
+            ["thankyou","initplus"]
         ],
         "goodbye":[
             ["greet", "init"]

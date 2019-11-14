@@ -594,15 +594,15 @@ class DetailManager:
             return (False, "")
 
         entries = {}
-        for ss in self.second_slots:
-            target = ss["writeto"]
-            tree = ss["search_tree"]
+        for secondslot in self.second_slots:
+            target = secondslot["writeto"]
+            tree = secondslot["search_tree"]
 
             f, val = tree_search(tree, curr_info)
             if f: 
                 entries[target] = val
-            elif ss_default_flag in tree:
-                 entries[target] = tree[ss_default_flag]
+            elif ss_default_flag in secondslot:
+                 entries[target] = secondslot[ss_default_flag]
         
         self.chat_prov_info.update(entries)
         return 
@@ -641,8 +641,8 @@ class ReplyGenerator:
         self.default_confused = def_confused
         
     # OVERALL METHOD
-    def get_reply(self, curr_state, intent, ss, info = -1):
-        rdb = self.getreplydb(intent, curr_state, ss)
+    def get_reply(self, curr_state, intent, secondslot, info = -1):
+        rdb = self.getreplydb(intent, curr_state, secondslot)
         infoplus = self._enhance_info(curr_state, info)
         reply = self.generate_reply_message(rdb, infoplus)
         return reply

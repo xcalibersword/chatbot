@@ -356,6 +356,7 @@
         "luohu": {
             "key": "4040 luohu complicated",
             "default_set": true,
+            "humanify": false,
             "default_target": "complication_crossroad",
             "replies": []
         },
@@ -509,6 +510,16 @@
                 "不好意思😞，我是新手，现在给你转到负责同事"
             ]
         },
+        "OLDnight_time_cannot": {
+            "key": "notused",
+            "gated": false,
+            "thread": "EXIT",
+            "humanify": false,
+            "req_info": "",
+            "replies": [
+                "亲 我是值班客服 看不到系统数据 您白天上班时间联系我们吧 谢谢亲"
+            ]
+        },
         "night_time_cannot": {
             "key": "night_time_cannot",
             "gated": false,
@@ -516,7 +527,7 @@
             "humanify": false,
             "req_info": "",
             "replies": [
-                "亲 我是值班客服 看不到系统数据 您白天上班时间联系我们吧 谢谢亲"
+                "亲 我是值班客服 办不了这个 您白天上班时间联系我们吧 谢谢亲"
             ]
         },
         "ask_if_issue": {
