@@ -530,7 +530,9 @@ class DetailManager:
                 else:
                     self.chat_prov_info[d] = new_info[d]
                 
-        self._add_secondary_slots(self.fetch_info())
+        self._add_secondary_slots()
+
+        self._update_server_state_info()
 
         self.write_info_to_db()
         return
@@ -544,10 +546,23 @@ class DetailManager:
                 dic.pop(i)
         return dic
     
-    def _add_secondary_slots(self, curr_info):
+    def _update_server_state_info(self):
+        dt_now = datetime.now()
+        server_info = {}
+        server_info["state_curr_hour"] = dt_now.hour
+        self.chat_prov_info.update(server_info)
+        return
+
+    def _add_secondary_slots(self):
+        curr_info = self.fetch_info()
+        ss_default_flag = "DEFAULT"
         def tree_search(tree, info):
             slot, sub_dict = list(tree.items())[0]
-            # default_val = tree["DEFAULT_VALUE"]
+            dv = ""
+            nff = False
+            if ss_default_flag in tree:
+                dv = tree[ss_default_flag]
+                nff = True
             while slot in info:
                 slot_val = info[slot]
                 if slot_val in sub_dict:
@@ -559,7 +574,7 @@ class DetailManager:
                 else:
                     if DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
                     break
-            return (False, "")
+            return (nff, dv)
 
         entries = {}
         for ss in self.second_slots:

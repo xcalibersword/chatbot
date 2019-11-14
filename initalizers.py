@@ -116,9 +116,9 @@ def init_infoparser(sideinfo):
     relevant = sideinfo["info_parser"]
     return InfoParser(relevant)
 
-def init_detailmanager(jdata):
+def init_detailmanager(jdata, sideinfo):
     vault = InfoVault(jdata)
-    ss = jdata["secondary_slots"]
+    ss = sideinfo["secondary_slots"]
     return DetailManager(vault,ss)
 
 def init_gatekeeper(sideinfo):
