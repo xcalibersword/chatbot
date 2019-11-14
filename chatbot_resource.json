@@ -813,9 +813,14 @@
             "gated": true,
             "thread": "t_topup",
             "terminal_state": true,
-            "req_info": [["city","city"]],
+            "humanify":false,
+            "req_info": [
+                ["city","city"],
+                ["target_month","month_slot"]
+            ],
+            "calcs":["flag_bujiao_month_cmi"],
             "replies": [
-                "亲，{rep_ext[topup_info]}"
+                "{rep_ext[topup_info]}"
             ]
         },
         "inform_topup_gjj": {
@@ -894,7 +899,8 @@
                         "首次": "是首次吗？",
                         "要公积金": "交公积金吗？",
                         "苏州区": "是市区还是园区呢？",
-                        "chosen_fee": "哪个部分啊 亲？"
+                        "chosen_fee": "哪个部分啊 亲？",
+                        "target_month": "要缴哪月啊 亲？"
                     }
                 }
             },
@@ -1157,17 +1163,23 @@
                 ],
                 "lookfor": [
                     "city_district",
-                    ["city_info",["bujiao_period"]]
+                    "target_month",
+                    ["city_info",["bujiao_period"]],
+                    ["calc_ext",["w_bujiao_cmi_flag"]]
                 ],
                 "if_value": {
+                    "w_bujiao_cmi_flag":{
+                        "1":"亲 {target_month}月还可以补。",
+                        "0":"亲 {target_month}月不可以补。"
+                    },
                     "city_district": {
-                        "上海城市": "可以补缴最近{city_info[bujiao_period]}个月；请注意：补缴不算连续哦，望知悉",
-                        "杭州城市": "可补缴最近{city_info[bujiao_period]}个月的社保公积金，补缴费30元/月；（不做跨年补缴）有补缴的请注意：补缴的月份：个人查不到生育工伤，社保局只收个人部分，地税收取单位部分，地税扣缴时五险是一并征收的，还有疑问可0571-12366确认。且补缴不算连续哦！",
-                        "北京城市": "可补缴最近{city_info[bujiao_period]}个月的社保公积金，补缴费40元/月；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
-                        "苏州园区": "可补缴最近{city_info[bujiao_period]}个月的社保公积金；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
-                        "苏州市区": "可补缴最近{city_info[bujiao_period]}个月的社保公积金；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
-                        "广州城市": "可补缴最近{city_info[bujiao_period]}个月的社保公积金，额外收取补缴费40元/月；可以单独缴纳公积金；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
-                        "DEFAULT": "亲 不好意思，目前没有信息 😢"
+                        "上海城市": "{city_district}可以补缴最近{city_info[bujiao_period]}个月；请注意：补缴不算连续哦，望知悉",
+                        "杭州城市": "{city_district}可补缴最近{city_info[bujiao_period]}个月的社保公积金，补缴费30元/月；（不做跨年补缴）有补缴的请注意：补缴的月份：个人查不到生育工伤，社保局只收个人部分，地税收取单位部分，地税扣缴时五险是一并征收的，还有疑问可0571-12366确认。且补缴不算连续哦！",
+                        "北京城市": "{city_district} 可补缴最近{city_info[bujiao_period]}个月的社保公积金，补缴费40元/月；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
+                        "苏州园区": "{city_district} 可补缴最近{city_info[bujiao_period]}个月的社保公积金；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
+                        "苏州市区": "{city_district} 可补缴最近{city_info[bujiao_period]}个月的社保公积金；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
+                        "广州城市": "{city_district} 可补缴最近{city_info[bujiao_period]}个月的社保公积金，额外收取补缴费40元/月；可以单独缴纳公积金；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
+                        "DEFAULT": "亲 不好意思，目前没有{city_district}的信息 😢"
                     }
                 }
             },
@@ -1532,6 +1544,53 @@
                         "OUTCOME"
                     ],
                     "2,sub":[
+                        [
+                            1,
+                            "OUTCOME"
+                        ],
+                        "OUTCOME"
+                    ]
+                }
+            },
+            "flag_bujiao_month_cmi":{
+                "writeto": "w_bujiao_cmi_flag",
+                "conditions": [],
+                "req_vars": [
+                    "state_month",
+                    "target_month",
+                    [
+                        "city_info",
+                        [
+                            "bujiao_period"
+                        ]
+                    ]
+                ],
+                "steps": {
+                    "1,sub":[
+                        [
+                            "state_month",
+                            "bujiao_period"
+                        ],
+                        "w_lower_limit"
+                    ],
+                    "2,isgreater":[
+                        [0,"w_lower_limit"],"w_topup"
+                    ],
+                    "3,multi":[
+                        [12,"w_topup"],"w_topup_val"
+                    ],
+                    "4,add":[
+                        ["w_lower_limit","w_topup_val"],
+                        "w_final_lower_limit"
+                    ],
+                    "5,isgreater": [
+                        [
+                            "w_final_lower_limit",
+                            "target_month"
+                        ],
+                        "OUTCOME"
+                    ],
+                    "6,sub":[
                         [
                             1,
                             "OUTCOME"

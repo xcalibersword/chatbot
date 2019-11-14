@@ -714,6 +714,8 @@ class ReplyGenerator:
             reqvars = "req_vars"
             def op_on_all(vnames, op, vdic):
                 def operate(a,b,op):
+                    a = float(a) # Force everything here to float
+                    b = float(b)
                     if 0: print("a,b", a, b) # DEBUG statement
                     return op(a,b)
                 out = None
