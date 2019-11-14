@@ -8,6 +8,12 @@
                 "聊城": "unsupported_city",
                 "DEFAULT": "propose_plan"
             }
+        ],
+        "complication_crossroad":[
+            "work_hrs_flag",{
+                "yes":"pass_to_human",
+                "no":"night_time_cannot"
+            }
         ]
     },
     "class_policy_rules":{

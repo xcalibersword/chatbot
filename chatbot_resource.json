@@ -352,13 +352,13 @@
         "complicated": {
             "key": "404 too complicated",
             "default_set": true,
-            "default_target": "pass_to_human",
+            "default_target": "complication_crossroad",
             "replies": []
         },
         "luohu": {
             "key": "4040 luohu complicated",
             "default_set": true,
-            "default_target": "night_time_cannot",
+            "default_target": "complication_crossroad",
             "replies": []
         },
         "how_to_pai": {
@@ -371,7 +371,7 @@
             "key": "request_link",
             "default_set": true,
             "humanify": false,
-            "default_target": "night_time_cannot",
+            "default_target": "complication_crossroad",
             "replies": [
                 "不好意思，暂时不能给链接 😞"
             ]
@@ -500,10 +500,18 @@
             "gated": false,
             "thread": "t_presale",
             "humanify": true,
-            "req_info": [["city","city"]],
+            "req_info": "",
             "replies": [
                 "那么亲是哪个城市呢？"
             ]
+        },
+        "complication_crossroad":{
+            "key": "complication_crossroad",
+            "gated": false,
+            "thread": "t_complicated",
+            "humanify": false,
+            "req_info": "",
+            "replies": []
         },
         "unsupported_city":{
             "key": "unsupported_city",
