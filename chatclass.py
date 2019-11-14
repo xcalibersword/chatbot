@@ -570,6 +570,8 @@ class DetailManager:
         dt_now = datetime.now()
         server_info = {}
         server_info["state_curr_hour"] = str(dt_now.hour)
+        server_info["state_month"] = str(dt_now.month)
+        server_info["state_curr_day"] = str(dt_now.day)
         self.chat_prov_info.update(server_info)
         return
 
