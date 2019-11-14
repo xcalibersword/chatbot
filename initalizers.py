@@ -119,7 +119,8 @@ def init_infoparser(sideinfo):
 def init_detailmanager(jdata, sideinfo):
     vault = InfoVault(jdata)
     ss = sideinfo["secondary_slots"]
-    return DetailManager(vault,ss)
+    zl = sideinfo["zones"]
+    return DetailManager(vault,ss, zl)
 
 def init_gatekeeper(sideinfo):
     conds = sideinfo["conditional_reqs"]
@@ -142,7 +143,7 @@ def master_initalize(filename = ""):
     sideinfo = read_json(si_filepath)
 
     components = {}
-    components["dmanager"] = init_detailmanager(jdata)
+    components["dmanager"] = init_detailmanager(jdata,sideinfo)
     components["iparser"] = init_infoparser(sideinfo)
     components["replygen"] = init_replygen(jdata,sideinfo)
     components["pkeeper"] = init_policykeeper(jdata,pdata)

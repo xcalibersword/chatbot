@@ -296,9 +296,9 @@ class InfoVault():
             if chatval in v_subdict:
                 v_info = v_subdict[chatval]
                 entry = {t_key:v_info}
-                print("<ADD VAULT INFO> entry",entry,t_key,":",v_info)
+                if DEBUG: print("<ADD VAULT INFO> entry",entry,t_key,":",v_info)
                 chatinfo.update(entry)
-        print("<ADD VAULT INFO> list:",self.slot_list)
+        if DEBUG: print("<ADD VAULT INFO> list:",self.slot_list)
         for s in self.slot_list:
             if s in chatinfo:
                 add_entry(s)
@@ -314,7 +314,6 @@ class InfoParser():
         self.perm_slots = json_dict["permanent_slots"]
         self.ctx_slots = json_dict["contextual_slots"]
         slots = json_dict["slots"]
-        self.zonelist = json_dict["zones"]
         self._build_slots_DB(slots)
 
     def _build_slots_DB(self, jdata):
@@ -385,15 +384,6 @@ class InfoParser():
         
         return value
 
-    # Adds on a zone dict to the returned dict
-    # E.g. "zones":{"city":"shanghai"}
-    def _update_zones(self, d):
-        for zone in self.zonelist:
-            zones_d = {}
-            if zone in d:
-                zones_d[zone] = d[zone]
-        if not zones_d == {}: d["zones"] = zones_d
-
     ### MAIN FUNCTION ### 
     # Returns a dict of primary information including zones.
     def parse(self, text, slots):
@@ -404,7 +394,6 @@ class InfoParser():
         self._default_parse(text,out)
         # Contextual parse
         self._contextual_parse(text, out)
-        self._update_zones(out)
 
         return out
 

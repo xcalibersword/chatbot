@@ -180,12 +180,15 @@ class ZoneTracker:
             return
         self.zones[z] = val
 
-    def update_zones_from_d(self, deets):
+    # Fetches info from the dm
+    def update_zones_from_dm(self, dm):
+        all_info = dm.fetch_info()
         zkey = "zones"
-        if zkey in deets:
-            zone_d = deets[zkey]
-            for z, val in zone_d.items():
+        if zkey in all_info:
+            zone_dic = all_info[zkey]
+            for z, val in zone_dic.items():
                 self._add_zone(z, val)
+        return
 
     def get_zones(self):
         return self.zones.copy()
@@ -365,13 +368,14 @@ class ChatManager:
     def _parse_message_details(self, msg):
         slots = self.gatekeeper.get_slots() # Only look out for what is needed
         details = self.iparser.parse(msg, slots)
-        self.ztracker.update_zones_from_d(details)
         self.push_detail_to_dm(details)
         return
 
     ### Detail logging
     def push_detail_to_dm(self, d, ow=1):
-        return self.dmanager.log_detail(d, OVERWRITE=1)
+        self.dmanager.log_detail(d, OVERWRITE=1)
+        self.ztracker.update_zones_from_dm(self.dmanager)
+        return 
 
     ### Chat logging
     def _record_messages_in_chat(self,recv, sent):
@@ -501,23 +505,37 @@ class PolicyKeeper:
 # MANAGES DETAILS (previously held by Chat)
 # TODO: Differentiate between contextual chat info and user info?
 class DetailManager:
-    def __init__(self, info_vault,secondary_slots):
+    def __init__(self, info_vault,secondary_slots,zonelist):
         self.vault = info_vault
         self.inital_dict = {}
+        self.inital_dict["zones"] = {}
         self.chat_prov_info = self.inital_dict
-        self.dbr = {"dummy"}
-        self.dbrset = False
+        self.dbrunner = {"dummy"}
+        self.dbrunnerset = False
         self.chatID = "PLACEHOLDER_USERID"
+        self.zonelist = zonelist
         self.second_slots = secondary_slots
 
     def set_runner(self, runner):
-        self.dbr = runner
-        self.dbrset = True
+        self.dbrunner = runner
+        self.dbrunnerset = True
 
     def _set_chatID(self, chatID):
         self.chatID = chatID
-        # prev_info = self.dbr.fetch_user_info(chatID)
+        # prev_info = self.dbrunner.fetch_user_info(chatID)
         # self.chat_prov_info.update(prev_info)
+
+    # Adds a zone dict to the supplied dict
+    # E.g. "zones":{"city":"shanghai"}
+    def _update_zones(self):
+        d = self.chat_prov_info
+        zones_d = {}
+        for zone in self.zonelist:
+            if zone in d:
+                zones_d[zone] = d[zone]
+
+        if not zones_d == {}: 
+            d["zones"].update(zones_d)
 
     def log_detail(self, new_info, OVERWRITE = 1, DEBUG = 0):
         if DEBUG: print("Logging", new_info)
@@ -535,6 +553,8 @@ class DetailManager:
         self._update_server_state_info()
 
         self.write_info_to_db()
+
+        self._update_zones()
         return
 
     # Info without vault
@@ -549,20 +569,17 @@ class DetailManager:
     def _update_server_state_info(self):
         dt_now = datetime.now()
         server_info = {}
-        server_info["state_curr_hour"] = dt_now.hour
+        server_info["state_curr_hour"] = str(dt_now.hour)
         self.chat_prov_info.update(server_info)
         return
 
     def _add_secondary_slots(self):
+        
         curr_info = self.fetch_info()
         ss_default_flag = "DEFAULT"
+
         def tree_search(tree, info):
             slot, sub_dict = list(tree.items())[0]
-            dv = ""
-            nff = False
-            if ss_default_flag in tree:
-                dv = tree[ss_default_flag]
-                nff = True
             while slot in info:
                 slot_val = info[slot]
                 if slot_val in sub_dict:
@@ -574,14 +591,18 @@ class DetailManager:
                 else:
                     if DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
                     break
-            return (nff, dv)
+            return (False, "")
 
         entries = {}
         for ss in self.second_slots:
             target = ss["writeto"]
             tree = ss["search_tree"]
+
             f, val = tree_search(tree, curr_info)
-            if f: entries[target] = val
+            if f: 
+                entries[target] = val
+            elif ss_default_flag in tree:
+                 entries[target] = tree[ss_default_flag]
         
         self.chat_prov_info.update(entries)
         return 
@@ -595,20 +616,20 @@ class DetailManager:
 
     # This is called during the creation of a new chat
     def clone(self, chatID):   
-        if not self.dbrset:
+        if not self.dbrunnerset:
             raise Exception("DatabaseRunner not initalized for DetailManager!")
-        clonetrooper = DetailManager(self.vault, self.second_slots)
+        clonetrooper = DetailManager(self.vault, self.second_slots, self.zonelist)
         clonetrooper._set_chatID(chatID)
-        clonetrooper.set_runner(self.dbr)
-        prev_info = self.dbr.fetch_user_info(chatID)
+        clonetrooper.set_runner(self.dbrunner)
+        prev_info = self.dbrunner.fetch_user_info(chatID)
         clonetrooper.log_detail(prev_info)
         return clonetrooper
 
     def write_info_to_db(self):
-        if not self.dbrset:
+        if not self.dbrunnerset:
             raise Exception("DatabaseRunner not initalized for DetailManager!")
         chatid = self.chatID
-        self.dbr.write_to_db(chatid, self.get_user_info())
+        self.dbrunner.write_to_db(chatid, self.get_user_info())
 
 # Generates reply text based on current state info
 class ReplyGenerator:

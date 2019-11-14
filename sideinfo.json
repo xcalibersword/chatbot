@@ -21,6 +21,9 @@
             ]
         ]
     },
+    "zones": [
+        "city", "work_hrs_flag"
+    ],
     "secondary_slots": [
         {
             "writeto": "city_district",
@@ -44,8 +47,8 @@
         },
         {
             "writeto": "work_hrs_flag",
+            "DEFAULT": "no",
             "search_tree": {
-                "DEFAULT": "no",
                 "state_curr_hour": {
                     "9": "yes",
                     "10": "yes",
@@ -66,9 +69,6 @@
         "要公积金":"yes"
     },
     "info_parser": {
-        "zones": [
-            "city", "work_hrs_flag"
-        ],
         "permanent_slots": [
             ["city","city"],
             ["target_month", "month_slot"],
