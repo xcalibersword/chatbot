@@ -569,9 +569,9 @@ class DetailManager:
     def _update_server_state_info(self):
         dt_now = datetime.now()
         server_info = {}
-        server_info["state_curr_hour"] = str(dt_now.hour)
-        server_info["state_month"] = str(dt_now.month)
-        server_info["state_curr_day"] = str(dt_now.day)
+        server_info["state_curr_hour"] = dt_now.hour
+        server_info["state_month"] = dt_now.month
+        server_info["state_curr_day"] = dt_now.day
         self.chat_prov_info.update(server_info)
         return
 
@@ -583,7 +583,7 @@ class DetailManager:
         def tree_search(tree, info):
             slot, sub_dict = list(tree.items())[0]
             while slot in info:
-                slot_val = info[slot]
+                slot_val = str(info[slot]) # To convert ints to strings. I.e. for hours
                 if slot_val in sub_dict:
                     ss_branch = sub_dict[slot_val]
                     if isinstance(ss_branch, dict):
@@ -690,7 +690,7 @@ class ReplyGenerator:
         def needs_calc(state):
             return "calcs" in state
 
-        def add_conditional_vars(f,vd):
+        def add_formula_conditional_vars(f,vd):
             ret = {}
             # This assumes all conditions are joined by AND
             conds = f["conditions"]
@@ -714,7 +714,7 @@ class ReplyGenerator:
             reqvars = "req_vars"
             def op_on_all(vnames, op, vdic):
                 def operate(a,b,op):
-                    if 0: print("a,b", a, b)
+                    if 0: print("a,b", a, b) # DEBUG statement
                     return op(a,b)
                 out = None
                 for vname in vnames:
@@ -735,7 +735,7 @@ class ReplyGenerator:
             vd = dive_for_values(req_vars,enhanced)
             
             # Conditional values
-            add_conditional_vars(f,vd)
+            add_formula_conditional_vars(f,vd)
             if DEBUG: print("vd",vd)
 
             #CALCULATIONS 

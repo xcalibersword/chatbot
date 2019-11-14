@@ -510,16 +510,6 @@
                 "不好意思😞，我是新手，现在给你转到负责同事"
             ]
         },
-        "OLDnight_time_cannot": {
-            "key": "notused",
-            "gated": false,
-            "thread": "EXIT",
-            "humanify": false,
-            "req_info": "",
-            "replies": [
-                "亲 我是值班客服 看不到系统数据 您白天上班时间联系我们吧 谢谢亲"
-            ]
-        },
         "night_time_cannot": {
             "key": "night_time_cannot",
             "gated": false,
@@ -527,7 +517,7 @@
             "humanify": false,
             "req_info": "",
             "replies": [
-                "亲 我是值班客服 办不了这个 您白天上班时间联系我们吧 谢谢亲"
+                "亲 我是值班客服 看不到系统数据 您白天上班时间联系我们吧 谢谢亲"
             ]
         },
         "ask_if_issue": {
@@ -702,6 +692,17 @@
                 "{rep_ext[how_much_reply]}"
             ]
         },
+        "inform_can_make_it":{
+            "key": "inform_can_make_it",
+            "gated": true,
+            "thread": "t_can_make_it",
+            "terminal_state": true,
+            "calcs": ["flag_cmi"],
+            "req_info": [["city","city"]],
+            "replies": [
+                "亲{rep_ext[can_make_it_info]}"
+            ]
+        },
         "inform_company_name":{
             "key": "inform_company_name",
             "gated": true,
@@ -717,11 +718,7 @@
             "gated": true,
             "thread": "t_gjj_card",
             "terminal_state": true,
-            "req_info": [
-                [
-                    "city","city"
-                ]
-            ],
+            "req_info": [["city","city"]],
             "replies": [
                 "{rep_ext[gjj_card_process_info]}"
             ]
@@ -732,11 +729,7 @@
             "humanify": false,
             "thread": "t_howcheck",
             "terminal_state": true,
-            "req_info": [
-                [
-                    "city","city"
-                ]
-            ],
+            "req_info": [["city","city"]],
             "replies": [
                 "{rep_ext[how_check_shebao]}"
             ]
@@ -746,11 +739,7 @@
             "gated": true,
             "thread": "t_howcheck",
             "terminal_state": true,
-            "req_info": [
-                [
-                    "city","city"
-                ]
-            ],
+            "req_info": [["city","city"]],
             "replies": [
                 "{rep_ext[how_check_gjj]}"
             ]
@@ -769,10 +758,9 @@
             "gated": true,
             "thread": "t_pay_deadline",
             "terminal_state": true,
+            "calcs":["flag_cmi"],
             "req_info": [
-                [
-                    "city","city"
-                ]
+                ["city","city"]
             ],
             "replies": [
                 "{rep_ext[pay_deadline_info]}"
@@ -784,9 +772,7 @@
             "thread": "t_region_cover",
             "terminal_state": true,
             "req_info": [
-                [
-                    "city","city"
-                ]
+                ["city","city"]
             ],
             "replies": [
                 "{rep_ext[region_coverage_info]}"
@@ -797,11 +783,7 @@
             "gated": true,
             "thread": "t_req_resources",
             "terminal_state": true,
-            "req_info": [
-                [
-                    "city","city"
-                ]
-            ],
+            "req_info": [["city","city"]],
             "replies": [
                 "{rep_ext[req_resource_info]}"
             ]
@@ -811,11 +793,7 @@
             "gated": true,
             "thread": "t_shebao_card",
             "terminal_state": true,
-            "req_info": [
-                [
-                    "city","city"
-                ]
-            ],
+            "req_info": [["city","city"]],
             "replies": [
                 "{rep_ext[shebao_card_process_info]}"
             ]
@@ -825,11 +803,7 @@
             "gated": true,
             "thread": "t_shebao_card",
             "terminal_state": true,
-            "req_info": [
-                [
-                    "city","city"
-                ]
-            ],
+            "req_info": [["city","city"]],
             "replies": [
                 "亲，{rep_ext[shebao_card_status_info]}"
             ]
@@ -849,11 +823,7 @@
             "gated": true,
             "thread": "t_topup",
             "terminal_state": true,
-            "req_info": [
-                [
-                    "city","city"
-                ]
-            ],
+            "req_info": [["city","city"]],
             "replies": [
                 "亲，{rep_ext[topup_gjj_info]}"
             ]
@@ -864,11 +834,7 @@
             "thread": "t_weixin",
             "humanify": false,
             "terminal_state": true,
-            "req_info": [
-                [
-                    "city","city"
-                ]
-            ],
+            "req_info": [["city","city"]],
             "replies": [
                 "{rep_ext[weixin_info]}"
             ]
@@ -878,11 +844,7 @@
             "gated": true,
             "thread": "t_whencheck",
             "terminal_state": true,
-            "req_info": [
-                [
-                    "city","city"
-                ]
-            ],
+            "req_info": [["city","city"]],
             "replies": [
                 "{rep_ext[when_check_shebao]}"
             ]
@@ -892,11 +854,7 @@
             "gated": true,
             "thread": "t_xufei",
             "terminal_state": true,
-            "req_info": [
-                [
-                    "city","city"
-                ]
-            ],
+            "req_info": [["city","city"]],
             "replies": [
                 "{rep_ext[xufei_info]}"
             ]
@@ -1282,20 +1240,19 @@
                     "inform_pay_deadline"
                 ],
                 "lookfor": [
-                    "city",
                     "city_district",
-                    [
-                        "city_info",
-                        [
-                            "pay_deadline"
-                        ]
-                    ]
+                    ["city_info",["pay_deadline"]],
+                    ["calc_ext",["w_cmi_flag"]]
                 ],
                 "if_present": {},
                 "if_value": {
+                    "w_cmi_flag":{
+                        "1":"亲 现在还可以交。",
+                        "0":"亲 要交当月现在来不及。"
+                    },
                     "city_district":{
                         "苏州市区": "每月10日前拍下次月费用，最晚不能超过20号，老客户20号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
-                        "DEFAULT":"{s_slots[city_district]}最好在{city_info[pay_deadline]}号前拍下宝贝，在小程序上提交参保资料哦"
+                        "DEFAULT":"{city_district}最好在{city_info[pay_deadline]}号前拍下宝贝，在小程序上提交参保资料哦"
                     }
                 }
             },
@@ -1553,6 +1510,35 @@
                     ]
                 },
                 "writeto": "w_shouci_fee"
+            },
+            "flag_cmi":{
+                "writeto": "w_cmi_flag",
+                "conditions": [],
+                "req_vars": [
+                    "state_curr_day",
+                    [
+                        "city_info",
+                        [
+                            "pay_deadline"
+                        ]
+                    ]
+                ],
+                "steps": {
+                    "1,isgreater": [
+                        [
+                            "state_curr_day",
+                            "pay_deadline"
+                        ],
+                        "OUTCOME"
+                    ],
+                    "2,sub":[
+                        [
+                            1,
+                            "OUTCOME"
+                        ],
+                        "OUTCOME"
+                    ]
+                }
             },
             "sum_svc_fee": {
                 "conditions": [],
@@ -1897,7 +1883,7 @@
                 "shebao_payment": 1288.79,
                 "svc_fee": 40,
                 "shouci_fee": 50,
-                "pay_deadline": 20,
+                "pay_deadline": 10,
                 "gongjijin_fee": 482,
                 "bujiao_period": 3
             },
