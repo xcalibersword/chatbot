@@ -14,6 +14,13 @@
                 "yes":"pass_to_human",
                 "no":"night_time_cannot"
             }
+        ],
+        "ask_how_much_crossroad":[
+            "chosen_fee",{
+                "一共": "city_crossroad",
+                "两个": "city_crossroad",
+                "DEFAULT": "ctx_inform_how_much"
+            }
         ]
     },
     "class_policy_rules":{
@@ -54,7 +61,8 @@
             ["inform","city_crossroad"],
             ["next_step", "inform_pai"],
             ["affirm", "inform_pai"],
-            ["query_pay_process", "inform_pai"]
+            ["query_pay_process", "inform_pai"],
+            ["deny","initplus"]
         ],
         "inform_pai": [
             ["inform", "city_crossroad"],

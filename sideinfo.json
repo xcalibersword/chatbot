@@ -22,7 +22,7 @@
         ]
     },
     "zones": [
-        "city", "work_hrs_flag"
+        "city", "work_hrs_flag", "chosen_fee"
     ],
     "secondary_slots": [
         {

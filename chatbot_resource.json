@@ -137,13 +137,6 @@
             "default_target": "inform_shebao_card_status",
             "replies": []
         },
-
-        "ask_amt_month_fee_total": {
-            "key": "ask_amt_month_fee_total",
-            "default_set": true,
-            "default_target": "ctx_inform_how_much",
-            "replies": []
-        },
         "ask_alt_payment_method": {
             "key": "info_alt_payment",
             "default_set": true,
@@ -163,7 +156,7 @@
         "ask_how_much": {
             "key": "ask_how_much",
             "default_set": true,
-            "default_target": "ctx_inform_how_much",
+            "default_target": "ask_how_much_crossroad",
             "replies": []
         },
         "query_break_gjj":{
@@ -520,6 +513,37 @@
                 "亲 我是值班客服 看不到系统数据 您白天上班时间联系我们吧 谢谢亲"
             ]
         },
+        "ask_how_much_crossroad":{
+            "key": "ask_how_much_crossroad",
+            "gated": true,
+            "thread": "t_howmuch",
+            "humanify": false,
+            "req_info": [["chosen_fee","fee_slot"]],
+            "replies": []
+        },
+        "ctx_inform_how_much":{
+            "key": "ctx_inform_how_much",
+            "gated": true,
+            "thread": "t_howmuch",
+            "terminal_state": true,
+            "calcs":[
+                "flag_sb_gjj",
+                "flag_shouci",
+                "sum_svc_fee",
+                "gen_shebao_jishu",
+                "gen_shebao_amt"
+            ],
+            "req_info": [
+                ["city","city"],
+                ["首次","DEFAULT_SV"],
+                ["要社保","DEFAULT_SV"],
+                ["要公积金","DEFAULT_SV"],
+                ["chosen_fee","fee_slot"]
+            ],
+            "replies": [
+                "{rep_ext[how_much_reply]}"
+            ]
+        },
         "ask_if_issue": {
             "key": "251 whats wrong",
             "gated": false,
@@ -666,30 +690,6 @@
             "req_info": "",
             "replies": [
                 "好的，谢谢光临 😘"
-            ]
-        },
-        "ctx_inform_how_much":{
-            "key": "ctx_inform_how_much",
-            "gated": true,
-            "thread": "t_whencheck",
-            "terminal_state": true,
-            "calcs":[
-                "flag_sb_gjj",
-                "flag_shouci",
-                "sum_svc_fee",
-                "gen_shebao_jishu",
-                "gen_shebao_amt",
-                "shebao_basic_calc"
-            ],
-            "req_info": [
-                ["city","city"],
-                ["首次","DEFAULT_SV"],
-                ["要社保","DEFAULT_SV"],
-                ["要公积金","DEFAULT_SV"],
-                ["chosen_fee","fee_slot"]
-            ],
-            "replies": [
-                "{rep_ext[how_much_reply]}"
             ]
         },
         "inform_can_make_it":{
@@ -1461,9 +1461,7 @@
                         "社保缴纳":"社保缴纳: {city_info[shebao_payment]}",
                         "社保基数":"社保基数: {city_info[sb_jishu]}",
                         "公积金缴纳":"公积金缴纳: {city_info[gongjijin_fee]}",
-                        "公积金基数":"公积金基数: {city_info[gjj_jishu]}",
-                        "两个":"社保缴纳: {city_info[shebao_payment]}, 公积金缴纳: {city_info[gongjijin_fee]}",
-                        "一共":"一共: {city}{rep_ext[product]}: {rep_ext[calc_str_working]} 首次缴纳额外收取{city_info[shouci_fee]}元开户费"
+                        "公积金基数":"公积金基数: {city_info[gjj_jishu]}"
                     }
                 }
             }
