@@ -190,6 +190,8 @@ if MAIN:
         ("想要代缴昆山社保的","purchase"),
         ("这里能代缴广州五险一金吗","purchase"),
         ("方便用电话讲吗","query_phone"),
+        ("请问流程是怎么样的？","query_pay_process"),
+        ("你们交社保的流程是怎么样？","query_pay_process"),
         ("怎么看到缴纳记录？","query_how_check_shebao_status"),
         ("缴纳之后能查看记录吗？","query_how_check_shebao_status"),
         ("在哪里能查到社保","query_how_check_shebao_status"),
