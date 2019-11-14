@@ -128,10 +128,8 @@
             "key": "ask_shebao_status",
             "default_set": true,
             "humanify": false,
-            "default_target": "SAME_STATE",
-            "replies": [
-                "不好意思😞 亲 我是值班客服 看不到系统数据 你白天上班时间联系我们吧 谢谢亲"
-            ]
+            "default_target": "complication_crossroad",
+            "replies": []
         },
         "ask_shebao_card_status": {
             "key": "ask_shebao_card_status",
@@ -475,6 +473,32 @@
                 "亲 还有别的要问吗？"
             ]
         },
+        "city_crossroad":{
+            "key": "city_crossroad",
+            "gated": false,
+            "thread": "t_presale",
+            "humanify": true,
+            "req_info": "",
+            "replies": [
+                "那么亲是哪个城市呢？"
+            ]
+        },
+        "unsupported_city":{
+            "key": "unsupported_city",
+            "gated": true,
+            "thread": "T_BASE",
+            "humanify": true,
+            "req_info": [["city","city"]],
+            "replies": ["不好意思 亲 我们不贷款{city}"]
+        },
+        "complication_crossroad":{
+            "key": "complication_crossroad",
+            "gated": false,
+            "thread": "EXIT",
+            "humanify": false,
+            "req_info": "",
+            "replies": []
+        },
         "pass_to_human": {
             "key": "pass_to_human",
             "gated": false,
@@ -494,32 +518,6 @@
             "replies": [
                 "亲 我是值班客服 看不到系统数据 您白天上班时间联系我们吧 谢谢亲"
             ]
-        },
-        "city_crossroad":{
-            "key": "city_crossroad",
-            "gated": false,
-            "thread": "t_presale",
-            "humanify": true,
-            "req_info": "",
-            "replies": [
-                "那么亲是哪个城市呢？"
-            ]
-        },
-        "complication_crossroad":{
-            "key": "complication_crossroad",
-            "gated": false,
-            "thread": "t_complicated",
-            "humanify": false,
-            "req_info": "",
-            "replies": []
-        },
-        "unsupported_city":{
-            "key": "unsupported_city",
-            "gated": true,
-            "thread": "T_BASE",
-            "humanify": true,
-            "req_info": [["city","city"]],
-            "replies": ["不好意思 亲 我们不贷款{city}"]
         },
         "ask_if_issue": {
             "key": "251 whats wrong",
