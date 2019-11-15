@@ -256,14 +256,14 @@ class ChatManager:
     # Takes in message text, returns (understanding object, nlp breakdown)
     def _parse_message_overall(self,msg):
         # Inital understanding
-        uds, bd = self._fetch_understanding(msg)
+        uds, bd, nums = self._policykeeper_parse(msg)
         if DEBUG: print("Initial UDS:")
         if DEBUG: uds.printout()
         # self.gatekeeper.scan_SIP(uds.get_sip()) # TODO CHECK IF THIS IS USEFUL
 
         # Mine message details. 
         # This is after gatekeep because gatekeep sets the slots.
-        self._parse_message_details(msg)
+        self._parse_message_details(msg, nums)
 
         return uds, bd
     
@@ -360,14 +360,16 @@ class ChatManager:
         return self.dmanager.fetch_info()
 
      # Gets the next state according to policy
-    def _fetch_understanding(self, msg):
+    def _policykeeper_parse(self, msg):
         csk = self._get_csk()
         return self.pkeeper.get_understanding(msg, csk)
 
     # Asks iparser to parse the message
-    def _parse_message_details(self, msg):
+    def _parse_message_details(self, msg, nums):
         slots = self.gatekeeper.get_slots() # Only look out for what is needed
         details = self.iparser.parse(msg, slots)
+        bignum = max(nums) if len(nums) > 0 else 0
+        details["biggest_num"] = bignum ## TODO: Work in PROGRESS. Gets the biggest number from the list
         self.push_detail_to_dm(details)
         return
 
@@ -418,17 +420,18 @@ class PolicyKeeper:
         pack = self.predictor.predict(msg)
         intent = pack["prediction"]
         breakdown = pack["breakdown"]
-        return intent, breakdown
+        nums = pack["numbers"]
+        return intent, breakdown, nums
 
     # MAIN METHOD
     # Returns an understanding and NLP breakdown
     def get_understanding(self, msg, curr_state):
         # Call NLP Model predict
-        intent, breakdown = self._NLP_predict(msg)
+        intent, breakdown, nums = self._NLP_predict(msg)
         print("NLP intent:",intent)
         # Check intent against background info
         uds = self.intent_to_next_state(curr_state, intent)
-        return uds, breakdown
+        return uds, breakdown, nums
 
     def _create_state_obj(self, sk):
         if not sk in self.STATE_DICT:

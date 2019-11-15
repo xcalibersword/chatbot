@@ -2,16 +2,21 @@ import json
 import ast
 import numpy as np
 import jieba as jb
+
 from keras.preprocessing.text import Tokenizer, tokenizer_from_json
 
 if __name__ == "__main__":
     MAIN = True
     rootpath = ''
     from unzipper import get_vector_dict
+    from nlp_utils import is_a_number
+
 else:
     MAIN = False
     rootpath = 'embedding/'
     from embedding.unzipper import get_vector_dict
+    from embedding.nlp_utils import is_a_number
+
 
 from keras.models import load_model
 from keras.preprocessing.sequence import pad_sequences 
@@ -22,6 +27,8 @@ w2v_filepath = "/Users/davidgoh/Desktop/sgns.weibo.bigram-char.bz2"
 VDLIMIT = 60000 #35000 includes gongjijin
 
 USE_WORD2VECTOR = False
+
+DEBUG = True
 
 def read_json(json_filename):
     try:
@@ -81,14 +88,25 @@ class Predictor:
     
     # MAIN METHOD
     def predict(self, raw):
-        arr = self.tokenize(raw)
-        print("input_arr",arr)
-        raw_pred = self.pmodel.predict(arr)[0] # We want a single prediction
-        outdict = self.pred_to_word(raw_pred)
+        int_arr, wordlist = self.tokenize(raw)
+        if DEBUG: print("<NLP_API PREDICT> input_arr",int_arr)
+
+        raw_pred = self.pmodel.predict(int_arr)[0] # We want a single prediction
+        outdict = {}
+        pred_dict = self.pred_to_word(raw_pred)
+
+        num_list = self.filter_numbers(wordlist)
+        num_dict = {"numbers": num_list}
+        outdict.update(pred_dict)
+        outdict.update(num_dict)
+
         return outdict
 
     # Tokenizes and converts to int
     def tokenize(self, string):
+        lesser_cut = jb.cut(string)
+        wordlist = list(lesser_cut)
+
         string = self._remove_symbols(string)
         jbstring = jb.cut(string,cut_all=True)
         word2int = self.word2int
@@ -102,6 +120,20 @@ class Predictor:
             out.append(t)
         out = pad_sequences([out,], self.max_review_length, dtype = object, value=0)
         # print("out",out)
+        return out, wordlist
+
+    def filter_numbers(self, seq):
+        out = []
+        for item in seq:
+            print("FN item",item)
+            if is_a_number(item):
+                try:
+                    fi = float(item)
+                except Exception as e:
+                    print("<FILTER NUMBERS>",e)
+                
+                out.append(fi)
+        print("<FILTER NUMBERS>",out)
         return out
 
     def pred_to_word(self,pred):
