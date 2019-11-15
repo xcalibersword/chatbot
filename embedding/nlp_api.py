@@ -110,7 +110,7 @@ class Predictor:
         s_pred = np.sort(pred,-1)
         best = None
         breakdown = ""
-        rel_threshold = 50
+        rel_threshold = 40
         DEFAULT_RETURN = "complicated"
         for i in range(top):
             curr_mag = s_pred[-1]
@@ -146,6 +146,8 @@ if MAIN:
         ("我之前有开户口","inform"),
         ("哦，没开过户口","inform"),
         ("加上一金的话？","inform"),
+        ("6月份的话？","inform"),
+        ("12月呢？","inform"),
         ("支付过了哦","inform_paid"),
         ("已经付好啦","inform_paid"),
         ("费用已付注意查收","inform_paid"),
@@ -161,7 +163,7 @@ if MAIN:
         ("社保公积金一起做收多少服务费啊","ask_how_much"),
         ("请问多久才到账", "ask_turnaround_time"),
         ("一般要多久才交上", "ask_turnaround_time"),
-        ("交上社保要多久", "ask_turnaround_time"),
+        ("交上社保要等多久", "ask_turnaround_time"),
         ("怀孕了还可以代缴吗","query_pregnant"),
         ("怀孕了还可以买吗","query_pregnant"),
         ("怎么去拍啊","how_to_pai"),
