@@ -667,7 +667,7 @@
             "gated": true,
             "thread": "t_give_link",
             "terminal_state": true,
-            "req_info": [["city","city"]],
+            "req_info": [["city","city"],["chosen_fee","fee_slot"]],
             "replies": [
                 "亲{rep_ext[raw_taobao_link]}"
             ]
@@ -879,7 +879,7 @@
                         "首次": "是首次吗？",
                         "要公积金": "交公积金吗？",
                         "苏州区": "是市区还是园区呢？",
-                        "chosen_fee": "哪个部分？",
+                        "chosen_fee": "哪个部分？（比如：社保/公积金/服务费）",
                         "target_month": "要缴哪月？"
                     }
                 }
@@ -890,13 +890,18 @@
                     "provide_taobao_link"
                 ],
                 "lookfor": [
-                    "city_district"
+                    "area_specific_fee"
                 ],
                 "if_present": {},
                 "if_value": {
-                    "city_district": {
-                        "DEFAULT": "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。",
-                        "上海市": "上海市：https://item.taobao.com/item.htm?id=598103220826"
+                    "area_specific_fee": {
+                        "DEFAULT": "手上没有这个链接不好意思。亲可以在淘宝搜索一下哦",
+                        "上海市社保": "上海市社保：https://item.taobao.com/item.htm?id=598103220826",
+                        "上海市公积金":"上海市公积金：https://item.taobao.com/item.htm?id=598525470715",
+                        "上海市服务费":"服务费：https://item.taobao.com/item.htm?id=598104660990",
+                        "北京市服务费":"服务费：https://item.taobao.com/item.htm?id=598104660990",
+                        "北京市公积金":"手上没有这个链接不好意思。亲可以在淘宝搜索一下哦",
+                        "北京市社保":"手上没有这个链接不好意思。亲可以在淘宝搜索一下哦"
                     }
                 }
             },
