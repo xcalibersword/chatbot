@@ -369,10 +369,8 @@
             "key": "request_link",
             "default_set": true,
             "humanify": false,
-            "default_target": "complication_crossroad",
-            "replies": [
-                "不好意思，暂时不能给链接 😞"
-            ]
+            "default_target": "provide_taobao_link",
+            "replies": []
         },
         "inform_done":{
             "key": "182 inform_done",
@@ -664,6 +662,16 @@
                 "好的，谢谢光临 😘"
             ]
         },
+        "provide_taobao_link":{
+            "key": "provide_taobao_link",
+            "gated": true,
+            "thread": "t_give_link",
+            "terminal_state": true,
+            "req_info": [["city","city"]],
+            "replies": [
+                "亲{rep_ext[raw_taobao_link]}"
+            ]
+        },
         "inform_can_make_it":{
             "key": "inform_can_make_it",
             "gated": true,
@@ -873,6 +881,22 @@
                         "苏州区": "是市区还是园区呢？",
                         "chosen_fee": "哪个部分？",
                         "target_month": "要缴哪月？"
+                    }
+                }
+            },
+            {
+                "writeto": "raw_taobao_link",
+                "states": [
+                    "provide_taobao_link"
+                ],
+                "lookfor": [
+                    "city_district"
+                ],
+                "if_present": {},
+                "if_value": {
+                    "city_district": {
+                        "DEFAULT": "直接拍宝贝，然后通过weixin小程序（58人才服务中心）提交参保信息。参保完成后，直接通过小程序查看参保成功截图，简单可靠。",
+                        "上海市": "上海市：https://item.taobao.com/item.htm?id=598103220826"
                     }
                 }
             },
@@ -1250,7 +1274,7 @@
                 ],
                 "if_value": {
                     "city_district": {
-                        "上海城": "上海续费说明：每月15日前拍下宝贝，老客户15号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
+                        "上海市": "上海续费说明：每月15日前拍下宝贝，老客户15号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
                         "杭州市": "杭州续费说明：每月10日前拍下宝贝，老客户10号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
                         "成都市": "成都续费说明：每月10日前拍下宝贝，老客户10号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
                         "广州市": "广州续费说明：每月10日前拍下宝贝，老客户10号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
@@ -1373,7 +1397,7 @@
                 "if_present": {},
                 "if_value": {
                     "city_district": {
-                        "DEFAULT": "{city_district}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}。"
+                        "DEFAULT": "{city_district}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}元。"
                     }
                 }
             }, 
@@ -1413,7 +1437,7 @@
                 "if_present": {},
                 "if_value": {
                     "city": {
-                        "北京": "农业户口：{rep_ext[product]}{rep_ext[bj_proposal]} {rep_ext[首次ext]}，共计{calc_ext[bj_shebao_basic_total]}\n 城镇户口：{rep_ext[product]}{rep_ext[bj_proposal2]} {rep_ext[首次ext]}，共计{calc_ext[bj_shebao_basic_total2]}\n服务费单项{city_info[svc_fee]}元，双项{city_info[dbl_svc_fee]}元（23号之后最低缴纳基数会提高、服务费会贵一些）北京首保：需要开户费{city_info[shouci_fee]}元，公司统一制卡，周期6个月左右，制卡完成会联系邮寄给你"
+                        "北京": "农业户口：{rep_ext[product]}{rep_ext[bj_proposal]} {rep_ext[首次ext]}，共计{calc_ext[bj_shebao_basic_total]}元\n 城镇户口：{rep_ext[product]}{rep_ext[bj_proposal2]} {rep_ext[首次ext]}，共计{calc_ext[bj_shebao_basic_total2]}元\n服务费单项{city_info[svc_fee]}元，双项{city_info[dbl_svc_fee]}元（23号之后最低缴纳基数会提高、服务费会贵一些）北京首保：需要开户费{city_info[shouci_fee]}元，公司统一制卡，周期6个月左右，制卡完成会联系邮寄给你"
                     }
                 }
             },

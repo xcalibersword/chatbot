@@ -42,14 +42,14 @@
         "init": [
             ["greet","SAME_STATE"],
             ["purchase", "city_crossroad"],
-            ["explore_option","city_crossroad"],
+            ["inform","city_crossroad"],
             ["affirm", "initplus"],
             ["deny", "goodbye"]
         ],
         "initplus": [
             ["greet", "init"],
             ["purchase", "city_crossroad"],
-            ["explore_option","city_crossroad"],
+            ["inform","city_crossroad"],
             ["deny", "goodbye"]
         ],
         "init_sale": [

@@ -78,7 +78,8 @@
             ["chosen_fee","fee_slot"],
             ["ask_keyi","keyi_slot"],
             ["say_thanks","thanks_slot"],
-            ["yourenma","yourenma_slot"]
+            ["yourenma","yourenma_slot"],
+            ["xufei","xufei_slot"]
         ],
         "COMMENT":"ctx slots are always permanent",
         "contextual_slots":[
@@ -136,6 +137,12 @@
                 "zaima":[
                     
                     "在(吗|么|嘛|不|没)$"
+                ],
+                "NO_MATCH":["not_asked"]
+            },
+            "xufei_slot":{
+                "zhelipaima":[
+                    "(还*)(在*)这里拍"
                 ],
                 "NO_MATCH":["not_asked"]
             },
@@ -260,6 +267,13 @@
             {
                 "location":"START",
                 "text":"有啊，"
+            }
+        },
+        "xufei":{
+            "zhelipaima":
+            {
+                "location":"START",
+                "text":"对在这里拍。"
             }
         }
     }
