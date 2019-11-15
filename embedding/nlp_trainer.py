@@ -44,7 +44,7 @@ save_model_name = 'trained.h5'
 # Parameters
 max_review_length = 30 #maximum length of the sentence
 embedding_vector_length = 128
-max_intents = 120
+max_intents = 150
 
 ### Information preprocessing ###
 count = 0
@@ -213,14 +213,14 @@ embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) #
 save_to_json("xval_man_tokens.json",str(word_index))
 
 reg = l2(0.01)
-# embed_init = glorot_uniform(seed=714)
-embed_init = RandomUniform(seed=313)
+# embed_init = RandomUniform(seed=313)
+embed_init = RandomUniform(seed=15)
 
 my_embedding = Embedding(
     num_words,
     embedding_vector_length,
     embeddings_initializer = embed_init,
-    activity_regularizer = None,
+    activity_regularizer = reg,
     embeddings_constraint = MaxNorm(max_value=2,axis=0),
     input_length=max_review_length,
     trainable = True
@@ -236,36 +236,47 @@ main_input = Input(shape=(max_review_length,), dtype='int32')
 embed = my_embedding(main_input)
 embed = BatchNormalization(momentum=0.99)(embed)
 
-# 词窗大小分别为 2 3 4
-cnnUnits = 128 # 
-cnn1 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu')(embed)
-cnn2 = Conv1D(cnnUnits, 3, padding='same', strides=1, activation='relu')(embed)
-cnn3 = Conv1D(cnnUnits, 4, padding='same', strides=1, activation='relu')(embed)
+# 词窗大小分别为 2 3 4. Oringially 3 4 5 
+cnnUnits = 128 
+halfUnits = cnnUnits//2
+cnn2 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu')(embed)
+cnn3 = Conv1D(cnnUnits, 3, padding='same', strides=1, activation='relu')(embed)
+cnn4 = Conv1D(halfUnits, 4, padding='same', strides=1, activation='relu')(embed)
+cnn5 = Conv1D(halfUnits, 5, padding='same', strides=1, activation='relu')(embed)
 
-# cnn1 = MaxPooling1D(pool_size=4)(cnn1)
-# cnn2 = MaxPooling1D(pool_size=4)(cnn2)
-# cnn3 = MaxPooling1D(pool_size=4)(cnn3)
+
+cnn2 = MaxPooling1D(pool_size=4)(cnn2)
+cnn3 = MaxPooling1D(pool_size=4)(cnn3)
+cnn4 = MaxPooling1D(pool_size=4)(cnn4)
+cnn5 = MaxPooling1D(pool_size=4)(cnn5)
 
 # 合并三个模型的输出向量
-# Concat 3 outputs into one
-cnn = Concatenate(axis=-1)([cnn1, cnn2, cnn3])
+# Concat 3/4 outputs into one
+# cnn = Concatenate(axis=-1)([cnn2, cnn3, cnn4])
+# cnn = Concatenate(axis=-1)([cnn3, cnn4, cnn5])
+cnn = Concatenate(axis=-1)([cnn2, cnn3, cnn4, cnn5])
 cnn = BatchNormalization(momentum=0.99)(cnn)
 
 flat = Flatten()(cnn)
 flat = Dropout(0.2)(flat)
-# flat = Dense(units=256, activation='relu')(flat) # 
+
+flat = Dense(units=256, activation='relu')(flat) # 
+flat = Dropout(0.2)(flat)
+
+flat = Dense(units=256, activation='relu')(flat) # 
+
 outs = Dense(units=num_intents, activation='sigmoid')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
 
-LEARN_RATE = 3e-5
+LEARN_RATE = 5e-5 
 optimizer = Adam(learning_rate=LEARN_RATE)
 # optimizer = RMSprop(learning_rate = 3e-5)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
-
-model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=16,shuffle=True)
+# Best so far bs = 32
+model.fit(x=embed_xvals,y=cat_yval,epochs=150,verbose=1,validation_split=0.0,batch_size=16,shuffle=True)
 
 # Post Training
 model.save(save_model_name)
