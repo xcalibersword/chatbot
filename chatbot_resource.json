@@ -270,6 +270,12 @@
             "default_target": "inform_req_resources",
             "replies": []
         },
+        "query_topup":{
+            "key": "info_topup",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": ["补缴社保：补缴不算连续的，也不算正常缴纳，可以算累计缴纳的月份"]
+        },
         "query_weixin": {
             "key": "info_weixin",
             "default_set": true,
