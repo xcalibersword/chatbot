@@ -5,7 +5,7 @@ import random
 import cbsv
 import string
 import os
-from chatbot_be import record_chatlog_to_json
+import chatbot_be
 from datetime import datetime
 from chatbot_supp import *
 from chatbot_utils import dive_for_values
@@ -891,7 +891,8 @@ class ReplyGenerator:
 class Chat:
     def __init__(self,chatID, convo_history = {}):
         self.chatID = chatID
-        self.curr_chatlog = {}
+        self.blank_chatlot = []
+        self.curr_chatlog = self.blank_chatlot.copy()
         self.convo_history = convo_history
         self.convo_index = 0
         self.save_chat_logs = True
@@ -906,8 +907,8 @@ class Chat:
         username = self.chatID + "(客户)"
         humanify = lambda user, m: dt+ " > " + user + ": " + m
         robotify = lambda x: dt + " > " + "机器人: " + x
-        self.curr_chatlog[self.convo_index] = humanify(username, recieved)
-        self.curr_chatlog[self.convo_index+1] = robotify(sent)
+        self.curr_chatlog.append(humanify(username, recieved))
+        self.curr_chatlog.append(robotify(sent))
         self.convo_index = self.convo_index + 2
 
     def pop_prev_msg(self):
@@ -928,8 +929,13 @@ class Chat:
         if self.save_chat_logs:
             log = self.get_chatlog()
             chatid = self.chatID
-            record_chatlog_to_json(chatid, log)
+            chatbot_be.record_chatlog_to_json(chatid, log)
+            self.clear_chatlot()
         return
 
     def get_chatlog(self):
         return self.curr_chatlog
+
+    def clear_chatlot(self):
+        self.curr_chatlog = self.blank_chatlot.copy()
+        return

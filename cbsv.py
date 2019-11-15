@@ -97,13 +97,13 @@ def dump_to_json(filename, data, DEBUG = 0, OVERRIDE = 0):
         print("<BACKEND WARNING: Writing to file has been disabled> Restore it in cbsv.py\n {} remains unchanged".format(filename))
         return
     try:
-        with open(filename,'w', encoding='utf8') as f:
+        with open(filename,'w+', encoding='utf8') as f:
             json.dump(data, f, indent = 4, ensure_ascii=0)
+        if DEBUG: print("Finished writing to " + str(filename))
+        
     except FileNotFoundError as fnf_error:
         print(fnf_error)
     
-    if DEBUG:
-        print("Finished writing to " + str(filename))
 
 def read_json(json_filename):
     try:
@@ -112,6 +112,8 @@ def read_json(json_filename):
         return data
     except Exception as e:
         print("Exception opening{}".format(json_filename), e)
+        return ()
+        
 
 def check_file_exists(filepath):
     return os.path.isfile(filepath)

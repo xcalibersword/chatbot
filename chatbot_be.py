@@ -69,13 +69,22 @@ class DatabaseRunner():
         # dump_to_json(self.dbfilepath, self.database)
         self.timer_on = False
 
+# Assumes messages are in a list structure
 def record_chatlog_to_json(chatID, chatlog):
     direct = os.getcwd()
-    if not os.path.isdir(os.path.join(direct,"chatlogs")):
+    log_folder = "chatlogs"
+    if not os.path.isdir(os.path.join(direct,log_folder)):
         if DEBUG: print("Creating chatlogs folder...")
         os.mkdir(os.path.join(direct,"chatlogs")) # If no folder, make a folder
-    filepath = os.path.join(direct,"chatlogs/" + chatID + ".json")
     
-    # write file
-    dump_to_json(filepath,chatlog,DEBUG=1,OVERRIDE=1)
+    log_filepath = os.path.join(direct,"chatlogs/" + chatID + ".json")
+    
+    if os.path.isfile(log_filepath):
+        towrite = read_json(log_filepath)
+    else:
+        towrite = []
+    towrite.extend(chatlog)
+
+    # Write to json file
+    dump_to_json(log_filepath,towrite,DEBUG=1,OVERRIDE=1)
     return
