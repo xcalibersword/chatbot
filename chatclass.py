@@ -245,8 +245,9 @@ class ChatManager:
 
         # Request a reply text
         intent = full_uds.get_intent()
-        reply = self._fetch_reply(intent)
+        reply, calc_topup = self._fetch_reply(intent)
 
+        self.push_detail_to_dm(calc_topup)
         curr_info = self._get_current_info()
 
         # Records message logs
@@ -368,9 +369,12 @@ class ChatManager:
     def _parse_message_details(self, msg, nums):
         slots = self.gatekeeper.get_slots() # Only look out for what is needed
         details = self.iparser.parse(msg, slots)
+
+        # Append parsed number to details
         bignum = max(nums) if len(nums) > 0 else 0
         if bignum > 0:
             details["given_amount"] = bignum ## TODO: Work in PROGRESS. Gets the biggest number from the list
+        
         self.push_detail_to_dm(details)
         return
 
@@ -649,9 +653,9 @@ class ReplyGenerator:
     # OVERALL METHOD
     def get_reply(self, curr_state, intent, secondslot, info = -1):
         rdb = self.getreplydb(intent, curr_state, secondslot)
-        infoplus = self._enhance_info(curr_state, info)
+        infoplus, info_topup = self._enhance_info(curr_state, info)
         reply = self.generate_reply_message(rdb, infoplus)
-        return reply
+        return (reply, info_topup)
 
     # Formats txts and calculates
     # Big function
@@ -660,6 +664,7 @@ class ReplyGenerator:
         if DEBUG: print("initial info", enhanced)
         rep_ext = {}
         l_calc_ext = {}
+        topup = {}
 
         cskey = curr_state["key"]
         state_calcs = False
@@ -667,25 +672,31 @@ class ReplyGenerator:
         formatDB = self.formatDB["msg_formats"]
         calcDB = self.formatDB["calcs"]
 
-        def add_enh(key, value, ext_dict,overall_key, overwrite = False):
-            if 0: print("Enhancing!{}:{}".format(key,value))
+        def add_enh(key, value, ext_dict,subdict_name, pv = False, overwrite = False):
+            if DEBUG: print("Enhancing!{}:{}".format(key,value))
+
             if key in ext_dict and not overwrite:
                 ext_dict[key] = ext_dict[key] + value
             else:
                 ext_dict[key] = value
             
-            # MODIFYING ORIGINAL DICT
-            if not overall_key in enhanced: enhanced[overall_key] = {} 
-            enhanced[overall_key].update(ext_dict)
+      
+            # Dict of info to be returned and written into main info
+            if pv:
+                topup[key] = value
+                enhanced[key] = value # Write to enhanced main dict
+            else:
+                if not subdict_name in enhanced: enhanced[subdict_name] = {} 
+                enhanced[subdict_name].update(ext_dict) # Write to the the subdict in enhanced
 
-        def add_txt_enh(key, rawstr):
+        def add_txt_enh(key, rawstr,_pv = False):
             wstr = rawstr.format(**enhanced)
             enhstr = cbsv.conv_numstr(wstr)
-            return add_enh(key,enhstr,rep_ext,"rep_ext")
+            return add_enh(key,enhstr,rep_ext,"rep_ext",pv = _pv)
         
-        def add_calc_enh(key, rawstr):
+        def add_calc_enh(key, rawstr, _pv = False):
             flt = round(float(rawstr),2)
-            return add_enh(key,flt,l_calc_ext,"calc_ext",overwrite = True)
+            return add_enh(key,flt,l_calc_ext,"calc_ext", pv = _pv, overwrite = True)
 
         def needs_txt_enh(tmp,csk):
             states = tmp["states"]
@@ -715,7 +726,8 @@ class ReplyGenerator:
         # Takes in a formula (dict)
         # Returns a value of the result
         def resolve_formula(f):
-            reqvars = "req_vars"
+            reqvar_key = "req_vars"
+            opvar_key = "optional_vars"
             def op_on_all(vnames, op, vdic):
                 def operate(a,b,op):
                     a = float(a) # Force everything here to float
@@ -737,9 +749,12 @@ class ReplyGenerator:
             steps = list(map(lambda x: (x.split(","), instr[x]),steps))
             steps.sort(key=lambda t: float(t[0][0])) # If no conversion it sorts as string
             if DEBUG: print("<RESOLVE FORMULA> aft sort",steps)
-            req_vars = f[reqvars]
+            req_vars = f[reqvar_key]
+            op_vars = f.get(opvar_key, [])
             vd = dive_for_values(req_vars,enhanced)
-            
+            op_vars_d = dive_for_values(op_vars, enhanced,failzero=True)
+            vd.update(op_vars_d)
+
             # Conditional values
             add_formula_conditional_vars(f,vd)
             if DEBUG: print("<RESOLVE FORMULA> vd",vd)
@@ -760,7 +775,7 @@ class ReplyGenerator:
                     opr = lambda a,b: a-b
                 elif opname == "div":
                     opr = lambda a,b: a/b
-                elif opname == "issame":
+                elif opname == "equals":
                     opr = lambda a,b: (1 if a == b else 0)
                 elif opname == "isgreater":
                     opr = lambda a,b: (1 if a > b else 0)
@@ -776,12 +791,13 @@ class ReplyGenerator:
             for fname in state_calcs:
                 print("performing",fname)
                 if not fname in calcDB:
-                    print("ERROR! No such formula:{}".format(fname))
+                    print("<RESOLVE FORMULA> ERROR! No such formula:{}".format(fname))
                 else:
                     formula = calcDB[fname]
+                    pv_flag = formula.get("persist_value",False)
                     target_key = formula["writeto"]
                     result = resolve_formula(formula)
-                    add_calc_enh(target_key,result)
+                    add_calc_enh(target_key,result,pv_flag)
                 if 1: print("<Intermediate> enh",enhanced)
 
         else:
@@ -795,7 +811,7 @@ class ReplyGenerator:
             if needs_txt_enh(tmp,cskey):
                 target_key = tmp["writeto"]
                 lookout = tmp["lookfor"].copy()
-                vd = dive_for_values(lookout, enhanced)
+                vd = dive_for_values(lookout, enhanced, failzero=True) # Failzero true for rep ext
                 
                 print("TMP",tmp)
 
@@ -826,7 +842,7 @@ class ReplyGenerator:
                             add_txt_enh(target_key,enstr)
         
         # info.update(enhanced) # Write to info
-        return enhanced
+        return (enhanced, topup)
 
     # Returns the a reply database either from intent or from state
     def getreplydb(self, intent, curr_state, issamestate):
