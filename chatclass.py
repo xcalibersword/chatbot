@@ -369,7 +369,8 @@ class ChatManager:
         slots = self.gatekeeper.get_slots() # Only look out for what is needed
         details = self.iparser.parse(msg, slots)
         bignum = max(nums) if len(nums) > 0 else 0
-        details["given_amount"] = bignum ## TODO: Work in PROGRESS. Gets the biggest number from the list
+        if bignum > 0:
+            details["given_amount"] = bignum ## TODO: Work in PROGRESS. Gets the biggest number from the list
         self.push_detail_to_dm(details)
         return
 

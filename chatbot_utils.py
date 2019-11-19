@@ -1,8 +1,9 @@
 # Useful Functions
 # Recursively looks in dicts for nested dicts until finds values.
-def dive_for_values(c_list, c_dir, failzero = False, DEBUG = 0):
+def dive_for_values(c_list, c_dir, failzero = False, DEBUG = 1):
         out = {}
         for valname in c_list:
+            print("<DIVE> vname, c_list",valname, c_list)
             if isinstance(valname, list):
                 nextdirname, nestlist = valname
                 if not nextdirname in c_dir:
@@ -19,5 +20,5 @@ def dive_for_values(c_list, c_dir, failzero = False, DEBUG = 0):
                     return {valname:0}
                 else:
                     if DEBUG: print("<DIVE> ERROR! Cannot find variable<{}> in {}".format(valname,c_dir))
-                    
+            print("<DIVE> val", out)
         return out

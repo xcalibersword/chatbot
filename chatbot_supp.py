@@ -285,7 +285,7 @@ class Customer:
 class InfoVault():
     def __init__(self, json_data):
         self.vault_info = json_data["vault_info"]
-        self.default_info = self.vault_info["general_info"]
+        self.general_info = self.vault_info["general_info"]
         self.lookup_info = self.vault_info["lookup_info"]
         self.slot_list = list(self.lookup_info.keys())
     
@@ -313,7 +313,8 @@ class InfoVault():
         return
 
     def _add_general_info(self, ci):
-        ci.update(self.default_info)
+        gen_info = {"general_info":self.general_info}
+        ci.update(gen_info)
         return
         
 # Takes in a message and returns some info (if any)
