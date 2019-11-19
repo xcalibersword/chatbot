@@ -86,6 +86,9 @@
             ["affirm", "city_crossroad"],
             ["thankyou","initplus"]
         ],
+        "inform_fahuo":[
+            ["question_reliability","assure_inform_fahuo"]
+        ],
         "pass_to_human": [
             ["affirm","initplus"]
         ],

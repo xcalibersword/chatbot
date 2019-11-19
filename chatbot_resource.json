@@ -185,6 +185,12 @@
                 "亲，小店有好几家单位的，会随机分配的哈"
             ]
         },
+        "query_fahuo": {
+            "key":"info_fahuo",
+            "default_set": true,
+            "default_target": "inform_fahuo",
+            "replies":[]
+        },
         "query_gjj_card": {
             "key": "info_gjj_card",
             "default_set": true,
@@ -718,6 +724,22 @@
             "replies": [
                 "上海: 忠彧企业咨询管理有限公司 杭州: 分公司"
             ]
+        },
+        "inform_fahuo":{
+            "key": "inform_fahuo",
+            "gated": false,
+            "thread": "t_fahuo",
+            "terminal_state": true,
+            "req_info": [],
+            "replies":["亲，我们在参保成功后发货哦"]
+        },
+        "assure_inform_fahuo":{
+            "key": "assure_inform_fahuo",
+            "gated": false,
+            "thread": "t_fahuo",
+            "terminal_state": true,
+            "req_info": [],
+            "replies":["亲，交易都是在平台上进行的，对于买家是很有保障的哦，这个您完全可以放心哈"]
         },
         "inform_gjj_card": {
             "key": "inform_gjj_card",
