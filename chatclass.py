@@ -176,7 +176,7 @@ class ZoneTracker:
 
     def _add_zone(self, z, val):
         if z in self.zones:
-            print("<ADD_ZONE> Existing zone {}:{}. Did not write {}.".format(z,self.zones[z],val))
+            if DEBUG: print("<ADD ZONE> Existing zone {}:{}. Did not write {}.".format(z,self.zones[z],val))
             return
         self.zones[z] = val
 
@@ -227,21 +227,18 @@ class ChatManager:
     ############### PRIMARY METHOD ###############
     # Takes in a message, returns (text reply, intent breakdown, current info)
     def respond_to_message(self, msg):
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") # For clarity in terminal
-        rcount = 0
-        repeat = True
-        while repeat:
-            # Parse the message and get an understanding
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") # For clarity in terminal
+     
+        # Parse the message and get an understanding
+        full_uds, bd = self._parse_message_overall(msg)
+
+        # Digest and internalize the new info
+        sip = full_uds.get_sip()
+        repeat = self._digest_sip(sip)
+
+        if repeat:
+            if DEBUG: print("REPEATING")
             full_uds, bd = self._parse_message_overall(msg)
-
-            # Digest and internalize the new info
-            sip = full_uds.get_sip()
-            repeat = self._digest_sip(sip)
-
-            if repeat and DEBUG: print("REPEATING",rcount)
-
-            rcount += 1
-            if rcount > 5: break
 
         # Request a reply text
         intent = full_uds.get_intent()
@@ -350,7 +347,7 @@ class ChatManager:
     def _fetch_reply(self,intent):
         information = self._get_current_info()
         curr_state = self._get_curr_state()
-        if DEBUG: print("Current State",curr_state)
+        if DEBUG: print("<Fetch Reply> Current State",curr_state)
         # samestateflag = self.statethreader.state_never_change()
         samestateflag = self.samestateflag
         # print("curr_state", curr_state['key'], "samestate",samestateflag)

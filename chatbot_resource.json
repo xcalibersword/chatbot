@@ -1723,8 +1723,8 @@
                     "custom_gjj_flag"
                 ],
                 "steps": {
-                    "1,equals": [
-                        [0,"use_custom_gjj"],
+                    "1,sub": [
+                        [1,"use_custom_gjj"],
                         "use_default_gjj"
                     ],
                     "2,multi": [
@@ -1732,7 +1732,7 @@
                         "w_custom_gjj_sum"
                     ],
                     "3,multi": [
-                        ["use_default_gjj","w_default_gjj_sum"],
+                        ["use_default_gjj","gongjijin_fee"],
                         "w_default_gjj_sum"
                     ],
                     "9,add":[
