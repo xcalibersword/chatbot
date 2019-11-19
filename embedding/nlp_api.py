@@ -209,6 +209,8 @@ if MAIN:
         ("有没有链接？","request_link"),
         ("我该拍哪个？","request_link"),
         ("拍哪个宝贝？","request_link"),
+        ("啥时间发货","query_fahuo"),
+        ("一般会什么时间发货呢","query_fahuo"),
         ("我想在北京买房","query_housing"),
         ("这个会影响购房么？","query_housing"),
         ("落户苏州","luohu"),
