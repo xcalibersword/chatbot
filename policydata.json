@@ -80,6 +80,12 @@
             ["inform_done", "initplus"],
             ["goodbye", "goodbye"]
         ],
+        "propose_custom_gjj_jishu": [
+            ["inform", "SAME_STATE"],
+            ["purchase", "city_crossroad"],
+            ["affirm", "city_crossroad"],
+            ["thankyou","initplus"]
+        ],
         "pass_to_human": [
             ["affirm","initplus"]
         ],
