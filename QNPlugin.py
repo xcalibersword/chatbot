@@ -8,13 +8,11 @@ from jpype import *
 from chatbot import Chatbot
 
 def find_handle(userid):
-    #window handle | hard coded | spy++ | different for CSO and customer interface
-    #have to change as version update | or convert to automated search version
+    #spy++ | hard coded have to update if qianniu update their UI
     a = FindWindow("StandardFrame",userid + " - 接待中心")
     aa = FindWindowEx(a, 0, "StandardWindow", "")
     aaa = FindWindowEx(aa, 0, "StandardWindow", "")
     aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
-    #added for cso
     aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
     aaaa = FindWindowEx(aaa, 0, "SplitterBar", "")
 
@@ -31,16 +29,15 @@ def find_handle(userid):
     return QN_input_hwnd,QN_output_hwnd,QN_sendBut_hwnd
 
 def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
+    #list of keybdEvents
+    #https://blog.csdn.net/zhanglidn013/article/details/35988381
     #type text
     SendMessage(QN_input_hwnd, 0x000C, 0, text)
     #send text
     SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
     print("Message Sent: {}".format(text))
 
-def check_new_message(userID,QN_output_hwnd):
-    print('Checking for new message...')
-
-    #use mouse to click on the spot to replace this method
+def setActiveScreen(QN_output_hwnd):
     SetForegroundWindow(QN_output_hwnd)
     SetCursorPos((800,500))
     sleep(0.05)
@@ -48,6 +45,7 @@ def check_new_message(userID,QN_output_hwnd):
     mouse_event(MOUSEEVENTF_LEFTUP,0,0,0,0)
     sleep(0.05)
 
+def select_copy():
     #ctrl a
     keybd_event(17, 0, 0, 0)
     keybd_event(65, 0, 0, 0)
@@ -63,50 +61,51 @@ def check_new_message(userID,QN_output_hwnd):
     keybd_event(17, 0, 2, 0)
     sleep(0.05)
     
+def getRawText():
     OpenClipboard()
     raw_text = GetClipboardData()
     CloseClipboard()
     raw_text_list = raw_text.splitlines()
-
     processed_text_list = []
-    for word in raw_text_list:
-        if word.strip() != "":
-            processed_text_list.append(word)
+    for sent in raw_text_list:
+        sent = sent.strip()
+    if sent != "" and sent != "以上为历史消息":
+        processed_text_list.append(sent)
+    processed_text_list.reverse()
+    return processed_text_list
 
+def processText(userID,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
-    user_pattern = re.compile(userID + r" \d*-\d*-\d* \d{2}:\d{2}:\d{2}")
-
-    #identify where the impt messages are
-    count = 0
-    last_not_user_idx_list = []
-    last_user_idx = 0
-    cust_QN_ID = ""
-    for word in processed_text_list:
-        if date_time_pattern.search(word):
-            if not user_pattern.search(word) and not word == "以上为历史消息":
-                last_not_user_idx_list.append(count)
-                if cust_QN_ID == "":
-                    cust_QN_ID = date_time_pattern.sub("",processed_text_list[last_not_user_idx_list[0]])
+    userid = "tb584238398"
+    idx = 0
+    prevs_idx = 0
+    query_list = []
+    custid = ""
+    for sent in rawText:
+        if re.search(date_time_pattern,sent):
+            if re.search(userid,sent):
+                break
             else:
-                last_user_idx = count
-                last_not_user_idx_list.clear()      
-        count += 1
-    #retrieve the impt messages
-    unanswered_convo = []
-    if len(last_not_user_idx_list) > 0: 
-        if last_not_user_idx_list[-1] > last_user_idx:
-            print("New message found!")
-            for line in processed_text_list[last_not_user_idx_list[0]:]:
-                if not date_time_pattern.search(line):
-                    unanswered_convo.append(line)
-                # if unanswered_convo == []:
-                #     print("Emoji detected!")
-                #     unanswered_convo.append("[emoji]")
-    query = " ".join(unanswered_convo)
+                custid = re.sub(date_time_pattern,"",sent)
+                for i in range(prevs_idx,idx):
+                    query_list.append(rawText[i])
+                prevs_idx = idx + 1
+        idx += 1
+    query_list.reverse()
+    query = " ".join(query_list)
+    return query,custid
+
+def check_new_message(userID,QN_output_hwnd):
+    print('Checking for new message...')
+    setActiveScreen(QN_output_hwnd)
+    select_copy()
+    rawText = getRawText()
+    query,cust_QN_ID = processText(userID,rawText)
     print("Query: {}".format(query))
     print("Customer ID: {}".format(cust_QN_ID))
     return query, cust_QN_ID
 
+#insert image path here for the series of place for the OCR to click on
 def SeekNewMessage(clickImage):
     print("Finding new chat...")
 
@@ -122,23 +121,19 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
 
     query, custID = check_new_message(userID,text_out_hwnd)
     
-    if query == "":
-        SeekNewMessage(SeekImagePath)
-    else:
+    if not query == "":
         reply_template = bot.get_bot_reply(custID,query)
         reply = reply_template[0]
-        #reply = query
         send_message_QN(reply,text_in_hwnd,button_hwnd)
-        SeekNewMessage(SeekImagePath)
+    
+    SeekNewMessage(SeekImagePath)
+
     #timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath])
     #add something to stop the program
     #timer.start()
 
 if __name__ == "__main__":
-#    userID = "tb584238398"
-#    userID = "唯洛服务旗舰店:茜茜"
     userID = "女人罪爱:小梅"
-
     try:    
         text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(userID)
     except Exception:
