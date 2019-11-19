@@ -53,7 +53,7 @@ class DatabaseRunner():
         # Write to a dict that will later be pushed to the db
         self.database[chatid].update({"userID":chatid})
         self.database[chatid].update(info)
-        print("self db", self.database)
+        if DEBUG: print("<Write to DB> self.db", self.database)
 
         # Set timer to write
         self.trigger_backup()

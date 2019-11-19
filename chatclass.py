@@ -176,7 +176,7 @@ class ZoneTracker:
 
     def _add_zone(self, z, val):
         if z in self.zones:
-            print("<ADD_ZONE> Existing zone {}:{}. Did not write {}.".format(z,self.zones[z],val))
+            if DEBUG: print("<ADD ZONE> Existing zone {}:{}. Did not write {}.".format(z,self.zones[z],val))
             return
         self.zones[z] = val
 
@@ -350,7 +350,7 @@ class ChatManager:
     def _fetch_reply(self,intent):
         information = self._get_current_info()
         curr_state = self._get_curr_state()
-        if DEBUG: print("Current State",curr_state)
+        if DEBUG: print("<Fetch Reply> Current State",curr_state)
         # samestateflag = self.statethreader.state_never_change()
         samestateflag = self.samestateflag
         # print("curr_state", curr_state['key'], "samestate",samestateflag)
