@@ -171,7 +171,7 @@
             },
             "xufei_slot":{
                 "zhelipaima":[
-                    "(还*)(在*)这里拍"
+                    "(还*)(在*)这(里|边)*拍"
                 ],
                 "NO_MATCH":["not_asked"]
             },
@@ -305,7 +305,7 @@
             "zhelipaima":
             {
                 "location":"START",
-                "text":"对在这里拍。"
+                "text":"对，还在这里拍。"
             }
         }
     }

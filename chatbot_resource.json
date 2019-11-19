@@ -701,7 +701,7 @@
             "terminal_state": true,
             "req_info": [["city","city"],["chosen_fee","fee_slot"]],
             "replies": [
-                "亲{rep_ext[raw_taobao_link]}"
+                "{rep_ext[raw_taobao_link]}"
             ]
         },
         "inform_can_make_it":{
@@ -927,7 +927,7 @@
                         "要公积金": "交公积金吗？",
                         "苏州区": "是市区还是园区呢？",
                         "chosen_fee": "哪个部分？（比如：社保/公积金/服务费）",
-                        "target_month": "要缴哪月？",
+                        "target_month": "要补缴哪月？"
                         "given_amount": "要按照什么基数？"
                     }
                 }
