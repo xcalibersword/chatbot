@@ -284,14 +284,21 @@ class Customer:
 # Globally accessed object. Singleton but not really cuz it needs to be initalized
 class InfoVault():
     def __init__(self, json_data):
-        self.information = json_data["vault_info"]
-        self.slot_list = list(self.information.keys())
+        self.vault_info = json_data["vault_info"]
+        self.default_info = self.vault_info["general_info"]
+        self.lookup_info = self.vault_info["lookup_info"]
+        self.slot_list = list(self.lookup_info.keys())
     
     # Modifies the dict directly
-    def add_vault_info(self, chatinfo):
+    def add_vault_info(self, chatinf):
+        self._add_lookup_info(chatinf)
+        self._add_general_info(chatinf)
+        return
+
+    def _add_lookup_info(self, chatinfo):
         def add_entry(s):
             chatval = chatinfo[s] # Chat provided value
-            v_subdict = self.information[s]
+            v_subdict = self.lookup_info[s]
             t_key = v_subdict["writeto"]
             if chatval in v_subdict:
                 v_info = v_subdict[chatval]
@@ -304,6 +311,11 @@ class InfoVault():
                 add_entry(s)
                 
         return
+
+    def _add_general_info(self, ci):
+        ci.update(self.default_info)
+        return
+        
 # Takes in a message and returns some info (if any)
 # Note: thing about re.search is that only the first match is pulled.
 class InfoParser():
@@ -385,7 +397,7 @@ class InfoParser():
         return value
 
     ### MAIN FUNCTION ### 
-    # Returns a dict of primary information including zones.
+    # Returns a dict of primary lookup_info including zones.
     def parse(self, text, slots):
         out = {}
         # Intent Slot parse

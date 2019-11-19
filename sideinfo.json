@@ -253,6 +253,9 @@
                     "不$"
                 ]
             },
+            "dummy_slot":{
+                "no_match":["abcdef!@#$!$"]
+            },
             "ctx_month_slot":{
                 "ctx_this_month":[
                     "当月",

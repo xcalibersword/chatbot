@@ -1966,8 +1966,9 @@
         }
     },
     "vault_info": {
-        "default_info":{
-            "gjj_fee_multi":0.14
+        "general_info":{
+            "gjj_jishu_multi":0.14,
+            "gjj_jishu_max_limit": 24633
         },
         "lookup_info":{
             "city_district":{
