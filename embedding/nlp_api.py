@@ -9,13 +9,13 @@ if __name__ == "__main__":
     MAIN = True
     rootpath = ''
     from unzipper import get_vector_dict
-    from nlp_utils import is_a_number
+    from nlp_utils import is_a_number, replace_number_tokens
 
 else:
     MAIN = False
     rootpath = 'embedding/'
     from embedding.unzipper import get_vector_dict
-    from embedding.nlp_utils import is_a_number
+    from embedding.nlp_utils import is_a_number, replace_number_tokens
 
 
 from keras.models import load_model
@@ -109,6 +109,7 @@ class Predictor:
 
         string = self._remove_symbols(string)
         jbstring = jb.cut(string,cut_all=True)
+        jbstring = replace_number_tokens(jbstring)
         word2int = self.word2int
         out = []
         for c in jbstring:
@@ -179,6 +180,7 @@ if MAIN:
         ("哦，没开过户口","inform"),
         ("加上一金的话？","inform"),
         ("6月份的话？","inform"),
+        ("12000","inform"),
         ("12月呢？","inform"),
         ("支付过了哦","inform_paid"),
         ("已经付好啦","inform_paid"),
@@ -196,6 +198,8 @@ if MAIN:
         ("请问多久才到账", "ask_turnaround_time"),
         ("一般要多久才交上", "ask_turnaround_time"),
         ("交上社保要等多久", "ask_turnaround_time"),
+        ("可以不要按照最低的吧","ask_custom_gjj_jishu"),
+        ("按照12000的","ask_custom_gjj_jishu"),
         ("怀孕了还可以代缴吗","query_pregnant"),
         ("怀孕了还可以买吗","query_pregnant"),
         ("怎么去拍啊","how_to_pai"),

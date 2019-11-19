@@ -14,6 +14,7 @@ from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences 
 from keras.regularizers import l1,l2
 from keras.utils import to_categorical
+from nlp_utils import replace_number_tokens
 
 #### NOTES ####
 # Run from 'embedding' folder
@@ -147,6 +148,7 @@ def myTokenize(nparr):
 
         seq = seq.replace(" ", "")
         jbseq = jb.lcut(seq, cut_all=True)
+        jbseq = replace_number_tokens(jbseq)
         jbseq = pad_sequences([jbseq,], maxlen = max_review_length, dtype = object, value="_NA")
         outarr.append(jbseq)
     return outarr
@@ -276,13 +278,13 @@ model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 # Best so far bs = 32
-model.fit(x=embed_xvals,y=cat_yval,epochs=150,verbose=1,validation_split=0.0,batch_size=16,shuffle=True)
+model.fit(x=embed_xvals,y=cat_yval,epochs=2,verbose=1,validation_split=0.0,batch_size=16,shuffle=True)
 
 # Post Training
 model.save(save_model_name)
 print("This Model has been saved! Rejoice")
 
-test_in = ["我在苏州的不是首次","我是要付社保行吗","您好","哦了解了", "我已经填好了", "我拍好了", "流程到底是怎么样的？", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
+test_in = ["12345","50001","我在苏州的不是首次","我是要付社保行吗","您好","哦了解了", "我已经填好了", "我拍好了", "流程到底是怎么样的？", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
 
 ti = myTokenize(test_in)
 # print("input",test_in)
