@@ -9,13 +9,13 @@ if __name__ == "__main__":
     MAIN = True
     rootpath = ''
     from unzipper import get_vector_dict
-    from nlp_utils import is_a_number, replace_number_tokens
+    from nlp_utils import is_a_number, preprocess_sequence, postprocess_sequence
 
 else:
     MAIN = False
     rootpath = 'embedding/'
     from embedding.unzipper import get_vector_dict
-    from embedding.nlp_utils import is_a_number, replace_number_tokens
+    from embedding.nlp_utils import is_a_number, preprocess_sequence, postprocess_sequence
 
 
 from keras.models import load_model
@@ -108,8 +108,10 @@ class Predictor:
         wordlist = list(lesser_cut)
 
         string = self._remove_symbols(string)
+        string = preprocess_sequence(string)
+        
         jbstring = jb.cut(string,cut_all=True)
-        jbstring = replace_number_tokens(jbstring)
+        jbstring = postprocess_sequence(jbstring)
         word2int = self.word2int
         out = []
         for c in jbstring:
@@ -126,7 +128,7 @@ class Predictor:
     def filter_numbers(self, seq):
         out = []
         for item in seq:
-            print("FN item",item)
+            # print("FN item",item)
             if is_a_number(item):
                 try:
                     fi = float(item)

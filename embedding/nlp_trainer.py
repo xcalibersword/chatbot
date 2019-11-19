@@ -14,7 +14,7 @@ from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences 
 from keras.regularizers import l1,l2
 from keras.utils import to_categorical
-from nlp_utils import replace_number_tokens
+from nlp_utils import preprocess_sequence, postprocess_sequence
 
 #### NOTES ####
 # Run from 'embedding' folder
@@ -147,8 +147,9 @@ def myTokenize(nparr):
             seq = nparr.tolist()
 
         seq = seq.replace(" ", "")
+        seq = preprocess_sequence(seq)
         jbseq = jb.lcut(seq, cut_all=True)
-        jbseq = replace_number_tokens(jbseq)
+        jbseq = postprocess_sequence(jbseq)
         jbseq = pad_sequences([jbseq,], maxlen = max_review_length, dtype = object, value="_NA")
         outarr.append(jbseq)
     return outarr
@@ -278,7 +279,7 @@ model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 # Best so far bs = 32
-model.fit(x=embed_xvals,y=cat_yval,epochs=2,verbose=1,validation_split=0.0,batch_size=16,shuffle=True)
+model.fit(x=embed_xvals,y=cat_yval,epochs=150,verbose=1,validation_split=0.0,batch_size=32,shuffle=True)
 
 # Post Training
 model.save(save_model_name)
