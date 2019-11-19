@@ -404,6 +404,12 @@
             "default_target": "NA",
             "replies": []
         },
+        "custom_gjj_jishu":{
+            "key": "custom_gjj_jishu",
+            "default_set": false,
+            "default_target": "NA",
+            "replies": []
+        },
         "pay_shui": {
             "key": "pay_shui",
             "default_set": true,
@@ -643,14 +649,24 @@
             "key": "282 confirm plan",
             "gated": false,
             "thread": "t_presale",
-            "req_info": [
-                [
-                    "city",
-                    "city"
-                ]
-            ],
+            "req_info": [],
             "replies": [
                 "亲 确认要{city_district}的宝贝吗?"
+            ]
+        },
+        "propose_custom_gjj_jishu":{
+            "key": "propose_custom_gjj_jishu",
+            "gated": true,
+            "thread": "t_presale",
+            "req_info": [
+                ["given_amount", "DEFAULT_SV"]
+            ],
+            "calcs":[
+                "flag_custom_gjj",
+                "calc_custom_gjj_fee"
+            ],
+            "replies": [
+                "{rep_ext[custom_gjj_fee_str]}"
             ]
         },
         "goodbye": {
@@ -1016,6 +1032,27 @@
                     }
                 }
             },
+            {
+                "writeto": "custom_gjj_fee_str",
+                "states": ["propose_custom_gjj_jishu"],
+                "lookfor": [
+                    "given_amount",
+                    ["city_info",["gjj_jishu"]],
+                    ["calc_ext",
+                        ["w_custom_gjj_flag",
+                        "w_custom_gjj_fee"]
+                    ]
+                ],
+                "if_present": {},
+                "if_value": {
+                    "w_custom_gjj_flag":{
+                        "0":"亲 {given_amount}太少了，至少要{city_info[gjj_jishu]}块的公积金基数",
+                        "1":"亲 {given_amount}块的基数的话要收{calc_ext[w_custom_gjj_fee]}块公积金费",
+                        "2":"亲 {given_amount}太多了，最多能交{city_info[gjj_jishu]}块的公积金基数"
+                    }
+                }
+            },
+
             {
                 "writeto": "product",
                 "states": [
@@ -1527,8 +1564,7 @@
                 "conditions": [],
                 "req_vars": [
                     "state_curr_day",
-                    [
-                        "city_info",
+                    ["city_info",
                         [
                             "pay_deadline"
                         ]
@@ -1536,17 +1572,11 @@
                 ],
                 "steps": {
                     "1,isgreater": [
-                        [
-                            "state_curr_day",
-                            "pay_deadline"
-                        ],
+                        ["state_curr_day","pay_deadline"],
                         "OUTCOME"
                     ],
                     "2,sub":[
-                        [
-                            1,
-                            "OUTCOME"
-                        ],
+                        [1,"OUTCOME"],
                         "OUTCOME"
                     ]
                 }
@@ -1559,17 +1589,12 @@
                     "target_month",
                     [
                         "city_info",
-                        [
-                            "bujiao_period"
-                        ]
+                        ["bujiao_period"]
                     ]
                 ],
                 "steps": {
                     "1,sub":[
-                        [
-                            "state_month",
-                            "bujiao_period"
-                        ],
+                        ["state_month","bujiao_period"],
                         "w_lower_limit"
                     ],
                     "2,isgreater":[
@@ -1886,101 +1911,157 @@
                     ]
                 },
                 "writeto": "bj_shebao_basic_total2"
+            },
+            "flag_custom_gjj": {
+                "writeto": "w_custom_gjj_flag",
+                "conditions": [],
+                "req_vars": [
+                    "given_amount",
+                    ["city_info",
+                        ["gjj_jishu"]
+                    ],
+                    ["general_info",
+                        ["gjj_jishu_max_limit"]
+                    ]
+                ],
+                "steps": {
+                    "1,add":[
+                        [1,0],
+                        "OUTCOME"
+                    ],
+                    "2,isgreater": [
+                        ["given_amount","gjj_jishu_max_limit"],
+                        "w_over"
+                    ],
+                    "3,add":[
+                        ["OUTCOME", "w_over"],
+                        "OUTCOME"
+                    ],
+                    "4,isgreater":[
+                        ["gjj_jishu","given_amount"],
+                        "w_under"
+                    ],
+                    "5,sub":[
+                        ["OUTCOME", "w_under"],
+                        "OUTCOME"
+                    ]
+                }
+            },
+            "calc_custom_gjj_fee": {
+                "writeto": "w_custom_gjj_fee",
+                "conditions": [],
+                "req_vars": [
+                    "given_amount",
+                    ["general_info",
+                        ["gjj_jishu_multi"]
+                    ]
+                ],
+                "steps": {
+                    "1,multi": [
+                        ["given_amount","gjj_jishu_multi"],
+                        "OUTCOME"
+                    ]
+                }
             }
         }
     },
     "vault_info": {
-        "city_district":{
-            "writeto":"city_info",
-            "上海市": {
-                "sb_jishu": 4927,
-                "gjj_jishu": 2420,
-                "shebao_payment": 1937.7,
-                "svc_fee": 40,
-                "shouci_fee": 50,
-                "pay_deadline": 26,
-                "gongjijin_fee": 338,
-                "bujiao_period": 6
-            },
-            "北京市": {
-                "sb_jishu": 3613,
-                "shebao_payment": 1629.17,
-                "sb_jishu2": 3613,
-                "shebao_payment2": 1636.4,
-                "gjj_jishu": 2409,
-                "svc_fee": 40,
-                "dbl_svc_fee": 80,
-                "shouci_fee": 50,
-                "pay_deadline": 20,
-                "gongjijin_fee": 498,
-                "bujiao_period": 3
-            },
-            "苏州市区": {
-                "sb_jishu": 3368,
-                "gjj_jishu": 0,
-                "shebao_payment": 1277.57,
-                "svc_fee": 40,
-                "shouci_fee": 50,
-                "pay_deadline": 15,
-                "gongjijin_fee": 540,
-                "bujiao_period": 3
-            },
-            "苏州园区": {
-                "sb_jishu": 3125,
-                "gjj_jishu": 0,
-                "shebao_payment": 878.14,
-                "svc_fee": 40,
-                "shouci_fee": 50,
-                "pay_deadline": 15,
-                "gongjijin_fee": 540,
-                "bujiao_period": 2
-            },
-            "杭州市": {
-                "sb_jishu": 3321.6,
-                "gjj_jishu": 2010,
-                "shebao_payment": 1288.79,
-                "svc_fee": 40,
-                "shouci_fee": 50,
-                "pay_deadline": 15,
-                "gongjijin_fee": 482,
-                "bujiao_period": 3
-            },
-            "深圳市": {
-                "sb_jishu": 2335,
-                "gjj_jishu": 1101,
-                "shebao_payment": 0,
-                "svc_fee": 999,
-                "shouci_fee": 50,
-                "pay_deadline": 20,
-                "gongjijin_fee": 100
-            },
-            "广州市": {
-                "sb_jishu": 2100,
-                "shebao_payment": 1437.56,
-                "gjj_jishu": 0,
-                "gongjijin_fee": 210,
-                "svc_fee": 40,
-                "shouci_fee": 50,
-                "pay_deadline": 20,
-                "bujiao_period": 1
-            },
-            "成都市": {
-                "sb_jishu": 2697,
-                "gjj_jishu": 1780,
-                "shebao_payment": 1022.01,
-                "svc_fee": 40,
-                "shouci_fee": 50,
-                "pay_deadline": 20,
-                "gongjijin_fee": 214
-            },
-            "昆山市": {
-                "sb_jishu": 2940,
-                "gjj_jishu": 0,
-                "shebao_payment": 1037.82,
-                "svc_fee": 40,
-                "shouci_fee": 50,
-                "pay_deadline": 20,
-                "gongjijin_fee": 472
+        "default_info":{
+            "gjj_fee_multi":0.14
+        },
+        "lookup_info":{
+            "city_district":{
+                "writeto":"city_info",
+                "上海市": {
+                    "sb_jishu": 4927,
+                    "gjj_jishu": 2420,
+                    "shebao_payment": 1937.7,
+                    "svc_fee": 40,
+                    "shouci_fee": 50,
+                    "pay_deadline": 26,
+                    "gongjijin_fee": 338,
+                    "bujiao_period": 6
+                },
+                "北京市": {
+                    "sb_jishu": 3613,
+                    "shebao_payment": 1629.17,
+                    "sb_jishu2": 3613,
+                    "shebao_payment2": 1636.4,
+                    "gjj_jishu": 2409,
+                    "svc_fee": 40,
+                    "dbl_svc_fee": 80,
+                    "shouci_fee": 50,
+                    "pay_deadline": 20,
+                    "gongjijin_fee": 498,
+                    "bujiao_period": 3
+                },
+                "苏州市区": {
+                    "sb_jishu": 3368,
+                    "gjj_jishu": 0,
+                    "shebao_payment": 1277.57,
+                    "svc_fee": 40,
+                    "shouci_fee": 50,
+                    "pay_deadline": 15,
+                    "gongjijin_fee": 540,
+                    "bujiao_period": 3
+                },
+                "苏州园区": {
+                    "sb_jishu": 3125,
+                    "gjj_jishu": 0,
+                    "shebao_payment": 878.14,
+                    "svc_fee": 40,
+                    "shouci_fee": 50,
+                    "pay_deadline": 15,
+                    "gongjijin_fee": 540,
+                    "bujiao_period": 2
+                },
+                "杭州市": {
+                    "sb_jishu": 3321.6,
+                    "gjj_jishu": 2010,
+                    "shebao_payment": 1288.79,
+                    "svc_fee": 40,
+                    "shouci_fee": 50,
+                    "pay_deadline": 15,
+                    "gongjijin_fee": 482,
+                    "bujiao_period": 3
+                },
+                "深圳市": {
+                    "sb_jishu": 2335,
+                    "gjj_jishu": 1101,
+                    "shebao_payment": 0,
+                    "svc_fee": 999,
+                    "shouci_fee": 50,
+                    "pay_deadline": 20,
+                    "gongjijin_fee": 100
+                },
+                "广州市": {
+                    "sb_jishu": 2100,
+                    "shebao_payment": 1437.56,
+                    "gjj_jishu": 0,
+                    "gongjijin_fee": 210,
+                    "svc_fee": 40,
+                    "shouci_fee": 50,
+                    "pay_deadline": 20,
+                    "bujiao_period": 1
+                },
+                "成都市": {
+                    "sb_jishu": 2697,
+                    "gjj_jishu": 1780,
+                    "shebao_payment": 1022.01,
+                    "svc_fee": 40,
+                    "shouci_fee": 50,
+                    "pay_deadline": 20,
+                    "gongjijin_fee": 214
+                },
+                "昆山市": {
+                    "sb_jishu": 2940,
+                    "gjj_jishu": 0,
+                    "shebao_payment": 1037.82,
+                    "svc_fee": 40,
+                    "shouci_fee": 50,
+                    "pay_deadline": 20,
+                    "gongjijin_fee": 472
+                }
             }
         }
     },

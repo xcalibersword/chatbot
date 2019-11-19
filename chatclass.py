@@ -369,7 +369,7 @@ class ChatManager:
         slots = self.gatekeeper.get_slots() # Only look out for what is needed
         details = self.iparser.parse(msg, slots)
         bignum = max(nums) if len(nums) > 0 else 0
-        details["biggest_num"] = bignum ## TODO: Work in PROGRESS. Gets the biggest number from the list
+        details["given_amount"] = bignum ## TODO: Work in PROGRESS. Gets the biggest number from the list
         self.push_detail_to_dm(details)
         return
 
@@ -735,13 +735,13 @@ class ReplyGenerator:
             steps = list(instr.keys())
             steps = list(map(lambda x: (x.split(","), instr[x]),steps))
             steps.sort(key=lambda t: float(t[0][0])) # If no conversion it sorts as string
-            if DEBUG: print("aft sort",steps)
+            if DEBUG: print("<RESOLVE FORMULA> aft sort",steps)
             req_vars = f[reqvars]
             vd = dive_for_values(req_vars,enhanced)
             
             # Conditional values
             add_formula_conditional_vars(f,vd)
-            if DEBUG: print("vd",vd)
+            if DEBUG: print("<RESOLVE FORMULA> vd",vd)
 
             #CALCULATIONS 
             vd["OUTCOME"] = 0

@@ -94,7 +94,8 @@
     "default_slot_vals": {
         "首次":"yes",
         "要社保":"yes",
-        "要公积金":"yes"
+        "要公积金":"yes",
+        "given_amount": ""
     },
     "info_parser": {
         "permanent_slots": [
