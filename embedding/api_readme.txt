@@ -1,1 +1,1 @@
-Current API_model is: 1211_EOD_model.h5
+Current API_model is: 2011_SOD.h5

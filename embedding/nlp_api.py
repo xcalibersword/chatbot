@@ -9,13 +9,13 @@ if __name__ == "__main__":
     MAIN = True
     rootpath = ''
     from unzipper import get_vector_dict
-    from nlp_utils import is_a_number
+    from nlp_utils import is_a_number, preprocess_sequence, postprocess_sequence
 
 else:
     MAIN = False
     rootpath = 'embedding/'
     from embedding.unzipper import get_vector_dict
-    from embedding.nlp_utils import is_a_number
+    from embedding.nlp_utils import is_a_number, preprocess_sequence, postprocess_sequence
 
 
 from keras.models import load_model
@@ -108,7 +108,10 @@ class Predictor:
         wordlist = list(lesser_cut)
 
         string = self._remove_symbols(string)
+        string = preprocess_sequence(string)
+        
         jbstring = jb.cut(string,cut_all=True)
+        jbstring = postprocess_sequence(jbstring)
         word2int = self.word2int
         out = []
         for c in jbstring:
@@ -125,7 +128,7 @@ class Predictor:
     def filter_numbers(self, seq):
         out = []
         for item in seq:
-            print("FN item",item)
+            # print("FN item",item)
             if is_a_number(item):
                 try:
                     fi = float(item)
@@ -179,6 +182,7 @@ if MAIN:
         ("哦，没开过户口","inform"),
         ("加上一金的话？","inform"),
         ("6月份的话？","inform"),
+        ("12000","inform"),
         ("12月呢？","inform"),
         ("支付过了哦","inform_paid"),
         ("已经付好啦","inform_paid"),
@@ -196,6 +200,8 @@ if MAIN:
         ("请问多久才到账", "ask_turnaround_time"),
         ("一般要多久才交上", "ask_turnaround_time"),
         ("交上社保要等多久", "ask_turnaround_time"),
+        ("可以不要按照最低的吧","ask_custom_gjj_jishu"),
+        ("按照12000的","ask_custom_gjj_jishu"),
         ("怀孕了还可以代缴吗","query_pregnant"),
         ("怀孕了还可以买吗","query_pregnant"),
         ("怎么去拍啊","how_to_pai"),
@@ -203,6 +209,9 @@ if MAIN:
         ("有没有链接？","request_link"),
         ("我该拍哪个？","request_link"),
         ("拍哪个宝贝？","request_link"),
+        ("啥时间发货","query_fahuo"),
+        ("一般会什么时间发货呢","query_fahuo"),
+        ("可以延迟发货吗","query_delay_fahuo"),
         ("我想在北京买房","query_housing"),
         ("这个会影响购房么？","query_housing"),
         ("落户苏州","luohu"),
