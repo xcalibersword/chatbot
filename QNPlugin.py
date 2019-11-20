@@ -70,21 +70,20 @@ def getRawText():
     processed_text_list = []
     for sent in raw_text_list:
         sent = sent.strip()
-    if sent != "" and sent != "以上为历史消息":
-        processed_text_list.append(sent)
+        if sent != "" and sent != "以上为历史消息":
+            processed_text_list.append(sent)
     processed_text_list.reverse()
     return processed_text_list
 
 def processText(userID,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
-    userid = "tb584238398"
     idx = 0
     prevs_idx = 0
     query_list = []
     custid = ""
     for sent in rawText:
         if re.search(date_time_pattern,sent):
-            if re.search(userid,sent):
+            if re.search(userID,sent):
                 break
             else:
                 custid = re.sub(date_time_pattern,"",sent)
