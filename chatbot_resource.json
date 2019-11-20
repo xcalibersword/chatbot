@@ -191,6 +191,12 @@
             "default_target": "inform_fahuo",
             "replies":[]
         },
+        "query_delay_fahuo":{
+            "key":"query_delay_fahuo",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies":["不可以哦亲，我们在参保成功后，就会发货哦"]
+        },
         "query_gjj_card": {
             "key": "info_gjj_card",
             "default_set": true,
@@ -938,17 +944,24 @@
                     "provide_taobao_link"
                 ],
                 "lookfor": [
-                    "area_specific_fee"
+                    "area_specific_fee",
+                    "city_district",
+                    "要社保",
+                    "要公积金",
+                    ["city_info",["link_sb","link_gjj"]],
+                    ["general_info",["link_fuwu"]]
                 ],
                 "if_value": {
-                    "area_specific_fee": {
-                        "DEFAULT": "手上没有这个链接不好意思。亲可以在淘宝搜索一下哦",
-                        "上海市社保": "上海市社保：https://item.taobao.com/item.htm?id=598103220826",
-                        "上海市公积金":"上海市公积金：https://item.taobao.com/item.htm?id=598525470715",
-                        "上海市服务费":"服务费：https://item.taobao.com/item.htm?id=598104660990",
-                        "北京市服务费":"服务费：https://item.taobao.com/item.htm?id=598104660990",
-                        "北京市公积金":"手上没有这个链接不好意思。亲可以在淘宝搜索一下哦",
-                        "北京市社保":"手上没有这个链接不好意思。亲可以在淘宝搜索一下哦"
+                    "要社保":{
+                        "yes":"{city_district}社保：{city_info[link_sb]} ",
+                        "no": ""
+                    },
+                    "要公积金":{
+                        "yes":"{city_district}公积金：{city_info[link_gjj]} ",
+                        "no": ""
+                    },
+                    "city_district": {
+                        "DEFAULT":"服务费：https://item.taobao.com/item.htm?id=598104660990"
                     }
                 }
             },
@@ -2036,7 +2049,8 @@
     "vault_info": {
         "general_info":{
             "gjj_jishu_multi":0.14,
-            "gjj_jishu_max_limit": 24633
+            "gjj_jishu_max_limit": 24633,
+            "link_fuwu": "https://item.taobao.com/item.htm?id=598104660990"
         },
         "lookup_info":{
             "city_district":{
@@ -2049,7 +2063,9 @@
                     "shouci_fee": 50,
                     "pay_deadline": 26,
                     "gongjijin_fee": 338,
-                    "bujiao_period": 6
+                    "bujiao_period": 6,
+                    "link_sb": "https://item.taobao.com/item.htm?id=598103220826",
+                    "link_gjj":"https://item.taobao.com/item.htm?id=598525470715"
                 },
                 "北京市": {
                     "sb_jishu": 3613,
@@ -2062,7 +2078,9 @@
                     "shouci_fee": 50,
                     "pay_deadline": 20,
                     "gongjijin_fee": 498,
-                    "bujiao_period": 3
+                    "bujiao_period": 3,
+                    "link_sb": "https://item.taobao.com/item.htm?id=598975115885",
+                    "link_gjj":"https://item.taobao.com/item.htm?id=598365788936"
                 },
                 "苏州市区": {
                     "sb_jishu": 3368,
@@ -2072,7 +2090,9 @@
                     "shouci_fee": 50,
                     "pay_deadline": 15,
                     "gongjijin_fee": 540,
-                    "bujiao_period": 3
+                    "bujiao_period": 3,
+                    "link_sb": "https://item.taobao.com/item.htm?id=598369140516",
+                    "link_gjj":"https://item.taobao.com/item.htm?id=598791558411"
                 },
                 "苏州园区": {
                     "sb_jishu": 3125,
@@ -2082,7 +2102,9 @@
                     "shouci_fee": 50,
                     "pay_deadline": 15,
                     "gongjijin_fee": 540,
-                    "bujiao_period": 2
+                    "bujiao_period": 2,
+                    "link_sb": "https://item.taobao.com/item.htm?id=598601949473",
+                    "link_gjj":"https://item.taobao.com/item.htm?id=598601929883"
                 },
                 "杭州市": {
                     "sb_jishu": 3321.6,
@@ -2092,7 +2114,9 @@
                     "shouci_fee": 50,
                     "pay_deadline": 15,
                     "gongjijin_fee": 482,
-                    "bujiao_period": 3
+                    "bujiao_period": 3,
+                    "link_sb": "https://item.taobao.com/item.htm?id=598232088077",
+                    "link_gjj":"https://item.taobao.com/item.htm?id=598525470715"
                 },
                 "深圳市": {
                     "sb_jishu": 2335,
@@ -2101,7 +2125,9 @@
                     "svc_fee": 999,
                     "shouci_fee": 50,
                     "pay_deadline": 20,
-                    "gongjijin_fee": 100
+                    "gongjijin_fee": 100,
+                    "link_sb": "https://item.taobao.com/item.htm?id=598103220826",
+                    "link_gjj":"https://item.taobao.com/item.htm?id=598232148577"
                 },
                 "广州市": {
                     "sb_jishu": 2100,
@@ -2111,7 +2137,9 @@
                     "svc_fee": 40,
                     "shouci_fee": 50,
                     "pay_deadline": 20,
-                    "bujiao_period": 1
+                    "bujiao_period": 1,
+                    "link_sb": "https://item.taobao.com/item.htm?id=598977567857",
+                    "link_gjj":"https://item.taobao.com/item.htm?id=598790626078"
                 },
                 "成都市": {
                     "sb_jishu": 2697,
@@ -2120,7 +2148,9 @@
                     "svc_fee": 40,
                     "shouci_fee": 50,
                     "pay_deadline": 20,
-                    "gongjijin_fee": 214
+                    "gongjijin_fee": 214,
+                    "link_sb": "https://item.taobao.com/item.htm?id=598598289750",
+                    "link_gjj":"https://item.taobao.com/item.htm?id=598368160061"
                 },
                 "昆山市": {
                     "sb_jishu": 2940,
@@ -2129,7 +2159,14 @@
                     "svc_fee": 40,
                     "shouci_fee": 50,
                     "pay_deadline": 20,
-                    "gongjijin_fee": 472
+                    "gongjijin_fee": 472,
+                    "link_sb":"https://item.taobao.com/item.htm?id=598983643235",
+                    "link_gjj":"https://item.taobao.com/item.htm?id=598373592789"
+                },
+                "长沙":{
+                    "gongjijin_fee":316.0,
+                    "link_sb":"https://item.taobao.com/item.htm?id=600094668462",
+                    "link_gjj":"https://item.taobao.com/item.htm?id=598603797664"
                 }
             }
         }
