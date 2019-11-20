@@ -502,7 +502,7 @@
             "humanify": true,
             "req_info": "",
             "replies": [
-                "那么亲是哪个城市呢？"
+                "亲是哪个城市呢？"
             ]
         },
         "unsupported_city":{
@@ -670,12 +670,13 @@
             "thread": "t_presale",
             "req_info": [],
             "replies": [
-                "亲 确认要{city_district}的宝贝吗?"
+                "亲 要{city_district}宝贝的链接吗?"
             ]
         },
         "propose_custom_gjj_jishu":{
             "key": "propose_custom_gjj_jishu",
             "gated": true,
+            "humanify": false,
             "thread": "t_presale",
             "req_info": [
                 ["city","city"],
@@ -1350,16 +1351,14 @@
                     "inform_xufei"
                 ],
                 "lookfor": [
-                    "city_district"
+                    "city_district",
+                    ["city_info",["xufei_deadline"]]
                 ],
                 "if_value": {
                     "city_district": {
-                        "上海市": "上海续费说明：每月15日前拍下宝贝，老客户15号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
-                        "杭州市": "杭州续费说明：每月10日前拍下宝贝，老客户10号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
-                        "成都市": "成都续费说明：每月10日前拍下宝贝，老客户10号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
-                        "广州市": "广州续费说明：每月10日前拍下宝贝，老客户10号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
+                        "上海市": "{city_district}：1.每个月的{city_info[xufei_deadline]}号前，来淘宝缴费，不要更改淘宝ID和缴费基数；2.如果要停缴或已入职新单位，请提前通知我们。在小程序提交停止服务的申请，或者拍下1元停缴宝贝、留言备注好退工日期，以防影响你下家单位交金；如不备注一律以我司办理为准，谢谢亲的配合。（PS. 只缴社保和公积金是没有个税记录的哦，且不配合提供任何材料，如需我司配合提供材料请和客服说明具体需求并且办理个税）",
                         "苏州市区": "市区续费说明：每月10日前拍下次月费用，最晚不能超过20号，老客户20号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
-                        "DEFAULT": "亲 不好意思，目前没有信息 😢"
+                        "DEFAULT": "{city_district}：续费说明：每月{city_info[xufei_deadline]}日前拍下宝贝，老客户{city_info[xufei_deadline]}号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。"
                     }
                 }
             },
@@ -1397,9 +1396,7 @@
             },
             {
                 "writeto": "calc_str_working",
-                "states": [
-                    "ctx_inform_how_much"
-                ],
+                "states": [],
                 "lookfor": [
                     "首次",
                     "要公积金",
@@ -2064,6 +2061,7 @@
                     "pay_deadline": 26,
                     "gongjijin_fee": 338,
                     "bujiao_period": 6,
+                    "xufei_deadline": 15,
                     "link_sb": "https://item.taobao.com/item.htm?id=598103220826",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598525470715"
                 },
@@ -2079,6 +2077,7 @@
                     "pay_deadline": 20,
                     "gongjijin_fee": 498,
                     "bujiao_period": 3,
+                    "xufei_deadline": 15,
                     "link_sb": "https://item.taobao.com/item.htm?id=598975115885",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598365788936"
                 },
@@ -2091,6 +2090,7 @@
                     "pay_deadline": 15,
                     "gongjijin_fee": 540,
                     "bujiao_period": 3,
+                    "xufei_deadline": 10,
                     "link_sb": "https://item.taobao.com/item.htm?id=598369140516",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598791558411"
                 },
@@ -2103,6 +2103,8 @@
                     "pay_deadline": 15,
                     "gongjijin_fee": 540,
                     "bujiao_period": 2,
+                    "xufei_deadline": 10,
+                    "late_xufei_deadline": 20,
                     "link_sb": "https://item.taobao.com/item.htm?id=598601949473",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598601929883"
                 },
@@ -2115,6 +2117,7 @@
                     "pay_deadline": 15,
                     "gongjijin_fee": 482,
                     "bujiao_period": 3,
+                    "xufei_deadline": 10,
                     "link_sb": "https://item.taobao.com/item.htm?id=598232088077",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598525470715"
                 },
@@ -2126,6 +2129,7 @@
                     "shouci_fee": 50,
                     "pay_deadline": 20,
                     "gongjijin_fee": 100,
+                    "xufei_deadline": 10,
                     "link_sb": "https://item.taobao.com/item.htm?id=598103220826",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598232148577"
                 },
@@ -2138,6 +2142,7 @@
                     "shouci_fee": 50,
                     "pay_deadline": 20,
                     "bujiao_period": 1,
+                    "xufei_deadline": 10,
                     "link_sb": "https://item.taobao.com/item.htm?id=598977567857",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598790626078"
                 },
@@ -2149,6 +2154,7 @@
                     "shouci_fee": 50,
                     "pay_deadline": 20,
                     "gongjijin_fee": 214,
+                    "xufei_deadline": 10,
                     "link_sb": "https://item.taobao.com/item.htm?id=598598289750",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598368160061"
                 },
@@ -2160,11 +2166,13 @@
                     "shouci_fee": 50,
                     "pay_deadline": 20,
                     "gongjijin_fee": 472,
+                    "xufei_deadline": 10,
                     "link_sb":"https://item.taobao.com/item.htm?id=598983643235",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598373592789"
                 },
                 "长沙":{
                     "gongjijin_fee":316.0,
+                    "xufei_deadline": 10,
                     "link_sb":"https://item.taobao.com/item.htm?id=600094668462",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598603797664"
                 }
