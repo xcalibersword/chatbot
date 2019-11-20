@@ -7,6 +7,11 @@
 - pywin32
 - 
 
+## Key Features to be built for
+- Calculate
+- Check deadlines
+- Product details
+-  
 
 ## File directory
 - chatbot_server : deploy bot for testing locally
@@ -19,21 +24,23 @@
     - load qn data
     - process and save data by ID, QA and query
     - split labelled query into test,valid and train for intent-slot NLU
+    - process query for auto labelling (tokenise, word2vec, abstract)
 - dataset
     - build tools to help with labelling slot
     - set-up excel for collaboration
+    - set-up template for labeling
 
 ## In progress
 - dataset
-    - set-up template for labeling
     - manual label
-- data_utils
-    - process query for auto labelling (tokenise, word2vec, abstract)
-- NLU_classifier (add word embedding, use best practise)
+- feature
+    - context
+    - product details
 
 ## For future
 - Design Doc (for collabs)
 - test bot (build up template for labels)
+- NLU_classifier (add word embedding, use best practise)
 - Dialog State Tracking
     - state
     - database/json

@@ -138,6 +138,7 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
 
 if __name__ == "__main__":
     userID = "女人罪爱:小梅"
+    time = 10
     try:    
         text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(userID)
     except Exception:
@@ -159,4 +160,4 @@ if __name__ == "__main__":
     print("Starting program....") 
     while True:
         main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath)
-        sleep(10)
+        sleep(time)
