@@ -31,6 +31,7 @@ def find_handle(userid):
 def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
     #list of keybdEvents
     #https://blog.csdn.net/zhanglidn013/article/details/35988381
+
     #type text
     SendMessage(QN_input_hwnd, 0x000C, 0, text)
     #send text
@@ -124,7 +125,11 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
     if not query == "":
         reply_template = bot.get_bot_reply(custID,query)
         reply = reply_template[0]
-        send_message_QN(reply,text_in_hwnd,button_hwnd)
+        if type(reply) == list:
+            for r in reply:
+                send_message_QN(r,text_in_hwnd,button_hwnd)
+        else:
+            send_message_QN(reply,text_in_hwnd,button_hwnd)
     
     SeekNewMessage(SeekImagePath)
 
