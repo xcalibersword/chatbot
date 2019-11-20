@@ -154,11 +154,15 @@ class ReqGatekeeper:
     def get_requirements(self):
         return self.requirements.copy()
 
+    def scan_SIP(self, sip):
+        so = sip.get_state_obj()
+        return self.scan_state_obj(so)
+
     def scan_state_obj(self, state_obj):
         if "gated" not in state_obj:
             return
 
-        slots = state_obj['req_info']
+        slots = state_obj.get('req_info',[])
         if not state_obj["gated"] or len(slots) < 1:
             return
        
@@ -303,9 +307,9 @@ class InfoVault():
             if chatval in v_subdict:
                 v_info = v_subdict[chatval]
                 entry = {t_key:v_info}
-                if DEBUG: print("<ADD VAULT INFO> entry",entry,t_key,":",v_info)
+                # if DEBUG: print("<ADD VAULT INFO> entry",entry,t_key,":",v_info)
                 chatinfo.update(entry)
-        if DEBUG: print("<ADD VAULT INFO> list:",self.slot_list)
+        # if DEBUG: print("<ADD VAULT INFO> list:",self.slot_list)
         for s in self.slot_list:
             if s in chatinfo:
                 add_entry(s)

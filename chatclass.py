@@ -233,15 +233,17 @@ class ChatManager:
      
         repeat = True
         rc = 0
-        # Parse the message and get an understanding
-        full_uds, bd = self._parse_message_overall(msg)
-        sip = full_uds.get_sip()
 
         # IDK why this arrangement works but it does. Needs investigation/clarity.
         # I think its because the SIP is changed to same_state once repeat is triggered.
         # Thus, the only change of state is due to crossroading. Also, you don't get stuck at a crossroad because of SAME_STATE cycling.
 
         while repeat and rc < 5:
+            # Parse the message and get an understanding
+            full_uds, bd = self._parse_message_overall(msg)
+            if rc == 0:
+                sip = full_uds.get_sip()
+
             # Digest and internalize the new info
             repeat, pg = self.react_to_sip(sip)
 
@@ -249,11 +251,8 @@ class ChatManager:
             intent = full_uds.get_intent()
 
             if DEBUG: print("<RTM> Repeats", rc, "Pass gate:",pg)
-            if repeat:
-                sip = SIP.same_state()
-
-            if not pg:
-                break
+            # if repeat:
+            #     sip = SIP.same_state()
 
             rc += 1
        
@@ -272,7 +271,7 @@ class ChatManager:
         uds, bd, nums = self._policykeeper_parse(msg)
         if DEBUG: print("Initial UDS:")
         if DEBUG: uds.printout()
-        # self.gatekeeper.scan_SIP(uds.get_sip()) # TODO CHECK IF THIS IS USEFUL
+        self.gatekeeper.scan_SIP(uds.get_sip()) # THIS IS USEFUL for pre-filling slots
 
         # Mine message details. 
         # This is after gatekeep because gatekeep sets the slots.

@@ -419,7 +419,7 @@
         "ask_custom_gjj_jishu":{
             "key": "ask_custom_gjj_jishu",
             "default_set": true,
-            "default_target": "propose_custom_gjj_jishu",
+            "default_target": "custom_jishu_crossroad",
             "replies": []
         },
         "pay_shui": {
@@ -673,15 +673,25 @@
                 "亲 要{city_district}宝贝的链接吗?"
             ]
         },
+        "custom_jishu_crossroad":{
+            "key":"custom_jishu_crossroad",
+            "gated": true,
+            "thread": "t_howmuch",
+            "humanify": false,
+            "req_info": [["chosen_service","service_slot"]],
+            "replies": ["亲,指的是社保还是公积金？"]
+        },
         "propose_custom_gjj_jishu":{
             "key": "propose_custom_gjj_jishu",
             "gated": true,
             "humanify": false,
+            "prop_cust_jishu_state":true,
             "thread": "t_presale",
             "req_info": [
                 ["city","city"],
-                ["given_amount", "dummy_slot"],
-                ["要公积金", "default_yes"]
+                ["chosen_service","service_slot"],
+                ["要公积金", "default_yes"],
+                ["given_amount", "dummy_slot"]
             ],
             "calcs":[
                 "log_custom_gjj_jishu",
@@ -690,6 +700,26 @@
             ],
             "replies": [
                 "{rep_ext[custom_gjj_fee_str]}"
+            ]
+        },
+        "propose_custom_sb_jishu":{
+            "key": "propose_custom_sb_jishu",
+            "gated": true,
+            "humanify": false,
+            "prop_cust_jishu_state":true,
+            "thread": "t_presale",
+            "req_info": [
+                ["city","city"],
+                ["chosen_service","service_slot"],
+                ["given_amount", "dummy_slot"]
+            ],
+            "calcs":[
+                "log_custom_sb_jishu",
+                "flag_custom_sb",
+                "calc_custom_sb_fee"
+            ],
+            "replies": [
+                "{rep_ext[custom_sb_fee_str]}"
             ]
         },
         "goodbye": {
@@ -935,7 +965,8 @@
                         "苏州区": "是市区还是园区呢？",
                         "chosen_fee": "哪个部分？（比如：社保/公积金/服务费）",
                         "target_month": "要补缴哪月？",
-                        "given_amount": "要按照什么基数？"
+                        "given_amount": "要按照什么基数？",
+                        "chosen_service":"指的是社保还是公积金？"
                     }
                 }
             },
@@ -1078,18 +1109,33 @@
                     "given_amount",
                     "w_custom_gjj_fee",
                     "custom_gjj_flag",
-                    ["city_info",["gjj_jishu"]],
-                    ["general_info",["gjj_jishu_max_limit"]]
+                    ["city_info",["gjj_jishu","gjj_jishu_max_limit"]]
                 ],
                 "if_value": {
                     "custom_gjj_flag":{
-                        "0":"亲 {given_amount}太少了，要按照至少{city_info[gjj_jishu]}的公积金基数",
                         "1":"亲 按照{given_amount}基数的话，应缴{w_custom_gjj_fee}元",
-                        "2":"亲 {given_amount}太多了，最多能按照{general_info[gjj_jishu_max_limit]}的公积金基数"
+                        "0":"亲 {city_info[gjj_jishu]}是公积金的最低缴纳基数了哦",
+                        "2":"亲 {city_info[gjj_jishu_max_limit]}是公积金的最高缴纳基数了哦"
                     }
                 }
             },
-
+            {
+                "writeto": "custom_sb_fee_str",
+                "states": ["propose_custom_sb_jishu"],
+                "lookfor": [
+                    "given_amount",
+                    "w_custom_sb_fee",
+                    "custom_sb_flag",
+                    ["city_info",["sb_jishu","sb_jishu_max_limit"]]
+                ],
+                "if_value": {
+                    "custom_sb_flag":{
+                        "1":"亲 按照{given_amount}基数的话，应缴{w_custom_sb_fee}元",
+                        "0":"亲 {city_info[sb_jishu]}是社保的最低缴纳基数了哦",
+                        "2":"亲 {city_info[sb_jishu_max_limit]}是社保的最高缴纳基数了哦"
+                    }
+                }
+            },
             {
                 "writeto": "product",
                 "states": [
@@ -1528,7 +1574,7 @@
                 ],
                 "if_value": {
                     "chosen_fee":{
-                        "服务费":"服务费：{calc_ext[svc_fee_total]}",
+                        "服务费":"服务费：单缴社保或公积金是{city_info[svc_fee]}元 代缴双服务费就等于80元",
                         "社保缴纳":"社保缴纳: {city_info[shebao_payment]}",
                         "社保基数":"社保基数: {city_info[sb_jishu]}",
                         "公积金缴纳":"公积金缴纳: {city_info[gongjijin_fee]}",
@@ -1981,10 +2027,7 @@
                 "req_vars": [
                     "custom_gjj_jishu",
                     ["city_info",
-                        ["gjj_jishu"]
-                    ],
-                    ["general_info",
-                        ["gjj_jishu_max_limit"]
+                        ["gjj_jishu","gjj_jishu_max_limit"]
                     ]
                 ],
                 "steps": {
@@ -2002,6 +2045,39 @@
                     ],
                     "4,isgreater":[
                         ["gjj_jishu","custom_gjj_jishu"],
+                        "w_under"
+                    ],
+                    "5,add":[
+                        ["OUTCOME", "w_under"],
+                        "OUTCOME"
+                    ]
+                }
+            },
+            "flag_custom_sb": {
+                "writeto": "custom_sb_flag",
+                "conditions": [],
+                "persist_value": true,
+                "req_vars": [
+                    "custom_sb_jishu",
+                    ["city_info",
+                        ["sb_jishu","sb_jishu_max_limit"]
+                    ]
+                ],
+                "steps": {
+                    "1,add":[
+                        [1,0],
+                        "OUTCOME"
+                    ],
+                    "2,isgreater": [
+                        ["custom_sb_jishu","sb_jishu_max_limit"],
+                        "w_over"
+                    ],
+                    "3,add":[
+                        ["OUTCOME", "w_over"],
+                        "OUTCOME"
+                    ],
+                    "4,isgreater":[
+                        ["sb_jishu","custom_sb_jishu"],
                         "w_under"
                     ],
                     "5,sub":[
@@ -2024,13 +2100,27 @@
                     ]
                 }
             },
+            "log_custom_sb_jishu":{
+                "writeto": "custom_sb_jishu",
+                "conditions": [],
+                "persist_value": true,
+                "req_vars": [
+                    "given_amount"
+                ],
+                "steps": {
+                    "1,add": [
+                        [0,"given_amount"],
+                        "OUTCOME"
+                    ]
+                }
+            },
             "calc_custom_gjj_fee": {
                 "writeto": "w_custom_gjj_fee",
                 "conditions": [],
                 "persist_value": true,
                 "req_vars": [
                     "custom_gjj_jishu",
-                    ["general_info",
+                    ["city_info",
                         ["gjj_jishu_multi"]
                     ]
                 ],
@@ -2040,13 +2130,28 @@
                         "OUTCOME"
                     ]
                 }
+            },
+            "calc_custom_sb_fee": {
+                "writeto": "w_custom_sb_fee",
+                "conditions": [],
+                "persist_value": true,
+                "req_vars": [
+                    "custom_sb_jishu",
+                    ["city_info",
+                        ["sb_jishu_multi"]
+                    ]
+                ],
+                "steps": {
+                    "1,multi": [
+                        ["custom_sb_jishu","sb_jishu_multi"],
+                        "OUTCOME"
+                    ]
+                }
             }
         }
     },
     "vault_info": {
         "general_info":{
-            "gjj_jishu_multi":0.14,
-            "gjj_jishu_max_limit": 24633,
             "link_fuwu": "https://item.taobao.com/item.htm?id=598104660990"
         },
         "lookup_info":{
@@ -2054,7 +2159,11 @@
                 "writeto":"city_info",
                 "上海市": {
                     "sb_jishu": 4927,
+                    "sb_jishu_multi": 0.3932,
+                    "sb_jishu_max_limit": 24633,
                     "gjj_jishu": 2420,
+                    "gjj_jishu_multi":0.14,
+                    "gjj_jishu_max_limit": 24633,
                     "shebao_payment": 1937.7,
                     "svc_fee": 40,
                     "shouci_fee": 50,

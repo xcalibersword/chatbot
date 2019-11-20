@@ -27,7 +27,7 @@ def init_policykeeper(jdata, pdata):
     STATES = jdata["states"]
     STATE_KEYS = state_key_dict(jdata["states"]) # state_index: state_key
     state_type_policies = pdata["class_policy_rules"]
-    state_type_list = state_type_policies["master_list"]
+    state_type_list = list(state_type_policies.keys())
 
     def in_default_set(intent):
         return intent["default_set"]

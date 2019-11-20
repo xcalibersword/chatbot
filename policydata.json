@@ -21,10 +21,15 @@
                 "两个": "city_crossroad",
                 "DEFAULT": "ctx_inform_how_much"
             }
+        ],
+        "custom_jishu_crossroad":[
+            "chosen_service",{
+                "公积金":"propose_custom_gjj_jishu",
+                "社保":"propose_custom_sb_jishu"
+            }
         ]
     },
     "class_policy_rules":{
-        "master_list":["terminal_state","propose_plan_state"],
         "terminal_state":[
             ["affirm", "initplus"],
             ["thankyou", "initplus"],
@@ -36,6 +41,13 @@
             ["purchase", "city_crossroad"],
             ["inform", "city_crossroad"],
             ["next_step", "confirm_plan"]
+        ],
+        "prop_cust_jishu_state":[
+            ["inform", "SAME_STATE"],
+            ["purchase", "city_crossroad"],
+            ["next_step","city_crossroad"],
+            ["affirm", "city_crossroad"],
+            ["thankyou","initplus"]
         ]
     },
     "policy_rules":{  
@@ -90,13 +102,6 @@
             ["thankyou","initplus"],
             ["inform_done", "initplus"],
             ["goodbye", "goodbye"]
-        ],
-        "propose_custom_gjj_jishu": [
-            ["inform", "SAME_STATE"],
-            ["purchase", "city_crossroad"],
-            ["next_step","city_crossroad"],
-            ["affirm", "city_crossroad"],
-            ["thankyou","initplus"]
         ],
         "inform_fahuo":[
             ["question_reliability","assure_inform_fahuo"]
