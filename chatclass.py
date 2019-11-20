@@ -229,7 +229,7 @@ class ChatManager:
     ############### PRIMARY METHOD ###############
     # Takes in a message, returns (text reply, intent breakdown, current info)
     def respond_to_message(self, msg):
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") # For clarity in terminal
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&") # For clarity in terminal
      
         repeat = True
         rc = 0

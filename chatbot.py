@@ -36,14 +36,7 @@ SUB_LIST = [
     ("'s"," is"),
 ]
 
-REMOVE_LIST = [
-    ".",
-    ",",
-    "!",
-    "，",
-    "。",
-    "！",
-]
+REMOVE_LIST = []
 
 # Removes punctuation characters and converts to lowercase if english
 def format_text(text):
