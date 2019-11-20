@@ -59,9 +59,19 @@
         "confirm_plan": [
             ["purchase","city_crossroad"],
             ["inform","city_crossroad"],
-            ["next_step", "inform_pai"],
-            ["affirm", "inform_pai"],
+            ["next_step", "provide_taobao_link"],
+            ["affirm", "provide_taobao_link"],
             ["query_pay_process", "inform_pai"],
+            ["deny","initplus"]
+        ],
+        "provide_taobao_link": [
+            ["inform","city_crossroad"],
+            ["purchase","city_crossroad"],
+            ["affirm", "inform_pai"],
+            ["next_step","inform_pai"],
+            ["inform_done","finished_payment"],
+            ["inform_paid","finished_payment"],
+            ["thankyou", "finished_payment"],
             ["deny","initplus"]
         ],
         "inform_pai": [
@@ -70,6 +80,7 @@
             ["affirm", "finished_payment"],
             ["next_step", "finished_payment"],
             ["inform_done", "finished_payment"],
+            ["inform_paid","finished_payment"],
             ["thankyou","finished_payment"]
         ],
         "finished_payment": [
