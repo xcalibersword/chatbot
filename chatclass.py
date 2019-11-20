@@ -175,9 +175,9 @@ class ZoneTracker:
         self.zones = {}
 
     def _add_zone(self, z, val):
-        if z in self.zones:
-            if DEBUG: print("<ADD ZONE> Existing zone {}:{}. Did not write {}.".format(z,self.zones[z],val))
-            return
+        # if z in self.zones:
+        #     if DEBUG: print("<ADD ZONE> Existing zone {}:{}. Did not write {}.".format(z,self.zones[z],val))
+        #     return
         self.zones[z] = val
 
     # Fetches info from the dm
@@ -214,6 +214,8 @@ class ChatManager:
         self.gatekeeper = gkeeper
         self.statethreader = StateThreader(pkeeper.GET_INITIAL_STATE())
         self.ztracker = ZoneTracker()
+        self.INFORM_INT = pkeeper.GET_INFORM_INTENT() # TODO Not very good OOP
+
 
     def _get_curr_state(self):
         return self.statethreader.get_curr_thread_state()
@@ -229,22 +231,35 @@ class ChatManager:
     def respond_to_message(self, msg):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") # For clarity in terminal
      
+        repeat = True
+        rc = 0
         # Parse the message and get an understanding
         full_uds, bd = self._parse_message_overall(msg)
-
-        # Digest and internalize the new info
         sip = full_uds.get_sip()
-        repeat = self._digest_sip(sip)
 
-        if repeat:
-            if DEBUG: print("REPEATING")
-            full_uds, bd = self._parse_message_overall(msg)
+        # IDK why this arrangement works but it does. Needs investigation/clarity.
+        # I think its because the SIP is changed to same_state once repeat is triggered.
+        # Thus, the only change of state is due to crossroading. Also, you don't get stuck at a crossroad because of SAME_STATE cycling.
 
-        # Request a reply text
-        intent = full_uds.get_intent()
+        while repeat and rc < 5:
+            # Digest and internalize the new info
+            repeat, pg = self.react_to_sip(sip)
+
+            # Request a reply text
+            intent = full_uds.get_intent()
+
+            if DEBUG: print("<RTM> Repeats", rc, "Pass gate:",pg)
+            if repeat:
+                sip = SIP.same_state()
+
+            if not pg:
+                break
+
+            rc += 1
+       
         reply, calc_topup = self._fetch_reply(intent)
-
         self.push_detail_to_dm(calc_topup)
+
         curr_info = self._get_current_info()
 
         # Records message logs
@@ -268,25 +283,25 @@ class ChatManager:
     # Process, gatekeep then internalize changes
     # Results in change in chat details and change in state
     # Returns boolean indicating whether or not the state was overwritten.
-    def _digest_sip(self, sip):
+    def react_to_sip(self, sip):
         
         if sip.is_same_state():
-            if DEBUG: print("SAME STATE FLAGGED")
+            if DEBUG: print("<REACTION> SAME STATE FLAGGED")
             self.samestateflag = True
             stateobj = self._get_curr_state()
         else:
             self.samestateflag = False
             stateobj = sip.get_state_obj()
-
+        if DEBUG: print("<REACTION> Curr state", self._get_curr_state()["key"], "Nxt stateobj", stateobj["key"])
         # Check if current target state is in a zone_policy crossroad 
         ow_flag, stateobj = self._zone_policy_overwrite(stateobj)
 
         # Gatekeeper gets the requirements from the state
         self._get_slots_from_state(stateobj)
         # Gatekeeper tries the gate
-        self._advance_to_new_state(stateobj)
+        pass_gate = self._advance_to_new_state(stateobj)
 
-        return ow_flag
+        return (ow_flag, pass_gate)
 
     def _move_forward_state(self, state):
         self.statethreader.move_forward(state)
@@ -323,12 +338,14 @@ class ChatManager:
             infostate = constructed_sip.get_state_obj()
             _set_thread_pending(infostate, nextstate)
 
+        return passed
+
     # Overwrites state if in zone policy
     def _zone_policy_overwrite(self, og_nxt_state):
         csk = og_nxt_state["key"]
         zones = self._get_zones()
         overwrite_flag, ow_state = self.pkeeper.zone_policy_overwrite(csk,zones)
-        print("ZONE POLICY",overwrite_flag,ow_state)
+        if DEBUG: print("<ZONE POLICY>",overwrite_flag,ow_state)
         if overwrite_flag:
             return (True, ow_state)
         else:
@@ -404,6 +421,10 @@ class PolicyKeeper:
         initstate = self.STATE_DICT['init']
         return initstate
 
+    def GET_INFORM_INTENT(self):
+        initstate = self.INTENT_DICT['inform']
+        return initstate
+
     def make_info_req_sip(self, req_info):
         def set_info(state, info):
             # Alters the state
@@ -466,18 +487,19 @@ class PolicyKeeper:
         def check_zonepolicies(state_key):
             return state_key in self.ZONE_POLICIES
 
+        print("<ZPO> csk",csk)
         # Zone policy
         if check_zonepolicies(csk):
             z, paths = self.ZONE_POLICIES[csk]
         
             if z in chat_zones:
                 z_val = chat_zones[z]
-                if DEBUG: print("zonepolicy",chat_zones, z, z_val)
                 if z_val in paths:
                     target = paths[z_val]
                 else:
                     target = paths["DEFAULT"]
                 next_sip = self._create_state_obj(target)
+                if DEBUG: print("<ZP OVERWRITE> new SIP:",next_sip)
                 return (True, next_sip)
 
         return (False, "")
@@ -810,7 +832,7 @@ class ReplyGenerator:
                 lookout = tmp["lookfor"].copy()
                 vd = dive_for_values(lookout, enhanced, failzero=True) # Failzero true for rep ext
                 
-                print("TMP",tmp)
+                if DEBUG: print("TMP",tmp)
 
                 if "if_present" in tmp:
                     ifpr = tmp["if_present"]
@@ -835,7 +857,10 @@ class ReplyGenerator:
                             if dstr in formatmap:
                                 enstr = formatmap[dstr]
                             else:
-                                enstr = formatmap["DEFAULT"]
+                                enstr = formatmap.get("DEFAULT",False)
+                                if not enstr:
+                                    raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(dstr,formatmap))
+                                    
                             add_txt_enh(target_key,enstr)
         
         # info.update(enhanced) # Write to info

@@ -83,6 +83,7 @@
         "propose_custom_gjj_jishu": [
             ["inform", "SAME_STATE"],
             ["purchase", "city_crossroad"],
+            ["next_step","city_crossroad"],
             ["affirm", "city_crossroad"],
             ["thankyou","initplus"]
         ],

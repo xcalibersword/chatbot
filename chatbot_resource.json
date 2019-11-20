@@ -412,8 +412,8 @@
         },
         "ask_custom_gjj_jishu":{
             "key": "ask_custom_gjj_jishu",
-            "default_set": false,
-            "default_target": "NA",
+            "default_set": true,
+            "default_target": "propose_custom_gjj_jishu",
             "replies": []
         },
         "pay_shui": {
@@ -458,8 +458,8 @@
         "apology":{
             "key": "apology",
             "default_set": true,
-            "default_target": "propose_custom_gjj_jishu",
-            "replies": []
+            "default_target": "SAME_STATE",
+            "replies": ["没事亲"]
         },
         "reset_chat": {
             "key": 12345,
@@ -927,7 +927,7 @@
                         "要公积金": "交公积金吗？",
                         "苏州区": "是市区还是园区呢？",
                         "chosen_fee": "哪个部分？（比如：社保/公积金/服务费）",
-                        "target_month": "要补缴哪月？"
+                        "target_month": "要补缴哪月？",
                         "given_amount": "要按照什么基数？"
                     }
                 }
