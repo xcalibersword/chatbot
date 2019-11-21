@@ -38,23 +38,27 @@ def save2troubleshoot(right,wrong,query,intent,slot,id):
     new_df = pd.DataFrame(data=list_list)
     new_df.to_csv(r"troubleshoot.csv",encoding="gb18030",index=0,header=0)
 
-def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd,query,reply_template,custID):
+def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd,query,reply_template,custID,mode):
     #list of keybdEvents
     #https://blog.csdn.net/zhanglidn013/article/details/35988381
 
     #type text
     SendMessage(QN_input_hwnd, 0x000C, 0, text)
 
-    confirm = input("如果回复是对的请按回车键,不然请输入对的回答:  ")
-    if confirm == "":
-        #send text
+    if mode == "":
         SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
         print("Message Sent: {}".format(text))
     else:
-        SendMessage(QN_input_hwnd, 0x000C, 0, confirm)
-        SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
-        print("Message Sent: {}".format(text))
-        save2troubleshoot(confirm,text,query,str(reply_template[1]),str(reply_template[2]),custID)
+        confirm = input("如果回复是对的请按回车键,不然请输入对的回答:  ")
+        if confirm == "":
+            #send text
+            SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
+            print("Message Sent: {}".format(text))
+        else:
+            SendMessage(QN_input_hwnd, 0x000C, 0, confirm)
+            SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
+            print("Message Sent: {}".format(text))
+            save2troubleshoot(confirm,text,query,str(reply_template[1]),str(reply_template[2]),custID)
 
 def setActiveScreen(QN_output_hwnd):
     SetForegroundWindow(QN_output_hwnd)
@@ -142,7 +146,7 @@ def SeekNewMessage(clickImage):
     except Exception:
         print("No new chat")
 
-def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):   
+def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath,mode):   
 
     query, custID = check_new_message(userID,text_out_hwnd)
     
@@ -151,9 +155,9 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
         reply = reply_template[0]
         if type(reply) == list:
             for r in reply:
-                send_message_QN(r,text_in_hwnd,button_hwnd,query,reply_template,custID)
+                send_message_QN(r,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
         else:
-            send_message_QN(reply,text_in_hwnd,button_hwnd,query,reply_template,custID)
+            send_message_QN(reply,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
     
     SeekNewMessage(SeekImagePath)
 
@@ -163,7 +167,9 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
 
 if __name__ == "__main__":
     userID = "女人罪爱:小梅"
-    time = input("Timer(secs):  ")
+    time = input("Enter the waiting time in second for each cycle to look for new message:  ")
+    #enter for testing, 1 for deployment
+    mode = input("Enter the mode:  ")
     try:    
         text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(userID)
     except Exception:
@@ -184,5 +190,5 @@ if __name__ == "__main__":
     
     print("Starting program....") 
     while True:
-        main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath)
+        main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath,mode)
         sleep(float(time))
