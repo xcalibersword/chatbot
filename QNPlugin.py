@@ -6,6 +6,7 @@ from win32con import *
 from time import *
 from jpype import *
 from chatbot import Chatbot
+import pandas as pd
 
 def find_handle(userid):
     #spy++ | hard coded have to update if qianniu update their UI
@@ -28,7 +29,16 @@ def find_handle(userid):
 
     return QN_input_hwnd,QN_output_hwnd,QN_sendBut_hwnd
 
-def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
+def save2troubleshoot(right,wrong,query,intent,slot,id):
+    df = pd.read_csv(r"troubleshoot.csv",encoding="gb18030",header=None)
+    list_list=df.values.tolist()
+    
+    list_list.append([wrong,id,query,right,intent,slot])
+
+    new_df = pd.DataFrame(data=list_list)
+    new_df.to_csv(r"troubleshoot.csv",index=False,encoding="gb18030")
+
+def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd,query,reply_template,custID):
     #list of keybdEvents
     #https://blog.csdn.net/zhanglidn013/article/details/35988381
 
@@ -44,6 +54,7 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
         SendMessage(QN_input_hwnd, 0x000C, 0, confirm)
         SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
         print("Message Sent: {}".format(text))
+        save2troubleshoot(confirm,text,query,str(reply_template[1]),str(reply_template[2]),custID)
 
 def setActiveScreen(QN_output_hwnd):
     SetForegroundWindow(QN_output_hwnd)
@@ -74,8 +85,12 @@ def select_copy():
     
 def getRawText():
     OpenClipboard()
+    sleep(0.05)
     raw_text = GetClipboardData()
+    sleep(0.05)
     CloseClipboard()
+    sleep(0.05)
+
     raw_text_list = raw_text.splitlines()
     processed_text_list = []
     for sent in raw_text_list:
@@ -136,9 +151,9 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
         reply = reply_template[0]
         if type(reply) == list:
             for r in reply:
-                send_message_QN(r,text_in_hwnd,button_hwnd)
+                send_message_QN(r,text_in_hwnd,button_hwnd,query,reply_template,custID)
         else:
-            send_message_QN(reply,text_in_hwnd,button_hwnd)
+            send_message_QN(reply,text_in_hwnd,button_hwnd,query,reply_template,custID)
     
     SeekNewMessage(SeekImagePath)
 
