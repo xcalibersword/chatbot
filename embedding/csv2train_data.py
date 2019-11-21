@@ -3,6 +3,7 @@
 
 import pandas as pd
 csv_list_list = []
+
 #insert path
 df = pd.read_csv(r"raw.csv",encoding="gb18030")
 list_list = df.values.tolist()
