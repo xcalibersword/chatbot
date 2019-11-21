@@ -30,13 +30,13 @@ def find_handle(userid):
     return QN_input_hwnd,QN_output_hwnd,QN_sendBut_hwnd
 
 def save2troubleshoot(right,wrong,query,intent,slot,id):
-    df = pd.read_csv(r"troubleshoot.csv",encoding="gb18030",header=None)
+    df = pd.read_csv(r"troubleshoot.csv",encoding="gb18030")
     list_list=df.values.tolist()
     
     list_list.append([wrong,id,query,right,intent,slot])
 
     new_df = pd.DataFrame(data=list_list)
-    new_df.to_csv(r"troubleshoot.csv",index=False,encoding="gb18030")
+    new_df.to_csv(r"troubleshoot.csv",encoding="gb18030",index=0,header=0)
 
 def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd,query,reply_template,custID):
     #list of keybdEvents
