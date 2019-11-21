@@ -73,7 +73,8 @@
             ["inform","city_crossroad"],
             ["next_step", "provide_taobao_link"],
             ["affirm", "provide_taobao_link"],
-            ["query_pay_process", "inform_pai"],
+            ["thankyou","provide_taobao_link"],
+            ["query_pay_process", "inform_pai"],            
             ["deny","initplus"]
         ],
         "provide_taobao_link": [

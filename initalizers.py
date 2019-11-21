@@ -46,8 +46,8 @@ def init_policykeeper(jdata, pdata):
 
         elif destination == "SAME_STATE":
             target_state = SIP.same_state()
-        elif destination == "GO_BACK_STATE":
-            target_state = SIP.go_back_state()
+        # elif destination == "GO_BACK_STATE": # TODO: See if this feature is needed or not
+        #     target_state = SIP.go_back_state()
         elif destination == "EXIT_POCKET_STATE":
             target_state = SIP.exit_pocket()
         else:
