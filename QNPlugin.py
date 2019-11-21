@@ -94,7 +94,7 @@ def getRawText():
     sleep(0.05)
     CloseClipboard()
     sleep(0.05)
-
+    sleep(3)
     raw_text_list = raw_text.splitlines()
     processed_text_list = []
     for sent in raw_text_list:
