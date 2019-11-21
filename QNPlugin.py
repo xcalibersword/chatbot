@@ -40,7 +40,10 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
 
 def setActiveScreen(QN_output_hwnd):
     SetForegroundWindow(QN_output_hwnd)
-    SetCursorPos((800,500))
+
+    rect = GetWindowRect(QN_output_hwnd)
+    SetCursorPos((rect[2]-20,rect[1]+10))
+    
     sleep(0.05)
     mouse_event(MOUSEEVENTF_LEFTDOWN,0,0,0,0)
     mouse_event(MOUSEEVENTF_LEFTUP,0,0,0,0)
@@ -138,6 +141,7 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath):
 
 if __name__ == "__main__":
     userID = "女人罪爱:小梅"
+    time = 10
     try:    
         text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(userID)
     except Exception:
@@ -159,4 +163,4 @@ if __name__ == "__main__":
     print("Starting program....") 
     while True:
         main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath)
-        sleep(10)
+        sleep(time)
