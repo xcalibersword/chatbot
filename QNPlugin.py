@@ -34,9 +34,16 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd):
 
     #type text
     SendMessage(QN_input_hwnd, 0x000C, 0, text)
-    #send text
-    SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
-    print("Message Sent: {}".format(text))
+
+    confirm = input("如果回复是对的请按回车键,不然请输入对的回答:  ")
+    if confirm == "":
+        #send text
+        SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
+        print("Message Sent: {}".format(text))
+    else:
+        SendMessage(QN_input_hwnd, 0x000C, 0, confirm)
+        SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
+        print("Message Sent: {}".format(text))
 
 def setActiveScreen(QN_output_hwnd):
     SetForegroundWindow(QN_output_hwnd)
