@@ -3,12 +3,20 @@
         "affirm": {
             "key": "11 affirmation",
             "default_set": false,
+            "slotfills": {
+                "wantnot":"yes",
+                "yesno":"yes"
+            },
             "default_target": "NA",
             "replies": []
         },
         "deny": {
             "key": "10 denial",
             "default_set": false,
+            "slotfills": {
+                "wantnot":"no",
+                "yesno":"no"
+            },
             "default_target": "NA",
             "replies": []
         },

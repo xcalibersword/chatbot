@@ -71,13 +71,17 @@ class SIP:
 
 # A vehicle to house SIP and intent.
 class Understanding:
-    def __init__(self, intent, sip):
-        self.intent = intent
+    def __init__(self, original_intent_obj, intent_obj, sip):
+        self.og_intent = original_intent_obj
+        self.intent = intent_obj
         self.sip = sip
         self.details = {}
 
     def get_intent(self):
         return self.intent
+
+    def get_og_intent(self):
+        return self.og_intent
 
     def get_sip(self):
         return self.sip
@@ -377,6 +381,16 @@ class InfoParser():
         
         return defval
 
+    def _intent_blanket_slotfill(self, intent, slots, d):
+        int_slotpairs = intent.get("slotfills",[])
+        out = {}
+        for fillslotname, slottype in slots:
+            if slottype in int_slotpairs:
+                filval = int_slotpairs[slottype]
+                out[fillslotname] = filval
+        d.update(out)
+        return
+
     # Get the value in the text related to the specified category
     # Enumerated by dictionary key
     # Returns a pure value
@@ -397,21 +411,23 @@ class InfoParser():
                 # token = m.group(0)
                 value = v
                 found = True
-                if DEBUG: print("<PARSER> Found a ", category, ":", v)
+                # if DEBUG: print("<PARSER> Found a ", category, ":", v)
         
         return value
 
     ### MAIN FUNCTION ### 
     # Returns a dict of primary lookup_info including zones.
-    def parse(self, text, slots):
+    def parse(self, text, slots, intent):
         out = {}
-        # Intent Slot parse
+        # Intent slotfill
+        self._intent_blanket_slotfill(intent, slots, out)
+        # State Slot parse
         self._parse_function(text, out, slots)
-        # Default parse (overwrite slots)
+        # Permanent slot parse (overwrites existing slots)
         self._default_parse(text,out)
         # Contextual parse
         self._contextual_parse(text, out)
-
+        # if DEBUG: print("<PARSE> Final details:",out)
         return out
 
     # Converts a python array to a string delimited by the '|' character

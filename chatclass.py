@@ -275,7 +275,8 @@ class ChatManager:
 
         # Mine message details. 
         # This is after gatekeep because gatekeep sets the slots.
-        self._parse_message_details(msg, nums)
+        og_int = uds.get_og_intent()
+        self._parse_message_details(msg, nums,og_int)
 
         return uds, bd
     
@@ -379,9 +380,9 @@ class ChatManager:
         return self.pkeeper.get_understanding(msg, csk)
 
     # Asks iparser to parse the message
-    def _parse_message_details(self, msg, nums):
+    def _parse_message_details(self, msg, nums, intent):
         slots = self.gatekeeper.get_slots() # Only look out for what is needed
-        details = self.iparser.parse(msg, slots)
+        details = self.iparser.parse(msg, slots, intent)
 
         # Append parsed number to details
         bignum = max(nums) if len(nums) > 0 else 0
@@ -471,14 +472,14 @@ class PolicyKeeper:
 
         policy = self.POLICY_RULES[csk]
         default_null_int = self.INTENT_DICT["no_intent"]
-        uds = Understanding(default_null_int,SIP.same_state())
+        uds = Understanding(intent_obj, default_null_int,SIP.same_state())
         for intent_lst in policy.get_intents():
             print("intent_list",list(map(lambda x: x[0],intent_lst)))
             for pair in intent_lst:
                 c_int, next_sip = pair
                 if intent == c_int:
                     print("MATCH",intent)
-                    uds = Understanding(intent_obj, next_sip)
+                    uds = Understanding(intent_obj, intent_obj, next_sip)
                     return uds
         return uds
 
