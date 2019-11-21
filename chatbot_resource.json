@@ -416,8 +416,8 @@
             "default_target": "NA",
             "replies": []
         },
-        "ask_custom_gjj_jishu":{
-            "key": "ask_custom_gjj_jishu",
+        "ask_custom_jishu":{
+            "key": "ask_custom_jishu",
             "default_set": true,
             "default_target": "custom_jishu_crossroad",
             "replies": []
@@ -680,9 +680,10 @@
             "humanify": false,
             "req_info": [
                 ["chosen_service","service_slot"],
-                ["city","city"]
+                ["city","city"],
+                ["given_amount", "dummy_slot"]
             ],
-            "replies": ["亲,指的是社保还是公积金？"]
+            "replies": ["想用{given_amount}的{chosen_service}基数是吧？"]
         },
         "propose_custom_gjj_jishu":{
             "key": "propose_custom_gjj_jishu",
