@@ -8,6 +8,13 @@ from jpype import *
 from chatbot import Chatbot
 import pandas as pd
 
+clipboard_sleep = 1
+cmd_sleep = 0.05
+userID = "temporary"
+
+
+GLOBAL = {}
+
 def find_handle(userid):
     #spy++ | hard coded have to update if qianniu update their UI
     a = FindWindow("StandardFrame",userid + " - 接待中心")
@@ -42,13 +49,19 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd,query,reply_template,cust
     #list of keybdEvents
     #https://blog.csdn.net/zhanglidn013/article/details/35988381
 
-    #type text
+    # Paste text into the chatbox
     SendMessage(QN_input_hwnd, 0x000C, 0, text)
 
     if mode == "":
+        # AUTO SEND MODE
         SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
         print("Message Sent: {}".format(text))
     else:
+        # CONFIRMATION MODE
+        sleep(1)
+        return
+
+        # -- EVERYTHING BELOW HERE DOESNT HAPPEN -- 
         confirm = input("如果回复是对的请按回车键,不然请输入对的回答:  ")
         if confirm == "":
             #send text
@@ -66,26 +79,29 @@ def setActiveScreen(QN_output_hwnd):
     rect = GetWindowRect(QN_output_hwnd)
     SetCursorPos((rect[2]-20,rect[1]+10))
     
-    sleep(0.05)
+    sleep(cmd_sleep)
     mouse_event(MOUSEEVENTF_LEFTDOWN,0,0,0,0)
     mouse_event(MOUSEEVENTF_LEFTUP,0,0,0,0)
-    sleep(0.05)
+    sleep(cmd_sleep)
 
 def select_copy():
     #ctrl a
     keybd_event(17, 0, 0, 0)
     keybd_event(65, 0, 0, 0)
-    sleep(0.05)
+    sleep(cmd_sleep)
+    #ctrl a release
     keybd_event(65, 0, 2, 0)
     keybd_event(17, 0, 2, 0)
+
     #ctrl c
-    sleep(0.05)
+    sleep(cmd_sleep)
     keybd_event(17, 0, 0, 0)
     keybd_event(67, 0, 0, 0)
-    sleep(0.05)
+    sleep(cmd_sleep)
+    # ctrl c release 
     keybd_event(67, 0, 2, 0)
     keybd_event(17, 0, 2, 0)
-    sleep(0.05)
+    sleep(cmd_sleep)
     
 def getRawText():
     OpenClipboard()
@@ -94,7 +110,7 @@ def getRawText():
     sleep(0.05)
     CloseClipboard()
     sleep(0.05)
-    sleep(3)
+    sleep(clipboard_sleep)
     raw_text_list = raw_text.splitlines()
     processed_text_list = []
     for sent in raw_text_list:
@@ -103,6 +119,18 @@ def getRawText():
             processed_text_list.append(sent)
     processed_text_list.reverse()
     return processed_text_list
+
+def check_if_edited(raw_text, q, cid):
+    def get_last_sent(txt):
+        self_msg_lst = list(txt.filter(lambda msg: userID in msg, txt))
+        print(self_msg_lst)
+        print("<LAST MESSAGE>", self_msg_lst[-1])
+        return self_msg_lst[-1]
+    last_sent = get_last_sent(raw_text)
+    last_bot_reply = GLOBAL["last_reply"]
+    if not last_bot_reply == last_sent:
+        save2troubleshoot(last_sent, last_bot_reply,q, "intent", "slot info",cid)
+    return
 
 def processText(userID,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
@@ -122,6 +150,7 @@ def processText(userID,rawText):
         idx += 1
     query_list.reverse()
     query = " ".join(query_list)
+    check_if_edited(rawText, query, custid)
     return query,custid
 
 def check_new_message(userID,QN_output_hwnd):
@@ -130,8 +159,7 @@ def check_new_message(userID,QN_output_hwnd):
     select_copy()
     rawText = getRawText()
     query,cust_QN_ID = processText(userID,rawText)
-    print("Query: {}".format(query))
-    print("Customer ID: {}".format(cust_QN_ID))
+    print("Customer ID: {} Query: {}".format(cust_QN_ID, query))
     return query, cust_QN_ID
 
 #insert image path here for the series of place for the OCR to click on
@@ -148,11 +176,12 @@ def SeekNewMessage(clickImage):
 
 def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath,mode):   
 
-    query, custID = check_new_message(userID,text_out_hwnd)
+    query, custID = check_new_message(userID,text_out_hwnd, mode)
     
     if not query == "":
         reply_template = bot.get_bot_reply(custID,query)
         reply = reply_template[0]
+        GLOBAL["last_reply"] = reply
         if type(reply) == list:
             for r in reply:
                 send_message_QN(r,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
@@ -167,9 +196,10 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath,mode):
 
 if __name__ == "__main__":
     userID = "女人罪爱:小梅"
-    time = input("Enter the waiting time in second for each cycle to look for new message:  ")
+    delay_time = input("Enter the delay time (in seconds) for each cycle to look for new message 投入延期(秒钟)): ")
     #enter for testing, 1 for deployment
-    mode = input("Enter the mode:  ")
+    mode = input("Enter the mode 投入模式: ")
+    GLOBAL["mode"] = 1 if mode == "" else 0
     try:    
         text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(userID)
     except Exception:
@@ -191,4 +221,4 @@ if __name__ == "__main__":
     print("Starting program....") 
     while True:
         main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath,mode)
-        sleep(float(time))
+        sleep(float(delay_time))
