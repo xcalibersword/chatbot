@@ -13,14 +13,15 @@ cmd_sleep = 0.05
 self_userID = "temporary"
 
 GLOBAL = {}
+GLOBAL["got_new_message"] = True
 
 def find_handle(userid):
     #spy++ | hard coded have to update if qianniu update their UI
     a = FindWindow("StandardFrame",userid + " - 接待中心")
     aa = FindWindowEx(a, 0, "StandardWindow", "")
     aaa = FindWindowEx(aa, 0, "StandardWindow", "")
-    # aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
-    aaa = FindWindowEx(aa, aaa, "StandardWindow", "") # Why 2 of this?
+    aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
+    aaa = FindWindowEx(aa, aaa, "StandardWindow", "") # Please have better names
     aaaa = FindWindowEx(aaa, 0, "SplitterBar", "")
 
     b = FindWindowEx(aaaa, 0, "StandardWindow", "")
@@ -177,6 +178,12 @@ def processText(self_userID,rawText):
         idx += 1
     query_list.reverse()
     query = " ".join(query_list)
+    if not GLOBAL["last_query"] == query:
+        GLOBAL["got_new_message"] = True
+        GLOBAL["last_query"] = query
+    else:
+        GLOBAL["got_new_message"] = False
+
     check_if_edited(last_sent,query_list.copy(), query, custid)
     return query,custid
 
@@ -205,7 +212,7 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
 
     query, custID = check_new_message(self_userID,text_out_hwnd)
     
-    if not query == "":
+    if GLOBAL["got_new_message"]:
         reply_template = bot.get_bot_reply(custID,query)
         reply = reply_template[0]
         GLOBAL["last_bot_reply"] = reply
