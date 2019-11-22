@@ -12,7 +12,6 @@ clipboard_sleep = 2
 cmd_sleep = 0.05
 self_userID = "temporary"
 
-
 GLOBAL = {}
 
 def find_handle(userid):
@@ -104,20 +103,42 @@ def select_copy():
     sleep(cmd_sleep)
     
 def getRawText():
-    OpenClipboard()
+    rpt = 0
+    succeed = False
+    while not succeed and rpt < 5:
+        try:
+            OpenClipboard()
+            succeed = True
+        except Exception as e:
+            print("OPEN CLIPBOARD EXCEPTION:",e)
+            print("Trying again...")
+        rpt += 1
+
     sleep(0.05)
+
     rpt = 0
     raw_text = ""
     while raw_text == "" and rpt < 5:
         try:
             raw_text = GetClipboardData()
         except Exception as e:
-            print("CLIPBOARD EXCEPTION:",e)
+            print("GET CLIPBOARD EXCEPTION:",e)
             print("Trying again...")
         rpt += 1
 
     sleep(0.05)
-    CloseClipboard()
+
+    rpt = 0
+    succeed = False
+    while not succeed and rpt < 5:
+        try:
+            CloseClipboard()
+            succeed = True
+        except Exception as e:
+            print("CLOSE CLIPBOARD EXCEPTION:",e)
+            print("Trying again...")
+        rpt += 1
+
     sleep(0.05)
     sleep(clipboard_sleep)
     raw_text_list = raw_text.splitlines()
@@ -134,7 +155,7 @@ def check_if_edited(last_sent, messages, q, cid):
     last_bot_reply = GLOBAL.get("last_bot_reply","")
     print("<LAST SENT>",last_sent,"bot wanted to reply:",last_bot_reply)
     if not last_bot_reply == last_sent and not last_bot_reply == "":
-        save2troubleshoot(last_sent, last_bot_reply,q, "intent", "slot info",cid)
+        save2troubleshoot(str(last_sent), str(last_bot_reply), str(q), "intent", "slot info",str(cid))
     return
 
 def processText(self_userID,rawText):
@@ -146,7 +167,7 @@ def processText(self_userID,rawText):
     for sent in rawText:
         if re.search(date_time_pattern,sent):
             if re.search(self_userID,sent):
-                last_sent = rawText[idx+1]
+                last_sent = rawText[idx-1]
                 break
             else:
                 custid = re.sub(date_time_pattern,"",sent)
