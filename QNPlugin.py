@@ -129,7 +129,6 @@ def check_if_edited(last_sent, messages, q, cid):
     return
 
 def processText(self_userID,rawText):
-    print(rawText)
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     idx = 0
     prevs_idx = 0
@@ -138,7 +137,7 @@ def processText(self_userID,rawText):
     for sent in rawText:
         if re.search(date_time_pattern,sent):
             if re.search(self_userID,sent):
-                last_sent = sent
+                last_sent = rawText[idx+1]
                 break
             else:
                 custid = re.sub(date_time_pattern,"",sent)
@@ -152,7 +151,7 @@ def processText(self_userID,rawText):
     return query,custid
 
 def check_new_message(self_userID,QN_output_hwnd):
-    print('Checking for new message...')
+    print('Checking for new messages...')
     setActiveScreen(QN_output_hwnd)
     select_copy()
     rawText = getRawText()
