@@ -90,7 +90,7 @@ class Understanding:
         return self.sip.get_slots()
 
     def printout(self):
-        print("UNDERSTANDING OBJ PRINTOUT... Intent: ", self.intent, " SIP: ", self.sip.toString())
+        print("UNDERSTANDING OBJ PRINTOUT Intent: ", self.intent, " SIP: ", self.sip.toString())
 
 class ReqGatekeeper:
     def __init__(self, conds, default_slot_vals):
@@ -137,11 +137,11 @@ class ReqGatekeeper:
                 for c in conditions:
                     val, slots_list = c
                     fetched = list(fetch.values())
-                    print("<CONDITIONAL REQS>f,fval,val",fetch, fetched,val) 
+                    if DEBUG: print("<CONDITIONAL REQS>f,fval,val",fetch, fetched,val) 
                     if fetched[0] == val:
                         for slot in slots_list:
                             if not slot[0] in self.get_slot_names():
-                                print("Update COND slots: ", slot)
+                                if DEBUG: print("<CONDITIONAL REQS>Update COND slots: ", slot)
                                 self.slots.append(slot)
                         break
 
@@ -208,15 +208,14 @@ class ReqGatekeeper:
         post_unfilled = unfilled.copy()
         info_topup = {}
         for slot in unfilled.copy():
-            if DEBUG: print("<DEFAULT VALS curr slot",slot,"is def:", is_default(slot))
+            if DEBUG: print("<DEFAULT VALS> curr slot",slot,"is def:", is_default(slot))
             if is_default(slot):
-                slotname, NA = slot
+                slotname, slot_type_UNUSED = slot
                 if slotname in self.default_slot_vals:
                     val = self.default_slot_vals[slotname]
                     info_topup[slotname] = val
                     post_unfilled.remove(slot)
-                else:
-                    print("<DEFAULT VALS> {} does not have a default value".format(slot))
+                    if DEBUG: print("<DEFAULT VALS> {} assigned default value: {}".format(slotname, val))
         if DEBUG: print("<DEFAULT VALS> post top up", info_topup)
         return (post_unfilled, info_topup)
 

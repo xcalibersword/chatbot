@@ -233,11 +233,6 @@ class ChatManager:
      
         repeat = True
         rc = 0
-
-        # IDK why this arrangement works but it does. Needs investigation/clarity.
-        # I think its because the SIP is changed to same_state once repeat is triggered.
-        # Thus, the only change of state is due to crossroading. Also, you don't get stuck at a crossroad because of SAME_STATE cycling.
-
         while repeat and rc < 5:
             # Parse the message and get an understanding
             full_uds, bd = self._parse_message_overall(msg)
@@ -487,7 +482,7 @@ class PolicyKeeper:
         def check_zonepolicies(state_key):
             return state_key in self.ZONE_POLICIES
 
-        print("<ZPO> csk",csk)
+        print("<ZPOL> curr state key:",csk)
         # Zone policy
         if check_zonepolicies(csk):
             z, paths = self.ZONE_POLICIES[csk]
@@ -499,35 +494,10 @@ class PolicyKeeper:
                 else:
                     target = paths["DEFAULT"]
                 next_sip = self._create_state_obj(target)
-                if DEBUG: print("<ZP OVERWRITE> new SIP:",next_sip)
+                if DEBUG: print("<ZPOL OVERWRITE> new SIP:",next_sip)
                 return (True, next_sip)
 
         return (False, "")
-
-    # OLD METHOD USING SEARCH. NOT USED
-    # def decipher_message(self,curr_state,msg):
-    #     def get_intent_matchdb(intent):
-    #         if not "matchdb" in intent:
-    #             raise Exception("intent missing matchdb, {}".format(intent))
-    #         return intent["matchdb"]
-
-    #     # Returns an Understanding minus details
-    #     def uds_from_policies(state, msg):
-    #         if DEBUG: print("uds from state:",state)
-    #         policy = self.POLICY_RULES[state]
-    #         # print("policy list intents", policy.get_intents())
-    #         for intent_lst in policy.get_intents():
-    #             for pair in intent_lst:
-    #                 intent, next_sip = pair
-    #                 assert isinstance(next_sip, SIP)
-    #                 keyword_db = get_intent_matchdb(intent)
-    #                 if cbsv.check_input_against_db(msg, keyword_db):
-    #                     return Understanding(intent, next_sip)
-    #         return Understanding.make_null()
-        
-    #     uds = uds_from_policies(curr_state,msg)
-
-    #     return uds
 
 # MANAGES DETAILS (previously held by Chat)
 # TODO: Differentiate between contextual chat info and user info?
@@ -563,6 +533,7 @@ class DetailManager:
 
         if not zones_d == {}: 
             d["zones"].update(zones_d)
+        return
 
     def log_detail(self, new_info, OVERWRITE = 1, DEBUG = 0):
         if DEBUG: print("Logging", new_info)
@@ -643,10 +614,14 @@ class DetailManager:
         self.vault.add_vault_info(out)
         return out
 
-    # This is called during the creation of a new chat
-    def clone(self, chatID):   
+    def _check_db_init(self):
         if not self.dbrunnerset:
             raise Exception("DatabaseRunner not initalized for DetailManager!")
+        return True
+
+    # This is called during the creation of a new chat
+    def clone(self, chatID):   
+        self._check_db_init()
         clonetrooper = DetailManager(self.vault, self.second_slots, self.zonelist)
         clonetrooper._set_chatID(chatID)
         clonetrooper.set_runner(self.dbrunner)
@@ -655,10 +630,10 @@ class DetailManager:
         return clonetrooper
 
     def write_info_to_db(self):
-        if not self.dbrunnerset:
-            raise Exception("DatabaseRunner not initalized for DetailManager!")
+        self._check_db_init()
         chatid = self.chatID
         self.dbrunner.write_to_db(chatid, self.get_user_info())
+        return
 
 # Generates reply text based on current state info
 class ReplyGenerator:
@@ -676,11 +651,12 @@ class ReplyGenerator:
         reply = self.generate_reply_message(rdb, infoplus)
         return (reply, info_topup)
 
-    # Formats txts and calculates
-    # Big function
+    # Performs calculations and formats text message replies 
+    ############## Major function ##############
     def _enhance_info(self,curr_state,info):
+        RF_DEBUG = 0
         enhanced = info.copy()
-        if DEBUG: print("initial info", enhanced)
+        if RF_DEBUG: print("initial info", enhanced)
         rep_ext = {}
         l_calc_ext = {}
         topup = {}
@@ -692,14 +668,13 @@ class ReplyGenerator:
         calcDB = self.formatDB["calcs"]
 
         def add_enh(key, value, ext_dict,subdict_name, pv = False, overwrite = False):
-            if DEBUG: print("Enhancing!{}:{}".format(key,value))
+            if RF_DEBUG: print("Enhancing!{}:{}".format(key,value))
 
             if key in ext_dict and not overwrite:
                 ext_dict[key] = ext_dict[key] + value
             else:
                 ext_dict[key] = value
             
-      
             # Dict of info to be returned and written into main info
             if pv:
                 topup[key] = value
@@ -714,12 +689,12 @@ class ReplyGenerator:
             return add_enh(key,enhstr,rep_ext,"rep_ext",pv = _pv)
         
         def add_calc_enh(key, rawstr, _pv = False):
-            flt = round(float(rawstr),2)
+            flt = round(float(rawstr),2) # Round all displayed numbers to 2 dp
             return add_enh(key,flt,l_calc_ext,"calc_ext", pv = _pv, overwrite = True)
 
-        def needs_txt_enh(tmp,csk):
+        def needs_txt_enh(tmp,curr_state_key):
             states = tmp["states"]
-            return csk in states
+            return curr_state_key in states
 
         def needs_calc(state):
             return "calcs" in state
@@ -727,7 +702,7 @@ class ReplyGenerator:
         def add_formula_conditional_vars(f,vd):
             ret = {}
             # This assumes all conditions are joined by AND
-            conds = f["conditions"]
+            conds = f.get("conditions",[])
             for cond in conds:
                 k, v, setval = cond
                 if not k in vd:
@@ -749,25 +724,26 @@ class ReplyGenerator:
             opvar_key = "optional_vars"
             def op_on_all(vnames, op, vdic):
                 def operate(a,b,op):
-                    a = float(a) # Force everything here to float
+                    a = float(a) # Force every variable involved to float
                     b = float(b)
-                    if 0: print("a,b", a, b) # DEBUG statement
                     return op(a,b)
                 out = None
                 for vname in vnames:
                     isnumbr = cbsv.is_number(vname)
-                    rel_val = vname if isnumbr else vdic[vname]
+                    rel_val = vname if isnumbr else vdic[vname] # variables can be real numbers or variable names
                     if out == None:
                         out = rel_val
                     else:
                         out = operate(out,rel_val,op)
                 return out
-                
+
+            # Process the formula steps    
             instr = f["steps"]
             steps = list(instr.keys())
             steps = list(map(lambda x: (x.split(","), instr[x]),steps))
             steps.sort(key=lambda t: float(t[0][0])) # If no conversion it sorts as string
-            if DEBUG: print("<RESOLVE FORMULA> aft sort",steps)
+
+            if RF_DEBUG: print("<RESOLVE FORMULA> steps aft sort",steps)
             req_vars = f[reqvar_key]
             op_vars = f.get(opvar_key, [])
             vd = dive_for_values(req_vars,enhanced)
@@ -776,13 +752,13 @@ class ReplyGenerator:
 
             # Conditional values
             add_formula_conditional_vars(f,vd)
-            if DEBUG: print("<RESOLVE FORMULA> vd",vd)
+            if RF_DEBUG: print("<RESOLVE FORMULA> Value Dict",vd)
 
             #CALCULATIONS 
             vd["OUTCOME"] = 0
             for stp in steps:
                 (NA, opname),(valnames,tkey)  = stp
-                opname.replace(" ","")
+                opname.replace(" ","") #Spacing messes up the recognition of logical operators
                 if not tkey in vd:
                     vd[tkey] = 0
 
@@ -817,12 +793,12 @@ class ReplyGenerator:
                     target_key = formula["writeto"]
                     result = resolve_formula(formula)
                     add_calc_enh(target_key,result,pv_flag)
-                if 1: print("<Intermediate> enh",enhanced)
+                if RF_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
 
         else:
-            if DEBUG: print("No calculation performed")
+            if RF_DEBUG: print("<RESOLVE FORMULA> No calculation performed")
 
-        if DEBUG: print("postcalc enh",enhanced)
+        if RF_DEBUG: print("<RESOLVE FORMULA> postcalc enh",enhanced)
 
         # Message extensions and formatting
         # Template in format database
@@ -832,49 +808,42 @@ class ReplyGenerator:
                 lookout = tmp["lookfor"].copy()
                 vd = dive_for_values(lookout, enhanced, failzero=True) # Failzero true for rep ext
                 
-                if DEBUG: print("TMP",tmp)
+                if RF_DEBUG: print("TMP",tmp)
 
-                if "if_present" in tmp:
-                    ifpr = tmp["if_present"]
-                    for deet in list(ifpr.keys()):
-                        enstr = ifpr[deet]
-                        add_txt_enh(target_key,enstr)
+                ifpr = tmp.get("if_present",{})
+                for deet in list(ifpr.keys()):
+                    enstr = ifpr[deet]
+                    add_txt_enh(target_key,enstr)
                 
-                if "if_value" in tmp:
-                    ifvl = tmp["if_value"]
-                    for deet in list(ifvl.keys()):
-                        if not deet in vd:
-                            continue
-                        formatmap = ifvl[deet]
-                        if isinstance(vd[deet],list):
-                            # E.g. reqinfo is a list
-                            contents = vd[deet]
-                        else:
-                            contents = [vd[deet]]
+                ifvl = tmp.get("if_value",{})
+                for deet in list(ifvl.keys()):
+                    if not deet in vd:
+                        continue
+                    formatmap = ifvl[deet]
+                    if isinstance(vd[deet],list):
+                        # E.g. reqinfo is a list
+                        contents = vd[deet]
+                    else:
+                        contents = [vd[deet]]
 
-                        for deetval in contents:
-                            dstr = str(cbsv.conv_numstr(deetval,wantint=1)) # Because json keys can only be str
-                            if dstr in formatmap:
-                                enstr = formatmap[dstr]
-                            else:
-                                enstr = formatmap.get("DEFAULT",False)
-                                if not enstr:
-                                    raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(dstr,formatmap))
-                                    
-                            add_txt_enh(target_key,enstr)
+                    for deetval in contents:
+                        dstr = str(cbsv.conv_numstr(deetval,wantint=1)) # Because json keys can only be str
+                        if dstr in formatmap:
+                            enstr = formatmap[dstr]
+                        else:
+                            enstr = formatmap.get("DEFAULT",False)
+                            if not enstr:
+                                raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(dstr,formatmap))
+                                
+                        add_txt_enh(target_key,enstr)
         
-        # info.update(enhanced) # Write to info
         return (enhanced, topup)
 
     # Returns the a reply database either from intent or from state
     def getreplydb(self, intent, curr_state, issamestate):
         def get_hflag(obj):
             # Default is true
-            hflag = True
-
-            if "humanify" in obj:
-                hflag = obj["humanify"]
-
+            hflag = obj.get("humanify", True)
             return hflag
 
         def get_replylist(obj):
@@ -883,7 +852,7 @@ class ReplyGenerator:
     
         LOCALDEBUG = 0 or DEBUG
         
-        if LOCALDEBUG: print("csk", curr_state["key"],curr_state["thread"])
+        if LOCALDEBUG: print("<REPLYDB> Curr State:", curr_state["key"],curr_state["thread"])
 
         # Decides priority of lookup. 
         # If same state flagged, look at intents first
@@ -893,7 +862,7 @@ class ReplyGenerator:
         rdb = []
         for obj in lookups:
             if obj == cbsv.NO_INTENT():
-                # This is for when no intent
+                # This is for when intent is prioritized but no intent is detected
                 continue
 
             if rdb == []:
@@ -917,10 +886,10 @@ class ReplyGenerator:
             return self.humanizer.humanify(msg,i)
 
         reply_template = rand_response(rdb)
-        if DEBUG: print("template",reply_template)
+        if DEBUG: print("<GEN REPLY> template",reply_template)
         final_msg = reply_template
         if isinstance(info, dict):
-            if DEBUG: print("Enhanced info:",info)
+            if DEBUG: print("<GEN REPLY> Enhanced info:",info)
             
             # Uses kwargs to fill this space
             final_msg = reply_template.format(**info)
