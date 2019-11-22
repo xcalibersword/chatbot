@@ -10,7 +10,7 @@ import pandas as pd
 
 clipboard_sleep = 1
 cmd_sleep = 0.05
-userID = "temporary"
+self_userID = "temporary"
 
 
 GLOBAL = {}
@@ -120,19 +120,16 @@ def getRawText():
     processed_text_list.reverse()
     return processed_text_list
 
-def check_if_edited(raw_text, q, cid):
-    def get_last_sent(txt):
-        self_msg_lst = list(txt.filter(lambda msg: userID in msg, txt))
-        print(self_msg_lst)
-        print("<LAST MESSAGE>", self_msg_lst[-1])
-        return self_msg_lst[-1]
-    last_sent = get_last_sent(raw_text)
-    last_bot_reply = GLOBAL["last_reply"]
-    if not last_bot_reply == last_sent:
+def check_if_edited(last_sent, messages, q, cid):
+
+    last_bot_reply = GLOBAL.get("last_bot_reply","")
+    print("<LAST SENT>",last_sent,"bot wanted to reply:",last_bot_reply)
+    if not last_bot_reply == last_sent and not last_bot_reply == "":
         save2troubleshoot(last_sent, last_bot_reply,q, "intent", "slot info",cid)
     return
 
-def processText(userID,rawText):
+def processText(self_userID,rawText):
+    print(rawText)
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     idx = 0
     prevs_idx = 0
@@ -140,7 +137,8 @@ def processText(userID,rawText):
     custid = ""
     for sent in rawText:
         if re.search(date_time_pattern,sent):
-            if re.search(userID,sent):
+            if re.search(self_userID,sent):
+                last_sent = sent
                 break
             else:
                 custid = re.sub(date_time_pattern,"",sent)
@@ -150,15 +148,15 @@ def processText(userID,rawText):
         idx += 1
     query_list.reverse()
     query = " ".join(query_list)
-    check_if_edited(rawText, query, custid)
+    check_if_edited(last_sent,query_list, query, custid)
     return query,custid
 
-def check_new_message(userID,QN_output_hwnd):
+def check_new_message(self_userID,QN_output_hwnd):
     print('Checking for new message...')
     setActiveScreen(QN_output_hwnd)
     select_copy()
     rawText = getRawText()
-    query,cust_QN_ID = processText(userID,rawText)
+    query,cust_QN_ID = processText(self_userID,rawText)
     print("Customer ID: {} Query: {}".format(cust_QN_ID, query))
     return query, cust_QN_ID
 
@@ -174,14 +172,14 @@ def SeekNewMessage(clickImage):
     except Exception:
         print("No new chat")
 
-def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath,mode):   
+def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode):   
 
-    query, custID = check_new_message(userID,text_out_hwnd, mode)
+    query, custID = check_new_message(self_userID,text_out_hwnd)
     
     if not query == "":
         reply_template = bot.get_bot_reply(custID,query)
         reply = reply_template[0]
-        GLOBAL["last_reply"] = reply
+        GLOBAL["last_bot_reply"] = reply
         if type(reply) == list:
             for r in reply:
                 send_message_QN(r,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
@@ -190,18 +188,18 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath,mode):
     
     SeekNewMessage(SeekImagePath)
 
-    #timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath])
+    #timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath])
     #add something to stop the program
     #timer.start()
 
 if __name__ == "__main__":
-    userID = "女人罪爱:小梅"
+    self_userID = "女人罪爱:小梅"
     delay_time = input("Enter the delay time (in seconds) for each cycle to look for new message 投入延期(秒钟)): ")
     #enter for testing, 1 for deployment
     mode = input("Enter the mode 投入模式: ")
     GLOBAL["mode"] = 1 if mode == "" else 0
     try:    
-        text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(userID)
+        text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(self_userID)
     except Exception:
         print("Window Handle cannot be found!")
 
@@ -220,5 +218,5 @@ if __name__ == "__main__":
     
     print("Starting program....") 
     while True:
-        main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath,mode)
+        main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode)
         sleep(float(delay_time))
