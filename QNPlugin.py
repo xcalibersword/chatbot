@@ -8,7 +8,7 @@ from jpype import *
 from chatbot import Chatbot
 import pandas as pd
 
-clipboard_sleep = 1
+clipboard_sleep = 2
 cmd_sleep = 0.05
 self_userID = "temporary"
 
@@ -106,7 +106,16 @@ def select_copy():
 def getRawText():
     OpenClipboard()
     sleep(0.05)
-    raw_text = GetClipboardData()
+    rpt = 0
+    raw_text = ""
+    while raw_text == "" and rpt < 5:
+        try:
+            raw_text = GetClipboardData()
+        except Exception as e:
+            print("CLIPBOARD EXCEPTION:",e)
+            print("Trying again...")
+        rpt += 1
+
     sleep(0.05)
     CloseClipboard()
     sleep(0.05)
