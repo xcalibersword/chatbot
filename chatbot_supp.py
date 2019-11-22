@@ -12,12 +12,11 @@ SAME_STATE_F_OBJ = {"key":"same_state","gated":False}
 # SIP = State Info Packet
 # A packet that has info about state and has constructors for set states like go_back
 class SIP:
-    def __init__(self, state, cs = True, pocket_state = False):
+    def __init__(self, state, cs = True):
         self.parse_state(state)
         self.state_change = cs
         self.backtrack = False
         self.go_back = False
-        self.pocket_state = pocket_state
 
     def parse_state(self, state):
         self.state_obj = state.copy() # states are dicts
@@ -59,9 +58,6 @@ class SIP:
 
     def is_same_state(self):
         return not self.state_change
-
-    def is_pocket_state(self):
-        return self.pocket_state
 
     def is_go_back(self):
         return self.go_back == True
@@ -178,27 +174,35 @@ class ReqGatekeeper:
     # If pass, returns True, (Pending state)
     # If fail, returns False, (Next state)
     def try_gate(self, info):
+        def is_passed(us):
+            return (len(us) == 0)
+
         if not self.gate_closed:
-            return (True, [], {})
+            # If the gate is open
+            passed = True
+            unfilled_slots = []
+            info_topup = {}
 
-        self._add_cond_reqs(info)
-        unfilled_slots = self.get_slots()
+        else:
+            self._add_cond_reqs(info)
+            unfilled_slots = self.get_slots()
 
-        print("Trying gate with info:",info, "required:",self.get_requirements())
-        # for catgry in list(info.keys()):
-        for s in unfilled_slots.copy():
-            detail = s[0]
-            if detail in info:
-                unfilled_slots.remove(s)
+            if DEBUG: print("<TRY GATE> Trying with info:",info, "required:",self.get_requirements())
+            # for catgry in list(info.keys()):
+            for s in unfilled_slots.copy():
+                detail = s[0]
+                if detail in info:
+                    unfilled_slots.remove(s)
+            
+            # Fill slots with default values if needed
+            unfilled_slots, info_topup = self.assign_default_values(unfilled_slots)
+
+            if DEBUG: print("<TRY GATE> Unfilled_slots:",unfilled_slots)
+            if len(unfilled_slots) == 0:
+                self.open_gate()
+
+            passed = is_passed(unfilled_slots)
         
-        # Fill slots with default values if needed
-        unfilled_slots, info_topup = self.assign_default_values(unfilled_slots)
-
-        if DEBUG: print("<TRY GATE> Unfilled_slots:",unfilled_slots)
-        if len(unfilled_slots) == 0:
-            self.open_gate()
-
-        passed = (len(unfilled_slots) == 0)
         return (passed, unfilled_slots, info_topup)
 
     def assign_default_values(self, unfilled):
@@ -236,10 +240,9 @@ class Humanizer():
 
         human_msg = msg
         for key, dic in self.hd:
-            if key in info:
-                inf_val = info[key]
-                if inf_val in dic:
-                    human_msg = add_humanlike_text(inf_val, dic, human_msg)
+            inf_val = info.get(key,"")
+            if inf_val in dic:
+                human_msg = add_humanlike_text(inf_val, dic, human_msg)
             
         return human_msg
         

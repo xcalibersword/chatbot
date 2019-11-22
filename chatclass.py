@@ -478,26 +478,37 @@ class PolicyKeeper:
                     return uds
         return uds
 
-    def zone_policy_overwrite(self, csk, chat_zones):
+    def zone_policy_overwrite(self, csk, curr_zones):
         def check_zonepolicies(state_key):
             return state_key in self.ZONE_POLICIES
 
-        print("<ZPOL> curr state key:",csk)
-        # Zone policy
-        if check_zonepolicies(csk):
-            z, paths = self.ZONE_POLICIES[csk]
-        
-            if z in chat_zones:
-                z_val = chat_zones[z]
-                if z_val in paths:
-                    target = paths[z_val]
-                else:
-                    target = paths["DEFAULT"]
-                next_sip = self._create_state_obj(target)
-                if DEBUG: print("<ZPOL OVERWRITE> new SIP:",next_sip)
-                return (True, next_sip)
+        def determine_subsequent_sip(curr_zones, zpd):
+            z_name, paths = zpd
+            # Zone policy
+            if z_name in curr_zones:
+                z_val = curr_zones[z_name]
+                if isinstance(z_val, list):
+                    return determine_subsequent_sip(curr_zones, z_val)
 
-        return (False, "")
+                else:
+                    if z_val in paths:
+                        target = paths[z_val]
+                    else:
+                        target = paths.get("DEFAULT", "")
+                    next_sip = self._create_state_obj(target)
+                    if DEBUG: print("<ZPOL OVERWRITE> new SIP:",next_sip)
+                    return (True, next_sip)
+
+            return (False, "")
+
+        print("<ZPOL> curr state key:",csk)
+
+        if check_zonepolicies(csk):
+            zpd = self.ZONE_POLICIES[csk]
+            return determine_subsequent_sip(curr_zones,zpd)
+        else:
+            return (False, "")
+        
 
 # MANAGES DETAILS (previously held by Chat)
 # TODO: Differentiate between contextual chat info and user info?
@@ -775,7 +786,8 @@ class ReplyGenerator:
                 elif opname == "isgreater":
                     opr = lambda a,b: (1 if a > b else 0)
                 else:
-                    opr = lambda a,b: a
+                    print("<RESOLVE FORMULA> ERROR Unknown operator:",opname)
+                    opr = lambda a,b: a # Unknown oeprator just returns a
                 vd[tkey] = op_on_all(valnames,opr,vd)
             return vd["OUTCOME"]
 
@@ -784,7 +796,7 @@ class ReplyGenerator:
         if needs_calc(curr_state):
             state_calcs = curr_state["calcs"]
             for fname in state_calcs:
-                print("performing",fname)
+                if RF_DEBUG: print("<RESOLVE FORMULA> Performing:",fname)
                 if not fname in calcDB:
                     print("<RESOLVE FORMULA> ERROR! No such formula:{}".format(fname))
                 else:
@@ -794,11 +806,10 @@ class ReplyGenerator:
                     result = resolve_formula(formula)
                     add_calc_enh(target_key,result,pv_flag)
                 if RF_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
-
+            
+            if RF_DEBUG: print("<RESOLVE FORMULA> Postcalc enh",enhanced)
         else:
             if RF_DEBUG: print("<RESOLVE FORMULA> No calculation performed")
-
-        if RF_DEBUG: print("<RESOLVE FORMULA> postcalc enh",enhanced)
 
         # Message extensions and formatting
         # Template in format database
