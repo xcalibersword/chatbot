@@ -354,6 +354,7 @@ class InfoParser():
         slotname, catgry = slot
         value = self.get_category_value(text, catgry)
         if len(value) > 0:
+            if DEBUG: print("<MATCH SLOT> Found a {} for {} Value: {}".format(catgry, slotname,value))
             entry = {slotname: value}
             d.update(entry)
 
@@ -408,6 +409,7 @@ class InfoParser():
             reDB = catDB[v]
             m = re.search(reDB, text)
             if m:
+                if DEBUG: print("<GET CAT VAL> Matched {} value:{} at {}".format(category,v,m))
                 if found:
                     print("<GET CAT VAL> Double value. Prev:", value, ", Current:",v)
                 # token = m.group(0)
