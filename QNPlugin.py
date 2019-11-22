@@ -8,7 +8,7 @@ from jpype import *
 from chatbot import Chatbot
 import pandas as pd
 
-clipboard_sleep = 2
+clipboard_sleep = 1
 cmd_sleep = 0.05
 self_userID = "temporary"
 
@@ -19,8 +19,8 @@ def find_handle(userid):
     a = FindWindow("StandardFrame",userid + " - 接待中心")
     aa = FindWindowEx(a, 0, "StandardWindow", "")
     aaa = FindWindowEx(aa, 0, "StandardWindow", "")
-    aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
-    aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
+    # aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
+    aaa = FindWindowEx(aa, aaa, "StandardWindow", "") # Why 2 of this?
     aaaa = FindWindowEx(aaa, 0, "SplitterBar", "")
 
     b = FindWindowEx(aaaa, 0, "StandardWindow", "")
@@ -151,7 +151,7 @@ def getRawText():
     return processed_text_list
 
 def check_if_edited(last_sent, messages, q, cid):
-
+    print("<MESSAGES>",messages[:10])
     last_bot_reply = GLOBAL.get("last_bot_reply","")
     print("<LAST SENT>",last_sent,"bot wanted to reply:",last_bot_reply)
     if not last_bot_reply == last_sent and not last_bot_reply == "":
@@ -167,7 +167,7 @@ def processText(self_userID,rawText):
     for sent in rawText:
         if re.search(date_time_pattern,sent):
             if re.search(self_userID,sent):
-                last_sent = rawText[idx-1]
+                last_sent = rawText[idx-1][:-2] # -2 to cut out 未读/已读
                 break
             else:
                 custid = re.sub(date_time_pattern,"",sent)
@@ -177,7 +177,7 @@ def processText(self_userID,rawText):
         idx += 1
     query_list.reverse()
     query = " ".join(query_list)
-    check_if_edited(last_sent,query_list, query, custid)
+    check_if_edited(last_sent,query_list.copy(), query, custid)
     return query,custid
 
 def check_new_message(self_userID,QN_output_hwnd):
