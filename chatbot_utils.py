@@ -8,7 +8,8 @@ def dive_for_values(c_list, c_dir, failzero = False, DEBUG = 1):
                 nextdirname, nestlist = valname
                 if not nextdirname in c_dir:
                     if failzero:
-                        out[valname] = 0
+                        for vn in valname:
+                            out[vn] = 0
                     else:
                         if DEBUG: print("<DIVE> ERROR! Cannot find subdict<{}> in {}".format(nextdirname,c_dir))
                         return {} 

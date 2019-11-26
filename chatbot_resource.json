@@ -563,7 +563,7 @@
             "thread": "t_howmuch",
             "terminal_state": true,
             "calcs":[
-                "flag_sb_gjj",
+                "calc_flag_sb_gjj",
                 "flag_shouci",
                 "sum_svc_fee",
                 "gen_shebao_jishu",
@@ -627,7 +627,7 @@
                 ]
             ],
             "calcs": [
-                "flag_sb_gjj",
+                "calc_flag_sb_gjj",
                 "flag_shouci",
                 "sum_svc_fee",
                 "gen_shebao_jishu",
@@ -660,7 +660,7 @@
                 ]
             ],
             "calcs": [
-                "flag_sb_gjj",
+                "calc_flag_sb_gjj",
                 "flag_shouci",
                 "sum_svc_fee",
                 "gen_shebao_jishu",
@@ -992,6 +992,8 @@
                     "city_district",
                     "要社保",
                     "要公积金",
+                    "首次",
+                    "flag_sb_gjj",
                     ["city_info",["link_sb","link_gjj"]],
                     ["general_info",["link_fuwu"]]
                 ],
@@ -1006,6 +1008,14 @@
                     },
                     "city_district": {
                         "DEFAULT":"服务费：https://item.taobao.com/item.htm?id=598104660990"
+                    },
+                    "flag_sb_gjj":{
+                        "11.0": "亲，服务费40元要拍一次哦 ",
+                        "DEFAULT": "亲，服务费40元要拍两次哦 "
+                    },
+                    "首次":{
+                        "yes": "50元的首次费也要拍！",
+                        "no":""
                     }
                 }
             },
@@ -1156,12 +1166,7 @@
                     "ctx_inform_how_much"
                 ],
                 "lookfor": [
-                    [
-                        "calc_ext",
-                        [
-                            "flag_sb_gjj"
-                        ]
-                    ]
+                    "flag_sb_gjj"
                 ],
                 "if_value": {
                     "flag_sb_gjj": {
@@ -1235,11 +1240,11 @@
                     "propose_plan"
                 ],
                 "lookfor": [
+                    "flag_sb_gjj",
                     "w_shebao_payment",
                     [
                         "calc_ext",
                         [
-                            "flag_sb_gjj",
                             "w_shebao_jishu",
                             "w_gongjijin_fee"
                         ]
@@ -1276,12 +1281,8 @@
                             "gongjijin_fee"
                         ]
                     ],
-                    [
-                        "calc_ext",
-                        [
-                            "flag_sb_gjj"
-                        ]
-                    ]
+                    "flag_sb_gjj"
+
                 ],
                 "if_value": {
                     "flag_sb_gjj": {
@@ -1307,12 +1308,7 @@
                             "gongjijin_fee"
                         ]
                     ],
-                    [
-                        "calc_ext",
-                        [
-                            "flag_sb_gjj"
-                        ]
-                    ]
+                    "flag_sb_gjj"
                 ],
                 "if_value": {
                     "flag_sb_gjj": {
@@ -1578,10 +1574,10 @@
                             "首次ext"
                         ]
                     ],
+                    "flag_sb_gjj",
                     [
                         "calc_ext",
                         [
-                            "flag_sb_gjj",
                             "bj_shebao_basic_total",
                             "bj_shebao_basic_total2"
                         ]
@@ -1615,8 +1611,9 @@
             }
         ],
         "calcs": {
-            "flag_sb_gjj": {
+            "calc_flag_sb_gjj": {
                 "writeto": "flag_sb_gjj",
+                "persist_value": true,
                 "conditions": [
                     [
                         "要社保",
@@ -1741,12 +1738,7 @@
                             "svc_fee"
                         ]
                     ],
-                    [
-                        "calc_ext",
-                        [
-                            "flag_sb_gjj"
-                        ]
-                    ]
+                    "flag_sb_gjj"
                 ],
                 "steps": {
                     "1,equals": [
@@ -1851,11 +1843,11 @@
                 ],
                 "persist_value": true,
                 "req_vars": [
+                    "flag_sb_gjj",
                     [
                         "calc_ext",
                         [
                             "w_shouci_fee",
-                            "flag_sb_gjj",
                             "svc_fee_total",
                             "w_shebao_payment",
                             "w_gongjijin_fee"
@@ -1916,6 +1908,7 @@
                     ["flag_sb_gjj",11,["both_flag",1,0]]
                 ],
                 "req_vars": [
+                    "flag_sb_gjj",
                     [
                         "city_info",
                         [
@@ -1926,8 +1919,7 @@
                     [
                         "calc_ext",
                         [
-                            "w_shouci_fee",
-                            "flag_sb_gjj"
+                            "w_shouci_fee"
                         ]
                     ]
                 ],
@@ -1984,6 +1976,7 @@
                     ["flag_sb_gjj",11,["both_flag",1,0]]
                 ],
                 "req_vars": [
+                    "flag_sb_gjj",
                     [
                         "city_info",
                         [
@@ -1994,8 +1987,7 @@
                     [
                         "calc_ext",
                         [
-                            "w_shouci_fee",
-                            "flag_sb_gjj"
+                            "w_shouci_fee"
                         ]
                     ]
                 ],
