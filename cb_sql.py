@@ -1,11 +1,16 @@
 # A set of tools to interact with SQL
 
 import pymysql
+# import pymssql
+from localfiles.details import get_all_details
+cached_info = get_all_details()
+
 
 # DB ACCESS SETTINGS
-db_host = 'localhost'
-db_user = 'root'
-db_pass = 'abcd1234'
+db_host = cached_info["sql_address"]
+db_port = cached_info["sql_port"]
+db_user = cached_info["username"]
+db_pass = cached_info["pass"]
 db_dbname = "chatbot_schema"
 db_charset = "utf8mb4"
 db_cc = pymysql.cursors.DictCursor
