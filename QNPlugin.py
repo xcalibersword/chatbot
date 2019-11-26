@@ -214,6 +214,12 @@ def check_new_message(self_userID,QN_output_hwnd):
     print("Customer ID: {} Query: {}".format(cust_QN_ID, query))
     return query, cust_QN_ID
 
+def read_history(selfID, bot):
+    history = []
+    bot.parse_transferred_messages(history)
+    return 
+
+
 #insert image path here for the series of place for the OCR to click on
 def SeekNewCustomerChat(clickImage):
     print("Finding new chat...")
@@ -223,8 +229,10 @@ def SeekNewCustomerChat(clickImage):
 
     try:
         screen.click(clickImage)
+        return True
     except Exception:
         print("No new chat")
+        return False
 
 def select_chat_input_box():
     if GLOBAL["mode"] == 0:
@@ -258,8 +266,11 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
             send_message_QN(reply,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
             
     elif checks >= GLOBAL["new_chat_check_interval"]:
-        SeekNewCustomerChat(SeekImagePath)
+        newchat = SeekNewCustomerChat(SeekImagePath)
         checks = 0
+        if newchat:
+            read_history(self_userID, bot)
+
     checks += 1
     select_chat_input_box()
 
@@ -277,7 +288,6 @@ if __name__ == "__main__":
     else:
         GLOBAL["mode"] = 0
         GLOBAL["human_input_sleep"] = float(input("Enter human reply delay 投入人工打回复延期(秒钟): "))
-
 
     try:    
         text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(self_userID)
