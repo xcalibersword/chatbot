@@ -10,7 +10,7 @@ import pandas as pd
 
 clipboard_sleep = 0.1
 cmd_sleep = 0.05
-human_input_sleep = 3
+GLOBAL["human_input_sleep"] = 3
 self_userID = "temporary"
 
 KEY_PRESS = 0
@@ -237,7 +237,7 @@ def select_chat_input_box():
         # keybd_event(39, 0, KEY_LETGO, 0)
         # keybd_event(17, 0, KEY_LETGO, 0)
 
-        sleep(human_input_sleep)
+        sleep(GLOBAL["human_input_sleep"])
     return
 
 def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode):   
@@ -265,10 +265,16 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
 
 if __name__ == "__main__":
     self_userID = "女人罪爱:小梅"
-    delay_time = input("Enter the delay time (in seconds) for each cycle to look for new message 投入延期(秒钟)): ")
+    delay_time = input("Enter the delay time (in seconds) for each cycle to look for new message 投入延期(秒钟): ")
     #enter for testing, 1 for deployment
     mode = input("Enter the mode 投入模式: ")
-    GLOBAL["mode"] = 1 if mode == "" else 0
+    if mode == "" 
+        GLOBAL["mode"] = 1 
+    else:
+        GLOBAL["mode"] = 0
+        GLOBAL["human_input_sleep"] = float(input("Enter human reply delay 投入人工打回复延期(秒钟): "))
+
+
     try:    
         text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(self_userID)
     except Exception:
