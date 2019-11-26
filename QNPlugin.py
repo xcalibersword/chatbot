@@ -10,15 +10,16 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.1
+clipboard_sleep = 0.05
 cmd_sleep = 0.05
-GLOBAL["human_input_sleep"] = 3
+GLOBAL["human_input_sleep"] = 5
 self_userID = "temporary"
 
 KEY_PRESS = 0
 KEY_LETGO = 2
 
 GLOBAL["last_query"] = ""
+GLOBAL["last_sent_msg"] = ""
 GLOBAL["got_new_message"] = True
 GLOBAL["new_chat_check_interval"] = 5
 
@@ -160,10 +161,13 @@ def getRawText():
     return processed_text_list
 
 def check_if_edited(last_sent, q, cid):
-    last_bot_reply = GLOBAL.get("last_bot_reply","")
-    print("<LAST SENT>",last_sent,"bot wanted to reply:",last_bot_reply)
-    if not last_bot_reply == last_sent and not last_bot_reply == "":
-        save2troubleshoot(str(last_sent), str(last_bot_reply), str(q), "intent", "slot info",str(cid))
+    if not last_sent == GLOBAL["last_sent_msg"]:
+        GLOBAL["last_sent_msg"] = last_sent
+
+        last_bot_reply = GLOBAL.get("last_bot_reply","")
+        print("<LAST SENT>",last_sent,"bot wanted to reply:",last_bot_reply)
+        if not last_bot_reply == last_sent and not last_bot_reply == "":
+            save2troubleshoot(str(last_sent), str(last_bot_reply), str(q), "intent", "slot info",str(cid))
     return
 
 def processText(self_userID,rawText):
@@ -205,18 +209,24 @@ def processText(self_userID,rawText):
     check_if_edited(last_sent, query, custid)
     return query,custid
 
-def check_new_message(self_userID,QN_output_hwnd):
-    print('Checking for new messages...')
-    setActiveScreen(QN_output_hwnd)
+def mine_chat_text(selfID, text_win):
+    setActiveScreen(text_win)
     select_copy()
-    rawText = getRawText()
+    return getRawText()
+
+def check_new_message(self_userID,textwindow):
+    print('Checking for new messages...')
+    rawText = mine_chat_text(selfID, textwindow)
     query,cust_QN_ID = processText(self_userID,rawText)
     print("Customer ID: {} Query: {}".format(cust_QN_ID, query))
     return query, cust_QN_ID
 
-def read_history(selfID, bot):
-    history = []
-    bot.parse_transferred_messages(history)
+# Returns nothing. Updates bot internal state.
+def read_history(selfID, bot, textwindow):
+    print('<HISTORY> Reading chat history')
+    history = mine_chat_text(selfID, textwindow)
+    query,cust_QN_ID = processText(self_userID,history)
+    bot.parse_transferred_messages(cust_QN_ID, history)
     return 
 
 
@@ -269,7 +279,7 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
         newchat = SeekNewCustomerChat(SeekImagePath)
         checks = 0
         if newchat:
-            read_history(self_userID, bot)
+            read_history(self_userID, bot,text_in_hwnd)
 
     checks += 1
     select_chat_input_box()
