@@ -158,8 +158,7 @@ def getRawText():
     processed_text_list.reverse()
     return processed_text_list
 
-def check_if_edited(last_sent, messages, q, cid):
-    print("<MESSAGES>",messages[:10])
+def check_if_edited(last_sent, q, cid):
     last_bot_reply = GLOBAL.get("last_bot_reply","")
     print("<LAST SENT>",last_sent,"bot wanted to reply:",last_bot_reply)
     if not last_bot_reply == last_sent and not last_bot_reply == "":
@@ -203,7 +202,7 @@ def processText(self_userID,rawText):
     else:
         GLOBAL["got_new_message"] = False
 
-    check_if_edited(last_sent,query_list.copy(), query, custid)
+    check_if_edited(last_sent, query, custid)
     return query,custid
 
 def check_new_message(self_userID,QN_output_hwnd):
