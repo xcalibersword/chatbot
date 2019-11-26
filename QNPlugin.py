@@ -8,6 +8,8 @@ from jpype import *
 from chatbot import Chatbot
 import pandas as pd
 
+GLOBAL = {}
+
 clipboard_sleep = 0.1
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 3
@@ -16,9 +18,9 @@ self_userID = "temporary"
 KEY_PRESS = 0
 KEY_LETGO = 2
 
-GLOBAL = {}
 GLOBAL["last_query"] = ""
 GLOBAL["got_new_message"] = True
+GLOBAL["new_chat_check_interval"] = 5
 
 def find_handle(userid):
     #spy++ | hard coded have to update if qianniu update their UI
@@ -213,7 +215,7 @@ def check_new_message(self_userID,QN_output_hwnd):
     return query, cust_QN_ID
 
 #insert image path here for the series of place for the OCR to click on
-def SeekNewMessage(clickImage):
+def SeekNewCustomerChat(clickImage):
     print("Finding new chat...")
 
     Screen = JClass('org.sikuli.script.Screen')
@@ -244,6 +246,7 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
 
     query, custID = check_new_message(self_userID,text_out_hwnd)
     
+    checks = 0
     if GLOBAL["got_new_message"]:
         reply_template = bot.get_bot_reply(custID,query) # Gets a tuple of 3 things
         reply = reply_template[0]
@@ -254,9 +257,10 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
         else:
             send_message_QN(reply,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
             
-    else:
-        SeekNewMessage(SeekImagePath)
-
+    elif checks >= GLOBAL["new_chat_check_interval"]:
+        SeekNewCustomerChat(SeekImagePath)
+        checks = 0
+    checks += 1
     select_chat_input_box()
 
     #timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath])
@@ -268,7 +272,7 @@ if __name__ == "__main__":
     delay_time = input("Enter the delay time (in seconds) for each cycle to look for new message 投入延期(秒钟): ")
     #enter for testing, 1 for deployment
     mode = input("Enter the mode 投入模式: ")
-    if mode == "" 
+    if mode == "": 
         GLOBAL["mode"] = 1 
     else:
         GLOBAL["mode"] = 0
