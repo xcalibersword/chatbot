@@ -32,12 +32,15 @@ def find_handle(userid):
     b = FindWindowEx(aaaa, 0, "StandardWindow", "")
     bb = FindWindowEx(aaaa, b, "StandardWindow", "")
     QN_input_hwnd = FindWindowEx(bb,0,"RichEditComponent", "") #Find chat message input box
+    GLOBAL["QN_input_box"] = QN_input_hwnd
 
     c = FindWindowEx(b, 0, "PrivateWebCtrl", "")
     cc = FindWindowEx(c,0,"Aef_WidgetWin_0","")
     QN_output_hwnd = FindWindowEx(cc,0,"Aef_RenderWidgetHostHWND", "Chrome Legacy Window") # Find chat message display windows
+    GLOBAL["QN_output_box"] = QN_output_hwnd
 
     QN_sendBut_hwnd = FindWindowEx(bb,0,"StandardButton", "发送") # Find send button
+    GLOBAL["QN_send_button"] = QN_sendBut_hwnd
 
     return QN_input_hwnd,QN_output_hwnd,QN_sendBut_hwnd
 
@@ -229,7 +232,8 @@ def SeekNewMessage(clickImage):
 def select_chat_input_box():
     if GLOBAL["mode"] == 0:
         print("Allowing user to enter input......")
-        setActiveScreen(QN_input_hwnd) # Select text input box
+        input_box = GLOBAL["QN_input_box"]
+        setActiveScreen(input_box) # Select text input box
 
         #ctrl + right
         keybd_event(17, 0, KEY_PRESS, 0)
