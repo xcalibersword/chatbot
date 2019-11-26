@@ -62,7 +62,8 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd,query,reply_template,cust
         print("Message Sent: {}".format(text))
     else:
         # CONFIRMATION MODE
-        SendMessage(QN_input_hwnd, 0xF5, 0, 0) # Select text input box
+        print("Allowing user to enter input......")
+        setActiveScreen(QN_input_hwnd) # Select text input box
 
         #ctrl + right
         keybd_event(17, 0, KEY_PRESS, 0)
@@ -86,11 +87,12 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd,query,reply_template,cust
             print("Message Sent: {}".format(text))
             save2troubleshoot(confirm,text,query,str(reply_template[1]),str(reply_template[2]),custID)
 
-def setActiveScreen(QN_output_hwnd):
-    SetForegroundWindow(QN_output_hwnd)
+def setActiveScreen(target_window):
+    SetForegroundWindow(target_window)
 
-    rect = GetWindowRect(QN_output_hwnd)
-    SetCursorPos((rect[2]-20,rect[1]+10))
+    rect = GetWindowRect(target_window)
+    # Finds the top right position
+    SetCursorPos((rect[2]-50,rect[1]+10))
     
     sleep(cmd_sleep)
     mouse_event(MOUSEEVENTF_LEFTDOWN,0,0,0,0)
