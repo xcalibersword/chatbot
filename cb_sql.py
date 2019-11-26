@@ -1,6 +1,6 @@
 # A set of tools to interact with SQL
 
-import pymysql
+# import pymysql
 # import pymssql
 from localfiles.details import get_all_details
 cached_info = get_all_details()
@@ -13,7 +13,7 @@ db_user = cached_info["username"]
 db_pass = cached_info["pass"]
 db_dbname = "chatbot_schema"
 db_charset = "utf8mb4"
-db_cc = pymysql.cursors.DictCursor
+# db_cc = pymysql.cursors.DictCursor
 
 tablename = "table1"
 
@@ -22,20 +22,21 @@ SQL_ENABLED = False
 NO_WRITE_TO_SQL = False and SQL_ENABLED
 
 if SQL_ENABLED:
-    stdcon = pymysql.connect(host=db_host,
-                            user=db_user,
-                            password=db_pass,
-                            db=db_dbname,
-                            charset=db_charset,
-                            cursorclass=pymysql.cursors.DictCursor)
+    stdcon = {}
+    # stdcon = pymysql.connect(host=db_host,
+    #                         user=db_user,
+    #                         password=db_pass,
+    #                         db=db_dbname,
+    #                         charset=db_charset,
+    #                         cursorclass=pymysql.cursors.DictCursor)
 
 def hello():
-    connection = pymysql.connect(host=db_host,
-                            user=db_user,
-                            password=db_pass,
-                            db=db_dbname,
-                            charset=db_charset,
-                            cursorclass=pymysql.cursors.DictCursor)
+    # connection = pymysql.connect(host=db_host,
+    #                         user=db_user,
+    #                         password=db_pass,
+    #                         db=db_dbname,
+    #                         charset=db_charset,
+    #                         cursorclass=pymysql.cursors.DictCursor)
     try:
         vals = ('我是个鸟儿', '甲城市')
         slots = "(userID, city)"
