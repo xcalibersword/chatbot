@@ -12,7 +12,11 @@ clipboard_sleep = 1
 cmd_sleep = 0.05
 self_userID = "temporary"
 
+KEY_PRESS = 0
+KEY_LETGO = 2
+
 GLOBAL = {}
+GLOBAL["last_query"] = ""
 GLOBAL["got_new_message"] = True
 
 def find_handle(userid):
@@ -26,13 +30,13 @@ def find_handle(userid):
 
     b = FindWindowEx(aaaa, 0, "StandardWindow", "")
     bb = FindWindowEx(aaaa, b, "StandardWindow", "")
-    QN_input_hwnd = FindWindowEx(bb,0,"RichEditComponent", "")
+    QN_input_hwnd = FindWindowEx(bb,0,"RichEditComponent", "") #Find chat message input box
 
     c = FindWindowEx(b, 0, "PrivateWebCtrl", "")
     cc = FindWindowEx(c,0,"Aef_WidgetWin_0","")
-    QN_output_hwnd = FindWindowEx(cc,0,"Aef_RenderWidgetHostHWND", "Chrome Legacy Window")
+    QN_output_hwnd = FindWindowEx(cc,0,"Aef_RenderWidgetHostHWND", "Chrome Legacy Window") # Find chat message display windows
 
-    QN_sendBut_hwnd = FindWindowEx(bb,0,"StandardButton", "发送")
+    QN_sendBut_hwnd = FindWindowEx(bb,0,"StandardButton", "发送") # Find send button
 
     return QN_input_hwnd,QN_output_hwnd,QN_sendBut_hwnd
 
@@ -58,7 +62,16 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd,query,reply_template,cust
         print("Message Sent: {}".format(text))
     else:
         # CONFIRMATION MODE
-        sleep(1)
+        SendMessage(QN_input_hwnd, 0xF5, 0, 0) # Select text input box
+
+        #ctrl + right
+        keybd_event(17, 0, KEY_PRESS, 0)
+        keybd_event(39, 0, KEY_PRESS, 0)
+        sleep(cmd_sleep)
+        #ctrl + right release
+        keybd_event(39, 0, KEY_LETGO, 0)
+        keybd_event(17, 0, KEY_LETGO, 0)
+        
         return
 
         # -- EVERYTHING BELOW HERE DOESNT HAPPEN -- 
@@ -86,21 +99,21 @@ def setActiveScreen(QN_output_hwnd):
 
 def select_copy():
     #ctrl a
-    keybd_event(17, 0, 0, 0)
-    keybd_event(65, 0, 0, 0)
+    keybd_event(17, 0, KEY_PRESS, 0)
+    keybd_event(65, 0, KEY_PRESS, 0)
     sleep(cmd_sleep)
     #ctrl a release
-    keybd_event(65, 0, 2, 0)
-    keybd_event(17, 0, 2, 0)
+    keybd_event(65, 0, KEY_LETGO, 0)
+    keybd_event(17, 0, KEY_LETGO, 0)
 
     #ctrl c
     sleep(cmd_sleep)
-    keybd_event(17, 0, 0, 0)
-    keybd_event(67, 0, 0, 0)
+    keybd_event(17, 0, KEY_PRESS, 0)
+    keybd_event(67, 0, KEY_PRESS, 0)
     sleep(cmd_sleep)
     # ctrl c release 
-    keybd_event(67, 0, 2, 0)
-    keybd_event(17, 0, 2, 0)
+    keybd_event(67, 0, KEY_LETGO, 0)
+    keybd_event(17, 0, KEY_LETGO, 0)
     sleep(cmd_sleep)
     
 def getRawText():
