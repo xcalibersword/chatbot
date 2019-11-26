@@ -66,8 +66,7 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd,query,reply_template,cust
         print("Message Sent: {}".format(text))
     else:
         # CONFIRMATION MODE
-        
-        
+        # do nothing
         return
 
         # -- EVERYTHING BELOW HERE DOESNT HAPPEN -- 
@@ -112,7 +111,8 @@ def select_copy():
     keybd_event(67, 0, KEY_LETGO, 0)
     keybd_event(17, 0, KEY_LETGO, 0)
     sleep(cmd_sleep)
-    
+
+# Returns a reverse ordered list
 def getRawText():
     rpt = 0
     succeed = False
@@ -174,8 +174,7 @@ def processText(self_userID,rawText):
         return  new + collector 
 
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
-    recentText = rawText[-30:]
-    recentText.reverse()
+    recentText = rawText[:30]
     custid = ""
     last_sent = ""
     query = ""
