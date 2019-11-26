@@ -8,9 +8,9 @@ from jpype import *
 from chatbot import Chatbot
 import pandas as pd
 
-clipboard_sleep = 1
+clipboard_sleep = 0.1
 cmd_sleep = 0.05
-human_input_sleep = 5
+human_input_sleep = 3
 self_userID = "temporary"
 
 KEY_PRESS = 0
@@ -115,43 +115,39 @@ def select_copy():
 # Returns a reverse ordered list
 def getRawText():
     rpt = 0
+    rpt_limit = 10
     succeed = False
-    while not succeed and rpt < 5:
+    while not succeed and rpt < rpt_limit:
         try:
             OpenClipboard()
             succeed = True
         except Exception as e:
-            print("OPEN CLIPBOARD EXCEPTION:",e)
-            print("Trying again...")
+            print("OPEN CLIPBOARD EXCEPTION:",e,"Trying again...")
         rpt += 1
 
-    sleep(0.05)
+    sleep(clipboard_sleep)
 
     rpt = 0
     raw_text = ""
-    while raw_text == "" and rpt < 5:
+    while raw_text == "" and rpt < rpt_limit:
         try:
             raw_text = GetClipboardData()
         except Exception as e:
-            print("GET CLIPBOARD EXCEPTION:",e)
-            print("Trying again...")
+            print("GET CLIPBOARD EXCEPTION:",e,"Trying again...")
         rpt += 1
 
-    sleep(0.05)
+    sleep(clipboard_sleep)
 
     rpt = 0
     succeed = False
-    while not succeed and rpt < 5:
+    while not succeed and rpt < rpt_limit:
         try:
             CloseClipboard()
             succeed = True
         except Exception as e:
-            print("CLOSE CLIPBOARD EXCEPTION:",e)
-            print("Trying again...")
+            print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
         rpt += 1
 
-    sleep(0.05)
-    sleep(clipboard_sleep)
     raw_text_list = raw_text.splitlines()
     processed_text_list = []
     for sent in raw_text_list:
@@ -185,7 +181,7 @@ def processText(self_userID,rawText):
             # Name line
             if re.search(self_userID,sent) and last_sent == "":
                 # Self
-                last_sent = curr_text
+                last_sent = curr_text[:-2] # Remove the 已读/未读
             else:
                 # Customer
                 custid = re.sub(date_time_pattern,"",sent)
@@ -233,14 +229,13 @@ def select_chat_input_box():
         print("Allowing user to enter input......")
         input_box = GLOBAL["QN_input_box"]
         setActiveScreen(input_box) # Select text input box
-
-        #ctrl + right
-        keybd_event(17, 0, KEY_PRESS, 0)
-        keybd_event(39, 0, KEY_PRESS, 0)
-        sleep(cmd_sleep)
-        #ctrl + right release
-        keybd_event(39, 0, KEY_LETGO, 0)
-        keybd_event(17, 0, KEY_LETGO, 0)
+        # #ctrl + right
+        # keybd_event(17, 0, KEY_PRESS, 0)
+        # keybd_event(39, 0, KEY_PRESS, 0)
+        # sleep(cmd_sleep)
+        # #ctrl + right release
+        # keybd_event(39, 0, KEY_LETGO, 0)
+        # keybd_event(17, 0, KEY_LETGO, 0)
 
         sleep(human_input_sleep)
     return
