@@ -10,6 +10,7 @@ import pandas as pd
 
 clipboard_sleep = 1
 cmd_sleep = 0.05
+human_input_sleep = 5
 self_userID = "temporary"
 
 KEY_PRESS = 0
@@ -62,16 +63,7 @@ def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd,query,reply_template,cust
         print("Message Sent: {}".format(text))
     else:
         # CONFIRMATION MODE
-        print("Allowing user to enter input......")
-        setActiveScreen(QN_input_hwnd) # Select text input box
-
-        #ctrl + right
-        keybd_event(17, 0, KEY_PRESS, 0)
-        keybd_event(39, 0, KEY_PRESS, 0)
-        sleep(cmd_sleep)
-        #ctrl + right release
-        keybd_event(39, 0, KEY_LETGO, 0)
-        keybd_event(17, 0, KEY_LETGO, 0)
+        
         
         return
 
@@ -175,24 +167,36 @@ def check_if_edited(last_sent, messages, q, cid):
     return
 
 def processText(self_userID,rawText):
+    def collect(collector, new):
+        # Because reversed message order, new comes before old
+        return  new + collector 
+
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
-    idx = 0
-    prevs_idx = 0
-    query_list = []
+    recentText = rawText[-30:]
+    recentText.reverse()
     custid = ""
-    for sent in rawText:
+    last_sent = ""
+    query = ""
+
+    curr_text = ""
+    for sent in recentText:
         if re.search(date_time_pattern,sent):
-            if re.search(self_userID,sent):
-                last_sent = rawText[idx-1][:-2] # -2 to cut out 未读/已读
-                break
+            # Name line
+            if re.search(self_userID,sent) and last_sent == "":
+                # Self
+                last_sent = curr_text
             else:
+                # Customer
                 custid = re.sub(date_time_pattern,"",sent)
-                for i in range(prevs_idx,idx):
-                    query_list.append(rawText[i])
-                prevs_idx = idx + 1
-        idx += 1
-    query_list.reverse()
-    query = " ".join(query_list)
+                query = curr_text
+
+            if len(query) > 0 and len(last_sent) > 0:
+                break
+            curr_text = ""
+        else:
+            # Text line
+            curr_text = collect(curr_text, sent) # Collect messages
+        
     if not GLOBAL["last_query"] == query:
         GLOBAL["got_new_message"] = True
         GLOBAL["last_query"] = query
@@ -223,12 +227,28 @@ def SeekNewMessage(clickImage):
     except Exception:
         print("No new chat")
 
+def select_chat_input_box():
+    if GLOBAL["mode"] == 0:
+        print("Allowing user to enter input......")
+        setActiveScreen(QN_input_hwnd) # Select text input box
+
+        #ctrl + right
+        keybd_event(17, 0, KEY_PRESS, 0)
+        keybd_event(39, 0, KEY_PRESS, 0)
+        sleep(cmd_sleep)
+        #ctrl + right release
+        keybd_event(39, 0, KEY_LETGO, 0)
+        keybd_event(17, 0, KEY_LETGO, 0)
+
+        sleep(human_input_sleep)
+    return
+
 def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode):   
 
     query, custID = check_new_message(self_userID,text_out_hwnd)
     
     if GLOBAL["got_new_message"]:
-        reply_template = bot.get_bot_reply(custID,query)
+        reply_template = bot.get_bot_reply(custID,query) # Gets a tuple of 3 things
         reply = reply_template[0]
         GLOBAL["last_bot_reply"] = reply
         if type(reply) == list:
@@ -236,8 +256,11 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
                 send_message_QN(r,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
         else:
             send_message_QN(reply,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
-    
-    SeekNewMessage(SeekImagePath)
+            
+    else:
+        SeekNewMessage(SeekImagePath)
+
+    select_chat_input_box()
 
     #timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath])
     #add something to stop the program
