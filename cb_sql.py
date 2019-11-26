@@ -1,52 +1,56 @@
 # A set of tools to interact with SQL
-
-# import pymysql
-# import pymssql
+import pymssql as msql
+from localfiles.details import get_all_details
+cached_info = get_all_details()
 
 if __name__ == "__main__":
     from localfiles.details import get_all_details
     cached_info = get_all_details()
 
-    # DB ACCESS SETTINGS
-    db_host = cached_info["sql_address"]
-    db_port = cached_info["sql_port"]
-    db_user = cached_info["username"]
-    db_pass = cached_info["pass"]
-    db_dbname = "chatbot_schema"
-    db_charset = "utf8mb4"
-    # db_cc = pymysql.cursors.DictCursor
+# DB ACCESS SETTINGS
+db_host = cached_info["sql_address"]
+db_port = cached_info["sql_port"]
+db_user = cached_info["username"]
+db_pass = cached_info["pass"]
+db_dbname = "pubs"
+tablename = "dbo.authors"
+db_charset = "utf8mb4"
+db_conn = None
 
-    tablename = "table1"
-
-SQL_ENABLED = False
+SQL_ENABLED = True
 NO_WRITE_TO_SQL = False and SQL_ENABLED
 
+ADVENTURE_WORKS = "40.68.37.158"
+db_user = "Sample user"
+db_pass = "password"
+db_dbname = "AdventureWorks2012"
 
-if SQL_ENABLED:
-    stdcon = {}
-    # stdcon = pymysql.connect(host=db_host,
-    #                         user=db_user,
-    #                         password=db_pass,
-    #                         db=db_dbname,
-    #                         charset=db_charset,
-    #                         cursorclass=pymysql.cursors.DictCursor)
+def add_to_str(s, thing):
+    return s + thing + ";"
+    
+def connect_to_T430():
+    global db_conn
+
+    if SQL_ENABLED:
+        # Specifying the ODBC driver, server name, database, etc. directly
+        # connectstr = add_to_str(connectstr,"SERVER="+ db_host)
+        # connectstr = add_to_str(connectstr,"DATABASE="+ db_dbname)
+        # connectstr = add_to_str(connectstr,"UID="+ db_user)
+        # connectstr = add_to_str(connectstr,'PWD=' + db_pass)
+        db_conn = msql.connect(server=ADVENTURE_WORKS, user=db_user, password=db_pass, database=db_dbname) 
+
+        print("Connected!")
+    return db_conn
 
 def hello():
-    pass
-    # connection = pymysql.connect(host=db_host,
-    #                         user=db_user,
-    #                         password=db_pass,
-    #                         db=db_dbname,
-    #                         charset=db_charset,
-    # #                         cursorclass=pymysql.cursors.DictCursor)
-    # try:
-    #     vals = ('我是个鸟儿', '甲城市')
-    #     slots = "(userID, city)"
-    #     # vals = ('testuid', 'abc')
-    #     sqlcmd = "INSERT INTO " + tablename + " " + slots + " VALUES (%s, %s)"
-    #     print("query:",sqlcmd)
-    #     commit_to_con(connection, sqlcmd, vals)
-
+    connection = db_conn
+    try:
+        vals = ('我是个鸟儿', '甲城市')
+        slots = "(userID, city)"
+        # vals = ('testuid', 'abc')
+        sqlcmd = "INSERT INTO " + tablename + " " + slots + " VALUES (%s, %s)"
+        print("query:",sqlcmd)
+        commit_to_con(connection, sqlcmd, vals)
         
     #     sql = "SELECT * FROM " + tablename
     #     sqlval = ()
@@ -68,12 +72,13 @@ def fetch_all_from_con(tabnam, columns = "*", condition = ""):
     if 1:
         print("<BACKEND WARNING: Reading from SQL has been disabled> Restore it in cb_sql.py.\n")
         return ()
-    # query = "SELECT {} FROM {} {}".format(columns,tabnam,condition)
-    # print("Q:", query)
-    # with stdcon.cursor() as cursor:
-    #     cursor.execute(query,[])
-    #     result = cursor.fetchall()
-    # return result
+    query = "SELECT {} FROM {} {}".format(columns,tabnam,condition)
+    print("Q:", query)
+    stdcon = db_conn
+    with stdcon.cursor() as cursor:
+        cursor.execute(query,[])
+        result = cursor.fetchall()
+    return result
 
 def commit_to_con(con, comcmd, comvals):
     if 1:
@@ -108,13 +113,12 @@ def fetch_all_from_sqltable():
 
 # Writes to a predefined table
 def write_to_sqltable(info):
-    return
-    # if not SQL_ENABLED:
-    #     return 
-    # connection = stdcon
-    # userids = fetch_all_from_con(tablename, columns = "userID")
-    # userids = map(lambda x: x['userID'],userids)
-    # print("uids",userids)
+    if not SQL_ENABLED:
+        return 
+    connection = db_conn
+    userids = fetch_all_from_con(tablename, columns = "userID")
+    userids = map(lambda x: x['userID'],userids)
+    print("uids",userids)
     
     # users = list(info.keys())
     
@@ -132,9 +136,10 @@ def write_to_sqltable(info):
     #     commit_to_con(connection, qry, vals)
 
 asdf = {"alina":{"userID":"小花朵","city":"北京", "首次":"yes"}}
-
-# if __name__ == "__main__":
-#     r = fetch_all_from_con(tablename)
-#     print(r)
-#     f = fetch_uid_from_sqltable("hoe")
-#     print(f)
+# write_to_sqltable(tablename,asdf)
+if __name__ == "__main__":
+    connect_to_T430()
+    r = fetch_all_from_con(tablename)
+    print(r)
+    f = fetch_uid_from_sqltable("hoe")
+    print(f)
