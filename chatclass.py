@@ -933,10 +933,10 @@ class Chat:
     def record_messages(self, recieved, sent):
         dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         username = self.chatID + "(客户)"
-        humanify = lambda user, m: dt+ " > " + user + ": " + m
-        robotify = lambda x: dt + " > " + "机器人: " + x
-        self.curr_chatlog.append(humanify(username, recieved))
-        self.curr_chatlog.append(robotify(sent))
+        human_prefix = lambda user, m: dt+ " > " + user + ": " + m
+        robot_prefix = lambda x: dt + " > " + "机器人: " + x
+        self.curr_chatlog.append(human_prefix(username, recieved))
+        self.curr_chatlog.append(robot_prefix(sent))
         self.convo_index = self.convo_index + 2
 
     def pop_prev_msg(self):

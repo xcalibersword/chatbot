@@ -239,8 +239,10 @@ class Humanizer():
             return in_msg
 
         human_msg = msg
+        ctx_key = InfoParser.CTX_SLOT_KEY()
+        ctx_info = info.get(ctx_key,{})
         for key, dic in self.hd:
-            inf_val = info.get(key,"")
+            inf_val = ctx_info.get(key,"")
             if inf_val in dic:
                 human_msg = add_humanlike_text(inf_val, dic, human_msg)
             
@@ -332,12 +334,16 @@ class InfoVault():
 class InfoParser():
     def __init__(self, json_dict):
         self.digits = cbsv.DIGITS()
-        self.ctxsk = "cxt_slots"
+        self.ctxsk = self.CTX_SLOT_KEY()
         self.regexDB = {}
         self.perm_slots = json_dict["permanent_slots"]
         self.ctx_slots = json_dict["contextual_slots"]
         slots = json_dict["slots"]
         self._build_slots_DB(slots)
+
+    @classmethod
+    def CTX_SLOT_KEY(cls):
+        return "cxt_slots"
 
     def _build_slots_DB(self, jdata):
         for catkey in list(jdata.keys()):

@@ -10,11 +10,13 @@ DEBUG = 0
 
 # The main file that ties everything together.
 # This is more or less the API center with the all important method: "get_bot_reply"
+# Calls all the supporting functions from chatclass, chatbot_supp, and initalizers
 # To initalize the bot:
     # bot = Chatbot()
     # bot.start()
 
-# Calls all the supporting functions from chatclass and chatbot_supp and initalizers
+############## All supporting Libraries: ##############
+# Can be installed via pip
 # Required libraries: 
 # - mypysql used in cb_sql
 
@@ -28,7 +30,7 @@ DEBUG = 0
 # NLU libraries:
 # - jieba
 #.add_word() + edit the internal jieba files to enable detection of pattern
-# - tf 1.14
+# - tensorflow 1.14
 # - keras
 
 # This text replacer should be put in a class or smth

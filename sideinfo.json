@@ -108,15 +108,15 @@
             ["要公积金","gongjijin_slot"],
             ["首次","gen_shouci_slot"],
             ["chosen_fee","fee_slot"],
-            ["ask_keyi","keyi_slot"],
-            ["say_thanks","thanks_slot"],
-            ["yourenma","yourenma_slot"],
             ["xufei","xufei_slot"]
         ],
-        "COMMENT":"ctx slots are always permanent",
+        "COMMENT":"ctx slots are also permanent",
         "contextual_slots":[
             ["target_month","ctx_month_slot"],
-            ["date","ctx_day_slot"]
+            ["date","ctx_day_slot"],
+            ["ask_keyi","keyi_slot"],
+            ["say_thanks","thanks_slot"],
+            ["yourenma","yourenma_slot"]
         ],
         "slots": {
             "month_slot":{
