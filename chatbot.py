@@ -107,16 +107,25 @@ class Chatbot():
         cln_txt = format_text(rawtext)
         return cln_txt
 
+    def _switch_chat_manager(self, chatid):
+        # Create a new chat if never chat before
+        if not chatid in self.chat_dict:
+            self.make_new_chat(chatid)
+        return self.chat_dict[chatid]
+
     def get_bot_reply(self,chatID,msg):
         self.trigger_backup()
-        # Create a new chat if never chat before
-        if not chatID in self.chat_dict:
-            self.make_new_chat(chatID)
-        curr_chat_mgr = self.chat_dict[chatID]
+        curr_chat_mgr = self._switch_chat_manager(chatID)
         if DEBUG: print("Current chat manager is for", chatID)
         f_msg = self.clean_message(msg)
         reply = curr_chat_mgr.respond_to_message(f_msg)
         return reply
+
+    # Asks chatmanager to read the long history and parse selectively.
+    def parse_transferred_messages(self, chatID, history):
+        curr_chat_mgr = self._switch_chat_manager(chatID)
+        curr_chat_mgr.read_chat_history(history)
+        return
 
 if __name__ == "__main__":
     # Local running

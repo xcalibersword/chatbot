@@ -393,6 +393,12 @@ class ChatManager:
         self.ztracker.update_zones_from_dm(self.dmanager)
         return 
 
+    def read_chat_history(self, history):
+        if DEBUG: print("Reading chat history")
+        hist_info = self.iparser.parse_chat_history(history)
+        self.dmanager.log_detail(hist_info, OVERWRITE=0)
+        return
+
     ### Chat logging
     def _record_messages_in_chat(self,recv, sent):
         self.chat.record_messages(recv,sent)

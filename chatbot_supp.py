@@ -371,7 +371,7 @@ class InfoParser():
     def _contextual_parse(self, text, d):
         if not self.ctxsk in d:
             d[self.ctxsk] = {}
-        print("CTX",self.ctx_slots)
+        if DEBUG: print("CTX",self.ctx_slots)
         self._parse_function(text,d[self.ctxsk],self.ctx_slots)
         return
 
@@ -433,6 +433,13 @@ class InfoParser():
         self._contextual_parse(text, out)
         # if DEBUG: print("<PARSE> Final details:",out)
         return out
+
+    def parse_chat_history(self, history):
+        out = {}
+        # Permanent slot parse (overwrites existing slots)
+        self._default_parse(history,out)
+        if DEBUG: print("<PARSE HISTORY> History info:",out)
+        return out 
 
     # Converts a python array to a string delimited by the '|' character
     def list_to_regexList(self, lst):
