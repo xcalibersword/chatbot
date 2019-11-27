@@ -201,7 +201,7 @@ def processText(self_userID,rawText):
                 # Customer
                 custid = re.sub(date_time_pattern,"",sent)
                 querytime = re.search(date_time_pattern,sent).group(0)
-                query = curr_text
+                query = collect_texts(query, curr_text)
 
             if len(query) > 0 and len(last_sent) > 0:
                 break
