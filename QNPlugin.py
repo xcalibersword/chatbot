@@ -203,6 +203,7 @@ def processText(self_userID,rawText):
             curr_text = collect(curr_text, sent) # Collect messages
         
     if not GLOBAL["last_query_time"] == querytime:
+        print("New Message deteced",querytime, query)
         GLOBAL["last_query_time"] = querytime
         GLOBAL["got_new_message"] = True
         GLOBAL["last_query"] = query
@@ -263,30 +264,30 @@ def select_chat_input_box():
         sleep(GLOBAL["human_input_sleep"])
     return
 
-def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode):   
-
-    query, custID = check_new_message(self_userID,text_out_hwnd)
-    
-    checks = 0
-    if GLOBAL["got_new_message"]:
-        reply_template = bot.get_bot_reply(custID,query) # Gets a tuple of 3 things
-        reply = reply_template[0]
-        GLOBAL["last_bot_reply"] = reply
-        if type(reply) == list:
-            for r in reply:
-                send_message_QN(r,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
-        else:
-            send_message_QN(reply,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
-            
-    if checks >= GLOBAL["new_chat_check_interval"]:
-        newchat = SeekNewCustomerChat(SeekImagePath)
+def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode,cycle_delay):   
+    while True:
+        query, custID = check_new_message(self_userID,text_out_hwnd)
+        
         checks = 0
-        if newchat:
-            read_history(self_userID, bot,text_in_hwnd)
+        if GLOBAL["got_new_message"]:
+            reply_template = bot.get_bot_reply(custID,query) # Gets a tuple of 3 things
+            reply = reply_template[0]
+            GLOBAL["last_bot_reply"] = reply
+            if type(reply) == list:
+                for r in reply:
+                    send_message_QN(r,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
+            else:
+                send_message_QN(reply,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
+                
+        if checks >= GLOBAL["new_chat_check_interval"]:
+            newchat = SeekNewCustomerChat(SeekImagePath)
+            checks = 0
+            if newchat:
+                read_history(self_userID, bot,text_in_hwnd)
 
-    checks += 1
-    select_chat_input_box()
-
+        checks += 1
+        select_chat_input_box()
+        sleep(float(cycle_delay))
     #timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath])
     #add something to stop the program
     #timer.start()
@@ -321,6 +322,4 @@ if __name__ == "__main__":
     bot.start()
     
     print("Starting program....") 
-    while True:
-        main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode)
-        sleep(float(delay_time))
+    main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode)
