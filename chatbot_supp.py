@@ -343,7 +343,7 @@ class InfoParser():
 
     @classmethod
     def CTX_SLOT_KEY(cls):
-        return "cxt_slots"
+        return "ctx_slots"
 
     def _build_slots_DB(self, jdata):
         for catkey in list(jdata.keys()):

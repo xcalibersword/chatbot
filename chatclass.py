@@ -591,23 +591,71 @@ class DetailManager:
         return
 
     def _add_secondary_slots(self):
-        
+        def get_value(branch, info):
+            print("Getting value of",branch)
+            if isinstance(branch,list):
+                loc = branch[0]
+                raw = info.get(loc,False)
+                if not raw:
+                    if DEBUG: print("<SECONDARY SLOT> {} not found in info".format(loc))
+                    final = ""
+                else:
+                    if len(branch) > 1:
+                        loc, opr, v = branch
+                        opr = opr.replace(" ","")
+                        raw = float(raw)
+                        v = float(v)
+                        if opr == "-":
+                            final = raw - v
+                        elif opr == "+":
+                            final = raw + v
+                        else:
+                            print("<SECONDARY SLOT> unknown opr {}".format(opr))
+                            final = raw
+                    else:
+                        final = raw
+                    
+                print("Final val",final)
+                return final
+
+            else:
+                return branch
+
+
         curr_info = self.fetch_info()
         ss_default_flag = "DEFAULT"
 
         def tree_search(tree, info):
             slot, sub_dict = list(tree.items())[0]
+            loc_list = [slot]
+            if "." in slot:
+                loc_list = slot.split(".")
+                if DEBUG: print("LOC LIST", loc_list)
+                slot = loc_list[0]
             while slot in info:
-                slot_val = str(info[slot]) # To convert ints to strings. I.e. for hours
+                curr_d = info.copy()
+                for loc in loc_list:
+                    infoval = curr_d.get(loc,"")
+                    if infoval == "":
+                        print("<SECONDARY SLOT> ERROR {} not found".format(loc))
+                        return (False,"")
+                    if isinstance(infoval, dict):
+                        curr_d = infoval
+                    else:
+                        slot_val = str(curr_d[loc]) # To convert ints to strings. I.e. for hours
+                
+                print("<TREE> slotval",slot_val)
                 if slot_val in sub_dict:
                     ss_branch = sub_dict[slot_val]
                     if isinstance(ss_branch, dict):
                         slot, sub_dict = list(ss_branch.items())[0]
                     else:
-                        return (True, ss_branch)
+                        out = get_value(ss_branch, info)
+                        return (True, out)
                 else:
                     if DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
                     break
+            print("TREE SEARCH FAILED",tree)
             return (False, "")
 
         entries = {}
@@ -619,7 +667,8 @@ class DetailManager:
             if f: 
                 entries[target] = val
             elif ss_default_flag in secondslot:
-                 entries[target] = secondslot[ss_default_flag]
+                defval = get_value(secondslot[ss_default_flag], curr_info)
+                entries[target] = defval
         
         self.chat_prov_info.update(entries)
         return 

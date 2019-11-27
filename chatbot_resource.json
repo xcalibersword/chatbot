@@ -624,7 +624,8 @@
                 ],
                 [
                     "要社保", "DEFAULT_SV"
-                ]
+                ],
+                ["target_month", "month_slot"]
             ],
             "calcs": [
                 "calc_flag_sb_gjj",
@@ -646,17 +647,18 @@
             "propose_plan_state": true,
             "req_info": [
                 ["city", "city"],
+                ["target_month", "month_slot"],
                 [
                     "首次",
                     "DEFAULT_SV"
                 ],
                 [
                     "要公积金",
-                    "default_yes"
+                    "wantnot"
                 ],
                 [
                     "要社保",
-                    "default_yes"
+                    "DEFAULT_SV"
                 ]
             ],
             "calcs": [
@@ -758,8 +760,8 @@
             "gated": true,
             "thread": "t_can_make_it",
             "terminal_state": true,
-            "calcs": ["flag_sb_day_cmi"],
-            "req_info": [["city","city"]],
+            "calcs": ["calc_specified_month","flag_sb_day_cmi"],
+            "req_info": [["city","city"],["target_month", "month_slot"]],
             "replies": [
                 "亲{rep_ext[can_make_it_info]}"
             ]
@@ -976,7 +978,7 @@
                         "要公积金": "交公积金吗？",
                         "苏州区": "是市区还是园区呢？",
                         "chosen_fee": "哪个部分？（比如：社保/公积金/服务费）",
-                        "target_month": "要补缴哪月？",
+                        "target_month": "要缴哪月？",
                         "given_amount": "要按照什么基数？",
                         "chosen_service":"指的是社保还是公积金？"
                     }
@@ -1611,6 +1613,33 @@
             }
         ],
         "calcs": {
+            "calc_specified_month":{
+                "writeto":"spec_month",
+                "persist_value": true,
+                "conditions":[],
+                "req_vars":[
+                    "target_month",
+                    "state_month"
+                ],
+                "steps":{
+                    "0,equals": [
+                        ["state_month","target_month"],
+                        "w_is_curr_month"
+                    ],
+                    "1,isgreater": [
+                        ["state_month","target_month"],
+                        "w_is_next_month"
+                    ],
+                    "2,multi":[
+                        ["w_is_next_month",2],
+                        "w_is_next_month"
+                    ],
+                    "3,add":[
+                        ["w_is_curr_month", "w_is_next_month"],
+                        "OUTCOME"
+                    ]
+                }
+            },
             "calc_flag_sb_gjj": {
                 "writeto": "flag_sb_gjj",
                 "persist_value": true,
@@ -2184,7 +2213,7 @@
                     "shebao_payment": 1937.7,
                     "svc_fee": 40,
                     "shouci_fee": 50,
-                    "pay_deadline": 26,
+                    "pay_deadline": 22,
                     "gongjijin_fee": 338,
                     "bujiao_period": 6,
                     "xufei_deadline": 15,
