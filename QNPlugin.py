@@ -181,15 +181,15 @@ def processText(self_userID,rawText):
     custid = ""
     last_sent = ""
     query = ""
-
     curr_text = ""
     print("RECENT TEXT", recentText[:10])
     for sent in recentText:
         if re.search(date_time_pattern,sent):
             # Name line
-            if re.search(self_userID,sent) and last_sent == "":
+            if re.search(self_userID,sent):
                 # Self
-                last_sent = curr_text[:-2] # Remove the 已读/未读
+                if last_sent == "":
+                    last_sent = curr_text[:-2] # Remove the 已读/未读
             else:
                 # Customer
                 custid = re.sub(date_time_pattern,"",sent)
@@ -265,11 +265,11 @@ def select_chat_input_box():
         sleep(GLOBAL["human_input_sleep"])
     return
 
-def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode,cycle_delay):   
+def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode,cycle_delay): 
+    checks = 0
     while True:
         query, custID = check_new_message(self_userID,text_out_hwnd)
         
-        checks = 0
         if GLOBAL["got_new_message"]:
             reply_template = bot.get_bot_reply(custID,query) # Gets a tuple of 3 things
             reply = reply_template[0]
