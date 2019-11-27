@@ -244,7 +244,8 @@ def read_history(selfID, bot, textwindow):
 
 def get_only_messages(hist):
     historyLimit = 500
-    history = hist[:500]
+    history = hist[:historyLimit]
+    curr_text = ""
     out = []
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     for sent in history:
