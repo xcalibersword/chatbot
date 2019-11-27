@@ -216,7 +216,7 @@ def mine_chat_text(selfID, text_win):
 
 def check_new_message(self_userID,textwindow):
     print('Checking for new messages...')
-    rawText = mine_chat_text(selfID, textwindow)
+    rawText = mine_chat_text(self_userID, textwindow)
     query,cust_QN_ID = processText(self_userID,rawText)
     print("Customer ID: {} Query: {}".format(cust_QN_ID, query))
     return query, cust_QN_ID
