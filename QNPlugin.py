@@ -19,9 +19,10 @@ KEY_PRESS = 0
 KEY_LETGO = 2
 
 GLOBAL["last_query"] = ""
+GLOBAL["last_query_time"] = ""
 GLOBAL["last_sent_msg"] = ""
 GLOBAL["got_new_message"] = True
-GLOBAL["new_chat_check_interval"] = 5
+GLOBAL["new_chat_check_interval"] = 3
 
 def find_handle(userid):
     #spy++ | hard coded have to update if qianniu update their UI
@@ -191,6 +192,7 @@ def processText(self_userID,rawText):
             else:
                 # Customer
                 custid = re.sub(date_time_pattern,"",sent)
+                querytime = re.search(date_time_pattern,sent).group(0)
                 query = curr_text
 
             if len(query) > 0 and len(last_sent) > 0:
@@ -200,7 +202,8 @@ def processText(self_userID,rawText):
             # Text line
             curr_text = collect(curr_text, sent) # Collect messages
         
-    if not GLOBAL["last_query"] == query:
+    if not GLOBAL["last_query_time"] == querytime:
+        GLOBAL["last_query_time"] = querytime
         GLOBAL["got_new_message"] = True
         GLOBAL["last_query"] = query
     else:
@@ -275,7 +278,7 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
         else:
             send_message_QN(reply,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
             
-    elif checks >= GLOBAL["new_chat_check_interval"]:
+    if checks >= GLOBAL["new_chat_check_interval"]:
         newchat = SeekNewCustomerChat(SeekImagePath)
         checks = 0
         if newchat:
