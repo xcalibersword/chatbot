@@ -49,7 +49,8 @@ def find_handle(userid):
     return QN_input_hwnd,QN_output_hwnd,QN_sendBut_hwnd
 
 def save2troubleshoot(right,wrong,query,intent,slot,id):
-    df = pd.read_csv(r"troubleshoot.csv",encoding="gb18030")
+    print("<CHANGED REPLY> Writing to troubleshoot.csv")
+    df = pd.read_csv(r"troubleshoot.csv",encoding="gb18030",header=None)
     list_list=df.values.tolist()
     
     list_list.append([wrong,id,query,right,intent,slot])
@@ -184,7 +185,7 @@ def collect_texts(collector, new):
 def get_customer_id(self_userID,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     custid = ""
-    for sent in rawTest:
+    for sent in rawText:
         if re.search(date_time_pattern,sent):
             if re.search(self_userID,sent):
                 continue
