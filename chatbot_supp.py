@@ -428,6 +428,8 @@ class InfoParser():
     ### MAIN FUNCTION ### 
     # Returns a dict of primary lookup_info including zones.
     def parse(self, text, slots, intent):
+        if not isinstance(intent, dict):
+            return {}
         out = {}
         # Intent slotfill
         self._intent_blanket_slotfill(intent, slots, out)
