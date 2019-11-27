@@ -142,9 +142,15 @@ def getRawText():
 
     sleep(clipboard_sleep)
 
+    try:
+        EmptyClipboard()
+        succeed = True
+    except Exception as e:
+        print("EmptyClipboard EXCEPTION:",e)
+
     rpt = 0
     succeed = False
-    while not succeed and rpt < rpt_limit:
+    while not succeed and rpt < rpt_limit + 10:
         try:
             CloseClipboard()
             succeed = True
@@ -182,6 +188,7 @@ def processText(self_userID,rawText):
     last_sent = ""
     query = ""
     curr_text = ""
+    querytime = ""
     print("RECENT TEXT", recentText[:10])
     for sent in recentText:
         if re.search(date_time_pattern,sent):
@@ -214,14 +221,14 @@ def processText(self_userID,rawText):
     check_if_edited(last_sent, query, custid)
     return query,custid
 
-def mine_chat_text(selfID, text_win):
+def mine_chat_text(text_win):
     setActiveScreen(text_win)
     select_copy()
     return getRawText()
 
 def check_new_message(self_userID,textwindow):
     print('Checking for new messages...')
-    rawText = mine_chat_text(self_userID, textwindow)
+    rawText = mine_chat_text(textwindow)
     query, cust_QN_ID = processText(self_userID,rawText)
     print("Customer ID: {} Query: {}".format(cust_QN_ID, query))
     return query, cust_QN_ID
@@ -229,7 +236,7 @@ def check_new_message(self_userID,textwindow):
 # Returns nothing. Updates bot internal state.
 def read_history(selfID, bot, textwindow):
     print('<HISTORY> Reading chat history')
-    history = mine_chat_text(selfID, textwindow)
+    history = mine_chat_text(textwindow)
     query,cust_QN_ID = processText(self_userID,history)
     bot.parse_transferred_messages(cust_QN_ID, history)
     return 
@@ -284,7 +291,7 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
             newchat = SeekNewCustomerChat(SeekImagePath)
             checks = 0
             if newchat:
-                read_history(self_userID, bot,text_in_hwnd)
+                read_history(self_userID, bot,text_out_hwnd)
 
         checks += 1
         select_chat_input_box() # This only does something if mode is "human control"
