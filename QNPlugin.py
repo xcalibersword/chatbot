@@ -183,6 +183,7 @@ def processText(self_userID,rawText):
     query = ""
 
     curr_text = ""
+    print("RECENT TEXT", recentText[:10])
     for sent in recentText:
         if re.search(date_time_pattern,sent):
             # Name line
@@ -221,7 +222,7 @@ def mine_chat_text(selfID, text_win):
 def check_new_message(self_userID,textwindow):
     print('Checking for new messages...')
     rawText = mine_chat_text(self_userID, textwindow)
-    query,cust_QN_ID = processText(self_userID,rawText)
+    query, cust_QN_ID = processText(self_userID,rawText)
     print("Customer ID: {} Query: {}".format(cust_QN_ID, query))
     return query, cust_QN_ID
 
@@ -279,14 +280,14 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
             else:
                 send_message_QN(reply,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
                 
-        if checks >= GLOBAL["new_chat_check_interval"]:
+        elif checks >= GLOBAL["new_chat_check_interval"]:
             newchat = SeekNewCustomerChat(SeekImagePath)
             checks = 0
             if newchat:
                 read_history(self_userID, bot,text_in_hwnd)
 
         checks += 1
-        select_chat_input_box()
+        select_chat_input_box() # This only does something if mode is "human control"
         sleep(float(cycle_delay))
     #timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath])
     #add something to stop the program
@@ -322,4 +323,4 @@ if __name__ == "__main__":
     bot.start()
     
     print("Starting program....") 
-    main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode)
+    main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode,delay_time)

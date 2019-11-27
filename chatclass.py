@@ -475,11 +475,11 @@ class PolicyKeeper:
         default_null_int = self.INTENT_DICT["no_intent"]
         uds = Understanding(intent_obj, default_null_int,SIP.same_state())
         for intent_lst in policy.get_intents():
-            print("intent_list",list(map(lambda x: x[0],intent_lst)))
+            if 0: print("intent_list",list(map(lambda x: x[0],intent_lst)))
             for pair in intent_lst:
                 c_int, next_sip = pair
                 if intent == c_int:
-                    print("MATCH",intent)
+                    if 0 and DEBUG: print("<INTENT MATCH>",intent)
                     uds = Understanding(intent_obj, intent_obj, next_sip)
                     return uds
         return uds
