@@ -189,7 +189,7 @@ def processText(self_userID,rawText):
     query = ""
     curr_text = ""
     querytime = ""
-    print("10 RECENT TEXT", recentText[:10])
+    print("RECENT TEXT", recentText[:10])
     for sent in recentText:
         if re.search(date_time_pattern,sent):
             # Name line
@@ -201,7 +201,7 @@ def processText(self_userID,rawText):
                 # Customer
                 custid = re.sub(date_time_pattern,"",sent)
                 querytime = re.search(date_time_pattern,sent).group(0)
-                query = collect_texts(query, curr_text) # This is for when there are 2 messages in a row from 客户
+                query = curr_text
 
             if len(query) > 0 and len(last_sent) > 0:
                 break
@@ -210,9 +210,8 @@ def processText(self_userID,rawText):
             # Text line
             curr_text = collect_texts(curr_text, sent) # Collect messages
         
-    print("<PROCESS TEXT> last QT", GLOBAL["last_query_time"], "new QT", querytime, "curr query", query)
-
     if not GLOBAL["last_query_time"] == querytime:
+        print("New Message deteced",querytime, query)
         GLOBAL["last_query_time"] = querytime
         GLOBAL["got_new_message"] = True
         GLOBAL["last_query"] = query
@@ -324,8 +323,6 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
 
 if __name__ == "__main__":
     self_userID = "女人罪爱:小梅"
-    self_userID = "女人罪爱" # Generalize because of transfers, the other name will appear too
-
     delay_time = input("Enter the delay time (in seconds) for each cycle to look for new message 投入延期(秒钟): ")
     #enter for testing, 1 for deployment
     mode = input("Enter the mode 投入模式: ")
