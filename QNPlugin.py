@@ -181,6 +181,21 @@ def collect_texts(collector, new):
     # Because reversed message order, new comes before old
     return  new + collector 
 
+def get_customer_id(self_userID,rawText):
+    date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
+    custid = ""
+    for sent in rawTest:
+        if re.search(date_time_pattern,sent):
+            if re.search(self_userID,sent):
+                continue
+            else:
+                custid = custid = re.sub(date_time_pattern,"",sent)
+                break
+    
+    if custid == "": print("<GET CUSTOMER ID> Cannot find Customer ID")
+    return custid
+
+
 def processText(self_userID,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     recentText = rawText[:30]
@@ -200,7 +215,7 @@ def processText(self_userID,rawText):
             else:
                 # Customer
                 custid = re.sub(date_time_pattern,"",sent)
-                querytime = re.search(date_time_pattern,sent).group(0)
+                if querytime == "": querytime = re.search(date_time_pattern,sent).group(0)
                 query = collect_texts(query, curr_text)
 
             if len(query) > 0 and len(last_sent) > 0:
@@ -237,9 +252,9 @@ def check_new_message(self_userID,textwindow):
 def read_history(selfID, bot, textwindow):
     print('<HISTORY> Reading chat history')
     history = mine_chat_text(textwindow)
-    query,cust_QN_ID = processText(self_userID,history)
-    get_only_messages(history)
-    bot.parse_transferred_messages(cust_QN_ID, history)
+    cust_QN_ID = get_customer_id(self_userID,history)
+    mhist = get_only_messages(history)
+    bot.parse_transferred_messages(cust_QN_ID, mhist)
     return 
 
 def get_only_messages(hist):
@@ -313,6 +328,8 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
             checks = 0
             if newchat:
                 read_history(self_userID, bot,text_out_hwnd)
+                GLOBAL["got_new_message"] = True
+                continue
 
         checks += 1
         select_chat_input_box() # This only does something if mode is "human control"

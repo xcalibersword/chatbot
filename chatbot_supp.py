@@ -356,21 +356,21 @@ class InfoParser():
 
 
     # Updates dict directly
-    def _match_slot(self, text, slot, d):
+    def _match_slot(self, text, slot, d, PDB = True):
         slotname, catgry = slot
-        value = self.get_category_value(text, catgry)
+        value = self.get_category_value(text, catgry, PDB)
         if len(value) > 0:
             if DEBUG: print("<MATCH SLOT> Found a {} for {} Value: {}".format(catgry, slotname,value))
             entry = {slotname: value}
             d.update(entry)
 
-    def _parse_function(self, text, d, slots):
+    def _parse_function(self, text, d, slots, PDB = True):
         for s in slots:
-            self._match_slot(text, s, d)
+            self._match_slot(text, s, d, PDB)
         
     # Searches in permanent aka default slots
-    def _default_parse(self, text, d):
-        self._parse_function(text,d,self.perm_slots)
+    def _default_parse(self, text, d, PDB = True):
+        self._parse_function(text,d,self.perm_slots, PDB)
         return
 
     # Searches in contextual slots
@@ -403,9 +403,9 @@ class InfoParser():
     # Get the value in the text related to the specified category
     # Enumerated by dictionary key
     # Returns a pure value
-    def get_category_value(self, text, category):
+    def get_category_value(self, text, category, PDB = True):
         if not category in self.regexDB:
-            if DEBUG: print("<GET CAT VAL> No such category:{}".format(category))
+            if PDB and DEBUG: print("<GET CAT VAL> No such category:{}".format(category))
             return ""
         catDB = self.regexDB[category]
         value = self._no_match_val(catDB)
@@ -415,9 +415,9 @@ class InfoParser():
             reDB = catDB[v]
             m = re.search(reDB, text)
             if m:
-                if DEBUG: print("<GET CAT VAL> Matched {} value:{} at {}".format(category,v,m))
+                if PDB and DEBUG: print("<GET CAT VAL> Matched {} value:{} at {}".format(category,v,m))
                 if found:
-                    print("<GET CAT VAL> Double value. Prev:", value, ", Current:",v)
+                    if PDB: print("<GET CAT VAL> Double value. Prev:", value, ", Current:",v)
                 # token = m.group(0)
                 value = v
                 found = True
@@ -446,7 +446,7 @@ class InfoParser():
         out = {}
         # Permanent slot parse (overwrites existing slots)
         for msg in history:
-            self._default_parse(msg,out)
+            self._default_parse(msg,out, PDB = False)
         if DEBUG: print("<PARSE HISTORY> History info:",out)
         return out 
 
