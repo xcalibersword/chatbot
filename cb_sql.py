@@ -2,24 +2,25 @@
 
 # import pymysql
 # import pymssql
-from localfiles.details import get_all_details
-cached_info = get_all_details()
 
+if __name__ == "__main__":
+    from localfiles.details import get_all_details
+    cached_info = get_all_details()
 
-# DB ACCESS SETTINGS
-db_host = cached_info["sql_address"]
-db_port = cached_info["sql_port"]
-db_user = cached_info["username"]
-db_pass = cached_info["pass"]
-db_dbname = "chatbot_schema"
-db_charset = "utf8mb4"
-# db_cc = pymysql.cursors.DictCursor
+    # DB ACCESS SETTINGS
+    db_host = cached_info["sql_address"]
+    db_port = cached_info["sql_port"]
+    db_user = cached_info["username"]
+    db_pass = cached_info["pass"]
+    db_dbname = "chatbot_schema"
+    db_charset = "utf8mb4"
+    # db_cc = pymysql.cursors.DictCursor
 
-tablename = "table1"
+    tablename = "table1"
 
 SQL_ENABLED = False
-
 NO_WRITE_TO_SQL = False and SQL_ENABLED
+
 
 if SQL_ENABLED:
     stdcon = {}
@@ -128,7 +129,7 @@ def write_to_sqltable(info):
         commit_to_con(connection, qry, vals)
 
 asdf = {"alina":{"userID":"小花朵","city":"北京", "首次":"yes"}}
-# write_to_sqltable(tablename,asdf)
+
 if __name__ == "__main__":
     r = fetch_all_from_con(tablename)
     print(r)
