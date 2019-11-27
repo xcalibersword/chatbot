@@ -177,11 +177,11 @@ def check_if_edited(last_sent, q, cid):
             save2troubleshoot(str(last_sent), str(last_bot_reply), str(q), "intent", "slot info",str(cid))
     return
 
-def processText(self_userID,rawText):
-    def collect(collector, new):
-        # Because reversed message order, new comes before old
-        return  new + collector 
+def collect_texts(collector, new):
+    # Because reversed message order, new comes before old
+    return  new + collector 
 
+def processText(self_userID,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     recentText = rawText[:30]
     custid = ""
@@ -208,7 +208,7 @@ def processText(self_userID,rawText):
             curr_text = ""
         else:
             # Text line
-            curr_text = collect(curr_text, sent) # Collect messages
+            curr_text = collect_texts(curr_text, sent) # Collect messages
         
     if not GLOBAL["last_query_time"] == querytime:
         print("New Message deteced",querytime, query)
@@ -238,9 +238,29 @@ def read_history(selfID, bot, textwindow):
     print('<HISTORY> Reading chat history')
     history = mine_chat_text(textwindow)
     query,cust_QN_ID = processText(self_userID,history)
+    get_only_messages(history)
     bot.parse_transferred_messages(cust_QN_ID, history)
     return 
 
+def get_only_messages(hist):
+    historyLimit = 500
+    history = hist[:500]
+    out = []
+    date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
+    for sent in history:
+        if re.search(date_time_pattern,sent):
+            # Name line
+            if not re.search(self_userID,sent):
+                # Customer
+                # custid = re.sub(date_time_pattern,"",sent)
+                # querytime = re.search(date_time_pattern,sent).group(0)
+                out.append(curr_text)
+            
+            curr_text = ""
+        else:
+            # Text line
+            curr_text = collect_texts(curr_text, sent) # Collect messages
+    return out
 
 #insert image path here for the series of place for the OCR to click on
 def SeekNewCustomerChat(clickImage):

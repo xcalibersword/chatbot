@@ -445,7 +445,8 @@ class InfoParser():
     def parse_chat_history(self, history):
         out = {}
         # Permanent slot parse (overwrites existing slots)
-        self._default_parse(history,out)
+        for msg in history:
+            self._default_parse(msg,out)
         if DEBUG: print("<PARSE HISTORY> History info:",out)
         return out 
 
