@@ -606,13 +606,13 @@ class DetailManager:
     def _add_secondary_slots(self):
         def get_value(branch, info):
             if isinstance(branch,list):
-                loc = branch[0]
-                raw = info.get(loc,False)
-                if not raw:
-                    if DEBUG: print("<SECONDARY SLOT GETV> {} not found in info".format(loc))
+                raw_vd = dive_for_values(branch,info)
+                if raw_vd == {}:
+                    if DEBUG: print("<SECONDARY SLOT GETV> {} not found in info".format(branch))
                     final = ""
                 else:
-                    if len(branch) > 1:
+                    raw = list(raw_vd.values())[0] # Assume dict is size 1
+                    if len(branch) == 3:
                         loc, opr, v = branch
                         opr = opr.replace(" ","")
                         raw = float(raw)
@@ -745,7 +745,7 @@ class ReplyGenerator:
     # Performs calculations and formats text message replies 
     ############## Major function ##############
     def _enhance_info(self,curr_state,info):
-        RF_DEBUG = 0
+        RF_DEBUG = 1
         enhanced = info.copy()
         if RF_DEBUG: print("initial info", enhanced)
         rep_ext = {}

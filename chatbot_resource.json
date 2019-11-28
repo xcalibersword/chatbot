@@ -597,7 +597,6 @@
                 "calc_flag_sb_gjj",
                 "flag_shouci",
                 "sum_svc_fee",
-                "gen_shebao_jishu",
                 "shebao_fee_amt"
             ],
             "req_info": [
@@ -656,7 +655,6 @@
                 "calc_flag_sb_gjj",
                 "flag_shouci",
                 "sum_svc_fee",
-                "gen_shebao_jishu",
                 "shebao_fee_amt",
                 "gongjijin_fee_amt",
                 "shebao_basic_calc"
@@ -690,7 +688,6 @@
                 "calc_flag_sb_gjj",
                 "flag_shouci",
                 "sum_svc_fee",
-                "gen_shebao_jishu",
                 "shebao_fee_amt",
                 "bj_shebao_basic",
                 "bj_shebao_basic2"
@@ -732,10 +729,9 @@
                 ["city","city"],
                 ["chosen_service","service_slot"],
                 ["要公积金", "default_yes"],
-                ["given_amount", "DUMMY_SLOT"]
+                ["ss_gjj_jishu_figure", "DUMMY_SLOT"]
             ],
             "calcs":[
-                "log_custom_gjj_jishu",
                 "flag_custom_gjj",
                 "calc_custom_gjj_fee"
             ],
@@ -752,10 +748,9 @@
             "req_info": [
                 ["city","city"],
                 ["chosen_service","service_slot"],
-                ["given_amount", "DUMMY_SLOT"]
+                ["ss_sb_jishu_figure", "DUMMY_SLOT"]
             ],
             "calcs":[
-                "log_custom_sb_jishu",
                 "flag_custom_sb",
                 "calc_custom_sb_fee"
             ],
@@ -1213,16 +1208,17 @@
                 "writeto": "custom_gjj_fee_str",
                 "states": ["propose_custom_gjj_jishu"],
                 "lookfor": [
-                    "given_amount",
+                    "city_district",
+                    "ss_gjj_jishu_figure",
                     "w_custom_gjj_fee",
                     "custom_gjj_flag",
                     ["city_info",["gjj_jishu","gjj_jishu_max_limit"]]
                 ],
                 "if_value": {
                     "custom_gjj_flag":{
-                        "1":"亲 公积金按照{given_amount}基数的话，应缴{w_custom_gjj_fee}元",
-                        "0":"亲 {city_info[gjj_jishu]}是公积金的最低缴纳基数了哦",
-                        "2":"亲 {city_info[gjj_jishu_max_limit]}是公积金的最高缴纳基数了哦"
+                        "1":"亲 公积金按照{ss_gjj_jishu_figure}基数的话，应缴{w_custom_gjj_fee}元 不包括服务费，开户费哦",
+                        "0":"亲 {city_info[gjj_jishu]}是{city_district}公积金的最低缴纳基数了哦",
+                        "2":"亲 {city_info[gjj_jishu_max_limit]}是{city_district}公积金的最高缴纳基数了哦"
                     }
                 }
             },
@@ -1230,16 +1226,17 @@
                 "writeto": "custom_sb_fee_str",
                 "states": ["propose_custom_sb_jishu"],
                 "lookfor": [
-                    "given_amount",
+                    "city_district",
+                    "ss_sb_jishu_figure",
                     "w_custom_sb_fee",
                     "custom_sb_flag",
                     ["city_info",["sb_jishu","sb_jishu_max_limit"]]
                 ],
                 "if_value": {
                     "custom_sb_flag":{
-                        "1":"亲 社保按照{given_amount}基数的话，应缴{w_custom_sb_fee}元",
-                        "0":"亲 {city_info[sb_jishu]}是社保的最低缴纳基数了哦",
-                        "2":"亲 {city_info[sb_jishu_max_limit]}是社保的最高缴纳基数了哦"
+                        "1":"亲 社保按照{ss_sb_jishu_figure}基数的话，应缴{w_custom_sb_fee}元 不包括服务费，开户费哦",
+                        "0":"亲 {city_info[sb_jishu]}是{city_district}社保的最低缴纳基数了哦",
+                        "2":"亲 {city_info[sb_jishu_max_limit]}是{city_district}社保的最高缴纳基数了哦"
                     }
                 }
             },
@@ -1281,11 +1278,12 @@
                 "states": ["propose_plan"],
                 "lookfor":[
                     "custom_gjj_flag",
+                    "ss_gjj_jishu_figure",
                     ["rep_ext",["str_default_gjj_jishu"]]
                 ],
                 "if_value":{
                     "custom_gjj_flag":{
-                        "1": "（按照{custom_gjj_jishu}基数）",
+                        "1": "（按照{ss_gjj_jishu_figure}基数）",
                         "DEFAULT":"{rep_ext[str_default_gjj_jishu]}"
                     }
                 }
@@ -1310,11 +1308,12 @@
                 "states": ["propose_plan"],
                 "lookfor":[
                     "custom_sb_flag",
+                    "ss_sb_jishu_figure",
                     ["rep_ext",["str_default_sb_jishu"]]
                 ],
                 "if_value":{
                     "custom_sb_flag":{
-                        "1": "（按照{custom_sb_jishu}基数）",
+                        "1": "（按照{ss_sb_jishu_figure}基数）",
                         "DEFAULT":"{rep_ext[str_default_sb_jishu]}"
                     }
                 }
@@ -2223,7 +2222,7 @@
                 "conditions": [],
                 "persist_value": true,
                 "req_vars": [
-                    "custom_gjj_jishu",
+                    "ss_gjj_jishu_figure",
                     ["city_info",
                         ["gjj_jishu","gjj_jishu_max_limit"]
                     ]
@@ -2234,7 +2233,7 @@
                         "OUTCOME"
                     ],
                     "2,isgreater": [
-                        ["custom_gjj_jishu","gjj_jishu_max_limit"],
+                        ["ss_gjj_jishu_figure","gjj_jishu_max_limit"],
                         "w_over"
                     ],
                     "3,add":[
@@ -2242,10 +2241,10 @@
                         "OUTCOME"
                     ],
                     "4,isgreater":[
-                        ["gjj_jishu","custom_gjj_jishu"],
+                        ["gjj_jishu","ss_gjj_jishu_figure"],
                         "w_under"
                     ],
-                    "5,add":[
+                    "5,sub":[
                         ["OUTCOME", "w_under"],
                         "OUTCOME"
                     ]
@@ -2256,7 +2255,7 @@
                 "conditions": [],
                 "persist_value": true,
                 "req_vars": [
-                    "custom_sb_jishu",
+                    "ss_sb_jishu_figure",
                     ["city_info",
                         ["sb_jishu","sb_jishu_max_limit"]
                     ]
@@ -2267,7 +2266,7 @@
                         "OUTCOME"
                     ],
                     "2,isgreater": [
-                        ["custom_sb_jishu","sb_jishu_max_limit"],
+                        ["ss_sb_jishu_figure","sb_jishu_max_limit"],
                         "w_over"
                     ],
                     "3,add":[
@@ -2275,7 +2274,7 @@
                         "OUTCOME"
                     ],
                     "4,isgreater":[
-                        ["sb_jishu","custom_sb_jishu"],
+                        ["sb_jishu","ss_sb_jishu_figure"],
                         "w_under"
                     ],
                     "5,sub":[
@@ -2284,12 +2283,12 @@
                     ]
                 }
             },
-            "log_custom_gjj_jishu":{
+            "logz_custom_gjj_jishu":{
                 "writeto": "custom_gjj_jishu",
                 "conditions": [],
                 "persist_value": true,
                 "req_vars": [
-                    "given_amount"
+                    "ss_gjj_jishu_figure"
                 ],
                 "steps": {
                     "1,add": [
@@ -2298,12 +2297,12 @@
                     ]
                 }
             },
-            "log_custom_sb_jishu":{
+            "logz_custom_sb_jishu":{
                 "writeto": "custom_sb_jishu",
                 "conditions": [],
                 "persist_value": true,
                 "req_vars": [
-                    "given_amount"
+                    "ss_sb_jishu_figure"
                 ],
                 "steps": {
                     "1,add": [
@@ -2317,14 +2316,14 @@
                 "conditions": [],
                 "persist_value": true,
                 "req_vars": [
-                    "custom_gjj_jishu",
+                    "ss_gjj_jishu_figure",
                     ["city_info",
                         ["gjj_jishu_multi"]
                     ]
                 ],
                 "steps": {
                     "1,multi": [
-                        ["custom_gjj_jishu","gjj_jishu_multi"],
+                        ["ss_gjj_jishu_figure","gjj_jishu_multi"],
                         "OUTCOME"
                     ]
                 }
@@ -2334,14 +2333,12 @@
                 "conditions": [],
                 "persist_value": true,
                 "req_vars": [
-                    "custom_sb_jishu",
-                    ["city_info",
-                        ["sb_jishu_multi"]
-                    ]
+                    "ss_sb_jishu_figure",
+                    ["city_info",["sb_jishu_multi"]]
                 ],
                 "steps": {
                     "1,multi": [
-                        ["custom_sb_jishu","sb_jishu_multi"],
+                        ["ss_sb_jishu_figure","sb_jishu_multi"],
                         "OUTCOME"
                     ]
                 }
