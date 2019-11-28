@@ -619,9 +619,9 @@
             "req_info": [
                 ["city","city"],
                 ["首次","DEFAULT_SV"],
-                ["要公积金","wantnot"],
+                ["要公积金","DUMMY_SLOT"],
                 ["要社保", "DEFAULT_SV"],
-                ["ss_purchase_for_month", "D"]
+                ["ss_purchase_for_month", "DUMMY_SLOT"]
             ],
             "calcs": [
                 "calc_flag_sb_gjj",

@@ -10,7 +10,11 @@ from datetime import datetime
 from chatbot_supp import *
 from chatbot_utils import dive_for_values
 
+
+SUPER_DEBUG = 0
 DEBUG = 1
+
+DEBUG = DEBUG or SUPER_DEBUG
 
 # A conversation thread manager using stack and dict
 class StateThreader():
@@ -236,9 +240,15 @@ class ChatManager:
         while repeat and rc < 5:
             # Parse the message and get an understanding
             full_uds, bd = self._parse_message_overall(msg)
+            
             if rc == 0:
+                # On first cycle
                 sip = full_uds.get_sip()
+            else:
+                sip = sip.same_state()
 
+            if DEBUG: print("<RTN> curr sip", sip.toString())
+            
             # Digest and internalize the new info
             repeat, pg = self.react_to_sip(sip)
 
@@ -248,6 +258,9 @@ class ChatManager:
             if DEBUG: print("<RTM> Repeats", rc, "Pass gate:",pg)
             # if repeat:
             #     sip = SIP.same_state()
+            if not sip.is_trans_state():
+                if DEBUG: print("<RTM> Not trans state, breaking")
+                break
 
             rc += 1
        
@@ -315,7 +328,7 @@ class ChatManager:
             self.statethreader.set_thread_pending(hs, ps)
         
         curr_info = self._get_current_info()
-        print("Current info:",curr_info)
+        if SUPER_DEBUG: print("Current info:",curr_info)
         passed, req_slots, info_topup = self.gatekeeper.try_gate(curr_info)
 
         self.push_detail_to_dm(info_topup, ow=False) # Detail update. No Overwrite
@@ -656,7 +669,6 @@ class DetailManager:
                             return (True, out)
                     else:
                         # Fallback and look for _ANY match
-                        print("FAILED TO FIND", sub_dict)
                         if any_val_key in sub_dict:
                             # Is a _ANY leaf
                             a_branch = sub_dict.get(any_val_key,-1)
@@ -666,7 +678,7 @@ class DetailManager:
                         if DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
                         break
                 
-            print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)
+            if SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)
             return (False, "")
 
         curr_info = self.fetch_info()
@@ -968,7 +980,7 @@ class ReplyGenerator:
         if DEBUG: print("<GEN REPLY> template",reply_template)
         final_msg = reply_template
         if isinstance(info, dict):
-            if DEBUG: print("<GEN REPLY> Enhanced info:",info)
+            if SUPER_DEBUG: print("<GEN REPLY> Enhanced info:",info)
             
             # Uses kwargs to fill this space
             final_msg = reply_template.format(**info)

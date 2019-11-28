@@ -2,7 +2,10 @@ import cbsv
 import re
 import chatbot_utils as cu
 
+SUPER_DEBUG = 0
 DEBUG = 1
+
+DEBUG = DEBUG or SUPER_DEBUG
 
 # Have a message class? Or some sort of flag for messages. Indicate state-changing messages.
 PREV_STATE_F = {"key":"299 PREV_STATE", "gated": False}
@@ -12,6 +15,7 @@ SAME_STATE_F_OBJ = {"key":"same_state","gated":False}
 # SIP = State Info Packet
 # A packet that has info about state and has constructors for set states like go_back
 class SIP:
+    trans_state_flag = "transition_state"
     def __init__(self, state, cs = True):
         self.parse_state(state)
         self.state_change = cs
@@ -19,10 +23,11 @@ class SIP:
         self.go_back = False
 
     def parse_state(self, state):
-        self.state_obj = state.copy() # states are dicts
+        self.state_obj = state.copy() # Prevent unintended side effects. States are dicts
         self.state_key = self.state_obj["key"]
-        self.gated_bool = self.state_obj["gated"]
-        self.state_slots = self.state_obj["req_info"] if self.state_obj["gated"] else []
+        self.gated_bool = self.state_obj.get("gated",False)
+        self.transition_state = self.state_obj.get(self.trans_state_flag,False)
+        self.state_slots = self.state_obj["req_info"] if self.gated_bool else []
         self.pending_state = ""
 
     def set_actions(self, action, pending_act = None):
@@ -58,6 +63,9 @@ class SIP:
 
     def is_same_state(self):
         return not self.state_change
+
+    def is_trans_state(self):
+        return self.transition_state
 
     def is_go_back(self):
         return self.go_back == True
@@ -133,11 +141,11 @@ class ReqGatekeeper:
                 for c in conditions:
                     val, slots_list = c
                     fetched = list(fetch.values())
-                    if DEBUG: print("<CONDITIONAL REQS>f,fval,val",fetch, fetched,val) 
+                    if SUPER_DEBUG: print("<CONDITIONAL REQS>f,fval,val",fetch, fetched,val) 
                     if fetched[0] == val:
                         for slot in slots_list:
                             if not slot[0] in self.get_slot_names():
-                                if DEBUG: print("<CONDITIONAL REQS>Update COND slots: ", slot)
+                                if DEBUG: print("<CONDITIONAL REQS> Update COND slots: ", slot)
                                 self.slots.append(slot)
                         break
 
@@ -187,7 +195,7 @@ class ReqGatekeeper:
             self._add_cond_reqs(info)
             unfilled_slots = self.get_slots()
 
-            if DEBUG: print("<TRY GATE> Trying with info:",info, "required:",self.get_requirements())
+            if SUPER_DEBUG: print("<TRY GATE> Trying with info:",info, "required:",self.get_requirements())
             # for catgry in list(info.keys()):
             for s in unfilled_slots.copy():
                 detail = s[0]
@@ -212,7 +220,7 @@ class ReqGatekeeper:
         post_unfilled = unfilled.copy()
         info_topup = {}
         for slot in unfilled.copy():
-            if DEBUG: print("<DEFAULT VALS> curr slot",slot,"is def:", is_default(slot))
+            if SUPER_DEBUG: print("<DEFAULT VALS> curr slot",slot,"is def:", is_default(slot))
             if is_default(slot):
                 slotname, slot_type_UNUSED = slot
                 if slotname in self.default_slot_vals:
@@ -360,7 +368,7 @@ class InfoParser():
         slotname, catgry = slot
         value = self.get_category_value(text, catgry, PDB)
         if len(value) > 0:
-            if DEBUG: print("<MATCH SLOT> Found a {} for {} Value: {}".format(catgry, slotname,value))
+            if SUPER_DEBUG: print("<MATCH SLOT> Found a {} for {} Value: {}".format(catgry, slotname,value))
             entry = {slotname: value}
             d.update(entry)
 
@@ -415,7 +423,7 @@ class InfoParser():
             reDB = catDB[v]
             m = re.search(reDB, text)
             if m:
-                if PDB and DEBUG: print("<GET CAT VAL> Matched {} value:{} at {}".format(category,v,m))
+                if PDB and SUPER_DEBUG: print("<GET CAT VAL> Matched {} value:{} at {}".format(category,v,m))
                 if found:
                     if PDB: print("<GET CAT VAL> Double value. Prev:", value, ", Current:",v)
                 # token = m.group(0)

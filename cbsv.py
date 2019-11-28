@@ -6,6 +6,7 @@ import json
 
 WRITE_TO_FILE = 0 # Switch to turn of writing for testing purposes.
 
+DEBUG = 0
 
 def DEFAULT_CONFUSED():
     return ["不好意思,我听不懂","不好意思,我不明白亲说啥"]
@@ -39,7 +40,7 @@ def conv_numstr(n,wantint = False):
 
     try:
         con = cnvrt(n)
-        print("raw",n)
+        if DEBUG: print("raw",n)
         return con
     except ValueError:
         #if DEBUG: print("Tried to convert {} to float and failed".format(n))
