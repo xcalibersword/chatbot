@@ -248,7 +248,7 @@ class ChatManager:
                 sip = sip.same_state()
 
             if DEBUG: print("<RTN> curr sip", sip.toString())
-            
+
             # Digest and internalize the new info
             repeat, pg = self.react_to_sip(sip)
 
@@ -609,7 +609,7 @@ class DetailManager:
                 loc = branch[0]
                 raw = info.get(loc,False)
                 if not raw:
-                    if DEBUG: print("<SECONDARY SLOT> {} not found in info".format(loc))
+                    if DEBUG: print("<SECONDARY SLOT GETV> {} not found in info".format(loc))
                     final = ""
                 else:
                     if len(branch) > 1:
@@ -622,7 +622,7 @@ class DetailManager:
                         elif opr == "+":
                             final = raw + v
                         else:
-                            print("<SECONDARY SLOT> unknown opr {}".format(opr))
+                            print("<SECONDARY SLOT GETV> unknown opr {}".format(opr))
                             final = raw
                     else:
                         final = raw
@@ -637,7 +637,7 @@ class DetailManager:
             for slot, sub_dict in list(tree.items()):
                 if "." in slot:
                     loc_list = slot.split(".")
-                    if DEBUG: print("LOC LIST", loc_list)
+                    if SUPER_DEBUG: print("<SECONDARY SLOT> LOC LIST", loc_list)
                     slot = loc_list[0]
                 else:
                     loc_list = [slot]
@@ -648,7 +648,7 @@ class DetailManager:
                     for loc in loc_list:
                         infoval = curr_d.get(loc,"")
                         if infoval == "":
-                            print("<SECONDARY SLOT> ERROR {} not found".format(loc))
+                            if SUPER_DEBUG: print("<SECONDARY SLOT> ERROR {} not found".format(loc))
                             slot_val = ""
                             break
                             
@@ -675,7 +675,7 @@ class DetailManager:
                             out = get_value(a_branch, info)
                             return (True, out)
 
-                        if DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
+                        if SUPER_DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
                         break
                 
             if SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)
@@ -865,6 +865,8 @@ class ReplyGenerator:
                     opr = lambda a,b: (1 if a == b else 0)
                 elif opname == "isgreater":
                     opr = lambda a,b: (1 if a > b else 0)
+                elif opname == "OR":
+                    opr = lambda a,b: (1 if (a > 0 or b > 0) else 0)
                 else:
                     print("<RESOLVE FORMULA> ERROR Unknown operator:",opname)
                     opr = lambda a,b: a # Unknown oeprator just returns a

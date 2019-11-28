@@ -39,6 +39,16 @@
                 "我的意思是..."
             ]
         },
+        "complain":{
+            "key": "complain",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "不好意思亲，本人是新手。我有做错了什么可以告诉我",
+                "亲 禁骂人哦 文明社会"
+            ]
+        },
         "unknown": {
             "key": "1099 unknown",
             "default_set": true,
@@ -46,8 +56,7 @@
             "default_target": "SAME_STATE",
             "replies": [
                 "？？？",
-                "？",
-                "你说啥？"
+                "？"
             ]
         },
         "no_intent": {
@@ -193,6 +202,12 @@
                 "亲，小店有好几家单位的，会随机分配的哈"
             ]
         },
+        "query_current_month_options":{
+            "key": "info current month options",
+            "default_set": true,
+            "default_target": "inform_current_month_options",
+            "replies": []
+        },
         "query_fahuo": {
             "key":"info_fahuo",
             "default_set": true,
@@ -295,6 +310,12 @@
             "default_set": true,
             "default_target": "SAME_STATE",
             "replies": ["补缴社保：补缴不算连续的，也不算正常缴纳，可以算累计缴纳的月份"]
+        },
+        "query_use_huabei":{
+            "key":"info_use_huabei",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies":["小店还没有开通哦，亲可以自己尝试下哦，如果可以付款就没有问题哈"]
         },
         "query_weixin": {
             "key": "info_weixin",
@@ -787,6 +808,16 @@
             "req_info": [["city","city"]],
             "replies": [
                 "上海: 忠彧企业咨询管理有限公司 杭州: 分公司"
+            ]
+        },
+        "inform_current_month_options":{
+            "key": "inform_current_month_options",
+            "gated": true,
+            "thread": "t_company_name",
+            "terminal_state": true,
+            "req_info": [["ss_purchase_for_month","DUMMY_SLOT"]],
+            "replies": [
+                "{rep_ext[curr_mth_option_info]}"
             ]
         },
         "inform_fahuo":{
@@ -1425,21 +1456,55 @@
             {
                 "writeto": "pay_deadline_info",
                 "states": [
-                    "inform_pay_deadline"
+                    "inform_pay_deadline",
+                    "inform_current_month_options"
                 ],
                 "lookfor": [
                     "city_district",
+                    "ss_purchase_for_month",
                     ["city_info",["pay_deadline"]],
                     ["calc_ext",["w_sb_cmi_flag"]]
                 ],
                 "if_value": {
                     "w_sb_cmi_flag":{
-                        "1":"亲 现在还可以交。",
-                        "0":"亲 要交当月现在来不及。"
+                        "1":"亲 现在{ss_purchase_for_month}月还可以交。",
+                        "0":"亲 要交{ss_purchase_for_month}月现在来不及。"
                     },
                     "city_district":{
                         "苏州市区": "每月10日前拍下次月费用，最晚不能超过20号，老客户20号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
                         "DEFAULT":"{city_district}最好在{city_info[pay_deadline]}号前拍下宝贝，在小程序上提交参保资料哦"
+                    }
+                }
+            },
+            {
+                "writeto":"curr_mth_option_info",
+                "states": [
+                    "inform_current_month_options"
+                ],
+                "lookfor": [
+                    "ss_purchase_for_month",
+                    ["rep_ext",[
+                        "pay_deadline_info",
+                        "topup_info"
+                        ]
+                    ],
+                    ["calc_ext",[
+                        "w_sb_cmi_flag",
+                        "w_bujiao_cmi_flag"
+                        ]
+                    ]
+                ],
+                "if_present":{
+                    "ss_purchase_for_month": "{ss_purchase_for_month}月的话"
+                },
+                "if_value": {
+                    "w_sb_cmi_flag":{
+                        "1":"亲 现在还可以交。",
+                        "0":"亲 要交当月现在来不及。"
+                    },
+                    "w_bujiao_cmi_flag": {
+                        "1":"可以补缴",
+                        "0":"不能补缴"
                     }
                 }
             },
@@ -1711,6 +1776,8 @@
                 "writeto": "w_sb_cmi_flag",
                 "conditions": [],
                 "req_vars": [
+                    "state_month",
+                    "ss_purchase_for_month",
                     "state_curr_day",
                     ["city_info",
                         [
@@ -1721,12 +1788,21 @@
                 "steps": {
                     "1,isgreater": [
                         ["state_curr_day","pay_deadline"],
-                        "OUTCOME"
+                        "w_past_deadline"
                     ],
                     "2,sub":[
-                        [1,"OUTCOME"],
+                        [1,"w_past_deadline"],
+                        "w_not_past_deadline"
+                    ],
+                    "3,isgreater":[
+                        ["ss_purchase_for_month","state_month"],
+                        "w_is_next_month"
+                    ],
+                    "4,OR":[
+                        ["w_not_past_deadline","w_is_next_month"],
                         "OUTCOME"
                     ]
+
                 }
             },
             "flag_bujiao_month_cmi":{
