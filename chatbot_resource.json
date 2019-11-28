@@ -368,6 +368,13 @@
             "default_target": "inform_xufei",
             "replies": []
         },
+        "query_what_this_for": {
+            "key": "info_whatis_gjj",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "inform_what_this_for",
+            "replies": ["亲，大部分客户是用来公积金贷款的哈"]
+        },
         "daikuan": {
             "key": "daikuan (same as housing)",
             "default_set": true,
@@ -635,6 +642,7 @@
         "propose_plan": {
             "key": "propose_plan",
             "gated": true,
+            "humanify": true,
             "thread": "t_presale",
             "propose_plan_state": true,
             "req_info": [
@@ -972,6 +980,16 @@
                 "{rep_ext[weixin_info]}"
             ]
         },
+        "inform_what_this_for":{
+            "key": "inform_what_this_for",
+            "gated": true,
+            "thread": "t_whatfor",
+            "terminal_state": true,
+            "req_info": [["chosen_service","service_slot"]],
+            "replies": [
+                "{rep_ext[what_this_for_info]}"
+            ]
+        },
         "inform_when_check_shebao": {
             "key": "inform_when_check_shebao",
             "gated": true,
@@ -1103,6 +1121,21 @@
                         "北京市": "北京wei信号：iHR-8091， 备注填写：唯洛+北京+淘宝会员名",
                         "杭州市": "杭州wei信号：iHR-8091， 备注填写：唯洛+杭州+淘宝会员名",
                         "DEFAULT": "亲 不好意思，暂时没有那边的微信"
+                    }
+                }
+            },
+            {
+                "writeto":"what_this_for_info",
+                "states": [
+                    "inform_what_this_for"
+                ],
+                "lookfor": [
+                    "chosen_fee"
+                ],
+                "if_value": {
+                    "chosen_fee": {
+                        "公积金": "亲，大部分客户是用来公积金贷款的哈",
+                        "社保": "社保全称社会保险，指一种社会保险或保障机制，帮助公民面对某些社会风险如：失业、疾病、事故、衰老、死亡等，或是保障基本得生存资源如：教育、医疗等。现代社会保险是由奥托冯俾斯麦于19世纪在德国创立的。"
                     }
                 }
             },
@@ -1502,8 +1535,8 @@
                 ],
                 "if_value": {
                     "w_sb_cmi_flag":{
-                        "1":"亲 现在{ss_purchase_for_month}月还可以交。",
-                        "0":"亲 要交{ss_purchase_for_month}月现在来不及。{rep_ext[pay_deadline_info_extra]}"
+                        "1":"亲 现在{ss_purchase_for_month}月还可以正常交。",
+                        "0":"亲 要交{ss_purchase_for_month}月现在来不及正常交。{rep_ext[pay_deadline_info_extra]}"
                     }
                 }
             },
@@ -1530,12 +1563,11 @@
                 },
                 "if_value": {
                     "w_sb_cmi_flag":{
-                        "1":"亲 现在还可以交。",
-                        "0":"亲 要交当月现在来不及。"
+                        "DEFAULT":"{rep_ext[pay_deadline_info]}",
+                        "0":"亲 要交当月现在来不及正常交。"
                     },
                     "w_bujiao_cmi_flag": {
-                        "1":"可以补缴",
-                        "0":"不能补缴"
+                        "DEFAULT":"{rep_ext[topup_info]}"
                     }
                 }
             },
