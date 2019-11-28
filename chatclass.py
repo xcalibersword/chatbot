@@ -592,7 +592,6 @@ class DetailManager:
 
     def _add_secondary_slots(self):
         def get_value(branch, info):
-            print("Getting value of",branch)
             if isinstance(branch,list):
                 loc = branch[0]
                 raw = info.get(loc,False)
@@ -614,50 +613,64 @@ class DetailManager:
                             final = raw
                     else:
                         final = raw
-                    
-                print("Final val",final)
+
                 return final
 
             else:
                 return branch
 
+        def tree_search(tree, info):
+            any_val_key = "_ANY"
+            for slot, sub_dict in list(tree.items()):
+                if "." in slot:
+                    loc_list = slot.split(".")
+                    if DEBUG: print("LOC LIST", loc_list)
+                    slot = loc_list[0]
+                else:
+                    loc_list = [slot]
+
+                while slot in info:
+                    curr_d = info.copy()
+                    # Gets the value from info. Handles nested vals (eg "groupname.detailname")
+                    for loc in loc_list:
+                        infoval = curr_d.get(loc,"")
+                        if infoval == "":
+                            print("<SECONDARY SLOT> ERROR {} not found".format(loc))
+                            slot_val = ""
+                            break
+                            
+                        if isinstance(infoval, dict):
+                            curr_d = infoval
+                        else:
+                            slot_val = str(curr_d[loc]) # To convert ints to strings. I.e. for hours
+                    
+                    # Check if value is in the subdict and returns the value of it
+                    if slot_val in sub_dict:
+                        ss_branch = sub_dict[slot_val]
+                        if isinstance(ss_branch, dict):
+                            # Is a subtree
+                            slot, sub_dict = list(ss_branch.items())[0]
+                        else:
+                            # Is a leaf
+                            out = get_value(ss_branch, info)
+                            return (True, out)
+                    else:
+                        # Fallback and look for _ANY match
+                        print("FAILED TO FIND", sub_dict)
+                        if any_val_key in sub_dict:
+                            # Is a _ANY leaf
+                            a_branch = sub_dict.get(any_val_key,-1)
+                            out = get_value(a_branch, info)
+                            return (True, out)
+
+                        if DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
+                        break
+                
+            print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)
+            return (False, "")
 
         curr_info = self.fetch_info()
         ss_default_flag = "DEFAULT"
-
-        def tree_search(tree, info):
-            slot, sub_dict = list(tree.items())[0]
-            loc_list = [slot]
-            if "." in slot:
-                loc_list = slot.split(".")
-                if DEBUG: print("LOC LIST", loc_list)
-                slot = loc_list[0]
-            while slot in info:
-                curr_d = info.copy()
-                for loc in loc_list:
-                    infoval = curr_d.get(loc,"")
-                    if infoval == "":
-                        print("<SECONDARY SLOT> ERROR {} not found".format(loc))
-                        return (False,"")
-                    if isinstance(infoval, dict):
-                        curr_d = infoval
-                    else:
-                        slot_val = str(curr_d[loc]) # To convert ints to strings. I.e. for hours
-                
-                print("<TREE> slotval",slot_val)
-                if slot_val in sub_dict:
-                    ss_branch = sub_dict[slot_val]
-                    if isinstance(ss_branch, dict):
-                        slot, sub_dict = list(ss_branch.items())[0]
-                    else:
-                        out = get_value(ss_branch, info)
-                        return (True, out)
-                else:
-                    if DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
-                    break
-            print("TREE SEARCH FAILED",tree)
-            return (False, "")
-
         entries = {}
         for secondslot in self.second_slots:
             target = secondslot["writeto"]

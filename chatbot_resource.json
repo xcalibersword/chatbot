@@ -506,8 +506,9 @@
         "city_crossroad":{
             "key": "city_crossroad",
             "gated": false,
+            "transition_state": true,
             "thread": "t_presale",
-            "humanify": true,
+            "humanify": false,
             "req_info": "",
             "replies": [
                 "亲是哪个城市呢？"
@@ -524,6 +525,7 @@
         "complication_crossroad":{
             "key": "complication_crossroad",
             "gated": false,
+            "transition_state": true,
             "thread": "EXIT",
             "humanify": false,
             "req_info": "",
@@ -552,6 +554,7 @@
         "ask_how_much_crossroad":{
             "key": "ask_how_much_crossroad",
             "gated": true,
+            "transition_state": true,
             "thread": "t_howmuch",
             "humanify": false,
             "req_info": [["chosen_fee","fee_slot"]],
@@ -593,6 +596,7 @@
         "TMP_recv_info": {
             "key": "TMP_recv_info",
             "gated": true,
+            "transition_state": true,
             "thread": "NONE",
             "humanify": false,
             "req_info": "",
@@ -613,19 +617,11 @@
             "thread": "t_presale",
             "propose_plan_state": true,
             "req_info": [
-                [
-                    "city","city"
-                ],
-                [
-                    "首次","DEFAULT_SV"
-                ],
-                [
-                    "要公积金","wantnot"
-                ],
-                [
-                    "要社保", "DEFAULT_SV"
-                ],
-                ["target_month", "month_slot"]
+                ["city","city"],
+                ["首次","DEFAULT_SV"],
+                ["要公积金","wantnot"],
+                ["要社保", "DEFAULT_SV"],
+                ["ss_purchase_for_month", "D"]
             ],
             "calcs": [
                 "calc_flag_sb_gjj",
@@ -647,7 +643,7 @@
             "propose_plan_state": true,
             "req_info": [
                 ["city", "city"],
-                ["target_month", "month_slot"],
+                ["ss_purchase_for_month", "DUMMY_SLOT"],
                 [
                     "首次",
                     "DEFAULT_SV"
@@ -686,18 +682,20 @@
         "custom_jishu_crossroad":{
             "key":"custom_jishu_crossroad",
             "gated": true,
+            "transition_state": true,
             "thread": "t_howmuch",
             "humanify": false,
             "req_info": [
                 ["chosen_service","service_slot"],
                 ["city","city"],
-                ["given_amount", "dummy_slot"]
+                ["given_amount", "DUMMY_SLOT"]
             ],
             "replies": ["想用{given_amount}的{chosen_service}基数是吧？"]
         },
         "propose_custom_gjj_jishu":{
             "key": "propose_custom_gjj_jishu",
             "gated": true,
+            "transition_state": true,
             "humanify": false,
             "prop_cust_jishu_state":true,
             "thread": "t_presale",
@@ -705,7 +703,7 @@
                 ["city","city"],
                 ["chosen_service","service_slot"],
                 ["要公积金", "default_yes"],
-                ["given_amount", "dummy_slot"]
+                ["given_amount", "DUMMY_SLOT"]
             ],
             "calcs":[
                 "log_custom_gjj_jishu",
@@ -725,7 +723,7 @@
             "req_info": [
                 ["city","city"],
                 ["chosen_service","service_slot"],
-                ["given_amount", "dummy_slot"]
+                ["given_amount", "DUMMY_SLOT"]
             ],
             "calcs":[
                 "log_custom_sb_jishu",
@@ -750,7 +748,10 @@
             "gated": true,
             "thread": "t_give_link",
             "terminal_state": true,
-            "req_info": [["city","city"],["chosen_fee","fee_slot"]],
+            "req_info": [
+                ["city","city"],
+                ["chosen_fee","fee_slot"]
+            ],
             "replies": [
                 "{rep_ext[raw_taobao_link]}"
             ]
@@ -761,10 +762,22 @@
             "thread": "t_can_make_it",
             "terminal_state": true,
             "calcs": ["calc_specified_month","flag_sb_day_cmi"],
-            "req_info": [["city","city"],["target_month", "month_slot"]],
+            "req_info": [
+                ["city","city"],
+                ["ss_purchase_for_month", "DUMMY_SLOT"]
+            ],
             "replies": [
                 "亲{rep_ext[can_make_it_info]}"
             ]
+        },
+        "month_crossroad":{
+            "key": "month_crossroad",
+            "gated": true,
+            "transition_state": true,
+            "thread": "t_month",
+            "humanify": false,
+            "req_info": [["purchase_for_month","DUMMY_SLOT"]],
+            "replies": []
         },
         "inform_company_name":{
             "key": "inform_company_name",
@@ -895,7 +908,7 @@
             "humanify":false,
             "req_info": [
                 ["city","city"],
-                ["target_month","month_slot"]
+                ["ss_purchase_for_month","DUMMY_SLOT"]
             ],
             "calcs":["flag_bujiao_month_cmi"],
             "replies": [
@@ -978,7 +991,7 @@
                         "要公积金": "交公积金吗？",
                         "苏州区": "是市区还是园区呢？",
                         "chosen_fee": "哪个部分？（比如：社保/公积金/服务费）",
-                        "target_month": "要缴哪月？",
+                        "ss_purchase_for_month": "要缴哪月？",
                         "given_amount": "要按照什么基数？",
                         "chosen_service":"指的是社保还是公积金？"
                     }
@@ -1327,14 +1340,14 @@
                 ],
                 "lookfor": [
                     "city_district",
-                    "target_month",
+                    "ss_purchase_for_month",
                     ["city_info",["bujiao_period"]],
                     ["calc_ext",["w_bujiao_cmi_flag"]]
                 ],
                 "if_value": {
                     "w_bujiao_cmi_flag":{
-                        "1":"亲 {target_month}月还可以补。",
-                        "0":"亲 {target_month}月不可以补。"
+                        "1":"亲 {ss_purchase_for_month}月还可以补。",
+                        "0":"亲 {ss_purchase_for_month}月不可以补。"
                     },
                     "city_district": {
                         "上海市": "{city_district}可以补缴最近{city_info[bujiao_period]}个月；请注意：补缴不算连续哦，望知悉",
@@ -1618,16 +1631,16 @@
                 "persist_value": true,
                 "conditions":[],
                 "req_vars":[
-                    "target_month",
+                    "ss_purchase_for_month",
                     "state_month"
                 ],
                 "steps":{
                     "0,equals": [
-                        ["state_month","target_month"],
+                        ["state_month","ss_purchase_for_month"],
                         "w_is_curr_month"
                     ],
                     "1,isgreater": [
-                        ["state_month","target_month"],
+                        ["state_month","ss_purchase_for_month"],
                         "w_is_next_month"
                     ],
                     "2,multi":[
@@ -1721,7 +1734,7 @@
                 "conditions": [],
                 "req_vars": [
                     "state_month",
-                    "target_month",
+                    "ss_purchase_for_month",
                     [
                         "city_info",
                         ["bujiao_period"]
@@ -1745,7 +1758,7 @@
                     "5,isgreater": [
                         [
                             "w_final_lower_limit",
-                            "target_month"
+                            "ss_purchase_for_month"
                         ],
                         "OUTCOME"
                     ],
@@ -2214,6 +2227,7 @@
                     "svc_fee": 40,
                     "shouci_fee": 50,
                     "pay_deadline": 22,
+                    "pay_deadline_weekday_only": true,
                     "gongjijin_fee": 338,
                     "bujiao_period": 6,
                     "xufei_deadline": 15,
