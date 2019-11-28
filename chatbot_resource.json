@@ -640,7 +640,7 @@
             "req_info": [
                 ["city","city"],
                 ["首次","DEFAULT_SV"],
-                ["要公积金","DUMMY_SLOT"],
+                ["要公积金","wantnot"],
                 ["要社保", "DEFAULT_SV"],
                 ["ss_purchase_for_month", "DUMMY_SLOT"]
             ],
@@ -771,7 +771,12 @@
             "terminal_state": true,
             "req_info": [
                 ["city","city"],
-                ["chosen_fee","fee_slot"]
+                ["首次", "DEFAULT_SV"],
+                ["要社保", "DEFAULT_SV"],
+                ["要公积金", "DEFAULT_SV"]
+            ],
+            "calcs":[
+                "calc_flag_sb_gjj"
             ],
             "replies": [
                 "{rep_ext[raw_taobao_link]}"
@@ -1056,8 +1061,9 @@
                         "DEFAULT":"服务费：https://item.taobao.com/item.htm?id=598104660990"
                     },
                     "flag_sb_gjj":{
-                        "11.0": "亲，服务费40元要拍一次哦 ",
-                        "DEFAULT": "亲，服务费40元要拍两次哦 "
+                        "11": "亲，服务费40元要拍两次哦 ",
+                        "1": "亲，服务费40元要拍一次哦 ",
+                        "10": "亲，服务费40元要拍一次哦 "
                     },
                     "首次":{
                         "yes": "50元的首次费也要拍！",
@@ -1365,21 +1371,15 @@
                 }
             },
             {
-                "writeto": "topup_info",
+                "writeto": "topup_info_extra",
                 "states": [
                     "inform_topup"
                 ],
                 "lookfor": [
                     "city_district",
-                    "ss_purchase_for_month",
-                    ["city_info",["bujiao_period"]],
-                    ["calc_ext",["w_bujiao_cmi_flag"]]
+                    ["city_info",["bujiao_period"]]
                 ],
                 "if_value": {
-                    "w_bujiao_cmi_flag":{
-                        "1":"亲 {ss_purchase_for_month}月还可以补。",
-                        "0":"亲 {ss_purchase_for_month}月不可以补。"
-                    },
                     "city_district": {
                         "上海市": "{city_district}可以补缴最近{city_info[bujiao_period]}个月；请注意：补缴不算连续哦，望知悉",
                         "杭州市": "{city_district}可补缴最近{city_info[bujiao_period]}个月的社保公积金，补缴费30元/月；（不做跨年补缴）有补缴的请注意：补缴的月份：个人查不到生育工伤，社保局只收个人部分，地税收取单位部分，地税扣缴时五险是一并征收的，还有疑问可0571-12366确认。且补缴不算连续哦！",
@@ -1388,6 +1388,23 @@
                         "苏州市区": "{city_district} 可补缴最近{city_info[bujiao_period]}个月的社保公积金；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
                         "广州市": "{city_district} 可补缴最近{city_info[bujiao_period]}个月的社保公积金，额外收取补缴费40元/月；可以单独缴纳公积金；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
                         "DEFAULT": "亲 不好意思，目前没有{city_district}的信息 😢"
+                    }
+                }
+            },
+            {
+                "writeto": "topup_info",
+                "states": [
+                    "inform_topup"
+                ],
+                "lookfor": [
+                    "ss_purchase_for_month",
+                    ["calc_ext",["w_bujiao_cmi_flag"]],
+                    ["rep_ext",["topup_info_extra"]]
+                ],
+                "if_value": {
+                    "w_bujiao_cmi_flag":{
+                        "1":"亲 {ss_purchase_for_month}月还可以补。",
+                        "0":"亲 {ss_purchase_for_month}月不可以补。{rep_ext[topup_info_extra]}"
                     }
                 }
             },
@@ -1454,6 +1471,24 @@
                 }
             },
             {
+                "writeto": "pay_deadline_info_extra",
+                "states": [
+                    "inform_pay_deadline",
+                    "inform_current_month_options"
+                ],
+                "lookfor": [
+                    "city_district",
+                    ["city_info",["pay_deadline"]]
+                ],
+                "if_value": {
+                    "city_district":{
+                        "苏州市区": "每月10日前拍下次月费用，最晚不能超过20号，老客户20号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
+                        "DEFAULT":"{city_district}最好在{city_info[pay_deadline]}号前拍下宝贝，在小程序上提交参保资料哦"
+                    }
+                }
+
+            },
+            {
                 "writeto": "pay_deadline_info",
                 "states": [
                     "inform_pay_deadline",
@@ -1462,17 +1497,13 @@
                 "lookfor": [
                     "city_district",
                     "ss_purchase_for_month",
-                    ["city_info",["pay_deadline"]],
-                    ["calc_ext",["w_sb_cmi_flag"]]
+                    ["calc_ext",["w_sb_cmi_flag"]],
+                    ["rep_ext",["pay_deadline_info_extra"]]
                 ],
                 "if_value": {
                     "w_sb_cmi_flag":{
                         "1":"亲 现在{ss_purchase_for_month}月还可以交。",
-                        "0":"亲 要交{ss_purchase_for_month}月现在来不及。"
-                    },
-                    "city_district":{
-                        "苏州市区": "每月10日前拍下次月费用，最晚不能超过20号，老客户20号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
-                        "DEFAULT":"{city_district}最好在{city_info[pay_deadline]}号前拍下宝贝，在小程序上提交参保资料哦"
+                        "0":"亲 要交{ss_purchase_for_month}月现在来不及。{rep_ext[pay_deadline_info_extra]}"
                     }
                 }
             },
