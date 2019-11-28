@@ -14,7 +14,7 @@ def find_handle(userid):
     aa = FindWindowEx(a, 0, "StandardWindow", "")
     aaa = FindWindowEx(aa, 0, "StandardWindow", "")
     aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
-    aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
+    #aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
     aaaa = FindWindowEx(aaa, 0, "SplitterBar", "")
 
     b = FindWindowEx(aaaa, 0, "StandardWindow", "")
@@ -22,7 +22,7 @@ def find_handle(userid):
     QN_input_hwnd = FindWindowEx(bb,0,"RichEditComponent", "")
 
     c = FindWindowEx(b, 0, "PrivateWebCtrl", "")
-    cc = FindWindowEx(c,0,"Aef_WidgetWin_0","")
+    cc = FindWindowEx(c, 0,"Aef_WidgetWin_0","")
     QN_output_hwnd = FindWindowEx(cc,0,"Aef_RenderWidgetHostHWND", "Chrome Legacy Window")
 
     QN_sendBut_hwnd = FindWindowEx(bb,0,"StandardButton", "发送")
@@ -30,7 +30,7 @@ def find_handle(userid):
     return QN_input_hwnd,QN_output_hwnd,QN_sendBut_hwnd
 
 def save2troubleshoot(right,wrong,query,intent,slot,id):
-    df = pd.read_csv(r"troubleshoot.csv",encoding="gb18030")
+    df = pd.read_csv(r"troubleshoot.csv",encoding="gb18030",header=None)
     list_list=df.values.tolist()
     
     list_list.append([wrong,id,query,right,intent,slot])
@@ -166,10 +166,11 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,userID,bot,SeekImagePath,mode):
     #timer.start()
 
 if __name__ == "__main__":
-    userID = "女人罪爱:小梅"
-    time = input("Enter the waiting time in second for each cycle to look for new message:  ")
+    #userID = "女人罪爱:小梅"
+    userID = "tb584238398"
+    time = input("Human Reaction Time: ")
     #enter for testing, 1 for deployment
-    mode = input("Enter the mode:  ")
+    mode = input("Enter smth for not auto: ")
     try:    
         text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(userID)
     except Exception:
