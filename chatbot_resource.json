@@ -1658,19 +1658,6 @@
                 }
             },
             {
-                "writeto": "calc_str_total",
-                "states": [
-                    "propose_plan"
-                ],
-                "lookfor": [
-                    "shebao_basic_total"
-                ],
-                "if_present": {
-                    "shebao_basic_total": "{shebao_basic_total}"
-                },
-                "if_value": {}
-            },
-            {
                 "writeto": "entire_plan_proposal",
                 "states": [
                     "propose_plan"
@@ -1678,19 +1665,19 @@
                 "lookfor": [
                     "city_district",
                     "svc_fee_total",
+                    "shebao_basic_total",
                     [
                         "rep_ext",
                         [
                             "product",
                             "proposal",
-                            "calc_str_total",
                             "首次ext"
                         ]
                     ]
                 ],
                 "if_value": {
                     "city_district": {
-                        "DEFAULT": "{city_district}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{svc_fee_total}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}元。"
+                        "DEFAULT": "{city_district}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{svc_fee_total}元，{rep_ext[首次ext]} 共计{shebao_basic_total}元。"
                     }
                 }
             }, 
@@ -1756,12 +1743,18 @@
                     "chosen_fee",
                     "ss_user_spec_component_value",
                     "w_spec_component_value",
-                    ["calc_ext",[
-                        "component_val_match_flag"]]
+                    "w_alt_component_value",
+                    "exclude_svc_fee",
+                    "svc_fee_total",
+                    ["calc_ext",["component_val_match_flag"]]
                 ],
                 "if_value": {
                     "component_val_match_flag":{
-                        "DEFAULT":"{chosen_fee}是{w_spec_component_value}的"
+                        "DEFAULT":"{chosen_fee}是{w_spec_component_value}的 "
+                    },
+                    "exclude_svc_fee":{
+                        "exclude": "包括服务费要多加{svc_fee_total}哦",
+                        "include": "包括服务费是{w_alt_component_value}"
                     }
                 }
             },
@@ -2015,6 +2008,10 @@
                 }
             },
             "shebao_basic_calc": {
+                "writeto":[
+                    ["shebao_basic_total","OUTCOME"],
+                    ["shebao_jiaona_total","w_jiaona_total"]
+                ],
                 "conditions": [
                     ["flag_sb_gjj",1,["w_sb_flag",1,0]],
                     ["flag_sb_gjj",10,["w_gjj_flag",1,0]],
@@ -2067,18 +2064,17 @@
                             "w_sb_jiaona",
                             "w_gjj_jiaona"
                         ],
-                        "jiaona_total"
+                        "w_jiaona_total"
                     ],
                     "13,add": [
                         [
-                            "jiaona_total",
+                            "w_jiaona_total",
                             "svc_fee_total",
                             "w_shouci_fee"
                         ],
                         "OUTCOME"
                     ]
-                },
-                "writeto": "shebao_basic_total"
+                }
             },
             "bj_shebao_basic": {
                 "conditions": [
@@ -2315,7 +2311,10 @@
                 }
             },
             "calc_component_value":{
-                "writeto":"w_spec_component_value",
+                "writeto":[
+                    ["w_spec_component_value", "OUTCOME"],
+                    ["w_alt_component_value", "w_main_n_svc"]
+                ],
                 "persist_value": true,
                 "conditions":[
                     ["chosen_fee", "服务费", ["w_main_multi", 0, 1]],
@@ -2365,11 +2364,11 @@
                         "w_lower"
                     ],
                     "3,isgreater": [
-                        ["w_upper","component_val_match_flag"],
+                        ["w_upper","w_spec_component_value"],
                         "w_upper_true"
                     ],
                     "4,isgreater": [
-                        ["component_val_match_flag","w_lower"],
+                        ["w_spec_component_value","w_lower"],
                         "w_lower_true"
                     ],
                     "5,add":[

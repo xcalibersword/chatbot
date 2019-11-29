@@ -873,7 +873,7 @@ class ReplyGenerator:
                     print("<RESOLVE FORMULA> ERROR Unknown operator:",opname)
                     opr = lambda a,b: a # Unknown oeprator just returns a
                 vd[tkey] = op_on_all(valnames,opr,vd)
-            return vd["OUTCOME"]
+            return vd
 
         ### MAIN METHOD LOGIC ###
         # Calculations
@@ -887,8 +887,18 @@ class ReplyGenerator:
                     formula = calcDB[fname]
                     pv_flag = formula.get("persist_value",False)
                     target_key = formula["writeto"]
-                    result = resolve_formula(formula)
-                    add_calc_enh(target_key,result,pv_flag)
+                    result_dict = resolve_formula(formula)
+                    if isinstance(target_key, list):
+                        # Multi output
+                        for tk, vdk in target_key:
+                            result = result_dict.get(vdk,"")
+                            if not result == "":
+                                add_calc_enh(tk,result,pv_flag)
+                            else:
+                                print("<RESOLVE FORMULA> ERROR {} not found in formula".format(vdk))
+                    else:
+                        result = result_dict["OUTCOME"]
+                        add_calc_enh(target_key,result,pv_flag)
                 if RF_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
             
             if RF_DEBUG: print("<RESOLVE FORMULA> Postcalc enh",enhanced)
