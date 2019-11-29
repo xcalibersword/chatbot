@@ -497,7 +497,7 @@
         "apology":{
             "key": "apology",
             "default_set": true,
-            "default_target": "doublecheck_component_value",
+            "default_target": "SAME_STATE",
             "replies": ["没事亲"]
         },
         "reset_chat": {
