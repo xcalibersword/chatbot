@@ -88,15 +88,12 @@
                 "抱歉哦亲😞，小店暂时不提供这项业务哦"
             ]
         },
-        "doublecheck": {
-            "key": "107 doublecheck",
+        "doublecheck_value": {
+            "key": "107 doublecheck value",
             "default_set": true,
             "humanify": false,
-            "default_target": "SAME_STATE",
-            "replies": [
-                "是的亲",
-                "对的哦"
-            ]
+            "default_target": "doublecheck_component_value",
+            "replies": []
         },
         "next_step": {
             "key": "next_step",
@@ -631,12 +628,16 @@
                 "亲,{rep_ext[request_string]}"
             ]
         },
-        "init_sale": {
-            "key": 280,
-            "gated": false,
-            "thread": "NONE",
-            "req_info": [],
-            "replies": []
+        "doublecheck_component_value": {
+            "key": "doublecheck_component_value",
+            "gated": true,
+            "thread": "t_doublecheck",
+            "req_info": [
+                ["given_value","DUMMY_SLOT"],
+                ["chosen_fee","fee_slot"]
+            ],
+            "calcs":[""],
+            "replies": ["{rep_ext[doublecheck_info]}"]
         },
         "propose_plan": {
             "key": "propose_plan",
@@ -671,18 +672,9 @@
             "req_info": [
                 ["city", "city"],
                 ["ss_purchase_for_month", "DUMMY_SLOT"],
-                [
-                    "首次",
-                    "DEFAULT_SV"
-                ],
-                [
-                    "要公积金",
-                    "wantnot"
-                ],
-                [
-                    "要社保",
-                    "DEFAULT_SV"
-                ]
+                ["首次","DEFAULT_SV"],
+                ["要公积金", "wantnot"],
+                ["要社保","DEFAULT_SV"]
             ],
             "calcs": [
                 "calc_flag_sb_gjj",
@@ -1699,16 +1691,14 @@
                 ],
                 "lookfor": [
                     "city",
-                    [
-                        "city_info",
+                    ["city_info",
                         [
                             "svc_fee",
                             "dbl_svc_fee",
                             "shouci_fee"
                         ]
                     ],
-                    [
-                        "rep_ext",
+                    ["rep_ext",
                         [
                             "product",
                             "bj_proposal",
@@ -1717,8 +1707,7 @@
                         ]
                     ],
                     "flag_sb_gjj",
-                    [
-                        "calc_ext",
+                    ["calc_ext",
                         [
                             "bj_shebao_basic_total",
                             "bj_shebao_basic_total2"
@@ -1748,6 +1737,24 @@
                         "社保基数":"社保基数: {city_info[sb_jishu]}",
                         "公积金缴纳":"公积金缴纳: {city_info[gongjijin_fee]}",
                         "公积金基数":"公积金基数: {city_info[gjj_jishu]}"
+                    }
+                }
+            },
+            {
+                "writeto":"doublecheck_info",
+                "states": [
+                    "doublecheck_component_value"
+                ],
+                "lookfor": [
+                    "chosen_fee",
+                    "given_amount",
+                    ["rep_ext",["component_val_correction"]],
+                    ["calc_ext",["component_val_match_flag"]]
+                ],
+                "if_value": {
+                    "component_val_match_flag":{
+                        "1":"是的",
+                        "0":"不是 {rep_ext[component_val_correction]}"
                     }
                 }
             }

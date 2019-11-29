@@ -64,10 +64,6 @@
             ["inform","city_crossroad"],
             ["deny", "goodbye"]
         ],
-        "init_sale": [
-            ["affirm", "city_crossroad"],
-            ["purchase", "city_crossroad"]
-        ],
         "confirm_plan": [
             ["purchase","city_crossroad"],
             ["inform","city_crossroad"],
