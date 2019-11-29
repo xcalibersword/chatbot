@@ -796,12 +796,14 @@ class ReplyGenerator:
             conds = f.get("conditions",[])
             for cond in conds:
                 k, v, setval = cond
-                if not k in vd:
-                    print("ERROR {} not in info".format(k))
-                    return False
-                
-                met = (vd[k] == v) # Simple match
                 vkey, tval, fval = setval
+
+                if not k in vd:
+                    print("<COND VALS> WARNING {} not in info".format(k))
+                    met = False
+                else:
+                    met = (vd[k] == v) # Simple match
+
                 ret[vkey] = tval if met else fval
 
             vd.update(ret)

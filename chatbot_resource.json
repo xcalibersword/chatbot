@@ -636,9 +636,20 @@
                 ["given_amount","DUMMY_SLOT"],
                 ["chosen_fee","fee_slot"],
                 ["要社保", "DEFAULT_SV"],
-                ["要公积金", "DEFAULT_SV"]
+                ["要公积金", "DEFAULT_SV"],
+                ["首次", "DEFAULT_SV"],
+                ["exclude_svc_fee","DEFAULT_SV"]
             ],
-            "calcs":["calc_component_val"],
+            "calcs":[
+                "calc_flag_sb_gjj",
+                "flag_shouci",
+                "sum_svc_fee",
+                "shebao_fee_amt",
+                "gongjijin_fee_amt",
+                "shebao_basic_calc",
+                "calc_component_value",
+                "flag_component_value_match"
+            ],
             "replies": ["{rep_ext[doublecheck_info]}"]
         },
         "propose_plan": {
@@ -1633,7 +1644,7 @@
                 ],
                 "if_present": {
                     "shebao_payment": "{w_shebao_payment}最低缴费",
-                    "svc_fee": " + {calc_ext[svc_fee_total]}服务费"
+                    "svc_fee": " + {svc_fee_total}服务费"
                 },
                 "if_value": {
                     "首次": {
@@ -1666,6 +1677,7 @@
                 ],
                 "lookfor": [
                     "city_district",
+                    "svc_fee_total",
                     [
                         "rep_ext",
                         [
@@ -1674,17 +1686,11 @@
                             "calc_str_total",
                             "首次ext"
                         ]
-                    ],
-                    [
-                        "calc_ext",
-                        [
-                            "svc_fee_total"
-                        ]
                     ]
                 ],
                 "if_value": {
                     "city_district": {
-                        "DEFAULT": "{city_district}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{calc_ext[svc_fee_total]}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}元。"
+                        "DEFAULT": "{city_district}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{svc_fee_total}元，{rep_ext[首次ext]} 共计{rep_ext[calc_str_total]}元。"
                     }
                 }
             }, 
@@ -1732,7 +1738,7 @@
                 "lookfor": [
                     "chosen_fee",
                     "ss_user_spec_component_value",
-                    ["calc_ext",["svc_fee_total"]]
+                    "svc_fee_total"
                 ],
                 "if_value": {
                     "chosen_fee":{
@@ -1749,12 +1755,13 @@
                 "lookfor": [
                     "chosen_fee",
                     "ss_user_spec_component_value",
-                    ["calc_ext",["component_val_match_flag"]]
+                    "w_spec_component_value",
+                    ["calc_ext",[
+                        "component_val_match_flag"]]
                 ],
                 "if_value": {
                     "component_val_match_flag":{
-                        "1":"{chosen_fee}是{ss_user_spec_component_value}的",
-                        "0":"{chosen_fee}是{ss_user_spec_component_value}的"
+                        "DEFAULT":"{chosen_fee}是{w_spec_component_value}的"
                     }
                 }
             },
@@ -1770,8 +1777,8 @@
                 ],
                 "if_value": {
                     "component_val_match_flag":{
-                        "1":"是的 {rep_ext[component_val_correction]}",
-                        "0":"不是 {rep_ext[component_val_correction]}"
+                        "1":"是的亲 {rep_ext[component_val_correction]}",
+                        "0":"不是啊亲 {rep_ext[component_val_correction]}"
                     }
                 }
             }
@@ -1922,6 +1929,8 @@
                 }
             },
             "sum_svc_fee": {
+                "writeto": "svc_fee_total",
+                "persist_value":true,
                 "conditions": [["flag_sb_gjj",11,["w_svcfee_multi",2,1]]],
                 "req_vars": [
                     ["city_info",["svc_fee"]],
@@ -1935,8 +1944,7 @@
                         ],
                         "OUTCOME"
                     ]
-                },
-                "writeto": "svc_fee_total"
+                }
             },
             "shebao_fee_amt": {
                 "conditions": [
@@ -2015,11 +2023,11 @@
                 "persist_value": true,
                 "req_vars": [
                     "flag_sb_gjj",
+                    "svc_fee_total",
                     [
                         "calc_ext",
                         [
                             "w_shouci_fee",
-                            "svc_fee_total",
                             "w_shebao_payment",
                             "w_gongjijin_fee"
                         ]
@@ -2306,17 +2314,70 @@
                     ]
                 }
             },
-            "calc_component_val":{
+            "calc_component_value":{
+                "writeto":"w_spec_component_value",
+                "persist_value": true,
+                "conditions":[
+                    ["chosen_fee", "服务费", ["w_main_multi", 0, 1]],
+                    ["exclude_svc_fee","exclude",["w_exc_svc_fee",1,0]]
+                ],
+                "req_vars":[
+                    "given_amount",
+                    "svc_fee_total",
+                    "chosen_fee",
+                    "exclude_svc_fee",
+                    "ss_user_spec_component_value"
+                ],
+                "steps":{
+                    "0,multi":[
+                        ["ss_user_spec_component_value","w_main_multi"],
+                        "w_main_amt"
+                    ],
+                    "1,multi": [
+                        ["svc_fee_total","w_exc_svc_fee"],
+                        "w_svc_fee_amt"
+                    ],
+                    "2,add":[
+                        ["w_main_amt","svc_fee_total"],
+                        "w_main_n_svc"
+                    ],
+                    "3,sub":[
+                        ["w_main_n_svc", "w_svc_fee_amt"],
+                        "OUTCOME"
+                    ]
+                }
+            },
+            "flag_component_value_match":{
                 "writeto":"component_val_match_flag",
                 "persist_value": false,
                 "conditions":[],
                 "req_vars":[
                     "given_amount",
-                    "ss_user_spec_component_value"
+                    "w_spec_component_value"
                 ],
                 "steps":{
-                    "1,equals": [
-                        ["given_amount","ss_user_spec_component_value"],
+                    "1,add": [
+                        ["given_amount",1],
+                        "w_upper"
+                    ],
+                    "2,sub": [
+                        ["given_amount",1],
+                        "w_lower"
+                    ],
+                    "3,isgreater": [
+                        ["w_upper","component_val_match_flag"],
+                        "w_upper_true"
+                    ],
+                    "4,isgreater": [
+                        ["component_val_match_flag","w_lower"],
+                        "w_lower_true"
+                    ],
+                    "5,add":[
+                        ["w_upper_true","w_lower_true"],
+                        "w_sum_true"
+                    ],
+                    "6,equals":[
+                        ["w_sum_true",2],
                         "OUTCOME"
                     ]
                 }

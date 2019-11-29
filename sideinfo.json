@@ -150,6 +150,7 @@
         "首次":"yes",
         "要社保":"yes",
         "要公积金":"no",
+        "exclude_svc_fee":"include",
         "given_amount": ""
     },
     "info_parser": {
@@ -160,7 +161,8 @@
             ["要公积金","gongjijin_slot"],
             ["首次","gen_shouci_slot"],
             ["chosen_fee","fee_slot"],
-            ["xufei","xufei_slot"]
+            ["xufei","xufei_slot"],
+            ["exclude_svc_fee", "exclude_svc_fee_slot"]
         ],
         "COMMENT":"ctx slots are also permanent",
         "contextual_slots":[
@@ -286,6 +288,16 @@
                     "(光|只|单独)(要*)(要|交|付|缴|代缴|缴纳)公积金"
                 ]
             },
+            "exclude_svc_fee_slot":{
+                "exclude":[
+                    "exclude_svc_fee",
+                    "除了服务(费*)",
+                    "(不|别)(要*)(算|包括|加上|加)服务(费*)"
+                ],
+                "include":[
+                    "(?<!(没|不))(添加|加上|加|包括)服务费"
+                ]
+            },
             "default_yes": {
                 "NO_MATCH": ["yes"]
             },
@@ -318,7 +330,7 @@
                 ]
             },
             "DUMMY_SLOT":{
-                "no_match":["abcdef!@#$!$"]
+                "dummy":["abcdef!@#$!$"]
             },
             "ctx_month_slot":{
                 "ctx_last_month":[
