@@ -128,7 +128,7 @@ def select_copy():
     time.sleep(cmd_sleep)
 
 def log_err():
-    filename = os.path.join(r"D:\chatbot\errorlog",GLOBAL["today_date"] +".txt")
+    filename = os.path.join(r"/errorlog",GLOBAL["today_date"] +".txt")
     f = open(filename, "w+")
     f.write(traceback.format_exc())
 
