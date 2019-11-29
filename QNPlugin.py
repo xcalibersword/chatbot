@@ -231,3 +231,17 @@ if __name__ == "__main__":
         for i in range(int(cd)):
             print("Countdown: " + str(cd-i))
             time.sleep(1)
+
+
+
+# while True:
+#             txtlen = win32gui.SendMessage(cW.input_dlg,win32con.WM_GETTEXTLENGTH,0,0)
+#             if txtlen == 0:
+#                 time.sleep(GLOBAL["human_input_sleep"])
+#                 txtlen = win32gui.SendMessage(cW.input_dlg,win32con.WM_GETTEXTLENGTH,0,0)
+#                 if txtlen == 0:
+#                     print("Message Sent!!!")
+#                     break
+
+# def err_log()
+
