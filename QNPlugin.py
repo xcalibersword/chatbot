@@ -33,7 +33,7 @@ class QianNiuWindow:
         self.hide_always_on_top_windows()
         win32gui.SetForegroundWindow(self.main_window)
     def Maximize(self):
-        win32gui.ShowWindow(self.main_window, win32con.SW_MAXIMIZE)
+        win32gui.ShowWindow(self.main_window, win32con.SW_NORMAL)
     def _window_enum_callback(self, hwnd, regex):
         '''Pass to win32gui.EnumWindows() to check all open windows'''
         if self.main_window is None and re.match(regex, str(win32gui.GetWindowText(hwnd))) is not None:
