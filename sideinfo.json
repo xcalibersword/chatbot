@@ -131,13 +131,25 @@
                     "_ANY":["given_amount"]
                 }
             }
-
+        },
+        {
+            "writeto": "ss_user_spec_component_value",
+            "search_tree":{
+                "chosen_fee":{
+                    "一共": ["shebao_basic_total"],
+                    "社保缴纳":[["city_info",["shebao_payment"]]],
+                    "社保基数":[["city_info",["sb_jishu"]]],
+                    "公积金缴纳":[["city_info",["gongjijin_fee"]]],
+                    "公积金基数":[["city_info",["gjj_jishu"]]],
+                    "服务费":["svc_fee_total"]
+                }
+            }
         }
     ],
     "default_slot_vals": {
         "首次":"yes",
         "要社保":"yes",
-        "要公积金":"yes",
+        "要公积金":"no",
         "given_amount": ""
     },
     "info_parser": {
