@@ -1,10 +1,5 @@
-import threading,re,os
-from win32gui import *
-from win32api import *
-from win32clipboard import *
-from win32con import *
-from time import *
-from jpype import *
+import threading,re,os,time,traceback,datetime
+import win32gui, win32api, win32clipboard, win32con, jpype
 from chatbot import Chatbot
 import pandas as pd
 
@@ -18,35 +13,66 @@ self_userID = "temporary"
 KEY_PRESS = 0
 KEY_LETGO = 2
 
+GLOBAL["today_date"] = str(datetime.datetime.now().date())
 GLOBAL["last_query"] = ""
 GLOBAL["last_query_time"] = ""
 GLOBAL["last_sent_msg"] = ""
 GLOBAL["got_new_message"] = True
 GLOBAL["new_chat_check_interval"] = 3
 
-def find_handle(userid):
-    #spy++ | hard coded have to update if qianniu update their UI
-    a = FindWindow("StandardFrame",userid + " - 接待中心")
-    aa = FindWindowEx(a, 0, "StandardWindow", "")
-    aaa = FindWindowEx(aa, 0, "StandardWindow", "")
-    aaa = FindWindowEx(aa, aaa, "StandardWindow", "")
-    aaa = FindWindowEx(aa, aaa, "StandardWindow", "") # Please have better names
-    aaaa = FindWindowEx(aaa, 0, "SplitterBar", "")
+class QianNiuWindow:
+    def __init__(self):
+        self.main_window = None
+        self.send_but = None
+        self.input_dlg = None
+        self.msg_dlg = None
+        self.userID = None
 
-    b = FindWindowEx(aaaa, 0, "StandardWindow", "")
-    bb = FindWindowEx(aaaa, b, "StandardWindow", "")
-    QN_input_hwnd = FindWindowEx(bb,0,"RichEditComponent", "") #Find chat message input box
-    GLOBAL["QN_input_box"] = QN_input_hwnd
+    def SetAsForegroundWindow(self):
+        # First, make sure all (other) always-on-top windows are hidden.
+        self.hide_always_on_top_windows()
+        win32gui.SetForegroundWindow(self.main_window)
+    def Maximize(self):
+        win32gui.ShowWindow(self.main_window, win32con.SW_MAXIMIZE)
+    def _window_enum_callback(self, hwnd, regex):
+        '''Pass to win32gui.EnumWindows() to check all open windows'''
+        if self.main_window is None and re.match(regex, str(win32gui.GetWindowText(hwnd))) is not None:
+            self.main_window = hwnd
+            self.userID = re.match(regex,str(win32gui.GetWindowText(hwnd)))[0]
+    def find_window_regex(self, regex):
+        self.main_window = None
+        win32gui.EnumWindows(self._window_enum_callback, regex)
+    def hide_always_on_top_windows(self):
+        win32gui.EnumWindows(self._window_enum_callback_hide, None)
+    def _window_enum_callback_hide(self, hwnd, unused):
+        if hwnd != self.main_window: # ignore self
+            # Is the window visible and marked as an always-on-top (topmost) window?
+            if win32gui.IsWindowVisible(hwnd) and win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) & win32con.WS_EX_TOPMOST:
+                # Ignore windows of class 'Button' (the Start button overlay) and
+                # 'Shell_TrayWnd' (the Task Bar).
+                className = win32gui.GetClassName(hwnd)
+                if not (className == 'Button' or className == 'Shell_TrayWnd'):
+                    # Force-minimize the window.
+                    # Fortunately, this seems to work even with windows that
+                    # have no Minimize button.
+                    # Note that if we tried to hide the window with SW_HIDE,
+                    # it would disappear from the Task Bar as well.
+                    win32gui.ShowWindow(hwnd, win32con.SW_FORCEMINIMIZE)
+    def find_handle(self):
+        aa = win32gui.FindWindowEx(self.main_window, 0, "StandardWindow", "")
+        aaa = win32gui.FindWindowEx(aa, 0, "StandardWindow", "")
+        aaa = win32gui.FindWindowEx(aa, aaa, "StandardWindow", "")
+        aaa = win32gui.FindWindowEx(aa, aaa, "StandardWindow", "")
+        aaaa = win32gui.FindWindowEx(aaa, 0, "SplitterBar", "")
 
-    c = FindWindowEx(b, 0, "PrivateWebCtrl", "")
-    cc = FindWindowEx(c,0,"Aef_WidgetWin_0","")
-    QN_output_hwnd = FindWindowEx(cc,0,"Aef_RenderWidgetHostHWND", "Chrome Legacy Window") # Find chat message display windows
-    GLOBAL["QN_output_box"] = QN_output_hwnd
+        b = win32gui.FindWindowEx(aaaa, 0, "StandardWindow", "")
+        bb = win32gui.FindWindowEx(aaaa, b, "StandardWindow", "")
+        self.input_dlg = win32gui.FindWindowEx(bb,0,"RichEditComponent", "")
 
-    QN_sendBut_hwnd = FindWindowEx(bb,0,"StandardButton", "发送") # Find send button
-    GLOBAL["QN_send_button"] = QN_sendBut_hwnd
-
-    return QN_input_hwnd,QN_output_hwnd,QN_sendBut_hwnd
+        c = win32gui.FindWindowEx(b, 0, "PrivateWebCtrl", "")
+        cc = win32gui.FindWindowEx(c,0,"Aef_WidgetWin_0","")
+        self.msg_dlg = win32gui.FindWindowEx(cc,0,"Aef_RenderWidgetHostHWND", "Chrome Legacy Window")
+        self.send_but = win32gui.FindWindowEx(bb,0,"StandardButton", "发送")
 
 def save2troubleshoot(right,wrong,query,intent,slot,id):
     print("<CHANGED REPLY> Writing to troubleshoot.csv")
@@ -58,64 +84,53 @@ def save2troubleshoot(right,wrong,query,intent,slot,id):
     new_df = pd.DataFrame(data=list_list)
     new_df.to_csv(r"troubleshoot.csv",encoding="gb18030",index=0,header=0)
 
-def send_message_QN(text,QN_input_hwnd,QN_sendBut_hwnd,query,reply_template,custID,mode):
+def send_message_QN(reply,cW,mode):
     #list of keybdEvents
     #https://blog.csdn.net/zhanglidn013/article/details/35988381
 
     # Paste text into the chatbox
-    SendMessage(QN_input_hwnd, 0x000C, 0, text)
+    win32gui.SendMessage(cW.input_dlg, 0x000C, 0, reply)
 
     if mode == "":
         # AUTO SEND MODE
-        SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
-        print("Message Sent: {}".format(text))
-    else:
-        # CONFIRMATION MODE
-        # do nothing
-        return
-
-        # -- EVERYTHING BELOW HERE DOESNT HAPPEN -- 
-        confirm = input("如果回复是对的请按回车键,不然请输入对的回答:  ")
-        if confirm == "":
-            #send text
-            SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
-            print("Message Sent: {}".format(text))
-        else:
-            SendMessage(QN_input_hwnd, 0x000C, 0, confirm)
-            SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
-            print("Message Sent: {}".format(text))
-            save2troubleshoot(confirm,text,query,str(reply_template[1]),str(reply_template[2]),custID)
+        win32gui.SendMessage(cW.send_but, 0xF5, 0, 0)
+        print("Message Sent: {}".format(reply))
 
 def setActiveScreen(target_window):
-    SetForegroundWindow(target_window)
+    win32gui.SetForegroundWindow(target_window)
 
-    rect = GetWindowRect(target_window)
+    rect = win32gui.GetWindowRect(target_window)
     # Finds the top right position
-    SetCursorPos((rect[2]-50,rect[1]+10))
+    win32api.SetCursorPos((rect[2]-50,rect[1]+10))
     
-    sleep(cmd_sleep)
-    mouse_event(MOUSEEVENTF_LEFTDOWN,0,0,0,0)
-    mouse_event(MOUSEEVENTF_LEFTUP,0,0,0,0)
-    sleep(cmd_sleep)
+    time.sleep(cmd_sleep)
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0,0,0)
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0,0,0)
+    time.sleep(cmd_sleep)
 
 def select_copy():
     #ctrl a
-    keybd_event(17, 0, KEY_PRESS, 0)
-    keybd_event(65, 0, KEY_PRESS, 0)
-    sleep(cmd_sleep)
+    win32api.keybd_event(17, 0, KEY_PRESS, 0)
+    win32api.keybd_event(65, 0, KEY_PRESS, 0)
+    time.sleep(cmd_sleep)
     #ctrl a release
-    keybd_event(65, 0, KEY_LETGO, 0)
-    keybd_event(17, 0, KEY_LETGO, 0)
+    win32api.keybd_event(65, 0, KEY_LETGO, 0)
+    win32api.keybd_event(17, 0, KEY_LETGO, 0)
+    time.sleep(cmd_sleep)
 
     #ctrl c
-    sleep(cmd_sleep)
-    keybd_event(17, 0, KEY_PRESS, 0)
-    keybd_event(67, 0, KEY_PRESS, 0)
-    sleep(cmd_sleep)
+    win32api.keybd_event(17, 0, KEY_PRESS, 0)
+    win32api.keybd_event(67, 0, KEY_PRESS, 0)
+    time.sleep(cmd_sleep)
     # ctrl c release 
-    keybd_event(67, 0, KEY_LETGO, 0)
-    keybd_event(17, 0, KEY_LETGO, 0)
-    sleep(cmd_sleep)
+    win32api.keybd_event(67, 0, KEY_LETGO, 0)
+    win32api.keybd_event(17, 0, KEY_LETGO, 0)
+    time.sleep(cmd_sleep)
+
+def log_err():
+    filename = os.path.join(r"D:\chatbot\errorlog",GLOBAL["today_date"] +".txt")
+    f = open(filename, "w+")
+    f.write(traceback.format_exc())
 
 # Returns a reverse ordered list
 def getRawText():
@@ -124,36 +139,39 @@ def getRawText():
     succeed = False
     while not succeed and rpt < rpt_limit:
         try:
-            OpenClipboard()
+            win32clipboard.OpenClipboard()
             succeed = True
         except Exception as e:
             print("OPEN CLIPBOARD EXCEPTION:",e,"Trying again...")
+            log_err()
         rpt += 1
 
-    sleep(clipboard_sleep)
+    time.sleep(clipboard_sleep)
 
     rpt = 0
     raw_text = ""
     while raw_text == "" and rpt < rpt_limit:
         try:
-            raw_text = GetClipboardData()
+            raw_text = win32clipboard.GetClipboardData()
         except Exception as e:
             print("GET CLIPBOARD EXCEPTION:",e,"Trying again...")
+            log_err()
         rpt += 1
 
-    sleep(clipboard_sleep)
+    time.sleep(clipboard_sleep)
 
     try:
-        EmptyClipboard()
+        win32clipboard.EmptyClipboard()
         succeed = True
     except Exception as e:
         print("EmptyClipboard EXCEPTION:",e)
+        log_err()
 
     rpt = 0
     succeed = False
     while not succeed and rpt < rpt_limit + 10:
         try:
-            CloseClipboard()
+            win32clipboard.CloseClipboard()
             succeed = True
         except Exception as e:
             print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
@@ -168,26 +186,26 @@ def getRawText():
     processed_text_list.reverse()
     return processed_text_list
 
-def check_if_edited(last_sent, q, cid):
+def check_if_edited(last_sent, query, custID):
     if not last_sent == GLOBAL["last_sent_msg"]:
         GLOBAL["last_sent_msg"] = last_sent
 
         last_bot_reply = GLOBAL.get("last_bot_reply","")
         print("<LAST SENT>",last_sent,"bot wanted to reply:",last_bot_reply)
         if not last_bot_reply == last_sent and not last_bot_reply == "":
-            save2troubleshoot(str(last_sent), str(last_bot_reply), str(q), "intent", "slot info",str(cid))
+            save2troubleshoot(str(last_sent), str(last_bot_reply), str(query), "intent", "slot info",str(custID))
     return
 
 def collect_texts(collector, new):
     # Because reversed message order, new comes before old
     return  new + collector 
 
-def get_customer_id(self_userID,rawText):
+def get_customer_id(cW,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     custid = ""
     for sent in rawText:
         if re.search(date_time_pattern,sent):
-            if re.search(self_userID,sent):
+            if re.search(cW.userID,sent):
                 continue
             else:
                 custid = custid = re.sub(date_time_pattern,"",sent)
@@ -197,7 +215,7 @@ def get_customer_id(self_userID,rawText):
     return custid
 
 
-def processText(self_userID,rawText):
+def processText(cW,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     recentText = rawText[:30]
     custid = ""
@@ -209,7 +227,7 @@ def processText(self_userID,rawText):
     for sent in recentText:
         if re.search(date_time_pattern,sent):
             # Name line
-            if re.search(self_userID,sent):
+            if re.search(cW.userID,sent):
                 # Self
                 if last_sent == "":
                     last_sent = curr_text[:-2] # Remove the 已读/未读
@@ -237,28 +255,30 @@ def processText(self_userID,rawText):
     check_if_edited(last_sent, query, custid)
     return query,custid
 
-def mine_chat_text(text_win):
-    setActiveScreen(text_win)
+def mine_chat_text(cW):
+    setActiveScreen(cW.msg_dlg)
     select_copy()
     return getRawText()
 
-def check_new_message(self_userID,textwindow):
+def check_new_message(cW):
     print('Checking for new messages...')
-    rawText = mine_chat_text(textwindow)
-    query, cust_QN_ID = processText(self_userID,rawText)
+    rawText = mine_chat_text(cW)
+    print("*"*10+"Copied"+"*"*10)
+    print(rawText)
+    query, cust_QN_ID = processText(cW,rawText)
     print("Customer ID: {} Query: {}".format(cust_QN_ID, query))
     return query, cust_QN_ID
 
 # Returns nothing. Updates bot internal state.
-def read_history(selfID, bot, textwindow):
+def read_history(cW,bot):
     print('<HISTORY> Reading chat history')
-    history = mine_chat_text(textwindow)
-    cust_QN_ID = get_customer_id(self_userID,history)
-    mhist = get_only_messages(history)
+    history = mine_chat_text(cW)
+    cust_QN_ID = get_customer_id(cW,history)
+    mhist = get_only_messages(history,cW)
     bot.parse_transferred_messages(cust_QN_ID, mhist)
     return 
 
-def get_only_messages(hist):
+def get_only_messages(hist,cW):
     historyLimit = 500
     history = hist[:historyLimit]
     curr_text = ""
@@ -267,7 +287,7 @@ def get_only_messages(hist):
     for sent in history:
         if re.search(date_time_pattern,sent):
             # Name line
-            if not re.search(self_userID,sent):
+            if not re.search(cW.userID,sent):
                 # Customer
                 # custid = re.sub(date_time_pattern,"",sent)
                 # querytime = re.search(date_time_pattern,sent).group(0)
@@ -283,7 +303,7 @@ def get_only_messages(hist):
 def SeekNewCustomerChat(clickImage):
     print("Finding new chat...")
 
-    Screen = JClass('org.sikuli.script.Screen')
+    Screen = jpype.JClass('org.sikuli.script.Screen')
     screen = Screen()
 
     try:
@@ -291,13 +311,15 @@ def SeekNewCustomerChat(clickImage):
         return True
     except Exception:
         print("No new chat")
+        log_err()
         return False
 
-def select_chat_input_box():
+def select_chat_input_box(cW):
     if GLOBAL["mode"] == 0:
         print("Allowing user to enter input......")
-        input_box = GLOBAL["QN_input_box"]
-        setActiveScreen(input_box) # Select text input box
+        
+        setActiveScreen(cW.input_dlg) # Select text input box
+        
         # #ctrl + right
         # keybd_event(17, 0, KEY_PRESS, 0)
         # keybd_event(39, 0, KEY_PRESS, 0)
@@ -306,13 +328,21 @@ def select_chat_input_box():
         # keybd_event(39, 0, KEY_LETGO, 0)
         # keybd_event(17, 0, KEY_LETGO, 0)
 
-        sleep(GLOBAL["human_input_sleep"])
+        while True:
+            txtlen = win32gui.SendMessage(cW.input_dlg,win32con.WM_GETTEXTLENGTH,0,0)
+            if txtlen == 0:
+                time.sleep(GLOBAL["human_input_sleep"])
+                txtlen = win32gui.SendMessage(cW.input_dlg,win32con.WM_GETTEXTLENGTH,0,0)
+                if txtlen == 0:
+                    print("Message Sent!!!")
+                    break
+            
     return
 
-def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode,cycle_delay): 
+def main(cW,bot,SeekImagePath,mode,cycle_delay): 
     checks = 0
     while True:
-        query, custID = check_new_message(self_userID,text_out_hwnd)
+        query, custID = check_new_message(cW)
         
         if GLOBAL["got_new_message"]:
             reply_template = bot.get_bot_reply(custID,query) # Gets a tuple of 3 things
@@ -320,27 +350,29 @@ def main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mo
             GLOBAL["last_bot_reply"] = reply
             if type(reply) == list:
                 for r in reply:
-                    send_message_QN(r,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
+                    send_message_QN(r,cW,mode)
             else:
-                send_message_QN(reply,text_in_hwnd,button_hwnd,query,reply_template,custID,mode)
+                send_message_QN(reply,cW,mode)
                 
         elif checks >= GLOBAL["new_chat_check_interval"]:
             newchat = SeekNewCustomerChat(SeekImagePath)
             checks = 0
             if newchat:
-                read_history(self_userID, bot,text_out_hwnd)
+                read_history(cW,bot)
                 GLOBAL["got_new_message"] = True
                 continue
 
         checks += 1
-        select_chat_input_box() # This only does something if mode is "human control"
-        sleep(float(cycle_delay))
-    #timer = threading.Timer(10,main,[text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath])
-    #add something to stop the program
-    #timer.start()
+        
+        select_chat_input_box(cW) # This only does something if mode is "human control"
+
+        for i in range(int(cycle_delay)):
+            print("剩下{}秒".format(str(int(cycle_delay)-i))) 
+            time.sleep(1)
 
 if __name__ == "__main__":
-    self_userID = "女人罪爱:小梅"
+    #SET MODE
+
     delay_time = input("Enter the delay time (in seconds) for each cycle to look for new message 投入延期(秒钟): ")
     #enter for testing, 1 for deployment
     mode = input("Enter the mode 投入模式: ")
@@ -350,11 +382,19 @@ if __name__ == "__main__":
         GLOBAL["mode"] = 0
         GLOBAL["human_input_sleep"] = float(input("Enter human reply delay 投入人工打回复延期(秒钟): "))
 
-    try:    
-        text_in_hwnd,text_out_hwnd,button_hwnd = find_handle(self_userID)
-    except Exception:
-        print("Window Handle cannot be found!")
-
+    #FIND WINDOW HANDLE
+    try:
+        regex = r".*(?= - 接待中心)"
+        cW = QianNiuWindow()
+        cW.find_window_regex(regex)
+        cW.Maximize()
+        cW.SetAsForegroundWindow()
+        cW.find_handle()
+        print(cW.userID,cW.msg_dlg,cW.input_dlg,cW.send_but)
+    except:
+        log_err()
+    
+    #START OCR & BOT
     projectDIR = os.getcwd()
     #set JAVA path
     defaultJVMpath = (r"C:\Program Files\Java\jdk-12.0.2\bin\server\jvm.dll")
@@ -362,11 +402,12 @@ if __name__ == "__main__":
     SeekImagePath = os.path.join(projectDIR,r"sikuliX\A.PNG")
 
     print("Starting JVM...")
-    startJVM(defaultJVMpath,'-ea',jarPath,convertStrings=False)
-    java.lang.System.out.println("Started JVM!")
+    jpype.startJVM(defaultJVMpath,'-ea',jarPath,convertStrings=False)
+    jpype.java.lang.System.out.println("Started JVM!")
 
     bot = Chatbot()
     bot.start()
     
+    #MAIN PROGRAMME LOOP
     print("Starting program....") 
-    main(text_in_hwnd,text_out_hwnd,button_hwnd,self_userID,bot,SeekImagePath,mode,delay_time)
+    main(cW,bot,SeekImagePath,mode,delay_time)
