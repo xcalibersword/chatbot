@@ -269,6 +269,8 @@ class ChatManager:
 
         curr_info = self._get_current_info()
 
+        self._post_process(full_uds)
+
         # Records message logs
         self._record_messages_in_chat(msg,reply)
         return (reply, bd, curr_info)
@@ -399,6 +401,18 @@ class ChatManager:
         
         self.push_detail_to_dm(details)
         return
+
+    def _post_process(self, uds):
+        pd = {}
+        sip = uds.get_sip()
+        clearlist = sip.get_clears()
+        for to_clear in clearlist:
+            pd[to_clear] = ""
+
+        self.push_detail_to_dm(pd)
+
+        return 
+
 
     ### Detail logging
     def push_detail_to_dm(self, d, ow=1):
@@ -575,6 +589,11 @@ class DetailManager:
                     continue
                 else:
                     self.chat_prov_info[d] = new_info[d]
+            else:
+                # Remove entry if empty
+                if d in self.chat_prov_info:
+                    print("<LOG DETAIL> REMOVING",d)
+                    self.chat_prov_info.pop(d)
                 
         self._add_secondary_slots()
 

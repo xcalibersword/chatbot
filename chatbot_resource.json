@@ -631,6 +631,7 @@
         "doublecheck_component_value": {
             "key": "doublecheck_component_value",
             "gated": true,
+            "terminal_state":true,
             "thread": "t_doublecheck",
             "req_info": [
                 ["given_amount","DUMMY_SLOT"],
@@ -639,6 +640,9 @@
                 ["要公积金", "DEFAULT_SV"],
                 ["首次", "DEFAULT_SV"],
                 ["exclude_svc_fee","DEFAULT_SV"]
+            ],
+            "clear_info":[
+                "given_amount"
             ],
             "calcs":[
                 "calc_flag_sb_gjj",

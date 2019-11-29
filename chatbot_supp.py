@@ -28,6 +28,7 @@ class SIP:
         self.gated_bool = self.state_obj.get("gated",False)
         self.transition_state = self.state_obj.get(self.trans_state_flag,False)
         self.state_slots = self.state_obj["req_info"] if self.gated_bool else []
+        self.state_clears = self.state_obj.get("clear_info",[])
         self.pending_state = ""
 
     def set_actions(self, action, pending_act = None):
@@ -49,6 +50,9 @@ class SIP:
 
     def get_reqs(self):
         return ReqGatekeeper.slots_to_reqs(self.state_slots)    
+
+    def get_clears(self):
+        return self.state_clears.copy()
 
     @classmethod
     def same_state(cls):
