@@ -24,10 +24,13 @@ def _dive(c_list, c_dir, failzero = False, DEBUG = 1):
             if not nextdirname in c_dir:
                 if failzero:
                     for vn in valname:
+                        if isinstance(vn, list):
+                            print("<DIVE> vn is a list",vn)
+                            return out
                         out[vn] = 0
                 else:
                     if DEBUG: print("<DIVE> ERROR! Cannot find subdict<{}> in {}".format(nextdirname,c_dir))
-                    return {} 
+                    return out 
             else:
                 nextdir = c_dir[nextdirname]
                 out.update(_dive(nestlist,nextdir))

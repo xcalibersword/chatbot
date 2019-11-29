@@ -202,7 +202,7 @@
         "query_current_month_options":{
             "key": "info current month options",
             "default_set": true,
-            "default_target": "inform_current_month_options",
+            "default_target": "inform_pay_deadline",
             "replies": []
         },
         "query_fahuo": {
@@ -898,8 +898,14 @@
             "gated": true,
             "thread": "t_pay_deadline",
             "terminal_state": true,
-            "calcs":["flag_sb_day_cmi"],
+            "humanify":false,
+            "calcs": [
+                "calc_specified_month",
+                "flag_sb_day_cmi",
+                "flag_bujiao_month_cmi"
+            ],
             "req_info": [
+                ["ss_purchase_for_month","DUMMY_SLOT"],
                 ["city","city"]
             ],
             "replies": [
@@ -1416,7 +1422,8 @@
             {
                 "writeto": "topup_info_extra",
                 "states": [
-                    "inform_topup"
+                    "inform_topup",
+                    "inform_pay_deadline"
                 ],
                 "lookfor": [
                     "city_district",
@@ -1435,6 +1442,26 @@
                 }
             },
             {
+                "writeto": "topup_can_not_msg",
+                "states": [
+                    "inform_topup",
+                    "inform_pay_deadline"
+                ],
+                "lookfor": [
+                    ["calc_ext",["w_bujiao_cmi_flag"]],
+                    ["rep_ext",[
+                        "pay_deadline_info_extra",
+                        "topup_info_extra"]
+                    ]
+                ],
+                "if_value": {
+                    "w_bujiao_cmi_flag": {
+                        "1":"可以补",
+                        "0":"不可以补 {rep_ext[topup_info_extra]}"
+                    }
+                }
+            },
+            {
                 "writeto": "topup_info",
                 "states": [
                     "inform_topup"
@@ -1442,12 +1469,11 @@
                 "lookfor": [
                     "ss_purchase_for_month",
                     ["calc_ext",["w_bujiao_cmi_flag"]],
-                    ["rep_ext",["topup_info_extra"]]
+                    ["rep_ext",["topup_info_extra","topup_can_not_msg"]]
                 ],
                 "if_value": {
                     "w_bujiao_cmi_flag":{
-                        "1":"亲 {ss_purchase_for_month}月还可以补。",
-                        "0":"亲 {ss_purchase_for_month}月不可以补。{rep_ext[topup_info_extra]}"
+                        "DEFAULT":"亲 {ss_purchase_for_month}月{rep_ext[topup_can_not_msg]}。{rep_ext[topup_info_extra]}"
                     }
                 }
             },
@@ -1514,10 +1540,25 @@
                 }
             },
             {
+                "writeto": "regular_pay_can_not_msg",
+                "states": [
+                    "inform_topup",
+                    "inform_pay_deadline"
+                ],
+                "lookfor": [
+                    ["calc_ext",["w_sb_cmi_flag"]]
+                ],
+                "if_value": {
+                    "w_sb_cmi_flag":{
+                        "1": "现在可以正常交",
+                        "0": "现在来不及正常交"
+                    }
+                }
+            },
+            {
                 "writeto": "pay_deadline_info_extra",
                 "states": [
-                    "inform_pay_deadline",
-                    "inform_current_month_options"
+                    "inform_pay_deadline"
                 ],
                 "lookfor": [
                     "city_district",
@@ -1532,52 +1573,28 @@
 
             },
             {
-                "writeto": "pay_deadline_info",
+                "writeto":"pay_deadline_info",
                 "states": [
-                    "inform_pay_deadline",
-                    "inform_current_month_options"
-                ],
-                "lookfor": [
-                    "city_district",
-                    "ss_purchase_for_month",
-                    ["calc_ext",["w_sb_cmi_flag"]],
-                    ["rep_ext",["pay_deadline_info_extra"]]
-                ],
-                "if_value": {
-                    "w_sb_cmi_flag":{
-                        "1":"亲 现在{ss_purchase_for_month}月还可以正常交。",
-                        "0":"亲 要交{ss_purchase_for_month}月现在来不及正常交。{rep_ext[pay_deadline_info_extra]}"
-                    }
-                }
-            },
-            {
-                "writeto":"curr_mth_option_info",
-                "states": [
-                    "inform_current_month_options"
+                    "inform_pay_deadline"
                 ],
                 "lookfor": [
                     "ss_purchase_for_month",
+                    "spec_month",
                     ["rep_ext",[
-                        "pay_deadline_info",
-                        "topup_info"
-                        ]
-                    ],
-                    ["calc_ext",[
-                        "w_sb_cmi_flag",
-                        "w_bujiao_cmi_flag"
+                        "topup_info",
+                        "topup_can_not_msg",
+                        "regular_pay_can_not_msg"
                         ]
                     ]
                 ],
                 "if_present":{
-                    "ss_purchase_for_month": "{ss_purchase_for_month}月的话"
+                    "ss_purchase_for_month": "{ss_purchase_for_month}月"
                 },
                 "if_value": {
-                    "w_sb_cmi_flag":{
-                        "DEFAULT":"{rep_ext[pay_deadline_info]}",
-                        "0":"亲 要交当月现在来不及正常交。"
-                    },
-                    "w_bujiao_cmi_flag": {
-                        "DEFAULT":"{rep_ext[topup_info]}"
+                    "spec_month":{
+                        "1":"{rep_ext[regular_pay_can_not_msg]}，只{rep_ext[topup_can_not_msg]}",
+                        "0":"{rep_ext[regular_pay_can_not_msg]}",
+                        "2":"{rep_ext[topup_can_not_msg]}"
                     }
                 }
             },
