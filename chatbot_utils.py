@@ -5,7 +5,13 @@ def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1):
 
     if isinstance(nest_list,list) and len(nest_list) > 0:
         inner_list = nest_list[0]
-        if isinstance(inner_list[0], str) and isinstance(inner_list[1], list):
+        if len(inner_list) < 2:
+            print("<DIVE> inner_list too short: ",inner_list,"original:",nest_list)
+            if len(inner_list) == 1:
+                in_in_list = inner_list[0]
+                if isinstance(in_in_list, str):
+                    nest_list = inner_list # Single value but accidentially in a list
+        elif isinstance(inner_list[0], str) and isinstance(inner_list[1], list):
             if not len(inner_list) == 2:
                 print("<DIVE> Bad list length, expected len 2 but got len",len(inner_list),nest_list)
                 return {}

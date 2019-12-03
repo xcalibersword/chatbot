@@ -37,10 +37,10 @@
             ["purchase", "city_crossroad"]
         ],
         "propose_plan_state":[
-            ["affirm", "confirm_plan"],
+            ["affirm", "initplus"],
             ["purchase", "city_crossroad"],
             ["inform", "city_crossroad"],
-            ["next_step", "confirm_plan"]
+            ["next_step", "initplus"]
         ],
         "prop_cust_jishu_state":[
             ["inform", "SAME_STATE"],
@@ -64,7 +64,7 @@
             ["inform","city_crossroad"],
             ["deny", "goodbye"]
         ],
-        "confirm_plan": [
+        "offer_product_links": [
             ["purchase","city_crossroad"],
             ["inform","city_crossroad"],
             ["next_step", "provide_taobao_link"],
