@@ -368,19 +368,21 @@ class InfoParser():
 
     def _build_slots_DB(self, jdata):
         for catkey in list(jdata.keys()):
-            self.regexDB[catkey] = {}
             obj = jdata[catkey]
-            obj["multi"] = obj.get("multi",False) # False by default
-            cat_map = {}
+            cached_slot = {}
+            # Multi flag
+            cached_slot["multi"] = obj.get("multi",False) # False by default
+            
+            # Get category regex
             category = obj["map"]
+            cat_map = {}
             for value in list(category.keys()):
                 termlist = category[value]
                 regexlist = self.list_to_regexList(termlist)
                 cat_map[value] = regexlist
+            cached_slot["map"] = cat_map
 
-            self.regexDB[catkey]["map"] = cat_map
-
-
+            self.regexDB[catkey] = cached_slot
 
     # Updates dict directly
     def _match_slot(self, text, slot, d, PDB = True):
