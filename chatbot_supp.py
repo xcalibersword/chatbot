@@ -366,19 +366,21 @@ class InfoParser():
 
     def _build_slots_DB(self, jdata):
         for catkey in list(jdata.keys()):
-            self.regexDB[catkey] = {}
             obj = jdata[catkey]
-            obj["multi"] = obj.get("multi",False) # False by default
-            cat_map = {}
+            cached_slot = {}
+            # Multi flag
+            cached_slot["multi"] = obj.get("multi",False) # False by default
+            
+            # Get category regex
             category = obj["map"]
+            cat_map = {}
             for value in list(category.keys()):
                 termlist = category[value]
                 regexlist = self.list_to_regexList(termlist)
                 cat_map[value] = regexlist
+            cached_slot["map"] = cat_map
 
-            self.regexDB[catkey]["map"] = cat_map
-
-
+            self.regexDB[catkey] = cached_slot
 
     # Updates dict directly
     def _match_slot(self, text, slot, d, PDB = True):
@@ -432,8 +434,12 @@ class InfoParser():
         if not category in self.regexDB:
             if PDB and DEBUG: print("<GET CAT VAL> No such category:{}".format(category))
             return ""
-        catDB = self.regexDB[category]
-        value = self._no_match_val(catDB)
+        slot_obj = self.regexDB[category]
+        mf = slot_obj["multi"]
+        add_to_val = lambda v, token: v.append(token) if mf else (v.insert(0,token))
+        catDB = slot_obj["map"]
+        match_list = [self._no_match_val(catDB)]
+
         found = False
         vals = list(catDB.keys())
         for v in vals:
@@ -442,12 +448,23 @@ class InfoParser():
             if m:
                 if PDB and SUPER_DEBUG: print("<GET CAT VAL> Matched {} value:{} at {}".format(category,v,m))
                 if found:
-                    if PDB: print("<GET CAT VAL> Double value. Prev:", value, ", Current:",v)
-                # token = m.group(0)
-                value = v
-                found = True
-                # if DEBUG: print("<PARSER> Found a ", category, ":", v)
+                    if PDB: print("<GET CAT VAL> Double value. Prev:", match_list, ", Current:",v)
+                    if mf:
+                        add_to_val(match_list, v)
+                    continue
+                else:
+                    match_list.pop(0) # Remove default value
+                    add_to_val(match_list, v)
+                    found = True
+                    # if DEBUG: print("<PARSER> Found a ", category, ":", v)
         
+        if not mf:
+            value = match_list[0]
+        else:
+            if found:
+                value = match_list
+            else:
+                value = ""
         return value
 
     ### MAIN FUNCTION ### 
