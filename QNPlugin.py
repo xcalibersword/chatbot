@@ -26,7 +26,7 @@ class QianNiuWindow:
         self.send_but = None
         self.input_dlg = None
         self.msg_dlg = None
-        self.userID = None
+        self.userID = "女人罪爱" # HARDCODED. More general so that you don't catch 同事
 
     def SetAsForegroundWindow(self):
         # First, make sure all (other) always-on-top windows are hidden.
@@ -38,7 +38,7 @@ class QianNiuWindow:
         '''Pass to win32gui.EnumWindows() to check all open windows'''
         if self.main_window is None and re.match(regex, str(win32gui.GetWindowText(hwnd))) is not None:
             self.main_window = hwnd
-            self.userID = re.match(regex,str(win32gui.GetWindowText(hwnd)))[0]
+            # self.userID = re.match(regex,str(win32gui.GetWindowText(hwnd)))[0] # DISABLED
     def find_window_regex(self, regex):
         self.main_window = None
         win32gui.EnumWindows(self._window_enum_callback, regex)
@@ -201,12 +201,13 @@ def collect_texts(collector, new):
     # Because reversed message order, new comes before old
     return  new + collector 
 
-def get_customer_id(cW,rawText):
+def get_customer_id(self_id,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     custid = ""
     for sent in rawText:
         if re.search(date_time_pattern,sent):
-            if re.search(cW.userID,sent):
+            if re.search(self_id,sent):
+                # Contains Self ID
                 continue
             else:
                 custid = custid = re.sub(date_time_pattern,"",sent)
@@ -274,7 +275,7 @@ def check_new_message(cW):
 def read_history(cW,bot):
     print('<HISTORY> Reading chat history')
     history = mine_chat_text(cW)
-    cust_QN_ID = get_customer_id(cW,history)
+    cust_QN_ID = get_customer_id(cW.userID,history)
     mhist = get_only_messages(history,cW)
     bot.parse_transferred_messages(cust_QN_ID, mhist)
     return 
