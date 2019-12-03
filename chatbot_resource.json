@@ -346,6 +346,7 @@
             "key":"query_sick_light",
             "default_set": true,
             "humanify": false,
+            "default_target": "SAME_STATE",
             "replies":[
                 "亲，普通门诊可以在2个月后使用哦（限上海）"
             ]
@@ -356,7 +357,7 @@
             "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
-                "亲，{}不接受代缴哦"
+                "亲，有大病不接受代缴哦"
             ]
         },
         "query_region_coverage": {
