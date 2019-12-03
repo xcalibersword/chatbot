@@ -684,8 +684,7 @@
                 ["city","city"],
                 ["首次","DEFAULT_SV"],
                 ["要公积金","wantnot"],
-                ["要社保", "DEFAULT_SV"],
-                ["ss_purchase_for_month", "DUMMY_SLOT"]
+                ["要社保", "DEFAULT_SV"]
             ],
             "calcs": [
                 "calc_flag_sb_gjj",
@@ -706,7 +705,6 @@
             "propose_plan_state": true,
             "req_info": [
                 ["city", "city"],
-                ["ss_purchase_for_month", "DUMMY_SLOT"],
                 ["首次","DEFAULT_SV"],
                 ["要公积金", "wantnot"],
                 ["要社保","DEFAULT_SV"]
@@ -723,8 +721,8 @@
                 "{rep_ext[bj_entire_plan_proposal]}"
             ]
         },
-        "confirm_plan": {
-            "key": "282 confirm plan",
+        "offer_product_links": {
+            "key": "282 offer_product_links",
             "gated": false,
             "thread": "t_presale",
             "req_info": [],
@@ -812,27 +810,13 @@
                 "{rep_ext[raw_taobao_link]}"
             ]
         },
-        "inform_can_make_it":{
-            "key": "inform_can_make_it",
-            "gated": true,
-            "thread": "t_can_make_it",
-            "terminal_state": true,
-            "calcs": ["calc_specified_month","flag_sb_day_cmi"],
-            "req_info": [
-                ["city","city"],
-                ["ss_purchase_for_month", "DUMMY_SLOT"]
-            ],
-            "replies": [
-                "亲{rep_ext[can_make_it_info]}"
-            ]
-        },
         "month_crossroad":{
             "key": "month_crossroad",
             "gated": true,
             "transition_state": true,
             "thread": "t_month",
             "humanify": false,
-            "req_info": [["purchase_for_month","DUMMY_SLOT"]],
+            "req_info": [["ss_purchase_for_month","DUMMY_SLOT"]],
             "replies": []
         },
         "inform_company_name":{
@@ -1561,10 +1545,11 @@
                 "writeto": "regular_pay_can_not_msg",
                 "states": [
                     "inform_topup",
-                    "inform_pay_deadline"
+                    "inform_pay_deadline",
+                    "month_crossroad"
                 ],
                 "lookfor": [
-                    ["calc_ext",["w_sb_cmi_flag"]]
+                    "w_sb_cmi_flag"
                 ],
                 "if_value": {
                     "w_sb_cmi_flag":{
@@ -1591,6 +1576,28 @@
 
             },
             {
+                "writeto":"pay_curr_month_msg",
+                "states": [
+                    "inform_pay_deadline"
+                ],
+                "lookfor": [
+                    "ss_purchase_for_month",
+                    "w_sb_cmi_flag",
+                    ["rep_ext",[
+                        "topup_can_not_msg",
+                        "regular_pay_can_not_msg"
+                        ]
+                    ]
+                ],
+                "if_value": {
+                    "w_sb_cmi_flag":{
+                        "0":"{rep_ext[regular_pay_can_not_msg]}，只{rep_ext[topup_can_not_msg]}",
+                        "1":"{rep_ext[regular_pay_can_not_msg]}"
+                    }
+                }
+            },
+            
+            {
                 "writeto":"pay_deadline_info",
                 "states": [
                     "inform_pay_deadline"
@@ -1599,7 +1606,6 @@
                     "ss_purchase_for_month",
                     "spec_month",
                     ["rep_ext",[
-                        "topup_info",
                         "topup_can_not_msg",
                         "regular_pay_can_not_msg"
                         ]
@@ -1610,7 +1616,7 @@
                 },
                 "if_value": {
                     "spec_month":{
-                        "1":"{rep_ext[regular_pay_can_not_msg]}，只{rep_ext[topup_can_not_msg]}",
+                        "1":"{rep_ext[pay_curr_month_msg]}",
                         "0":"{rep_ext[regular_pay_can_not_msg]}",
                         "2":"{rep_ext[topup_can_not_msg]}"
                     }
@@ -1888,6 +1894,7 @@
             "flag_sb_day_cmi":{
                 "writeto": "w_sb_cmi_flag",
                 "conditions": [],
+                "persist_value":true,
                 "req_vars": [
                     "state_month",
                     "ss_purchase_for_month",
