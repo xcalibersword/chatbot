@@ -651,36 +651,50 @@ class DetailManager:
                 return branch
 
         def tree_search(tree, info):
-            any_val_key = "_ANY"
-            for slot, sub_dict in list(tree.items()):
-                if "." in slot:
-                    loc_list = slot.split(".")
+            def dot_loc_to_list(sn):
+                # Converts subdict notation like ctx_slots.ctx_this_month to a list
+                if "." in sn:
+                    loc_list = sn.split(".")
                     if SUPER_DEBUG: print("<SECONDARY SLOT> LOC LIST", loc_list)
                     slot = loc_list[0]
                 else:
-                    loc_list = [slot]
+                    loc_list = [sn]
+                
+                slot = loc_list[0]
+                return (slot, loc_list)
 
+            any_val_key = "_ANY"
+            for slotname, sub_dict in list(tree.items()):
+                slot, loc_list = dot_loc_to_list(slotname)
                 while slot in info:
-                    curr_d = info.copy()
                     # Gets the value from info. Handles nested vals (eg "groupname.detailname")
+                    curr_d = info.copy()
                     for loc in loc_list:
                         infoval = curr_d.get(loc,"")
                         if infoval == "":
+                            # IF not found
                             if SUPER_DEBUG: print("<SECONDARY SLOT> ERROR {} not found".format(loc))
                             slot_val = ""
                             break
                             
-                        if isinstance(infoval, dict):
+                        elif isinstance(infoval, dict):
+                            # If is a subdict
                             curr_d = infoval
                         else:
+                            # If found value
                             slot_val = str(curr_d[loc]) # To convert ints to strings. I.e. for hours
                     
+                    if SUPER_DEBUG: print("Currently looking for:", slot, "value:", slot_val)
                     # Check if value is in the subdict and returns the value of it
                     if slot_val in sub_dict:
                         ss_branch = sub_dict[slot_val]
                         if isinstance(ss_branch, dict):
                             # Is a subtree
-                            slot, sub_dict = list(ss_branch.items())[0]
+                            if SUPER_DEBUG: print("Found a subtree",ss_branch, "in",sub_dict)
+                            slotname, sub_dict = list(ss_branch.items())[0]
+                            slot, loc_list = dot_loc_to_list(slotname)
+                            continue
+
                         else:
                             # Is a leaf
                             out = get_value(ss_branch, info)
@@ -693,7 +707,7 @@ class DetailManager:
                             out = get_value(a_branch, info)
                             return (True, out)
 
-                        if SUPER_DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
+                        if SUPER_DEBUG: print("<SECONDARY SLOT> Val:", slot_val, "not found in:", sub_dict)
                         break
                 
             if SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)

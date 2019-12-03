@@ -22,7 +22,7 @@
         ]
     },
     "zones": [
-        "city", "work_hrs_flag", "chosen_fee","chosen_service"
+        "city", "work_hrs_flag", "chosen_fee","chosen_service","ss_purchase_cmi_flag"
     ],
     "secondary_slots": [
         {
@@ -46,33 +46,21 @@
             }
         },
         {
-            "writeto": "area_specific_fee",
+            "writeto": "ss_purchase_cmi_flag",
             "search_tree": {
-                "city_district": {
-                    "上海市": {
-                        "chosen_fee":{
-                            "一共": "上海市一共",
-                            "服务费": "上海市服务费",
-                            "公积金缴纳": "上海市公积金",
-                            "社保缴纳": "上海市社保"
+                "purchase_type": {
+                    "normal": {
+                        "w_normal_cmi_flag":{
+                            "1.0": "still_can",
+                            "0.0": "too_late"
                         }
                     },
-                    "北京市": {
-                        "chosen_fee":{
-                            "一共": "北京市一共",
-                            "服务费": "北京市服务费",
-                            "公积金缴纳": "北京市公积金",
-                            "社保缴纳": "北京市社保"
+                    "bujiao": {
+                        "w_bujiao_cmi_flag":{
+                            "1.0": "still_can",
+                            "0.0": "too_late"
                         }
-                    },
-                    "苏州园区": {
-                        "chosen_fee":{
-                            "一共": "苏州园区一共",
-                            "服务费": "苏州园区服务费",
-                            "公积金缴纳": "苏州园区公积金",
-                            "社保缴纳": "苏州园区社保"
-                        }
-                    }
+                    }   
                 }
             }
         },
@@ -150,7 +138,8 @@
         "要社保":"yes",
         "要公积金":"no",
         "exclude_svc_fee":"include",
-        "given_amount": ""
+        "given_amount": "",
+        "purchase_type":"normal"
     },
     "info_parser": {
         "permanent_slots": [
@@ -161,7 +150,8 @@
             ["首次","gen_shouci_slot"],
             ["chosen_fee","fee_slot"],
             ["xufei","xufei_slot"],
-            ["exclude_svc_fee", "exclude_svc_fee_slot"]
+            ["exclude_svc_fee", "exclude_svc_fee_slot"],
+            ["purchase_type","purchase_type_slot"]
         ],
         "COMMENT":"ctx slots are also permanent",
         "contextual_slots":[
@@ -295,6 +285,10 @@
                     "除了服务费",
                     "(没|没有|不|不要|别)(算|添加|包括|加上|加)服务费"
                 ]
+            },
+            "purchase_type_slot":{
+                "normal":["正常"],
+                "bujiao":["补"]
             },
             "default_yes": {
                 "NO_MATCH": ["yes"]

@@ -27,6 +27,12 @@
                 "公积金":"propose_custom_gjj_jishu",
                 "社保":"propose_custom_sb_jishu"
             }
+        ],
+        "purchase_type_crossroad":[
+            "ss_purchase_cmi_flag",{
+                "still_can": "city_crossroad",
+                "too_late": "inform_pay_deadline"
+            }
         ]
     },
     "class_policy_rules":{
@@ -53,15 +59,15 @@
     "policy_rules":{  
         "init": [
             ["greet","SAME_STATE"],
-            ["purchase", "city_crossroad"],
-            ["inform","city_crossroad"],
+            ["purchase", "purchase_type_crossroad"],
+            ["inform","purchase_type_crossroad"],
             ["affirm", "initplus"],
             ["deny", "goodbye"]
         ],
         "initplus": [
             ["greet", "init"],
-            ["purchase", "city_crossroad"],
-            ["inform","city_crossroad"],
+            ["purchase", "purchase_type_crossroad"],
+            ["inform","purchase_type_crossroad"],
             ["deny", "goodbye"]
         ],
         "offer_product_links": [
