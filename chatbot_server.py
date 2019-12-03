@@ -75,7 +75,8 @@ async def chat_message(sid, msg):
     elif "!h/" in msg:
         cmd, uid, hist = msg.split("/")
         idmap[sid] = uid
-        bot.parse_transferred_messages(uid, hist)
+        history_list = hist.split(" ")
+        bot.parse_transferred_messages(uid, history_list)
         await sio.emit('message', "History parsed for <{}>".format(uid), room=sid)
     else:
         uid = idmap[sid] if sid in idmap else sid
