@@ -237,30 +237,34 @@ class ChatManager:
      
         repeat = True
         rc = 0
+        same_state_flagged = False
         while repeat and rc < 5:
             # Parse the message and get an understanding
             full_uds, bd = self._parse_message_overall(msg)
             
+            true_sip = full_uds.get_sip()
+
             if rc == 0:
                 # On first cycle
-                sip = full_uds.get_sip()
+                sip = true_sip
             else:
                 sip = sip.same_state()
 
             if DEBUG: print("<RTN> curr sip", sip.toString())
 
             # Digest and internalize the new info
-            repeat, pg = self.react_to_sip(sip)
+            zone_overwrite, pg = self.react_to_sip(sip)
 
             # Request a reply text
             intent = full_uds.get_intent()
 
-            if DEBUG: print("<RTM> Repeats", rc, "Pass gate:",pg)
-            # if repeat:
-            #     sip = SIP.same_state()
-            if not sip.is_trans_state():
+            if DEBUG: print("<RTM> Repeats", rc,"True SIP", true_sip.toString(),"Pass gate:",pg)
+
+            if not true_sip.is_trans_state() and not sip.is_same_state():
                 if DEBUG: print("<RTM> Not trans state, breaking")
                 break
+
+            repeat = not same_state_flagged or zone_overwrite
 
             rc += 1
        
@@ -355,7 +359,7 @@ class ChatManager:
         csk = og_nxt_state["key"]
         zones = self._get_zones()
         overwrite_flag, ow_state = self.pkeeper.zone_policy_overwrite(csk,zones)
-        if DEBUG: print("<ZONE POLICY>",overwrite_flag,ow_state)
+        if DEBUG: print("<ZONE POLICY> Overwrite:",overwrite_flag,ow_state)
         if overwrite_flag:
             return (True, ow_state)
         else:
@@ -477,7 +481,7 @@ class PolicyKeeper:
     def get_understanding(self, msg, curr_state):
         # Call NLP Model predict
         intent, breakdown, nums = self._NLP_predict(msg)
-        print("NLP intent:",intent)
+        print("<GET UNDERSTANDING> NLP intent:",intent)
         # Check intent against background info
         uds = self.intent_to_next_state(curr_state, intent)
         return uds, breakdown, nums
@@ -498,7 +502,7 @@ class PolicyKeeper:
 
         policy = self.POLICY_RULES[csk]
         default_null_int = self.INTENT_DICT["no_intent"]
-        uds = Understanding(intent_obj, default_null_int,SIP.same_state())
+        uds = Understanding(intent_obj, default_null_int, SIP.same_state())
         for intent_lst in policy.get_intents():
             if 0: print("intent_list",list(map(lambda x: x[0],intent_lst)))
             for pair in intent_lst:
@@ -529,10 +533,10 @@ class PolicyKeeper:
                     next_sip = self._create_state_obj(target)
                     if DEBUG: print("<ZPOL OVERWRITE> new SIP:",next_sip)
                     return (True, next_sip)
-
+            if DEBUG: print("<ZPOL OVERWRITE> Zone {} not in curr zones: {}".format(z_name, curr_zones))
             return (False, "")
 
-        print("<ZPOL> curr state key:",csk)
+        if 1: print("<ZPOL> curr state key:",csk)
 
         if check_zonepolicies(csk):
             zpd = self.ZONE_POLICIES[csk]
@@ -651,36 +655,50 @@ class DetailManager:
                 return branch
 
         def tree_search(tree, info):
-            any_val_key = "_ANY"
-            for slot, sub_dict in list(tree.items()):
-                if "." in slot:
-                    loc_list = slot.split(".")
+            def dot_loc_to_list(sn):
+                # Converts subdict notation like ctx_slots.ctx_this_month to a list
+                if "." in sn:
+                    loc_list = sn.split(".")
                     if SUPER_DEBUG: print("<SECONDARY SLOT> LOC LIST", loc_list)
                     slot = loc_list[0]
                 else:
-                    loc_list = [slot]
+                    loc_list = [sn]
+                
+                slot = loc_list[0]
+                return (slot, loc_list)
 
+            any_val_key = "_ANY"
+            for slotname, sub_dict in list(tree.items()):
+                slot, loc_list = dot_loc_to_list(slotname)
                 while slot in info:
-                    curr_d = info.copy()
                     # Gets the value from info. Handles nested vals (eg "groupname.detailname")
+                    curr_d = info.copy()
                     for loc in loc_list:
                         infoval = curr_d.get(loc,"")
                         if infoval == "":
+                            # IF not found
                             if SUPER_DEBUG: print("<SECONDARY SLOT> ERROR {} not found".format(loc))
                             slot_val = ""
                             break
                             
-                        if isinstance(infoval, dict):
+                        elif isinstance(infoval, dict):
+                            # If is a subdict
                             curr_d = infoval
                         else:
+                            # If found value
                             slot_val = str(curr_d[loc]) # To convert ints to strings. I.e. for hours
                     
+                    if SUPER_DEBUG: print("Currently looking for:", slot, "value:", slot_val)
                     # Check if value is in the subdict and returns the value of it
                     if slot_val in sub_dict:
                         ss_branch = sub_dict[slot_val]
                         if isinstance(ss_branch, dict):
                             # Is a subtree
-                            slot, sub_dict = list(ss_branch.items())[0]
+                            if SUPER_DEBUG: print("Found a subtree",ss_branch, "in",sub_dict)
+                            slotname, sub_dict = list(ss_branch.items())[0]
+                            slot, loc_list = dot_loc_to_list(slotname)
+                            continue
+
                         else:
                             # Is a leaf
                             out = get_value(ss_branch, info)
@@ -693,7 +711,7 @@ class DetailManager:
                             out = get_value(a_branch, info)
                             return (True, out)
 
-                        if SUPER_DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
+                        if SUPER_DEBUG: print("<SECONDARY SLOT> Val:", slot_val, "not found in:", sub_dict)
                         break
                 
             if SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)
@@ -763,7 +781,7 @@ class ReplyGenerator:
     # Performs calculations and formats text message replies 
     ############## Major function ##############
     def _enhance_info(self,curr_state,info):
-        RF_DEBUG = 1
+        RF_DEBUG = 0
         enhanced = info.copy()
         if RF_DEBUG: print("initial info", enhanced)
         rep_ext = {}

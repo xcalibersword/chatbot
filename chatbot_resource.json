@@ -674,6 +674,23 @@
             ],
             "replies": ["{rep_ext[doublecheck_info]}"]
         },
+        "purchase_type_crossroad":{
+            "key":"purchase_type_crossroad",
+            "gated": true,
+            "transition_state": true,
+            "thread": "t_purchase_type",
+            "humanify": false,
+            "req_info": [
+                ["city","city"],
+                ["ss_purchase_for_month","dummy_slot"],
+                ["purchase_type", "DEFAULT_SV"]
+            ],
+            "calcs":[
+                "flag_normal_pay_cmi",
+                "flag_bujiao_month_cmi"
+            ],
+            "replies": ["您是正常缴还是补缴呢？"]
+        },
         "propose_plan": {
             "key": "propose_plan",
             "gated": true,
@@ -903,7 +920,7 @@
             "humanify":false,
             "calcs": [
                 "calc_specified_month",
-                "flag_sb_day_cmi",
+                "flag_normal_pay_cmi",
                 "flag_bujiao_month_cmi"
             ],
             "req_info": [
@@ -1061,7 +1078,8 @@
                         "given_amount": "要什么基数？",
                         "chosen_service":"指的是社保还是公积金？",
                         "ss_sb_jishu_figure": "要按照什么基数？",
-                        "ss_gjj_jishu_figure": "要按照什么基数？"
+                        "ss_gjj_jishu_figure": "要按照什么基数？",
+                        "purchase_type": "是正常缴还是补缴？"
                     }
                 }
             },
@@ -1071,7 +1089,6 @@
                     "provide_taobao_link"
                 ],
                 "lookfor": [
-                    "area_specific_fee",
                     "city_district",
                     "要社保",
                     "要公积金",
@@ -1542,17 +1559,17 @@
                 }
             },
             {
-                "writeto": "regular_pay_can_not_msg",
+                "writeto": "normal_pay_can_not_msg",
                 "states": [
                     "inform_topup",
                     "inform_pay_deadline",
                     "month_crossroad"
                 ],
                 "lookfor": [
-                    "w_sb_cmi_flag"
+                    "w_normal_cmi_flag"
                 ],
                 "if_value": {
-                    "w_sb_cmi_flag":{
+                    "w_normal_cmi_flag":{
                         "1": "现在可以正常交",
                         "0": "现在来不及正常交"
                     }
@@ -1582,17 +1599,17 @@
                 ],
                 "lookfor": [
                     "ss_purchase_for_month",
-                    "w_sb_cmi_flag",
+                    "w_normal_cmi_flag",
                     ["rep_ext",[
                         "topup_can_not_msg",
-                        "regular_pay_can_not_msg"
+                        "normal_pay_can_not_msg"
                         ]
                     ]
                 ],
                 "if_value": {
-                    "w_sb_cmi_flag":{
-                        "0":"{rep_ext[regular_pay_can_not_msg]}，只{rep_ext[topup_can_not_msg]}",
-                        "1":"{rep_ext[regular_pay_can_not_msg]}"
+                    "w_normal_cmi_flag":{
+                        "0":"{rep_ext[normal_pay_can_not_msg]}，只{rep_ext[topup_can_not_msg]}",
+                        "1":"{rep_ext[normal_pay_can_not_msg]}"
                     }
                 }
             },
@@ -1607,7 +1624,7 @@
                     "spec_month",
                     ["rep_ext",[
                         "topup_can_not_msg",
-                        "regular_pay_can_not_msg"
+                        "normal_pay_can_not_msg"
                         ]
                     ]
                 ],
@@ -1617,7 +1634,7 @@
                 "if_value": {
                     "spec_month":{
                         "1":"{rep_ext[pay_curr_month_msg]}",
-                        "0":"{rep_ext[regular_pay_can_not_msg]}",
+                        "0":"{rep_ext[normal_pay_can_not_msg]}",
                         "2":"{rep_ext[topup_can_not_msg]}"
                     }
                 }
@@ -1891,8 +1908,8 @@
                 },
                 "writeto": "w_shouci_fee"
             },
-            "flag_sb_day_cmi":{
-                "writeto": "w_sb_cmi_flag",
+            "flag_normal_pay_cmi":{
+                "writeto": "w_normal_cmi_flag",
                 "conditions": [],
                 "persist_value":true,
                 "req_vars": [
