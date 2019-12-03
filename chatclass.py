@@ -778,172 +778,24 @@ class ReplyGenerator:
         reply = self.generate_reply_message(rdb, infoplus)
         return (reply, info_topup)
 
-    # Performs calculations and formats text message replies 
-    ############## Major function ##############
     def _enhance_info(self,curr_state,info):
         RF_DEBUG = 0
-        enhanced = info.copy()
-        if RF_DEBUG: print("initial info", enhanced)
-        rep_ext = {}
-        l_calc_ext = {}
-        topup = {}
-
         cskey = curr_state["key"]
+        text_topup = {}
+        rep_ext = {}
         state_calcs = False
+        enhanced = info.copy()
 
         formatDB = self.formatDB["msg_formats"]
-        calcDB = self.formatDB["calcs"]
-
-        def add_enh(key, value, ext_dict,subdict_name, pv = False, overwrite = False):
-            if RF_DEBUG: print("Enhancing!{}:{}".format(key,value))
-
-            if key in ext_dict and not overwrite:
-                ext_dict[key] = ext_dict[key] + value
-            else:
-                ext_dict[key] = value
-            
-            # Dict of info to be returned and written into main info
-            if pv:
-                topup[key] = value
-                enhanced[key] = value # Write to enhanced main dict
-            else:
-                if not subdict_name in enhanced: enhanced[subdict_name] = {} 
-                enhanced[subdict_name].update(ext_dict) # Write to the the subdict in enhanced
 
         def add_txt_enh(key, rawstr,_pv = False):
             wstr = rawstr.format(**enhanced)
             enhstr = cbsv.conv_numstr(wstr)
-            return add_enh(key,enhstr,rep_ext,"rep_ext",pv = _pv)
+            return cu.add_enh(key,enhstr,rep_ext,"rep_ext",text_topup,enhanced, persist = _pv)
         
-        def add_calc_enh(key, rawstr, _pv = False):
-            flt = round(float(rawstr),2) # Round all displayed numbers to 2 dp
-            return add_enh(key,flt,l_calc_ext,"calc_ext", pv = _pv, overwrite = True)
-
         def needs_txt_enh(tmp,curr_state_key):
             states = tmp["states"]
             return curr_state_key in states
-
-        def needs_calc(state):
-            return "calcs" in state
-
-        def add_formula_conditional_vars(f,vd):
-            ret = {}
-            # This assumes all conditions are joined by AND
-            conds = f.get("conditions",[])
-            for cond in conds:
-                k, v, setval = cond
-                vkey, tval, fval = setval
-
-                if not k in vd:
-                    print("<COND VALS> WARNING {} not in info".format(k))
-                    met = False
-                else:
-                    met = (vd[k] == v) # Simple match
-
-                ret[vkey] = tval if met else fval
-
-            vd.update(ret)
-            return
-
-        # Big method.
-        # Takes in a formula (dict)
-        # Returns a value of the result
-        def resolve_formula(f):
-            reqvar_key = "req_vars"
-            opvar_key = "optional_vars"
-            def op_on_all(vnames, op, vdic):
-                def operate(a,b,op):
-                    a = float(a) # Force every variable involved to float
-                    b = float(b)
-                    return op(a,b)
-                out = None
-                for vname in vnames:
-                    isnumbr = cbsv.is_number(vname)
-                    rel_val = vname if isnumbr else vdic[vname] # variables can be real numbers or variable names
-                    if out == None:
-                        out = rel_val
-                    else:
-                        out = operate(out,rel_val,op)
-                return out
-
-            def get_operator(opname):
-                if opname == "add":
-                    opr = lambda a,b: a+b
-                elif opname == "multi":
-                    opr = lambda a,b: a*b
-                elif opname == "sub":
-                    opr = lambda a,b: a-b
-                elif opname == "div":
-                    opr = lambda a,b: a/b
-                elif opname == "equals":
-                    opr = lambda a,b: (1 if a == b else 0)
-                elif opname == "isgreater":
-                    opr = lambda a,b: (1 if a > b else 0)
-                elif opname == "OR":
-                    opr = lambda a,b: (1 if (a > 0 or b > 0) else 0)
-                else:
-                    print("<RESOLVE FORMULA> ERROR Unknown operator:",opname)
-                    opr = lambda a,b: a # Unknown operator just returns a
-                return opr
-
-            # Process the formula steps    
-            instr = f["steps"]
-            steps = list(instr.keys())
-            steps = list(map(lambda x: (x.split(","), instr[x]),steps))
-            steps.sort(key=lambda t: float(t[0][0])) # If no conversion it sorts as string
-
-            if RF_DEBUG: print("<RESOLVE FORMULA> steps aft sort",steps)
-            req_vars = f[reqvar_key]
-            op_vars = f.get(opvar_key, [])
-            vd = dive_for_values(req_vars,enhanced)
-            op_vars_d = dive_for_values(op_vars, enhanced,failzero=True)
-            vd.update(op_vars_d)
-
-            # Conditional values
-            add_formula_conditional_vars(f,vd)
-            if RF_DEBUG: print("<RESOLVE FORMULA> Value Dict",vd)
-
-            #CALCULATIONS 
-            vd["OUTCOME"] = 0
-            for stp in steps:
-                (NA, opname),(valnames,tkey)  = stp
-                opname.replace(" ","") #Spacing messes up the recognition of logical operators
-                if not tkey in vd:
-                    vd[tkey] = 0
-
-                opr = get_operator(opname)
-                vd[tkey] = op_on_all(valnames,opr,vd)
-            return vd
-
-        ### MAIN METHOD LOGIC ###
-        # Calculations
-        if needs_calc(curr_state):
-            state_calcs = curr_state["calcs"]
-            for fname in state_calcs:
-                if RF_DEBUG: print("<RESOLVE FORMULA> Performing:",fname)
-                if not fname in calcDB:
-                    print("<RESOLVE FORMULA> ERROR! No such formula:{}".format(fname))
-                else:
-                    formula = calcDB[fname]
-                    pv_flag = formula.get("persist_value",False)
-                    target_key = formula["writeto"]
-                    result_dict = resolve_formula(formula)
-                    if isinstance(target_key, list):
-                        # Forumala Multi output
-                        for tk, vdk in target_key:
-                            result = result_dict.get(vdk,"")
-                            if not result == "":
-                                add_calc_enh(tk,result,pv_flag)
-                            else:
-                                print("<RESOLVE FORMULA> ERROR {} not found in formula".format(vdk))
-                    else:
-                        result = result_dict["OUTCOME"]
-                        add_calc_enh(target_key,result,pv_flag)
-                if RF_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
-            
-            if RF_DEBUG: print("<RESOLVE FORMULA> Postcalc enh",enhanced)
-        else:
-            if RF_DEBUG: print("<RESOLVE FORMULA> No calculation performed")
 
         def get_reply_template(pulled):
             if isinstance(pulled, list):
@@ -986,7 +838,7 @@ class ReplyGenerator:
                                 
                         add_txt_enh(target_key,enstr)
         
-        return (enhanced, topup)
+        return (enhanced, text_topup)
 
     # Returns the a reply database either from intent or from state
     def getreplydb(self, intent, curr_state, issamestate):

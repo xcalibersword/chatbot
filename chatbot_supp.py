@@ -520,6 +520,152 @@ class InfoParser():
 
         return output
 
+class Calculator():
+    def __init__(self, formatDB):
+        self.formula_db = formatDB["calcs"]
+        self.debug = 0
+
+    def add_calculations(self, curr_state, curr_info):
+        topup = self._do_all_calculations(self, curr_info)
+        curr_info.update(topup)
+
+    # Performs calculations and formats text message replies 
+    ############## Major function ##############
+    def _do_all_calculations(self, curr_state, info):
+        l_calc_ext = {}
+        calc_topup = {}
+        CALC_DEBUG = self.debug
+        out = {}
+        enhanced = info.copy()
+        calcDB = self.formula_db.copy()
+
+        def get_calcs(state):
+            return curr_state.get("calcs", [])
+
+        def add_calc_enh(key, rawstr, _pv = False):
+            flt = round(float(rawstr),2) # Round all displayed numbers to 2 dp
+            return cu.add_enh(key,flt,l_calc_ext, "calc_ext", calc_topup, enhanced, persist = _pv, overwrite = True)
+
+        def assign_multiple_outputs(target_key):
+            # Forumala Multi output
+            for tk, vdk in target_key:
+                result = result_dict.get(vdk,"")
+                if not result == "":
+                    add_calc_enh(tk,result,pv_flag)
+                else:
+                    print("<RESOLVE FORMULA> ERROR {} not found in formula".format(vdk))
+
+        ### MAIN METHOD LOGIC ###
+        # Calculations
+        state_calcs = get_calcs(curr_state)
+        for fname in state_calcs:
+            if CALC_DEBUG: print("<RESOLVE FORMULA> Performing:",fname)
+            if not fname in calcDB:
+                print("<RESOLVE FORMULA> ERROR! No such formula:{}".format(fname))
+            else:
+                formula = calcDB[fname]
+                pv_flag = formula.get("persist_value",False)
+                target_key = formula["writeto"]
+                result_dict = self.resolve_formula(formula)
+                if isinstance(target_key, list):
+                    assign_multiple_outputs(target_key)
+                else:
+                    result = result_dict["OUTCOME"]
+                    add_calc_enh(target_key,result,pv_flag)
+            if CALC_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
+        
+        if CALC_DEBUG: print("<RESOLVE FORMULA> Postcalc enh",enhanced)
+        if state_calcs == [] and CALC_DEBUG: print("<RESOLVE FORMULA> No calculation performed")
+        
+        return out
+
+    # Big method.
+    # Takes in a formula (dict)
+    # Returns a value of the result
+    def resolve_formula(self, f):
+        # Given variables, an operator and a dictionary,
+        # Returns a result value 
+        def op_on_all(vnames, op, vdic):
+            def operate(a,b,op):
+                a = float(a) # Force every variable involved to float
+                b = float(b)
+                return op(a,b)
+            out = None
+            for vname in vnames:
+                isnumbr = cbsv.is_number(vname)
+                rel_val = vname if isnumbr else vdic[vname] # variables can be real numbers or variable names
+                if out == None:
+                    out = rel_val
+                else:
+                    out = operate(out,rel_val,op)
+            return out
+        def get_operator(opname):
+            opname.replace(" ","") #Spacing messes up the recognition of logical operators
+            if opname == "add":
+                opr = lambda a,b: a+b
+            elif opname == "multi":
+                opr = lambda a,b: a*b
+            elif opname == "sub":
+                opr = lambda a,b: a-b
+            elif opname == "div":
+                opr = lambda a,b: a/b
+            elif opname == "equals":
+                opr = lambda a,b: (1 if a == b else 0)
+            elif opname == "isgreater":
+                opr = lambda a,b: (1 if a > b else 0)
+            elif opname == "OR":
+                opr = lambda a,b: (1 if (a > 0 or b > 0) else 0)
+            else:
+                print("<RESOLVE FORMULA> ERROR Unknown operator:",opname)
+                opr = lambda a,b: a # Unknown operator just returns a
+            return opr
+
+        def add_formula_conditional_vars(f,vd):
+            ret = {}
+            # This assumes all conditions are joined by AND
+            conds = f.get("conditions",[])
+            for cond in conds:
+                k, v, setval = cond
+                vkey, tval, fval = setval
+
+                if not k in vd:
+                    print("<COND VALS> WARNING {} not in info".format(k))
+                    met = False
+                else:
+                    met = (vd[k] == v) # Simple match
+
+                ret[vkey] = tval if met else fval
+
+            vd.update(ret)
+            return
+
+        # Process the formula steps    
+        instr = f["steps"]
+        steps = list(instr.keys())
+        steps = list(map(lambda x: (x.split(","), instr[x]),steps))
+        steps.sort(key=lambda t: float(t[0][0])) # If no conversion it sorts as string
+
+        if self.debug: print("<RESOLVE FORMULA> steps aft sort",steps)
+        req_vars = f[reqvar_key]
+        op_vars = f.get(opvar_key, [])
+        vd = cu.dive_for_values(req_vars,enhanced)
+        op_vars_d = cu.dive_for_values(op_vars, enhanced,failzero=True)
+        vd.update(op_vars_d)
+
+        # Fetch conditional values
+        add_formula_conditional_vars(f,vd)
+        if self.debug: print("<RESOLVE FORMULA> Value Dict",vd)
+
+        # Perform calculation steps 
+        vd["OUTCOME"] = 0
+        for stp in steps:
+            (NA, opname),(valnames,tkey)  = stp
+            if not tkey in vd:
+                vd[tkey] = 0
+            opr = get_operator(opname)
+            vd[tkey] = op_on_all(valnames,opr,vd)
+        return vd
+
 if __name__ == "__main__":
     print("Number Converter On!")
     while 1:

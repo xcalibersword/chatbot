@@ -51,3 +51,21 @@ def _dive(c_list, c_dir, failzero = False, DEBUG = 1):
                 if DEBUG: print("<DIVE> ERROR! Cannot find variable<{}> in {}".format(valname,c_dir))
     
     return out
+
+def add_enh(key, value, ext_dict, subdict_name, topup, enhanced, persist = False, overwrite = False, DEBUG = 0):
+    if DEBUG: print("Enhancing!{}:{}".format(key,value))
+
+    if key in ext_dict and not overwrite:
+        ext_dict[key] = ext_dict[key] + value
+    else:
+        ext_dict[key] = value
+    
+    # Dict of info to be returned and written into main info
+    if persist:
+        topup[key] = value
+        enhanced[key] = value # Write to enhanced main dict instead of subdict
+    else:
+        # Subdict names inlcude calc_ext and rep_ext
+        if not subdict_name in enhanced: enhanced[subdict_name] = {} 
+        enhanced[subdict_name].update(ext_dict) # Write to the the subdict in enhanced
+    return
