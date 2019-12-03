@@ -521,8 +521,8 @@ class InfoParser():
         return output
 
 class Calculator():
-    def __init__(self, formatDB):
-        self.formula_db = formatDB["calcs"]
+    def __init__(self, formulae):
+        self.formula_db = formulae
         self.debug = 0
 
     def add_calculations(self, curr_state, curr_info):

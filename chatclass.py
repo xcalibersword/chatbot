@@ -204,13 +204,14 @@ class ZoneTracker:
 
 # Coordinates everything about a chat
 class ChatManager:
-    def __init__(self, chat, iparser, pkeeper, replygen, dmanager, gkeeper):
+    def __init__(self, chat, calc, iparser, pkeeper, replygen, dmanager, gkeeper):
         # Internal properties
         self.chat = chat
         self.chatID = self.chat.getID()
         self.samestateflag = False
 
         # Helper classes
+        self.calc = calc
         self.iparser = iparser
         self.pkeeper = pkeeper
         self.replygen = replygen
@@ -279,6 +280,10 @@ class ChatManager:
         self._record_messages_in_chat(msg,reply)
         return (reply, bd, curr_info)
 
+    # Makes sense of message.
+    # Calls policykeeper to get intent (NLP) and next state
+    # Calls gatekeeper to scan requirements
+    # Calls iparser to fill slots, with requirements from gatekeeper
     # Takes in message text, returns (understanding object, nlp breakdown)
     def _parse_message_overall(self,msg):
         # Inital understanding
@@ -295,6 +300,9 @@ class ChatManager:
         return uds, bd
     
     # Process, gatekeep then internalize changes
+    # Converts same_state_obj to the current state.
+    # Checks if the state is crossroad and needs to be overwritten
+    # Gatekeeper gets requirements from state again in case it changed.
     # Results in change in chat details and change in state
     # Returns boolean indicating whether or not the state was overwritten.
     def react_to_sip(self, sip):
@@ -310,8 +318,10 @@ class ChatManager:
         # Check if current target state is in a zone_policy crossroad 
         ow_flag, stateobj = self._zone_policy_overwrite(stateobj)
 
-        # Gatekeeper gets the requirements from the state
-        self._get_slots_from_state(stateobj)
+        if ow_flag:
+            # Gatekeeper gets the requirements from the state
+            self._get_slots_from_state(stateobj)
+        
         # Gatekeeper tries the gate
         pass_gate = self._advance_to_new_state(stateobj)
 
@@ -783,7 +793,6 @@ class ReplyGenerator:
         cskey = curr_state["key"]
         text_topup = {}
         rep_ext = {}
-        state_calcs = False
         enhanced = info.copy()
 
         formatDB = self.formatDB["msg_formats"]

@@ -1837,612 +1837,611 @@
                     }
                 }
             }
-        ],
-        "calcs": {
-            "calc_specified_month":{
-                "writeto":"spec_month",
-                "persist_value": true,
-                "conditions":[],
-                "req_vars":[
-                    "ss_purchase_for_month",
-                    "state_month"
+        ]
+    },
+    "formulae": {
+        "calc_specified_month":{
+            "writeto":"spec_month",
+            "persist_value": true,
+            "conditions":[],
+            "req_vars":[
+                "ss_purchase_for_month",
+                "state_month"
+            ],
+            "steps":{
+                "0,equals": [
+                    ["state_month","ss_purchase_for_month"],
+                    "w_is_curr_month"
                 ],
-                "steps":{
-                    "0,equals": [
-                        ["state_month","ss_purchase_for_month"],
-                        "w_is_curr_month"
-                    ],
-                    "1,isgreater": [
-                        ["state_month","ss_purchase_for_month"],
-                        "w_is_next_month"
-                    ],
-                    "2,multi":[
-                        ["w_is_next_month",2],
-                        "w_is_next_month"
-                    ],
-                    "3,add":[
-                        ["w_is_curr_month", "w_is_next_month"],
-                        "OUTCOME"
-                    ]
-                }
-            },
-            "calc_flag_sb_gjj": {
-                "writeto": "flag_sb_gjj",
-                "persist_value": true,
-                "conditions": [
-                    ["要社保","yes",["w_sb",1,0]],
-                    ["要公积金","yes",["w_gjj",10,0]]
+                "1,isgreater": [
+                    ["state_month","ss_purchase_for_month"],
+                    "w_is_next_month"
                 ],
-                "req_vars": [
-                    "要社保",
-                    "要公积金"
+                "2,multi":[
+                    ["w_is_next_month",2],
+                    "w_is_next_month"
                 ],
-                "steps": {
-                    "1,add": [
-                        [
-                            "w_sb",
-                            "w_gjj"
-                        ],
-                        "OUTCOME"
-                    ]
-                }
-            },
-            "flag_shouci": {
-                "conditions": [
+                "3,add":[
+                    ["w_is_curr_month", "w_is_next_month"],
+                    "OUTCOME"
+                ]
+            }
+        },
+        "calc_flag_sb_gjj": {
+            "writeto": "flag_sb_gjj",
+            "persist_value": true,
+            "conditions": [
+                ["要社保","yes",["w_sb",1,0]],
+                ["要公积金","yes",["w_gjj",10,0]]
+            ],
+            "req_vars": [
+                "要社保",
+                "要公积金"
+            ],
+            "steps": {
+                "1,add": [
                     [
-                        "首次","yes",["w_sc",1,0]
-                    ]
-                ],
-                "req_vars": [
-                    "首次",
-                    ["city_info",["shouci_fee"]]
-                ],
-                "steps": {
-                    "1,multi": [
-                        [
-                            "shouci_fee",
-                            "w_sc"
-                        ],
-                        "OUTCOME"
-                    ]
-                },
-                "writeto": "w_shouci_fee"
+                        "w_sb",
+                        "w_gjj"
+                    ],
+                    "OUTCOME"
+                ]
+            }
+        },
+        "flag_shouci": {
+            "conditions": [
+                [
+                    "首次","yes",["w_sc",1,0]
+                ]
+            ],
+            "req_vars": [
+                "首次",
+                ["city_info",["shouci_fee"]]
+            ],
+            "steps": {
+                "1,multi": [
+                    [
+                        "shouci_fee",
+                        "w_sc"
+                    ],
+                    "OUTCOME"
+                ]
             },
-            "flag_normal_pay_cmi":{
-                "writeto": "w_normal_cmi_flag",
-                "conditions": [],
-                "persist_value":true,
-                "req_vars": [
-                    "state_month",
-                    "ss_purchase_for_month",
-                    "state_curr_day",
-                    ["city_info",
-                        [
-                            "pay_deadline"
-                        ]
+            "writeto": "w_shouci_fee"
+        },
+        "flag_normal_pay_cmi":{
+            "writeto": "w_normal_cmi_flag",
+            "conditions": [],
+            "persist_value":true,
+            "req_vars": [
+                "state_month",
+                "ss_purchase_for_month",
+                "state_curr_day",
+                ["city_info",
+                    [
+                        "pay_deadline"
                     ]
+                ]
+            ],
+            "steps": {
+                "1,isgreater": [
+                    ["state_curr_day","pay_deadline"],
+                    "w_past_deadline"
                 ],
-                "steps": {
-                    "1,isgreater": [
-                        ["state_curr_day","pay_deadline"],
-                        "w_past_deadline"
-                    ],
-                    "2,sub":[
-                        [1,"w_past_deadline"],
-                        "w_not_past_deadline"
-                    ],
-                    "3,isgreater":[
-                        ["ss_purchase_for_month","state_month"],
-                        "w_is_next_month"
-                    ],
-                    "4,OR":[
-                        ["w_not_past_deadline","w_is_next_month"],
-                        "OUTCOME"
-                    ]
+                "2,sub":[
+                    [1,"w_past_deadline"],
+                    "w_not_past_deadline"
+                ],
+                "3,isgreater":[
+                    ["ss_purchase_for_month","state_month"],
+                    "w_is_next_month"
+                ],
+                "4,OR":[
+                    ["w_not_past_deadline","w_is_next_month"],
+                    "OUTCOME"
+                ]
 
-                }
-            },
-            "flag_bujiao_month_cmi":{
-                "writeto": "w_bujiao_cmi_flag",
-                "conditions": [],
-                "req_vars": [
-                    "state_month",
-                    "ss_purchase_for_month",
+            }
+        },
+        "flag_bujiao_month_cmi":{
+            "writeto": "w_bujiao_cmi_flag",
+            "conditions": [],
+            "req_vars": [
+                "state_month",
+                "ss_purchase_for_month",
+                [
+                    "city_info",
+                    ["bujiao_period"]
+                ]
+            ],
+            "steps": {
+                "1,sub":[
+                    ["state_month","bujiao_period"],
+                    "w_lower_limit"
+                ],
+                "2,isgreater":[
+                    [0,"w_lower_limit"],"w_topup"
+                ],
+                "3,multi":[
+                    [12,"w_topup"],"w_topup_val"
+                ],
+                "4,add":[
+                    ["w_lower_limit","w_topup_val"],
+                    "w_final_lower_limit"
+                ],
+                "5,isgreater": [
                     [
-                        "city_info",
-                        ["bujiao_period"]
-                    ]
+                        "w_final_lower_limit",
+                        "ss_purchase_for_month"
+                    ],
+                    "OUTCOME"
                 ],
-                "steps": {
-                    "1,sub":[
-                        ["state_month","bujiao_period"],
-                        "w_lower_limit"
-                    ],
-                    "2,isgreater":[
-                        [0,"w_lower_limit"],"w_topup"
-                    ],
-                    "3,multi":[
-                        [12,"w_topup"],"w_topup_val"
-                    ],
-                    "4,add":[
-                        ["w_lower_limit","w_topup_val"],
-                        "w_final_lower_limit"
-                    ],
-                    "5,isgreater": [
-                        [
-                            "w_final_lower_limit",
-                            "ss_purchase_for_month"
-                        ],
-                        "OUTCOME"
-                    ],
-                    "6,sub":[
-                        [
-                            1,
-                            "OUTCOME"
-                        ],
-                        "OUTCOME"
-                    ]
-                }
-            },
-            "sum_svc_fee": {
-                "writeto": "svc_fee_total",
-                "persist_value":true,
-                "conditions": [["flag_sb_gjj",11,["w_svcfee_multi",2,1]]],
-                "req_vars": [
-                    ["city_info",["svc_fee"]],
-                    "flag_sb_gjj"
-                ],
-                "steps": {
-                    "1,multi": [
-                        [
-                            "w_svcfee_multi",
-                            "svc_fee"
-                        ],
-                        "OUTCOME"
-                    ]
-                }
-            },
-            "shebao_fee_amt": {
-                "conditions": [
-                    ["custom_sb_flag",1,["use_custom_sb",1,0]]
-                ],
-                "persist_value": true,
-                "req_vars": [
-                    ["city_info",["shebao_payment"]
-]
-                ],
-                "optional_vars": [
-                    "w_custom_sb_fee",
-                    "custom_sb_flag"
-                ],
-                "steps": {
-                    "1,sub": [
-                        [1,"use_custom_sb"],
-                        "use_default_sb"
-                    ],
-                    "2,multi": [
-                        ["use_custom_sb","w_custom_sb_fee"],
-                        "w_custom_sb_sum"
-                    ],
-                    "3,multi": [
-                        ["use_default_sb","shebao_payment"],
-                        "w_default_sb_sum"
-                    ],
-                    "9,add":[
-                        ["w_custom_sb_sum", "w_default_sb_sum"],
-                        "OUTCOME"
-                    ]
-                },
-                "writeto": "w_shebao_payment"
-            },
-            "gongjijin_fee_amt": {
-                "writeto": "w_gongjijin_fee",
-                "conditions": [
-                    ["custom_gjj_flag",1,["use_custom_gjj",1,0]]
-                ],
-                "persist_value": false,
-                "req_vars": [
+                "6,sub":[
                     [
-                        "city_info",
-                        ["gongjijin_fee"]
-                    ]
-                ],
-                "optional_vars": [
-                    "w_custom_gjj_fee",
-                    "custom_gjj_flag"
-                ],
-                "steps": {
-                    "1,sub": [
-                        [1,"use_custom_gjj"],
-                        "use_default_gjj"
-                    ],
-                    "2,multi": [
-                        ["use_custom_gjj","w_custom_gjj_fee"],
-                        "w_custom_gjj_sum"
-                    ],
-                    "3,multi": [
-                        ["use_default_gjj","gongjijin_fee"],
-                        "w_default_gjj_sum"
-                    ],
-                    "9,add":[
-                        ["w_custom_gjj_sum", "w_default_gjj_sum"],
+                        1,
                         "OUTCOME"
-                    ]
-                }
-            },
-            "shebao_basic_calc": {
-                "writeto":[
-                    ["shebao_basic_total","OUTCOME"],
-                    ["shebao_jiaona_total","w_jiaona_total"]
-                ],
-                "conditions": [
-                    ["flag_sb_gjj",1,["w_sb_flag",1,0]],
-                    ["flag_sb_gjj",10,["w_gjj_flag",1,0]],
-                    ["flag_sb_gjj",11,["both_flag",1,0]]
-                ],
-                "persist_value": true,
-                "req_vars": [
-                    "flag_sb_gjj",
-                    "svc_fee_total",
+                    ],
+                    "OUTCOME"
+                ]
+            }
+        },
+        "sum_svc_fee": {
+            "writeto": "svc_fee_total",
+            "persist_value":true,
+            "conditions": [["flag_sb_gjj",11,["w_svcfee_multi",2,1]]],
+            "req_vars": [
+                ["city_info",["svc_fee"]],
+                "flag_sb_gjj"
+            ],
+            "steps": {
+                "1,multi": [
                     [
-                        "calc_ext",
-                        [
-                            "w_shouci_fee",
-                            "w_shebao_payment",
-                            "w_gongjijin_fee"
-                        ]
-                    ]
+                        "w_svcfee_multi",
+                        "svc_fee"
+                    ],
+                    "OUTCOME"
+                ]
+            }
+        },
+        "shebao_fee_amt": {
+            "conditions": [
+                ["custom_sb_flag",1,["use_custom_sb",1,0]]
+            ],
+            "persist_value": true,
+            "req_vars": [
+                ["city_info",["shebao_payment"]]
+            ],
+            "optional_vars": [
+                "w_custom_sb_fee",
+                "custom_sb_flag"
+            ],
+            "steps": {
+                "1,sub": [
+                    [1,"use_custom_sb"],
+                    "use_default_sb"
                 ],
-                "steps": {
-                    "1,add": [
-                        [
-                            "both_flag",
-                            "w_sb_flag"
-                        ],
+                "2,multi": [
+                    ["use_custom_sb","w_custom_sb_fee"],
+                    "w_custom_sb_sum"
+                ],
+                "3,multi": [
+                    ["use_default_sb","shebao_payment"],
+                    "w_default_sb_sum"
+                ],
+                "9,add":[
+                    ["w_custom_sb_sum", "w_default_sb_sum"],
+                    "OUTCOME"
+                ]
+            },
+            "writeto": "w_shebao_payment"
+        },
+        "gongjijin_fee_amt": {
+            "writeto": "w_gongjijin_fee",
+            "conditions": [
+                ["custom_gjj_flag",1,["use_custom_gjj",1,0]]
+            ],
+            "persist_value": false,
+            "req_vars": [
+                [
+                    "city_info",
+                    ["gongjijin_fee"]
+                ]
+            ],
+            "optional_vars": [
+                "w_custom_gjj_fee",
+                "custom_gjj_flag"
+            ],
+            "steps": {
+                "1,sub": [
+                    [1,"use_custom_gjj"],
+                    "use_default_gjj"
+                ],
+                "2,multi": [
+                    ["use_custom_gjj","w_custom_gjj_fee"],
+                    "w_custom_gjj_sum"
+                ],
+                "3,multi": [
+                    ["use_default_gjj","gongjijin_fee"],
+                    "w_default_gjj_sum"
+                ],
+                "9,add":[
+                    ["w_custom_gjj_sum", "w_default_gjj_sum"],
+                    "OUTCOME"
+                ]
+            }
+        },
+        "shebao_basic_calc": {
+            "writeto":[
+                ["shebao_basic_total","OUTCOME"],
+                ["shebao_jiaona_total","w_jiaona_total"]
+            ],
+            "conditions": [
+                ["flag_sb_gjj",1,["w_sb_flag",1,0]],
+                ["flag_sb_gjj",10,["w_gjj_flag",1,0]],
+                ["flag_sb_gjj",11,["both_flag",1,0]]
+            ],
+            "persist_value": true,
+            "req_vars": [
+                "flag_sb_gjj",
+                "svc_fee_total",
+                [
+                    "calc_ext",
+                    [
+                        "w_shouci_fee",
+                        "w_shebao_payment",
+                        "w_gongjijin_fee"
+                    ]
+                ]
+            ],
+            "steps": {
+                "1,add": [
+                    [
+                        "both_flag",
                         "w_sb_flag"
                     ],
-                    "2,add": [
-                        [
-                            "both_flag",
-                            "w_gjj_flag"
-                        ],
+                    "w_sb_flag"
+                ],
+                "2,add": [
+                    [
+                        "both_flag",
                         "w_gjj_flag"
                     ],
-                    "10,multi": [
-                        [
-                            "w_gongjijin_fee",
-                            "w_gjj_flag"
-                        ],
-                        "w_gjj_jiaona"
-                    ],
-                    "11,multi": [
-                        [
-                            "w_shebao_payment",
-                            "w_sb_flag"
-                        ],
-                        "w_sb_jiaona"
-                    ],
-                    "12,add": [
-                        [
-                            "w_sb_jiaona",
-                            "w_gjj_jiaona"
-                        ],
-                        "w_jiaona_total"
-                    ],
-                    "13,add": [
-                        [
-                            "w_jiaona_total",
-                            "svc_fee_total",
-                            "w_shouci_fee"
-                        ],
-                        "OUTCOME"
-                    ]
-                }
-            },
-            "bj_shebao_basic": {
-                "conditions": [
-                    ["flag_sb_gjj",1,["w_sb_flag",1,0]],
-                    ["flag_sb_gjj",10,["w_gjj_flag",1,0]],
-                    ["flag_sb_gjj",11,["both_flag",1,0]]
+                    "w_gjj_flag"
                 ],
-                "req_vars": [
-                    "flag_sb_gjj",
+                "10,multi": [
                     [
-                        "city_info",
-                        [
-                            "shebao_payment",
-                            "gongjijin_fee"
-                        ]
+                        "w_gongjijin_fee",
+                        "w_gjj_flag"
                     ],
-                    [
-                        "calc_ext",
-                        [
-                            "w_shouci_fee"
-                        ]
-                    ]
+                    "w_gjj_jiaona"
                 ],
-                "steps": {
-                    "1,add": [
-                        [
-                            "both_flag",
-                            "w_sb_flag"
-                        ],
+                "11,multi": [
+                    [
+                        "w_shebao_payment",
                         "w_sb_flag"
                     ],
-                    "2,add": [
-                        [
-                            "both_flag",
-                            "w_gjj_flag"
-                        ],
-                        "w_gjj_flag"
-                    ],
-                    "10,multi": [
-                        [
-                            "gongjijin_fee",
-                            "w_gjj_flag"
-                        ],
+                    "w_sb_jiaona"
+                ],
+                "12,add": [
+                    [
+                        "w_sb_jiaona",
                         "w_gjj_jiaona"
                     ],
-                    "11,multi": [
-                        [
-                            "shebao_payment",
-                            "w_sb_flag"
-                        ],
-                        "w_sb_jiaona"
-                    ],
-                    "12,add": [
-                        [
-                            "w_sb_jiaona",
-                            "w_gjj_jiaona"
-                        ],
-                        "jiaona_total"
-                    ],
-                    "13,add": [
-                        [
-                            "jiaona_total",
-                            "w_shouci_fee"
-                        ],
-                        "OUTCOME"
-                    ]
-                },
-                "writeto": "bj_shebao_basic_total"
-            },
-            "bj_shebao_basic2": {
-                "conditions": [
-                    ["flag_sb_gjj",1,["w_sb_flag",1,0]],
-                    ["flag_sb_gjj",10,["w_gjj_flag",1,0]],
-                    ["flag_sb_gjj",11,["both_flag",1,0]]
+                    "w_jiaona_total"
                 ],
-                "req_vars": [
-                    "flag_sb_gjj",
+                "13,add": [
                     [
-                        "city_info",
-                        [
-                            "shebao_payment2",
-                            "gongjijin_fee"
-                        ]
+                        "w_jiaona_total",
+                        "svc_fee_total",
+                        "w_shouci_fee"
                     ],
+                    "OUTCOME"
+                ]
+            }
+        },
+        "bj_shebao_basic": {
+            "conditions": [
+                ["flag_sb_gjj",1,["w_sb_flag",1,0]],
+                ["flag_sb_gjj",10,["w_gjj_flag",1,0]],
+                ["flag_sb_gjj",11,["both_flag",1,0]]
+            ],
+            "req_vars": [
+                "flag_sb_gjj",
+                [
+                    "city_info",
                     [
-                        "calc_ext",
-                        [
-                            "w_shouci_fee"
-                        ]
+                        "shebao_payment",
+                        "gongjijin_fee"
                     ]
                 ],
-                "steps": {
-                    "1,add": [
-                        [
-                            "both_flag",
-                            "w_sb_flag"
-                        ],
+                [
+                    "calc_ext",
+                    [
+                        "w_shouci_fee"
+                    ]
+                ]
+            ],
+            "steps": {
+                "1,add": [
+                    [
+                        "both_flag",
                         "w_sb_flag"
                     ],
-                    "2,add": [
-                        [
-                            "both_flag",
-                            "w_gjj_flag"
-                        ],
+                    "w_sb_flag"
+                ],
+                "2,add": [
+                    [
+                        "both_flag",
                         "w_gjj_flag"
                     ],
-                    "10,multi": [
-                        [
-                            "gongjijin_fee",
-                            "w_gjj_flag"
-                        ],
+                    "w_gjj_flag"
+                ],
+                "10,multi": [
+                    [
+                        "gongjijin_fee",
+                        "w_gjj_flag"
+                    ],
+                    "w_gjj_jiaona"
+                ],
+                "11,multi": [
+                    [
+                        "shebao_payment",
+                        "w_sb_flag"
+                    ],
+                    "w_sb_jiaona"
+                ],
+                "12,add": [
+                    [
+                        "w_sb_jiaona",
                         "w_gjj_jiaona"
                     ],
-                    "11,multi": [
-                        [
-                            "shebao_payment2",
-                            "w_sb_flag"
-                        ],
-                        "w_sb_jiaona"
+                    "jiaona_total"
+                ],
+                "13,add": [
+                    [
+                        "jiaona_total",
+                        "w_shouci_fee"
                     ],
-                    "12,add": [
-                        [
-                            "w_sb_jiaona",
-                            "w_gjj_jiaona"
-                        ],
-                        "jiaona_total"
-                    ],
-                    "13,add": [
-                        [
-                            "jiaona_total",
-                            "w_shouci_fee"
-                        ],
-                        "OUTCOME"
-                    ]
-                },
-                "writeto": "bj_shebao_basic_total2"
+                    "OUTCOME"
+                ]
             },
-            "flag_custom_gjj": {
-                "writeto": "custom_gjj_flag",
-                "conditions": [],
-                "persist_value": true,
-                "req_vars": [
-                    "ss_gjj_jishu_figure",
-                    ["city_info",
-                        ["gjj_jishu","gjj_jishu_max_limit"]
+            "writeto": "bj_shebao_basic_total"
+        },
+        "bj_shebao_basic2": {
+            "conditions": [
+                ["flag_sb_gjj",1,["w_sb_flag",1,0]],
+                ["flag_sb_gjj",10,["w_gjj_flag",1,0]],
+                ["flag_sb_gjj",11,["both_flag",1,0]]
+            ],
+            "req_vars": [
+                "flag_sb_gjj",
+                [
+                    "city_info",
+                    [
+                        "shebao_payment2",
+                        "gongjijin_fee"
                     ]
                 ],
-                "steps": {
-                    "1,add":[
-                        [1,0],
-                        "OUTCOME"
-                    ],
-                    "2,isgreater": [
-                        ["ss_gjj_jishu_figure","gjj_jishu_max_limit"],
-                        "w_over"
-                    ],
-                    "3,add":[
-                        ["OUTCOME", "w_over"],
-                        "OUTCOME"
-                    ],
-                    "4,isgreater":[
-                        ["gjj_jishu","ss_gjj_jishu_figure"],
-                        "w_under"
-                    ],
-                    "5,sub":[
-                        ["OUTCOME", "w_under"],
-                        "OUTCOME"
+                [
+                    "calc_ext",
+                    [
+                        "w_shouci_fee"
                     ]
-                }
+                ]
+            ],
+            "steps": {
+                "1,add": [
+                    [
+                        "both_flag",
+                        "w_sb_flag"
+                    ],
+                    "w_sb_flag"
+                ],
+                "2,add": [
+                    [
+                        "both_flag",
+                        "w_gjj_flag"
+                    ],
+                    "w_gjj_flag"
+                ],
+                "10,multi": [
+                    [
+                        "gongjijin_fee",
+                        "w_gjj_flag"
+                    ],
+                    "w_gjj_jiaona"
+                ],
+                "11,multi": [
+                    [
+                        "shebao_payment2",
+                        "w_sb_flag"
+                    ],
+                    "w_sb_jiaona"
+                ],
+                "12,add": [
+                    [
+                        "w_sb_jiaona",
+                        "w_gjj_jiaona"
+                    ],
+                    "jiaona_total"
+                ],
+                "13,add": [
+                    [
+                        "jiaona_total",
+                        "w_shouci_fee"
+                    ],
+                    "OUTCOME"
+                ]
             },
-            "flag_custom_sb": {
-                "writeto": "custom_sb_flag",
-                "conditions": [],
-                "persist_value": true,
-                "req_vars": [
-                    "ss_sb_jishu_figure",
-                    ["city_info",
-                        ["sb_jishu","sb_jishu_max_limit"]
-                    ]
+            "writeto": "bj_shebao_basic_total2"
+        },
+        "flag_custom_gjj": {
+            "writeto": "custom_gjj_flag",
+            "conditions": [],
+            "persist_value": true,
+            "req_vars": [
+                "ss_gjj_jishu_figure",
+                ["city_info",
+                    ["gjj_jishu","gjj_jishu_max_limit"]
+                ]
+            ],
+            "steps": {
+                "1,add":[
+                    [1,0],
+                    "OUTCOME"
                 ],
-                "steps": {
-                    "1,add":[
-                        [1,0],
-                        "OUTCOME"
-                    ],
-                    "2,isgreater": [
-                        ["ss_sb_jishu_figure","sb_jishu_max_limit"],
-                        "w_over"
-                    ],
-                    "3,add":[
-                        ["OUTCOME", "w_over"],
-                        "OUTCOME"
-                    ],
-                    "4,isgreater":[
-                        ["sb_jishu","ss_sb_jishu_figure"],
-                        "w_under"
-                    ],
-                    "5,sub":[
-                        ["OUTCOME", "w_under"],
-                        "OUTCOME"
-                    ]
-                }
-            },
-            "calc_custom_gjj_fee": {
-                "writeto": "w_custom_gjj_fee",
-                "conditions": [],
-                "persist_value": true,
-                "req_vars": [
-                    "ss_gjj_jishu_figure",
-                    ["city_info",
-                        ["gjj_jishu_multi"]
-                    ]
+                "2,isgreater": [
+                    ["ss_gjj_jishu_figure","gjj_jishu_max_limit"],
+                    "w_over"
                 ],
-                "steps": {
-                    "1,multi": [
-                        ["ss_gjj_jishu_figure","gjj_jishu_multi"],
-                        "OUTCOME"
-                    ]
-                }
-            },
-            "calc_custom_sb_fee": {
-                "writeto": "w_custom_sb_fee",
-                "conditions": [],
-                "persist_value": true,
-                "req_vars": [
-                    "ss_sb_jishu_figure",
-                    ["city_info",["sb_jishu_multi"]]
+                "3,add":[
+                    ["OUTCOME", "w_over"],
+                    "OUTCOME"
                 ],
-                "steps": {
-                    "1,multi": [
-                        ["ss_sb_jishu_figure","sb_jishu_multi"],
-                        "OUTCOME"
-                    ]
-                }
-            },
-            "calc_component_value":{
-                "writeto":[
-                    ["w_spec_component_value", "OUTCOME"],
-                    ["w_alt_component_value", "w_main_n_svc"]
+                "4,isgreater":[
+                    ["gjj_jishu","ss_gjj_jishu_figure"],
+                    "w_under"
                 ],
-                "persist_value": true,
-                "conditions":[
-                    ["chosen_fee", "服务费", ["w_main_multi", 0, 1]],
-                    ["exclude_svc_fee","exclude",["w_exc_svc_fee",1,0]]
+                "5,sub":[
+                    ["OUTCOME", "w_under"],
+                    "OUTCOME"
+                ]
+            }
+        },
+        "flag_custom_sb": {
+            "writeto": "custom_sb_flag",
+            "conditions": [],
+            "persist_value": true,
+            "req_vars": [
+                "ss_sb_jishu_figure",
+                ["city_info",
+                    ["sb_jishu","sb_jishu_max_limit"]
+                ]
+            ],
+            "steps": {
+                "1,add":[
+                    [1,0],
+                    "OUTCOME"
                 ],
-                "req_vars":[
-                    "given_amount",
-                    "svc_fee_total",
-                    "chosen_fee",
-                    "exclude_svc_fee",
-                    "ss_user_spec_component_value"
+                "2,isgreater": [
+                    ["ss_sb_jishu_figure","sb_jishu_max_limit"],
+                    "w_over"
                 ],
-                "steps":{
-                    "0,multi":[
-                        ["ss_user_spec_component_value","w_main_multi"],
-                        "w_main_amt"
-                    ],
-                    "1,multi": [
-                        ["svc_fee_total","w_exc_svc_fee"],
-                        "w_svc_fee_amt"
-                    ],
-                    "2,add":[
-                        ["w_main_amt","svc_fee_total"],
-                        "w_main_n_svc"
-                    ],
-                    "3,sub":[
-                        ["w_main_n_svc", "w_svc_fee_amt"],
-                        "OUTCOME"
-                    ]
-                }
-            },
-            "flag_component_value_match":{
-                "writeto":"component_val_match_flag",
-                "persist_value": false,
-                "conditions":[],
-                "req_vars":[
-                    "given_amount",
-                    "w_spec_component_value"
+                "3,add":[
+                    ["OUTCOME", "w_over"],
+                    "OUTCOME"
                 ],
-                "steps":{
-                    "1,add": [
-                        ["given_amount",1],
-                        "w_upper"
-                    ],
-                    "2,sub": [
-                        ["given_amount",1],
-                        "w_lower"
-                    ],
-                    "3,isgreater": [
-                        ["w_upper","w_spec_component_value"],
-                        "w_upper_true"
-                    ],
-                    "4,isgreater": [
-                        ["w_spec_component_value","w_lower"],
-                        "w_lower_true"
-                    ],
-                    "5,add":[
-                        ["w_upper_true","w_lower_true"],
-                        "w_sum_true"
-                    ],
-                    "6,equals":[
-                        ["w_sum_true",2],
-                        "OUTCOME"
-                    ]
-                }
+                "4,isgreater":[
+                    ["sb_jishu","ss_sb_jishu_figure"],
+                    "w_under"
+                ],
+                "5,sub":[
+                    ["OUTCOME", "w_under"],
+                    "OUTCOME"
+                ]
+            }
+        },
+        "calc_custom_gjj_fee": {
+            "writeto": "w_custom_gjj_fee",
+            "conditions": [],
+            "persist_value": true,
+            "req_vars": [
+                "ss_gjj_jishu_figure",
+                ["city_info",
+                    ["gjj_jishu_multi"]
+                ]
+            ],
+            "steps": {
+                "1,multi": [
+                    ["ss_gjj_jishu_figure","gjj_jishu_multi"],
+                    "OUTCOME"
+                ]
+            }
+        },
+        "calc_custom_sb_fee": {
+            "writeto": "w_custom_sb_fee",
+            "conditions": [],
+            "persist_value": true,
+            "req_vars": [
+                "ss_sb_jishu_figure",
+                ["city_info",["sb_jishu_multi"]]
+            ],
+            "steps": {
+                "1,multi": [
+                    ["ss_sb_jishu_figure","sb_jishu_multi"],
+                    "OUTCOME"
+                ]
+            }
+        },
+        "calc_component_value":{
+            "writeto":[
+                ["w_spec_component_value", "OUTCOME"],
+                ["w_alt_component_value", "w_main_n_svc"]
+            ],
+            "persist_value": true,
+            "conditions":[
+                ["chosen_fee", "服务费", ["w_main_multi", 0, 1]],
+                ["exclude_svc_fee","exclude",["w_exc_svc_fee",1,0]]
+            ],
+            "req_vars":[
+                "given_amount",
+                "svc_fee_total",
+                "chosen_fee",
+                "exclude_svc_fee",
+                "ss_user_spec_component_value"
+            ],
+            "steps":{
+                "0,multi":[
+                    ["ss_user_spec_component_value","w_main_multi"],
+                    "w_main_amt"
+                ],
+                "1,multi": [
+                    ["svc_fee_total","w_exc_svc_fee"],
+                    "w_svc_fee_amt"
+                ],
+                "2,add":[
+                    ["w_main_amt","svc_fee_total"],
+                    "w_main_n_svc"
+                ],
+                "3,sub":[
+                    ["w_main_n_svc", "w_svc_fee_amt"],
+                    "OUTCOME"
+                ]
+            }
+        },
+        "flag_component_value_match":{
+            "writeto":"component_val_match_flag",
+            "persist_value": false,
+            "conditions":[],
+            "req_vars":[
+                "given_amount",
+                "w_spec_component_value"
+            ],
+            "steps":{
+                "1,add": [
+                    ["given_amount",1],
+                    "w_upper"
+                ],
+                "2,sub": [
+                    ["given_amount",1],
+                    "w_lower"
+                ],
+                "3,isgreater": [
+                    ["w_upper","w_spec_component_value"],
+                    "w_upper_true"
+                ],
+                "4,isgreater": [
+                    ["w_spec_component_value","w_lower"],
+                    "w_lower_true"
+                ],
+                "5,add":[
+                    ["w_upper_true","w_lower_true"],
+                    "w_sum_true"
+                ],
+                "6,equals":[
+                    ["w_sum_true",2],
+                    "OUTCOME"
+                ]
             }
         }
     },
