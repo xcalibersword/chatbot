@@ -1109,12 +1109,12 @@
                         "DEFAULT":"服务费：https://item.taobao.com/item.htm?id=598104660990"
                     },
                     "flag_sb_gjj":{
-                        "11": "亲，服务费40元要拍两次哦 ",
-                        "1": "亲，服务费40元要拍一次哦 ",
-                        "10": "亲，服务费40元要拍一次哦 "
+                        "11": "亲，服务费40元要拍两次 ",
+                        "1": "亲，服务费40元要拍一次 ",
+                        "10": "亲，服务费40元要拍一次 "
                     },
                     "首次":{
-                        "yes": "50元的首次费也要拍！",
+                        "yes": "首次的话服务费链接50元的也要拍哦！",
                         "no":""
                     }
                 }
@@ -1449,7 +1449,7 @@
                 ],
                 "if_value": {
                     "city_district": {
-                        "上海市": "{city_district}可以补缴最近{city_info[bujiao_period]}个月；请注意：补缴不算连续哦，望知悉",
+                        "上海市": "{city_district}可以补缴最近{city_info[bujiao_period]}个月",
                         "杭州市": "{city_district}可补缴最近{city_info[bujiao_period]}个月的社保公积金，补缴费30元/月；（不做跨年补缴）有补缴的请注意：补缴的月份：个人查不到生育工伤，社保局只收个人部分，地税收取单位部分，地税扣缴时五险是一并征收的，还有疑问可0571-12366确认。且补缴不算连续哦！",
                         "北京市": "{city_district} 可补缴最近{city_info[bujiao_period]}个月的社保公积金，补缴费40元/月；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
                         "苏州园区": "{city_district} 可补缴最近{city_info[bujiao_period]}个月的社保公积金；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
@@ -1474,7 +1474,7 @@
                 ],
                 "if_value": {
                     "w_bujiao_cmi_flag": {
-                        "1":"可以补哦，补缴不算连续哈",
+                        "1":["可以补哦，补缴不算连续哈","可以补啊 请注意：补缴不算连续哦，望知悉"],
                         "0":"不可以补 {rep_ext[topup_info_extra]}"
                     }
                 }
@@ -1491,7 +1491,7 @@
                 ],
                 "if_value": {
                     "w_bujiao_cmi_flag":{
-                        "DEFAULT":"亲 {ss_purchase_for_month}月{rep_ext[topup_can_not_msg]}。{rep_ext[topup_info_extra]}"
+                        "DEFAULT":"亲 {ss_purchase_for_month}月{rep_ext[topup_can_not_msg]}"
                     }
                 }
             },

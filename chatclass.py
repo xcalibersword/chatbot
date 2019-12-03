@@ -410,9 +410,7 @@ class ChatManager:
             pd[to_clear] = ""
 
         self.push_detail_to_dm(pd)
-
         return 
-
 
     ### Detail logging
     def push_detail_to_dm(self, d, ow=1):
@@ -632,6 +630,7 @@ class DetailManager:
                 else:
                     raw = list(raw_vd.values())[0] # Assume dict is size 1
                     if len(branch) == 3:
+                        # Mini calcualtions
                         loc, opr, v = branch
                         opr = opr.replace(" ","")
                         raw = float(raw)
@@ -849,6 +848,26 @@ class ReplyGenerator:
                         out = operate(out,rel_val,op)
                 return out
 
+            def get_operator(opname):
+                if opname == "add":
+                    opr = lambda a,b: a+b
+                elif opname == "multi":
+                    opr = lambda a,b: a*b
+                elif opname == "sub":
+                    opr = lambda a,b: a-b
+                elif opname == "div":
+                    opr = lambda a,b: a/b
+                elif opname == "equals":
+                    opr = lambda a,b: (1 if a == b else 0)
+                elif opname == "isgreater":
+                    opr = lambda a,b: (1 if a > b else 0)
+                elif opname == "OR":
+                    opr = lambda a,b: (1 if (a > 0 or b > 0) else 0)
+                else:
+                    print("<RESOLVE FORMULA> ERROR Unknown operator:",opname)
+                    opr = lambda a,b: a # Unknown operator just returns a
+                return opr
+
             # Process the formula steps    
             instr = f["steps"]
             steps = list(instr.keys())
@@ -874,23 +893,7 @@ class ReplyGenerator:
                 if not tkey in vd:
                     vd[tkey] = 0
 
-                if opname == "add":
-                    opr = lambda a,b: a+b
-                elif opname == "multi":
-                    opr = lambda a,b: a*b
-                elif opname == "sub":
-                    opr = lambda a,b: a-b
-                elif opname == "div":
-                    opr = lambda a,b: a/b
-                elif opname == "equals":
-                    opr = lambda a,b: (1 if a == b else 0)
-                elif opname == "isgreater":
-                    opr = lambda a,b: (1 if a > b else 0)
-                elif opname == "OR":
-                    opr = lambda a,b: (1 if (a > 0 or b > 0) else 0)
-                else:
-                    print("<RESOLVE FORMULA> ERROR Unknown operator:",opname)
-                    opr = lambda a,b: a # Unknown oeprator just returns a
+                opr = get_operator(opname)
                 vd[tkey] = op_on_all(valnames,opr,vd)
             return vd
 
@@ -908,7 +911,7 @@ class ReplyGenerator:
                     target_key = formula["writeto"]
                     result_dict = resolve_formula(formula)
                     if isinstance(target_key, list):
-                        # Multi output
+                        # Forumala Multi output
                         for tk, vdk in target_key:
                             result = result_dict.get(vdk,"")
                             if not result == "":
@@ -924,6 +927,11 @@ class ReplyGenerator:
         else:
             if RF_DEBUG: print("<RESOLVE FORMULA> No calculation performed")
 
+        def get_reply_template(pulled):
+            if isinstance(pulled, list):
+                return random.choice(pulled)
+            return pulled
+
         # Message extensions and formatting
         # Template in format database
         for tmp in formatDB:
@@ -936,7 +944,7 @@ class ReplyGenerator:
 
                 ifpr = tmp.get("if_present",{})
                 for deet in list(ifpr.keys()):
-                    enstr = ifpr[deet]
+                    enstr = get_reply_template(ifpr[deet])
                     add_txt_enh(target_key,enstr)
                 
                 ifvl = tmp.get("if_value",{})
@@ -944,16 +952,15 @@ class ReplyGenerator:
                     if not deet in vd:
                         continue
                     formatmap = ifvl[deet]
-                    if isinstance(vd[deet],list):
-                        # E.g. reqinfo is a list
-                        contents = vd[deet]
-                    else:
+                    contents = vd[deet]
+                    if not isinstance(vd[deet],list):
                         contents = [vd[deet]]
 
                     for deetval in contents:
                         dstr = str(cbsv.conv_numstr(deetval,wantint=1)) # Because json keys can only be str
                         if dstr in formatmap:
-                            enstr = formatmap[dstr]
+                            enstr = get_reply_template(formatmap[dstr])
+                            
                         else:
                             enstr = formatmap.get("DEFAULT",False)
                             if not enstr:

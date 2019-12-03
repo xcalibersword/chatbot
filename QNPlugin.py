@@ -187,6 +187,7 @@ def getRawText():
     processed_text_list.reverse()
     return processed_text_list
 
+# Checks if last sent message matches with bot generated message
 def check_if_edited(self_last_sent, query, custID):
     if not self_last_sent == GLOBAL["self_last_sent_msg"]:
         GLOBAL["self_last_sent_msg"] = self_last_sent
@@ -245,16 +246,13 @@ def processText(cW,rawText):
         else:
             # Text line
             curr_text = collect_texts(curr_text, sent) # Collect messages
-    new_message_flag = not GLOBAL["last_query_time"] == querytime or not GLOBAL["last_query"] == query
+    GLOBAL["got_new_message"] = (not GLOBAL["last_query_time"] == querytime) or (not GLOBAL["last_query"] == query)
     
-    if new_message_flag:
+    if GLOBAL["got_new_message"]:
         print("New Message deteced",querytime, query)
-        GLOBAL["got_new_message"] = True
         GLOBAL["last_query_time"] = querytime
         GLOBAL["last_query"] = query
-    else:
-        GLOBAL["got_new_message"] = False
-
+    
     check_if_edited(self_last_sent, query, custid)
     return query,custid
 
