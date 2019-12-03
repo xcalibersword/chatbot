@@ -342,6 +342,23 @@
                 "社保包括：养老保险、医疗保险、生育保险、工伤保险和失业保险"
             ]
         },
+        "query_sick_light":{
+            "key":"query_sick_light",
+            "default_set": true,
+            "humanify": false,
+            "replies":[
+                "亲，普通门诊可以在2个月后使用哦（限上海）"
+            ]
+        },
+        "query_sick":{
+            "key": "query_sick",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "亲，{}不接受代缴哦"
+            ]
+        },
         "query_region_coverage": {
             "key": "info_region_coverage",
             "default_set": true,
