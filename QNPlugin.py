@@ -16,7 +16,7 @@ KEY_LETGO = 2
 GLOBAL["today_date"] = str(datetime.datetime.now().date())
 GLOBAL["last_query"] = ""
 GLOBAL["last_query_time"] = ""
-GLOBAL["last_sent_msg"] = ""
+GLOBAL["self_last_sent_msg"] = ""
 GLOBAL["got_new_message"] = True
 GLOBAL["new_chat_check_interval"] = 3
 
@@ -187,14 +187,14 @@ def getRawText():
     processed_text_list.reverse()
     return processed_text_list
 
-def check_if_edited(last_sent, query, custID):
-    if not last_sent == GLOBAL["last_sent_msg"]:
-        GLOBAL["last_sent_msg"] = last_sent
+def check_if_edited(self_last_sent, query, custID):
+    if not self_last_sent == GLOBAL["self_last_sent_msg"]:
+        GLOBAL["self_last_sent_msg"] = self_last_sent
 
         last_bot_reply = GLOBAL.get("last_bot_reply","")
-        print("<LAST SENT>",last_sent,"bot wanted to reply:",last_bot_reply)
-        if not last_bot_reply == last_sent and not last_bot_reply == "":
-            save2troubleshoot(str(last_sent), str(last_bot_reply), str(query), "intent", "slot info",str(custID))
+        print("<LAST SENT>",self_last_sent,"bot wanted to reply:",last_bot_reply)
+        if not last_bot_reply == self_last_sent and not last_bot_reply == "":
+            save2troubleshoot(str(self_last_sent), str(last_bot_reply), str(query), "intent", "slot info",str(custID))
     return
 
 def collect_texts(collector, new):
@@ -219,9 +219,9 @@ def get_customer_id(self_id,rawText):
 
 def processText(cW,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
-    recentText = rawText[:30]
+    recentText = rawText[:50]
     custid = ""
-    last_sent = ""
+    self_last_sent = ""
     query = ""
     curr_text = ""
     querytime = ""
@@ -231,30 +231,31 @@ def processText(cW,rawText):
             # Name line
             if re.search(cW.userID,sent):
                 # Self
-                if last_sent == "":
-                    last_sent = curr_text[:-2] # Remove the 已读/未读
+                if self_last_sent == "":
+                    self_last_sent = curr_text[:-2] # Remove the 已读/未读
             else:
                 # Customer
                 custid = re.sub(date_time_pattern,"",sent)
                 if querytime == "": querytime = re.search(date_time_pattern,sent).group(0)
                 query = collect_texts(query, curr_text)
 
-            if len(query) > 0 and len(last_sent) > 0:
+            if len(query) > 0 and len(self_last_sent) > 0:
                 break
             curr_text = ""
         else:
             # Text line
             curr_text = collect_texts(curr_text, sent) # Collect messages
-        
-    if not GLOBAL["last_query_time"] == querytime:
+    new_message_flag = not GLOBAL["last_query_time"] == querytime or not GLOBAL["last_query"] == query
+    
+    if new_message_flag:
         print("New Message deteced",querytime, query)
-        GLOBAL["last_query_time"] = querytime
         GLOBAL["got_new_message"] = True
+        GLOBAL["last_query_time"] = querytime
         GLOBAL["last_query"] = query
     else:
         GLOBAL["got_new_message"] = False
 
-    check_if_edited(last_sent, query, custid)
+    check_if_edited(self_last_sent, query, custid)
     return query,custid
 
 def mine_chat_text(cW):
@@ -265,8 +266,8 @@ def mine_chat_text(cW):
 def check_new_message(cW):
     print('Checking for new messages...')
     rawText = mine_chat_text(cW)
-    print("*"*10+"Copied"+"*"*10)
-    print(rawText)
+    # print("*"*10+"Copied"+"*"*10)
+    # print(rawText)
     query, cust_QN_ID = processText(cW,rawText)
     print("Customer ID: {} Query: {}".format(cust_QN_ID, query))
     return query, cust_QN_ID

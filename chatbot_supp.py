@@ -423,7 +423,6 @@ class InfoParser():
         value = self._no_match_val(catDB)
         found = False
         vals = list(catDB.keys())
-        print("Looking for slots:",vals)
         for v in vals:
             reDB = catDB[v]
             m = re.search(reDB, text)
@@ -435,8 +434,6 @@ class InfoParser():
                 value = v
                 found = True
                 # if DEBUG: print("<PARSER> Found a ", category, ":", v)
-            else:
-                print("No {} in {}".format(v, text))
         
         return value
 
