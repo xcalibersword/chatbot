@@ -382,7 +382,7 @@ class InfoParser():
         
     # Searches in permanent aka default slots
     def _default_parse(self, text, d, PDB = True):
-        self._parse_function(text,d,self.perm_slots, PDB)
+        self._parse_function(text, d, self.perm_slots, PDB)
         return
 
     # Searches in contextual slots
@@ -423,6 +423,7 @@ class InfoParser():
         value = self._no_match_val(catDB)
         found = False
         vals = list(catDB.keys())
+        print("Looking for slots:",vals)
         for v in vals:
             reDB = catDB[v]
             m = re.search(reDB, text)
@@ -434,6 +435,8 @@ class InfoParser():
                 value = v
                 found = True
                 # if DEBUG: print("<PARSER> Found a ", category, ":", v)
+            else:
+                print("No {} in {}".format(v, text))
         
         return value
 
@@ -458,7 +461,7 @@ class InfoParser():
         out = {}
         # Permanent slot parse (overwrites existing slots)
         for msg in history:
-            self._default_parse(msg,out, PDB = False)
+            self._default_parse(msg, out, PDB = False)
         if DEBUG: print("<PARSE HISTORY> History info:",out)
         return out 
 

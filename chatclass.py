@@ -422,7 +422,8 @@ class ChatManager:
 
     def read_chat_history(self, history):
         if DEBUG: print("Reading chat history")
-        hist_info = self.iparser.parse_chat_history(history)
+        history_list = history.split(" ")
+        hist_info = self.iparser.parse_chat_history(history_list)
         self.dmanager.log_detail(hist_info, OVERWRITE=0)
         return
 

@@ -27,8 +27,8 @@ bot = init_chatbot()
 def robotify(msg):
     return "<机器人>: " + str(msg)
 
-def display_own_message(msg):
-    return "<您>: " + str(msg)
+def display_own_message(msg, uid = "您"):
+    return "<"+ uid +">: " + str(msg)
 
 def get_qingyunke(query):
     # url = "http://api.qingyunke.com/api.php?key=free&appid=0&msg="
@@ -68,7 +68,6 @@ idmap = {}
 
 @sio.on('chat')
 async def chat_message(sid, msg):        
-    await sio.emit('message',display_own_message(msg),room=sid)
     if "!setid " in msg:
         userid = msg.split(" ")[1]
         idmap[sid] = userid
@@ -80,6 +79,7 @@ async def chat_message(sid, msg):
         await sio.emit('message', "History parsed for <{}>".format(uid), room=sid)
     else:
         uid = idmap[sid] if sid in idmap else sid
+        await sio.emit('message',display_own_message(msg,uid),room=sid)
         print("Recieved from",uid,"Content:",msg)
         text, bd, curr_info = get_bot_reply(bot, uid, msg)
         await sio.emit('message', text, room=sid)
