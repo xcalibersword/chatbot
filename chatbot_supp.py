@@ -382,6 +382,8 @@ class InfoParser():
 
             self.regexDB[catkey] = cached_slot
 
+
+
     # Updates dict directly
     def _match_slot(self, text, slot, d, PDB = True):
         slotname, catgry = slot
