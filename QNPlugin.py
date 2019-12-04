@@ -183,10 +183,6 @@ def send_message_QN(reply,cW,query,reply_template,custID,mode):
             print("Message Sent: {}".format(text))
             save2troubleshoot(confirm,text,query,str(reply_template[1]),str(reply_template[2]),custID)
 
-        for i in range(int(cycle_delay)):
-            print("剩下{}秒".format(str(int(cycle_delay)-i))) 
-            time.sleep(1)
-
 if __name__ == "__main__":
 
     try:
@@ -218,7 +214,6 @@ if __name__ == "__main__":
     bot = Chatbot()
     bot.start()
     
-    #MAIN PROGRAMME LOOP
     print("Starting program....") 
 
     while True:
