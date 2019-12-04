@@ -9,13 +9,13 @@ df = pd.read_csv(r"raw.csv",encoding="gb18030")
 list_list = df.values.tolist()
 #read to dict
 a = {}
-label_list = list_list[4]
+label_list = list_list[3] # Actually the 5th row 
 num_intents = len(label_list)
 
 #intent example starts on the 6th row in excel (i=5 position when read)
 for i in range(num_intents):
     if str(label_list[i]) != "nan":
-        for l in list_list[5:]:
+        for l in list_list[4:]:
             if str(l[i]) != "nan":
                 csv_list_list.append([l[i],label_list[i]])
 
