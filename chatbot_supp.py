@@ -525,36 +525,45 @@ class Calculator():
         self.formula_db = formulae
         self.debug = 0
 
-    def add_calculations(self, curr_state, curr_info):
-        topup = self._do_all_calculations(self, curr_info)
-        curr_info.update(topup)
-
+    def calculate(self, curr_state, curr_info):
+        topup, temp = self._do_all_calculations(curr_state, curr_info)
+        return (topup, temp)
+        
     # Performs calculations and formats text message replies 
     ############## Major function ##############
     def _do_all_calculations(self, curr_state, info):
         l_calc_ext = {}
         calc_topup = {}
         CALC_DEBUG = self.debug
-        out = {}
         enhanced = info.copy()
         calcDB = self.formula_db.copy()
 
         def get_calcs(state):
-            return curr_state.get("calcs", [])
+            return state.get("calcs", [])
 
+        # Auto includes l_calc_ext and calc_topup
         def add_calc_enh(key, rawstr, _pv = False):
             flt = round(float(rawstr),2) # Round all displayed numbers to 2 dp
             return cu.add_enh(key,flt,l_calc_ext, "calc_ext", calc_topup, enhanced, persist = _pv, overwrite = True)
 
-        def assign_multiple_outputs(target_key):
-            # Forumala Multi output
-            for tk, vdk in target_key:
-                result = result_dict.get(vdk,"")
-                if not result == "":
-                    add_calc_enh(tk,result,pv_flag)
-                else:
-                    print("<RESOLVE FORMULA> ERROR {} not found in formula".format(vdk))
+        def assign_outputs(target_key, result_dict):
+            def assign_multiple_outputs(tk_list):
+                # Forumala Multi output
+                for tk, vdk in tk_list:
+                    result = result_dict.get(vdk,"")
+                    if not result == "":
+                        add_calc_enh(tk,result,pv_flag)
+                    else:
+                        print("<RESOLVE FORMULA> ERROR {} not found in formula".format(vdk))
+                return 
 
+            if isinstance(target_key, list):
+                assign_multiple_outputs(target_key)
+            else:
+                result = result_dict["OUTCOME"]
+                add_calc_enh(target_key,result,pv_flag)
+            return
+           
         ### MAIN METHOD LOGIC ###
         # Calculations
         state_calcs = get_calcs(curr_state)
@@ -566,23 +575,30 @@ class Calculator():
                 formula = calcDB[fname]
                 pv_flag = formula.get("persist_value",False)
                 target_key = formula["writeto"]
-                result_dict = self.resolve_formula(formula)
-                if isinstance(target_key, list):
-                    assign_multiple_outputs(target_key)
-                else:
-                    result = result_dict["OUTCOME"]
-                    add_calc_enh(target_key,result,pv_flag)
+                result_dict = self.resolve_formula(formula, enhanced)
+                assign_outputs(target_key, result_dict)
+
             if CALC_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
         
         if CALC_DEBUG: print("<RESOLVE FORMULA> Postcalc enh",enhanced)
         if state_calcs == [] and CALC_DEBUG: print("<RESOLVE FORMULA> No calculation performed")
         
-        return out
+        return (calc_topup, l_calc_ext)
 
     # Big method.
     # Takes in a formula (dict)
     # Returns a value of the result
-    def resolve_formula(self, f):
+    def resolve_formula(self, f, enh):
+        def get_steps(f):
+            instr = f.get("steps",[])
+            if instr == []:
+                raise Exception("<RESOLVE FORMULA> Error fetching steps", f)
+            stps = list(instr.keys())
+            stps = list(map(lambda x: (x.split(","), instr[x]),stps))
+            stps.sort(key=lambda t: float(t[0][0])) # If no conversion it sorts as string
+            if self.debug: print("<RESOLVE FORMULA> steps aft sort",stps)
+            return stps
+
         # Given variables, an operator and a dictionary,
         # Returns a result value 
         def op_on_all(vnames, op, vdic):
@@ -620,50 +636,54 @@ class Calculator():
                 opr = lambda a,b: a # Unknown operator just returns a
             return opr
 
-        def add_formula_conditional_vars(f,vd):
-            ret = {}
-            # This assumes all conditions are joined by AND
-            conds = f.get("conditions",[])
-            for cond in conds:
-                k, v, setval = cond
-                vkey, tval, fval = setval
+        def get_variables(f, enh):
+            def add_formula_conditional_vars(f,vd):
+                ret = {}
+                # This assumes all conditions are joined by AND
+                conds = f.get("conditions",[])
+                for cond in conds:
+                    k, v, setval = cond
+                    vkey, tval, fval = setval
 
-                if not k in vd:
-                    print("<COND VALS> WARNING {} not in info".format(k))
-                    met = False
-                else:
-                    met = (vd[k] == v) # Simple match
+                    if not k in vd:
+                        print("<COND VALS> WARNING {} not in info".format(k))
+                        met = False
+                    else:
+                        met = (vd[k] == v) # Simple match
 
-                ret[vkey] = tval if met else fval
+                    ret[vkey] = tval if met else fval
 
-            vd.update(ret)
-            return
+                vd.update(ret)
+                return
 
-        # Process the formula steps    
-        instr = f["steps"]
-        steps = list(instr.keys())
-        steps = list(map(lambda x: (x.split(","), instr[x]),steps))
-        steps.sort(key=lambda t: float(t[0][0])) # If no conversion it sorts as string
+            # Fetch mandatory values
+            reqvar_key = "req_vars"
+            opvar_key = "optional_vars"
+            req_vars = f.get(reqvar_key,[])
+            vd = cu.dive_for_values(req_vars,enh)
 
-        if self.debug: print("<RESOLVE FORMULA> steps aft sort",steps)
-        req_vars = f[reqvar_key]
-        op_vars = f.get(opvar_key, [])
-        vd = cu.dive_for_values(req_vars,enhanced)
-        op_vars_d = cu.dive_for_values(op_vars, enhanced,failzero=True)
-        vd.update(op_vars_d)
+            # Fetch optional values
+            op_vars = f.get(opvar_key, []) # If not found, value = 0
+            op_vars_d = cu.dive_for_values(op_vars, enh,failzero=True)
+            vd.update(op_vars_d)
 
-        # Fetch conditional values
-        add_formula_conditional_vars(f,vd)
-        if self.debug: print("<RESOLVE FORMULA> Value Dict",vd)
+            # Fetch conditional values
+            add_formula_conditional_vars(f,vd)
+            if self.debug: print("<RESOLVE FORMULA> Value Dict",vd)
+            return vd
+
+        
+        steps = get_steps(f)
+        vd = get_variables(f, enh)
 
         # Perform calculation steps 
         vd["OUTCOME"] = 0
         for stp in steps:
-            (NA, opname),(valnames,tkey)  = stp
-            if not tkey in vd:
-                vd[tkey] = 0
+            (NA, opname),(valnames,targetkey) = stp
+            if not targetkey in vd:
+                vd[targetkey] = 0
             opr = get_operator(opname)
-            vd[tkey] = op_on_all(valnames,opr,vd)
+            vd[targetkey] = op_on_all(valnames,opr,vd)
         return vd
 
 if __name__ == "__main__":

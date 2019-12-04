@@ -211,7 +211,7 @@ class ChatManager:
         self.samestateflag = False
 
         # Helper classes
-        self.calc = calc
+        self.calculator = calc
         self.iparser = iparser
         self.pkeeper = pkeeper
         self.replygen = replygen
@@ -251,7 +251,10 @@ class ChatManager:
             else:
                 sip = sip.same_state()
 
-            if DEBUG: print("<RTN> curr sip", sip.toString())
+            if DEBUG: print("<RTM LOOP> curr sip", sip.toString())
+
+            # Calls the calculator to crunch numbers for state change
+            self._calculate()
 
             # Digest and internalize the new info
             zone_overwrite, pg = self.react_to_sip(sip)
@@ -259,19 +262,21 @@ class ChatManager:
             # Request a reply text
             intent = full_uds.get_intent()
 
-            if DEBUG: print("<RTM> Repeats", rc,"True SIP", true_sip.toString(),"Pass gate:",pg)
+            if DEBUG: print("<RTM LOOP> Repeats", rc,"True SIP", true_sip.toString(),"Pass gate:",pg)
 
             if not true_sip.is_trans_state() and not sip.is_same_state():
-                if DEBUG: print("<RTM> Not trans state, breaking")
+                if DEBUG: print("<RTM LOOP> Not trans state, breaking")
                 break
 
             repeat = not same_state_flagged or zone_overwrite
 
             rc += 1
-       
-        reply, calc_topup = self._fetch_reply(intent)
-        self.push_detail_to_dm(calc_topup)
 
+        # Calls the calculator to crunch numbers for replying
+        calc_ext = self._calculate()
+       
+        reply = self._fetch_reply(intent, calc_ext)
+        
         curr_info = self._get_current_info()
 
         self._post_process(full_uds)
@@ -299,14 +304,14 @@ class ChatManager:
 
         return uds, bd
     
-    # Process, gatekeep then internalize changes
+    # Calculate, zonecheck, gatekeep then internalize changes
     # Converts same_state_obj to the current state.
     # Checks if the state is crossroad and needs to be overwritten
     # Gatekeeper gets requirements from state again in case it changed.
     # Results in change in chat details and change in state
     # Returns boolean indicating whether or not the state was overwritten.
     def react_to_sip(self, sip):
-        
+
         if sip.is_same_state():
             if DEBUG: print("<REACTION> SAME STATE FLAGGED")
             self.samestateflag = True
@@ -385,14 +390,16 @@ class ChatManager:
 
     ### Ask Helpers
     # Ask replygen for a reply
-    def _fetch_reply(self,intent):
-        information = self._get_current_info()
+    def _fetch_reply(self,intent, calc_ext):
+        info = self._get_current_info()
+        info["calc_ext"] = calc_ext #Add calc ext to the info to be passed in
+
         curr_state = self._get_curr_state()
         if DEBUG: print("<Fetch Reply> Current State",curr_state)
         # samestateflag = self.statethreader.state_never_change()
-        samestateflag = self.samestateflag
+        ssflag = self.samestateflag
         # print("curr_state", curr_state['key'], "samestate",samestateflag)
-        return self.replygen.get_reply(curr_state, intent, samestateflag, information)
+        return self.replygen.get_reply(curr_state, intent, ssflag, info)
 
     # Asks dmanager for info
     def _get_current_info(self):
@@ -415,6 +422,16 @@ class ChatManager:
         
         self.push_detail_to_dm(details)
         return
+
+    # Ask calculator to crunch numbers.
+    # Updates information dict
+    def _calculate(self):
+        info = self._get_current_info()
+        print("INFO FOR CALC", info)
+        curr_state = self._get_curr_state()
+        topup, calc_ext = self.calculator.calculate(curr_state, info)
+        self.push_detail_to_dm(topup) # Adds persist values to info
+        return calc_ext
 
     def _post_process(self, uds):
         pd = {}
@@ -783,24 +800,24 @@ class ReplyGenerator:
         
     # OVERALL METHOD
     def get_reply(self, curr_state, intent, secondslot, info = -1):
+        print("<GET_REPLY> INFO",info)
         rdb = self.getreplydb(intent, curr_state, secondslot)
-        infoplus, info_topup = self._enhance_info(curr_state, info)
+        infoplus = self._enhance_info(curr_state, info)
         reply = self.generate_reply_message(rdb, infoplus)
-        return (reply, info_topup)
+        return reply
 
     def _enhance_info(self,curr_state,info):
         RF_DEBUG = 0
         cskey = curr_state["key"]
-        text_topup = {}
         rep_ext = {}
         enhanced = info.copy()
 
         formatDB = self.formatDB["msg_formats"]
 
-        def add_txt_enh(key, rawstr,_pv = False):
+        def add_txt_enh(key, rawstr):
             wstr = rawstr.format(**enhanced)
             enhstr = cbsv.conv_numstr(wstr)
-            return cu.add_enh(key,enhstr,rep_ext,"rep_ext",text_topup,enhanced, persist = _pv)
+            return cu.add_enh(key,enhstr,rep_ext,"rep_ext",{},enhanced, persist = False)
         
         def needs_txt_enh(tmp,curr_state_key):
             states = tmp["states"]
@@ -819,7 +836,7 @@ class ReplyGenerator:
                 lookout = tmp["lookfor"].copy()
                 vd = dive_for_values(lookout, enhanced, failzero=True) # Failzero true for rep ext
                 
-                if RF_DEBUG: print("TMP",tmp)
+                if RF_DEBUG: print("<ENH INFO> TMP",tmp)
 
                 ifpr = tmp.get("if_present",{})
                 for deet in list(ifpr.keys()):
@@ -847,7 +864,7 @@ class ReplyGenerator:
                                 
                         add_txt_enh(target_key,enstr)
         
-        return (enhanced, text_topup)
+        return enhanced
 
     # Returns the a reply database either from intent or from state
     def getreplydb(self, intent, curr_state, issamestate):
