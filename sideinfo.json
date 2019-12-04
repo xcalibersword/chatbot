@@ -83,6 +83,7 @@
         },
         {
             "writeto": "ss_purchase_for_month",
+            "multi":true,
             "search_tree":{
                 "ctx_slots.target_month":{
                     "ctx_this_month":["state_month"],
@@ -367,6 +368,7 @@
                     ],
                     "ctx_this_month":[
                         "当月",
+                        "本月",
                         "现在",
                         "这(个)?月"
                     ],
