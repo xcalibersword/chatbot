@@ -45,7 +45,7 @@ class Predictor:
         self.pmodel = load_model(mf)
         self.pmodel.summary()
         # self.word2int = self._buildWordToInt()
-        self.ignore_chars = {" ", ",", "?","？","。","，"}
+        self.ignore_chars = {" ", ",", ":", "：", "。", "，"}
         self.unknown_token_val = 0
         self._load_jsons()
         if USE_WORD2VECTOR: 
@@ -233,6 +233,7 @@ if MAIN:
         ("我是想要代缴9月的","purchase"),
         ("想要代缴昆山社保的","purchase"),
         ("这里能代缴广州五险一金吗","purchase"),
+        ("我可不可以用花呗来下单啊","query_use_huabei"),
         ("方便用电话讲吗","query_phone"),
         ("请问流程是怎么样的？","query_pay_process"),
         ("你们交社保的流程是怎么样？","query_pay_process"),
@@ -254,7 +255,13 @@ if MAIN:
         ("社保交了之后可以改基数吗？","complicated"),
         ("不缴公积金会有什么影响啊","query_various_effects"),
         ("会有什么影响吗？","query_various_effects"),
-        ("断了会怎么样","query_break_effects")
+        ("断了会怎么样","query_break_effects"),
+        ("费用为啥80","doublecheck_value"),
+        ("这个1937是包括费用么","doublecheck_value"),
+        ("1000是吧","doublecheck_value"),
+        ("生病之后去办理医保可以吗","query_sick"),
+        ("参保可以吗 因为我已经生病了","query_sick"),
+        ("看病没关系吧","query_sick_light")
     ]
 
     print("Please enter the model filename")
