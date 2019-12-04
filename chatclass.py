@@ -236,20 +236,17 @@ class ChatManager:
     def respond_to_message(self, msg):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&") # For clarity in terminal
      
-        repeat = True
-        rc = 0
-        same_state_flagged = False
-        while repeat and rc < 5:
+        firstpass = True
+        for rc in range(0, 5):
             # Parse the message and get an understanding
             full_uds, bd = self._parse_message_overall(msg)
             true_sip = full_uds.get_sip()
 
-            if rc == 0:
-                sip = true_sip # On first cycle
+            if firstpass:
+                firstpass = False
+                sip = true_sip # This is to prevent example affirm applying more than once
             else:
                 sip = sip.same_state()
-
-            if DEBUG: print("<RTM LOOP> curr sip", sip.toString())
 
             # Calls the calculator to crunch numbers for state change
             self._calculate()
@@ -257,30 +254,26 @@ class ChatManager:
             # Digest and internalize the new info
             zone_overwrite, pg = self.react_to_sip(sip)
 
-            # Request a reply text
-            intent = full_uds.get_intent()
-
-            if DEBUG: print("<RTM LOOP> Repeats", rc,"True SIP", true_sip.toString(),"Pass gate:",pg)
+            if DEBUG: print("<RTM LOOP> Repeats", rc,"curr sip", sip.toString(), "True SIP", true_sip.toString(),"Pass gate:",pg)
 
             if not true_sip.is_trans_state() and not sip.is_same_state():
                 if DEBUG: print("<RTM LOOP> Not trans state or same_state, breaking")
                 break
 
-            repeat = not same_state_flagged or zone_overwrite
-
-            rc += 1
-
         # Calls the calculator to crunch numbers for replying
         calc_ext = self._calculate()
-       
+    
+        intent = full_uds.get_intent()
         reply = self._fetch_reply(intent, calc_ext)
         
-        curr_info = self._get_current_info()
-
+        # Clean up
         self._post_process(full_uds)
 
         # Records message logs
         self._record_messages_in_chat(msg,reply)
+
+        # Return this for debugging purposes
+        curr_info = self._get_current_info()
         return (reply, bd, curr_info)
 
     # Makes sense of message.
@@ -293,13 +286,14 @@ class ChatManager:
         uds, bd, nums = self._policykeeper_parse(msg)
         if DEBUG: print("Initial UDS:")
         if DEBUG: uds.printout()
-        self.gatekeeper.scan_SIP(uds.get_sip()) # THIS IS USEFUL for pre-filling slots
+        self.gatekeeper.scan_SIP(uds.get_sip()) # Used for pre-filling slots
 
         # Mine message details. 
         # This is after gatekeep because gatekeep sets the slots.
         og_int = uds.get_og_intent()
         self._parse_message_details(msg, nums,og_int)
 
+        # Preprocess to fill slots with default vals
         self._gatekeeper_preprocess()
 
         return uds, bd
@@ -328,7 +322,7 @@ class ChatManager:
             # Gatekeeper gets the requirements from the state
             self._get_slots_from_state(stateobj)
         
-        # Gatekeeper tries the gate
+        # Gatekeeper tries the gate and CHANGES STATE
         pass_gate = self._advance_to_new_state(stateobj)
 
         return (ow_flag, pass_gate)
@@ -363,26 +357,26 @@ class ChatManager:
         if passed:
             self._move_forward_state(nextstate)
         else:
-            # Update DetailManager
-            self.push_req_slots_to_dm(req_slots)
-
             # Didnt pass gate
+            self.push_req_slots_to_dm(req_slots)            
             constructed_sip = _make_info_sip(req_slots)
             infostate = constructed_sip.get_state_obj()
             _set_thread_pending(infostate, nextstate)
 
         return passed
 
-    # Overwrites state if in zone policy
+    # Overwrites state if currently in zone policy aka crossroad
     def _zone_policy_overwrite(self, og_nxt_state):
         csk = og_nxt_state["key"]
         zones = self._get_zones()
         overwrite_flag, ow_state = self.pkeeper.zone_policy_overwrite(csk,zones)
         if DEBUG: print("<ZONE POLICY> Overwrite:",overwrite_flag,ow_state)
         if overwrite_flag:
-            return (True, ow_state)
+            next_state = ow_state
         else:
-            return (False, og_nxt_state)
+            next_state = og_nxt_state
+
+        return (overwrite_flag, next_state)
 
     def push_req_slots_to_dm(self, required_slots):
         if len(required_slots) > 0:
@@ -437,6 +431,7 @@ class ChatManager:
         self.push_detail_to_dm(topup) # Adds persist values to info
         return calc_ext
 
+    # Clears up values
     def _post_process(self, uds):
         pd = {}
         sip = uds.get_sip()
@@ -583,8 +578,7 @@ class PolicyKeeper:
             return (False, "")
         
 
-# MANAGES DETAILS (previously held by Chat)
-# TODO: Differentiate between contextual chat info and user info?
+# MANAGES DETAILS
 class DetailManager:
     def __init__(self, info_vault,secondary_slots,zonelist):
         self.vault = info_vault
@@ -620,7 +614,7 @@ class DetailManager:
         return
 
     def log_detail(self, new_info, OVERWRITE = 1, DEBUG = 0):
-        if DEBUG: print("Logging", new_info)
+        if DEBUG: print("Logging：", new_info)
         for d in new_info:
             deet = new_info[d]
             # Check to make sure its not empty
@@ -632,7 +626,7 @@ class DetailManager:
             else:
                 # Remove entry if empty
                 if d in self.chat_prov_info:
-                    print("<LOG DETAIL> REMOVING",d)
+                    print("<LOG DETAIL> Removing empty",d)
                     self.chat_prov_info.pop(d)
                 
         self._add_secondary_slots()
@@ -663,6 +657,21 @@ class DetailManager:
         return
 
     def _add_secondary_slots(self):
+        def mini_calc(raw, branch):
+            # Mini calcualtions
+            loc, opr, v = branch
+            opr = opr.replace(" ","")
+            raw = float(raw)
+            v = float(v)
+            if opr == "-":
+                final = raw - v
+            elif opr == "+":
+                final = raw + v
+            else:
+                print("<SECONDARY SLOT GETV> unknown opr {}".format(opr))
+                final = raw
+            return final 
+
         def get_value(branch, info):
             if isinstance(branch,list):
                 raw_vd = dive_for_values(branch,info)
@@ -672,25 +681,13 @@ class DetailManager:
                 else:
                     raw = list(raw_vd.values())[0] # Assume dict is size 1
                     if len(branch) == 3:
-                        # Mini calcualtions
-                        loc, opr, v = branch
-                        opr = opr.replace(" ","")
-                        raw = float(raw)
-                        v = float(v)
-                        if opr == "-":
-                            final = raw - v
-                        elif opr == "+":
-                            final = raw + v
-                        else:
-                            print("<SECONDARY SLOT GETV> unknown opr {}".format(opr))
-                            final = raw
+                        final = mini_calc(raw, branch)
                     else:
                         final = raw
 
                 return final
 
-            else:
-                return branch
+            return branch
 
         def tree_search(tree, info):
             def dot_loc_to_list(sn):
@@ -839,6 +836,28 @@ class ReplyGenerator:
                 return random.choice(pulled)
             return pulled
 
+        def enhance_if_vals(vd, ifvl):
+            for deet in list(ifvl.keys()):
+                if not deet in vd:
+                    continue
+                formatmap = ifvl[deet]
+                contents = vd[deet]
+                if not isinstance(vd[deet],list):
+                    contents = [vd[deet]]
+
+                for deetval in contents:
+                    dstr = str(cbsv.conv_numstr(deetval,wantint=1)) # Because json keys can only be str
+                    if dstr in formatmap:
+                        enstr = get_reply_template(formatmap[dstr])
+                        
+                    else:
+                        enstr = formatmap.get("DEFAULT",False)
+                        if not enstr:
+                            raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(dstr,formatmap))
+                            
+                    add_txt_enh(target_key,enstr)
+            return
+
         # Message extensions and formatting
         # Template in format database
         for tmp in formatDB:
@@ -855,26 +874,8 @@ class ReplyGenerator:
                     add_txt_enh(target_key,enstr)
                 
                 ifvl = tmp.get("if_value",{})
-                for deet in list(ifvl.keys()):
-                    if not deet in vd:
-                        continue
-                    formatmap = ifvl[deet]
-                    contents = vd[deet]
-                    if not isinstance(vd[deet],list):
-                        contents = [vd[deet]]
-
-                    for deetval in contents:
-                        dstr = str(cbsv.conv_numstr(deetval,wantint=1)) # Because json keys can only be str
-                        if dstr in formatmap:
-                            enstr = get_reply_template(formatmap[dstr])
-                            
-                        else:
-                            enstr = formatmap.get("DEFAULT",False)
-                            if not enstr:
-                                raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(dstr,formatmap))
-                                
-                        add_txt_enh(target_key,enstr)
-        
+                enhance_if_vals(vd, ifvl)
+                
         return enhanced
 
     # Returns the a reply database either from intent or from state
@@ -898,25 +899,25 @@ class ReplyGenerator:
         lookups = [intent, curr_state] if issamestate else [curr_state, intent]
 
         rdb = []
+        # Retrieves the intent object from lookup
         for obj in lookups:
             if obj == cbsv.NO_INTENT():
-                # This is for when intent is prioritized but no intent is detected
+                # This is for when intent is prioritized before state but no intent is detected
                 continue
 
             if rdb == []:
-                rdb = get_replylist(obj)
+                rdb = get_replylist(obj) # this may be [] as well
                 self.hflag = get_hflag(obj)
             else:
                 break
         
         if LOCALDEBUG: print("rdb:",rdb)
 
-        if rdb == []:
-            rdb = self.default_confused # OP
+        if rdb == []: rdb = self.default_confused # In case really no answer
 
         return rdb
 
-    # Generates a pure reply
+    # Generates a reply. Purely a string
     def generate_reply_message(self, rdb, info):
         def rand_response(response_list):
             return random.choice(response_list)
@@ -966,14 +967,13 @@ class Chat:
         if self.convo_index < 2:
             return
         return self.curr_chatlog[self.convo_index - 2]
-    
 
     ## TODO Database interaction?
     def get_previous_issues(self):
         pass
         # return self.user.get_issues()
 
-    # Writes to a file eventually
+    # Calls chatbot_be to write the conversation messages to a json
     def record_to_database(self):
         if self.save_chat_logs:
             log = self.get_chatlog()
