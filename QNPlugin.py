@@ -1,24 +1,8 @@
-import threading,re,os,time,traceback,datetime
-import win32gui, win32api, win32clipboard, win32con, jpype
-from chatbot import Chatbot
+import threading,re,os,time
+import win32gui,win32api,win32clipboard,win32con,jpype
 import pandas as pd
-
-GLOBAL = {}
-
-clipboard_sleep = 0.2
-cmd_sleep = 0.05
-GLOBAL["human_input_sleep"] = 5
-self_userID = "temporary"
-
-KEY_PRESS = 0
-KEY_LETGO = 2
-
-GLOBAL["today_date"] = str(datetime.datetime.now().date())
-GLOBAL["last_query"] = ""
-GLOBAL["last_query_time"] = ""
-GLOBAL["self_last_sent_msg"] = ""
-GLOBAL["got_new_message"] = True
-GLOBAL["new_chat_check_interval"] = 3
+from chatbot import Chatbot
+import traceback
 
 class QianNiuWindow:
     def __init__(self):
@@ -26,19 +10,19 @@ class QianNiuWindow:
         self.send_but = None
         self.input_dlg = None
         self.msg_dlg = None
-        self.userID = "女人罪爱" # HARDCODED. More general so that you don't catch 同事
+        self.userID = None
 
     def SetAsForegroundWindow(self):
         # First, make sure all (other) always-on-top windows are hidden.
         self.hide_always_on_top_windows()
         win32gui.SetForegroundWindow(self.main_window)
     def Maximize(self):
-        win32gui.ShowWindow(self.main_window, win32con.SW_NORMAL)
+        win32gui.ShowWindow(self.main_window, win32con.SW_MAXIMIZE)
     def _window_enum_callback(self, hwnd, regex):
         '''Pass to win32gui.EnumWindows() to check all open windows'''
         if self.main_window is None and re.match(regex, str(win32gui.GetWindowText(hwnd))) is not None:
             self.main_window = hwnd
-            # self.userID = re.match(regex,str(win32gui.GetWindowText(hwnd)))[0] # DISABLED
+            self.userID = re.match(regex,str(win32gui.GetWindowText(hwnd)))[0]
     def find_window_regex(self, regex):
         self.main_window = None
         win32gui.EnumWindows(self._window_enum_callback, regex)
@@ -62,7 +46,7 @@ class QianNiuWindow:
         aa = win32gui.FindWindowEx(self.main_window, 0, "StandardWindow", "")
         aaa = win32gui.FindWindowEx(aa, 0, "StandardWindow", "")
         aaa = win32gui.FindWindowEx(aa, aaa, "StandardWindow", "")
-        aaa = win32gui.FindWindowEx(aa, aaa, "StandardWindow", "")
+        #aaa = win32gui.FindWindowEx(aa, aaa, "StandardWindow", "")
         aaaa = win32gui.FindWindowEx(aaa, 0, "SplitterBar", "")
 
         b = win32gui.FindWindowEx(aaaa, 0, "StandardWindow", "")
@@ -74,115 +58,41 @@ class QianNiuWindow:
         self.msg_dlg = win32gui.FindWindowEx(cc,0,"Aef_RenderWidgetHostHWND", "Chrome Legacy Window")
         self.send_but = win32gui.FindWindowEx(bb,0,"StandardButton", "发送")
 
-def save2troubleshoot(right,wrong,query,intent,slot,id):
-    print("<CHANGED REPLY> Writing to troubleshoot.csv")
-    df = pd.read_csv(r"troubleshoot.csv",encoding="gb18030",header=None)
-    list_list=df.values.tolist()
-    
-    list_list.append([wrong,id,query,right,intent,slot])
-
-    new_df = pd.DataFrame(data=list_list)
-    new_df.to_csv(r"troubleshoot.csv",encoding="gb18030",index=0,header=0)
-
-def send_message_QN(reply,cW,mode):
-    #list of keybdEvents
-    #https://blog.csdn.net/zhanglidn013/article/details/35988381
-
-    # Paste text into the chatbox
-    win32gui.SendMessage(cW.input_dlg, 0x000C, 0, reply)
-
-    if mode == "":
-        # AUTO SEND MODE
-        win32gui.SendMessage(cW.send_but, 0xF5, 0, 0)
-        print("Message Sent: {}".format(reply))
-
-def setActiveScreen(target_window):
-    win32gui.SetForegroundWindow(target_window)
-
-    rect = win32gui.GetWindowRect(target_window)
-    # Finds the top right position
-    win32api.SetCursorPos((rect[2]-50,rect[1]+10))
-    
-    time.sleep(cmd_sleep)
+def setActiveScreen(QN_output_hwnd):
+    print("SetForegroundWindow...")
+    win32gui.SetForegroundWindow(QN_output_hwnd)
+    rect = win32gui.GetWindowRect(QN_output_hwnd)
+    win32api.SetCursorPos((rect[2]-20,rect[1]+10))
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0,0,0)
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0,0,0)
-    time.sleep(cmd_sleep)
-
+    
 def select_copy():
     #ctrl a
-    win32api.keybd_event(17, 0, KEY_PRESS, 0)
-    win32api.keybd_event(65, 0, KEY_PRESS, 0)
-    time.sleep(cmd_sleep)
-    #ctrl a release
-    win32api.keybd_event(65, 0, KEY_LETGO, 0)
-    win32api.keybd_event(17, 0, KEY_LETGO, 0)
-    time.sleep(cmd_sleep)
-
+    time.sleep(0.3)
+    win32api.keybd_event(17, 0, 0, 0)
+    win32api.keybd_event(65, 0, 0, 0)
+    time.sleep(0.1)
+    win32api.keybd_event(65, 0, 2, 0)
+    win32api.keybd_event(17, 0, 2, 0)
     #ctrl c
-    win32api.keybd_event(17, 0, KEY_PRESS, 0)
-    win32api.keybd_event(67, 0, KEY_PRESS, 0)
-    time.sleep(cmd_sleep)
-    # ctrl c release 
-    win32api.keybd_event(67, 0, KEY_LETGO, 0)
-    win32api.keybd_event(17, 0, KEY_LETGO, 0)
-    time.sleep(cmd_sleep)
+    time.sleep(0.3)
+    win32api.keybd_event(17, 0, 0, 0)
+    win32api.keybd_event(67, 0, 0, 0)
+    time.sleep(0.1)
+    win32api.keybd_event(67, 0, 2, 0)
+    win32api.keybd_event(17, 0, 2, 0)
 
-def log_err():
-    chatbot = os.getcwd()
-    filename = os.path.join(chatbot,"errorlog",GLOBAL["today_date"] +".txt")
-    f = open(filename, "w+")
-    f.write(traceback.format_exc())
-
-# Returns a reverse ordered list
-def getRawText():
-    rpt = 0
-    rpt_limit = 10
-    succeed = False
-    while not succeed and rpt < rpt_limit:
-        try:
-            win32clipboard.OpenClipboard()
-            succeed = True
-        except Exception as e:
-            print("OPEN CLIPBOARD EXCEPTION:",e,"Trying again...")
-            log_err()
-        rpt += 1
-
-    time.sleep(clipboard_sleep)
-
-    rpt = 0
-    raw_text = ""
-    while raw_text == "" and rpt < rpt_limit:
-        try:
-            raw_text = win32clipboard.GetClipboardData()
-        except Exception as e:
-            print("GET CLIPBOARD EXCEPTION:",e,"Trying again...")
-            log_err()
-        rpt += 1
-
-    time.sleep(clipboard_sleep)
-
+def fromClipboard():
+    win32clipboard.OpenClipboard(None)
     try:
-        win32clipboard.EmptyClipboard()
-        succeed = True
-    except Exception as e:
-        print("EmptyClipboard EXCEPTION:",e)
-        log_err()
+        raw_text = win32clipboard.GetClipboardData(13)
+    except Exception:
+        print("Failed to retrieve clipboard data")
+        print(Exception)
+    win32clipboard.CloseClipboard()
+    return raw_text
 
-    time.sleep(clipboard_sleep)
-
-    rpt = 0
-    succeed = False
-    while not succeed and rpt < rpt_limit + 10:
-        try:
-            win32clipboard.CloseClipboard()
-            succeed = True
-        except Exception as e:
-            print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
-        rpt += 1
-
-    time.sleep(clipboard_sleep)
-
- 
+def processTextList(raw_text):
     raw_text_list = raw_text.splitlines()
     processed_text_list = []
     for sent in raw_text_list:
@@ -192,142 +102,51 @@ def getRawText():
     processed_text_list.reverse()
     return processed_text_list
 
-# Checks if last sent message matches with bot generated message
-def check_if_edited(self_last_sent, query, custID):
-    if not self_last_sent == GLOBAL["self_last_sent_msg"]:
-        GLOBAL["self_last_sent_msg"] = self_last_sent
-
-        last_bot_reply = GLOBAL.get("last_bot_reply","")
-        print("<LAST SENT>",self_last_sent,"bot wanted to reply:",last_bot_reply)
-        if not last_bot_reply == self_last_sent and not last_bot_reply == "":
-            save2troubleshoot(str(self_last_sent), str(last_bot_reply), str(query), "intent", "slot info",str(custID))
-    return
-
-def collect_texts(collector, new):
-    # Because reversed message order, new comes before old
-    return  new + collector 
-
-def get_customer_id(self_id,rawText):
+#transfer call pick up chat history
+def processText(userID,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
+    idx = 0
+    prevs_idx = 0
+    query_list = []
     custid = ""
     for sent in rawText:
         if re.search(date_time_pattern,sent):
-            if re.search(self_id,sent):
-                # Contains Self ID
-                continue
-            else:
-                custid = custid = re.sub(date_time_pattern,"",sent)
+            if re.search(userID,sent):
+                if re.search("-->",sent):
+                    print("Detected transfer call!!!")
                 break
-    
-    if custid == "": print("<GET CUSTOMER ID> Cannot find Customer ID")
-    return custid
-
-
-def remove_QN_fluff(txt):
-    fluff_list = [(1,"新消息")]
-    out = txt
-    for pos, f in fluff_list:
-        f_len = len(f)
-        if pos:
-            # End position
-            if out[-f_len:] == f:
-                out = out[:-f_len]
-        else:
-            # Start position
-            if out[:f_len] == f:
-                out = out[f_len:]
-    return out
-
-def processText(cW,rawText):
-    date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
-    recentText = rawText[:50]
-    custid = ""
-    self_last_sent = ""
-    query = ""
-    curr_text = ""
-    querytime = ""
-    print("RECENT TEXT", recentText[:10])
-    for sent in recentText:
-        if re.search(date_time_pattern,sent):
-            # Name line
-            if re.search(cW.userID,sent):
-                # Self
-                if self_last_sent == "":
-                    self_last_sent = curr_text[:-2] # Remove the 已读/未读
             else:
-                # Customer
                 custid = re.sub(date_time_pattern,"",sent)
-                if querytime == "": querytime = re.search(date_time_pattern,sent).group(0)
-                query = collect_texts(query, curr_text)
+                for i in range(prevs_idx,idx):
+                    query_list.append(rawText[i])
+                prevs_idx = idx + 1
+        idx += 1
 
-            if len(query) > 0 and len(self_last_sent) > 0:
-                break
-            curr_text = ""
-        else:
-            # Text line
-            curr_text = collect_texts(curr_text, sent) # Collect messages
-    GLOBAL["got_new_message"] = (not GLOBAL["last_query_time"] == querytime) or (not GLOBAL["last_query"] == query)
-    
-    query = remove_QN_fluff(query)
-
-    if GLOBAL["got_new_message"]:
-        if query == "":
-            GLOBAL["got_new_message"] = False
-            return query, custid
-
-        print("New Message deteced",querytime, query)
-        GLOBAL["last_query_time"] = querytime
-        GLOBAL["last_query"] = query
-    
-    check_if_edited(self_last_sent, query, custid)
+    query_list.reverse()
+    query = " ".join(query_list)
     return query,custid
 
-def mine_chat_text(cW):
-    setActiveScreen(cW.msg_dlg)
-    select_copy()
-    return getRawText()
+def save2troubleshoot(wrong,id,query,right,intent,slot):
+    df = pd.read_csv(r"troubleshoot.csv",encoding="gb18030",header=None)
+    list_list=df.values.tolist()
+    
+    list_list.append([wrong,id,query,right,intent,slot])
+
+    new_df = pd.DataFrame(data=list_list)
+    new_df.to_csv(r"troubleshoot.csv",encoding="gb18030",index=0,header=0)
 
 def check_new_message(cW):
-    print('Checking for new messages...')
-    rawText = mine_chat_text(cW)
-    # print("*"*10+"Copied"+"*"*10)
-    # print(rawText)
-    query, cust_QN_ID = processText(cW,rawText)
-    print("Customer ID: {} Query: {}".format(cust_QN_ID, query))
+    print('Checking for new message...')
+    setActiveScreen(cW.msg_dlg)
+    select_copy()
+    rawText = fromClipboard()
+    text_list = processTextList(rawText)
+    query,cust_QN_ID = processText(cW.userID,text_list)
+    print("Query: {}".format(query))
+    print("Customer ID: {}".format(cust_QN_ID))
     return query, cust_QN_ID
 
-# Returns nothing. Updates bot internal state.
-def read_history(cW,bot):
-    print('<HISTORY> Reading chat history')
-    history = mine_chat_text(cW)
-    cust_QN_ID = get_customer_id(cW.userID,history)
-    mhist = get_only_messages(history,cW)
-    bot.parse_transferred_messages(cust_QN_ID, mhist)
-    return 
-
-def get_only_messages(hist,cW):
-    historyLimit = 500
-    history = hist[:historyLimit]
-    curr_text = ""
-    out = []
-    date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
-    for sent in history:
-        if re.search(date_time_pattern,sent):
-            # Name line
-            if not re.search(cW.userID,sent):
-                # Customer ID
-                # custid = re.sub(date_time_pattern,"",sent)
-                # querytime = re.search(date_time_pattern,sent).group(0)
-                out.append(curr_text)
-            
-            curr_text = ""
-        else:
-            # Text line
-            curr_text = collect_texts(curr_text, sent) # Collect messages
-    return out
-
-#insert image path here for the series of place for the OCR to click on
-def SeekNewCustomerChat(clickImage):
+def SeekNewMessage(clickImage):
     print("Finding new chat...")
 
     Screen = jpype.JClass('org.sikuli.script.Screen')
@@ -335,74 +154,37 @@ def SeekNewCustomerChat(clickImage):
 
     try:
         screen.click(clickImage)
-        return True
     except Exception:
         print("No new chat")
-        log_err()
-        return False
 
-def select_chat_input_box(cW):
-    if GLOBAL["mode"] == 0:
-        print("Allowing user to enter input......")
-        
-        setActiveScreen(cW.input_dlg) # Select text input box
-        
-        # Check for blank text box.
+def send_message_QN(reply,cW,query,reply_template,custID,mode):
+    #list of keybdEvents
+    #https://blog.csdn.net/zhanglidn013/article/details/35988381
+
+    #type text
+    SendMessage(cW.input_dlg, 0x000C, 0, reply)
+
+    if mode == "":
+        SendMessage(cW.send_but, 0xF5, 0, 0)
+        print("Message Sent: {}".format(reply))
+    else:
         while True:
-            txtlen = win32gui.SendMessage(cW.input_dlg,win32con.WM_GETTEXTLENGTH,0,0)
-            if txtlen == 0:
-                time.sleep(GLOBAL["human_input_sleep"])
-                txtlen = win32gui.SendMessage(cW.input_dlg,win32con.WM_GETTEXTLENGTH,0,0)
-                if txtlen == 0:
-                    print("Blank textbox dectected!")
-                    break
-            
-    return
+            if win32gui.GetWindowText(cW.input_dlg) == "":
+                break
 
-def main(cW,bot,SeekImagePath,mode,cycle_delay): 
-    checks = 0
-    while True:
-        query, custID = check_new_message(cW)
-        
-        if GLOBAL["got_new_message"]:
-            reply_template = bot.get_bot_reply(custID,query) # Gets a tuple of 3 things
-            reply = reply_template[0]
-            GLOBAL["last_bot_reply"] = reply
-            if type(reply) == list:
-                for r in reply:
-                    send_message_QN(r,cW,mode)
-            else:
-                send_message_QN(reply,cW,mode)
-                
-        elif checks >= GLOBAL["new_chat_check_interval"]:
-            newchat = SeekNewCustomerChat(SeekImagePath)
-            checks = 0
-            if newchat:
-                read_history(cW,bot)
-                GLOBAL["got_new_message"] = True
-                continue
-
-        checks += 1
-        
-        select_chat_input_box(cW) # This only does something if mode is "human control"
-
-        for i in range(int(cycle_delay)):
-            print("剩下{}秒".format(str(int(cycle_delay)-i))) 
-            time.sleep(1)
+        confirm = input("如果回复是对的请按回车键,不然请输入对的回答:  ")
+        if confirm == "":
+            #send text
+            SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
+            print("Message Sent: {}".format(text))
+        else:
+            SendMessage(QN_input_hwnd, 0x000C, 0, confirm)
+            SendMessage(QN_sendBut_hwnd, 0xF5, 0, 0)
+            print("Message Sent: {}".format(text))
+            save2troubleshoot(confirm,text,query,str(reply_template[1]),str(reply_template[2]),custID)
 
 if __name__ == "__main__":
-    #SET MODE
 
-    delay_time = input("Enter the delay time (in seconds) for each cycle to look for new message 投入延期(秒钟): ")
-    #enter for testing, 1 for deployment
-    mode = input("Enter the mode 投入模式: ")
-    if mode == "": 
-        GLOBAL["mode"] = 1 
-    else:
-        GLOBAL["mode"] = 0
-        GLOBAL["human_input_sleep"] = float(input("Enter human reply delay 投入人工打回复延期(秒钟): "))
-
-    #FIND WINDOW HANDLE
     try:
         regex = r".*(?= - 接待中心)"
         cW = QianNiuWindow()
@@ -412,9 +194,13 @@ if __name__ == "__main__":
         cW.find_handle()
         print(cW.userID,cW.msg_dlg,cW.input_dlg,cW.send_but)
     except:
-        log_err()
-    
-    #START OCR & BOT
+        f = open("log.txt", "w")
+        f.write(traceback.format_exc())
+        print(traceback.format_exc())
+
+    cd = input("Input cooldown: ")
+    mode = input("Enter smth for not auto: ")
+
     projectDIR = os.getcwd()
     #set JAVA path
     defaultJVMpath = (r"C:\Program Files\Java\jdk-12.0.2\bin\server\jvm.dll")
@@ -428,6 +214,33 @@ if __name__ == "__main__":
     bot = Chatbot()
     bot.start()
     
-    #MAIN PROGRAMME LOOP
     print("Starting program....") 
-    main(cW,bot,SeekImagePath,mode,delay_time)
+
+    while True:
+        query, custID = check_new_message(cW)    
+        if not query == "":
+            reply_template = bot.get_bot_reply(custID,query)
+            reply = reply_template[0]
+            if type(reply) == list:
+                for r in reply:
+                    send_message_QN(reply,cW,query,reply_template,custID,mode)
+            else:
+                send_message_QN(reply,cW,query,reply_template,custID,mode)
+        SeekNewMessage(SeekImagePath)
+
+        for i in range(int(cd)):
+            print("Countdown: " + str(cd-i))
+            time.sleep(1)
+
+
+
+# while True:
+#             txtlen = win32gui.SendMessage(cW.input_dlg,win32con.WM_GETTEXTLENGTH,0,0)
+#             if txtlen == 0:
+#                 time.sleep(GLOBAL["human_input_sleep"])
+#                 txtlen = win32gui.SendMessage(cW.input_dlg,win32con.WM_GETTEXTLENGTH,0,0)
+#                 if txtlen == 0:
+#                     print("Message Sent!!!")
+#                     break
+
+# def err_log()
