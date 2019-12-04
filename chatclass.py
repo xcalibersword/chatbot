@@ -751,41 +751,35 @@ class DetailManager:
                 slot = loc_list[0]
                 return (slot, loc_list)
 
-            # Iterative tree search
             def tree_search(t_info):
-                def locate_subdict_and_val(loc_list, curr_d):
-                    for loc in loc_list:
-                        final_loc = loc
-                        infoval = curr_d.get(loc,"")
-                        if infoval == "":
-                            # IF not found
-                            if SUPER_DEBUG: print("<SS TREE> ERROR {} not found".format(loc))
-                            s_val = ""
-                            break
-                            
-                        elif isinstance(infoval, dict):
-                            # If is a subdict
-                            curr_d = infoval
-                        else:
-                            # If found value
-                            s_val = str(curr_d[loc]) # To convert ints to strings. I.e. for hours
-                    return s_val, curr_d, final_loc
-
-                any_val_key = "_ANY" # HARDCODED
+                any_val_key = "_ANY"
                 for slotname, sub_dict in list(tree.items()):
                     slot, loc_list = dot_loc_to_list(slotname)
                     while slot in t_info:
                         # Gets the value from info. Handles nested vals (eg "groupname.detailname")
                         curr_d = t_info
-                        slot_val, curr_d, sv_key = locate_subdict_and_val(loc_list, curr_d)
-                            
-                        if SUPER_DEBUG: print("<SS TREE> Currently looking for:", slot, "value:", slot_val)
+                        for loc in loc_list:
+                            infoval = curr_d.get(loc,"")
+                            if infoval == "":
+                                # IF not found
+                                if SUPER_DEBUG: print("<TREE> ERROR {} not found".format(loc))
+                                slot_val = ""
+                                break
+                                
+                            elif isinstance(infoval, dict):
+                                # If is a subdict
+                                curr_d = infoval
+                            else:
+                                # If found value
+                                slot_val = str(curr_d[loc]) # To convert ints to strings. I.e. for hours
+                        
+                        if SUPER_DEBUG: print("<TREE> Currently looking for:", slot, "value:", slot_val)
                         # Check if value is in the subdict and returns the value of it
                         if slot_val in sub_dict:
                             ss_branch = sub_dict[slot_val]
                             if isinstance(ss_branch, dict):
                                 # Is a subtree
-                                if SUPER_DEBUG: print("<SS TREE> Found a subtree",ss_branch, "in",sub_dict)
+                                if SUPER_DEBUG: print("<TREE> Found a subtree",ss_branch, "in",sub_dict)
                                 slotname, sub_dict = list(ss_branch.items())[0]
                                 slot, loc_list = dot_loc_to_list(slotname)
                                 continue
@@ -794,8 +788,8 @@ class DetailManager:
                                 # Is a leaf
                                 out = get_value(ss_branch, t_info)
                                 # Cut from info
-                                pp = curr_d.pop(sv_key)
-                                if SUPER_DEBUG: print("<SS TREE> pop leaf",pp)
+                                pp = curr_d.pop(loc)
+                                print("<TREE> pop leaf",pp)
                                 return (True, out)
                         else:
                             # Fallback and look for _ANY match
@@ -804,8 +798,8 @@ class DetailManager:
                                 a_branch = sub_dict.get(any_val_key,-1)
                                 out = get_value(a_branch, t_info)
                                 # Cut from info
-                                pp = curr_d.pop(sv_key)
-                                if SUPER_DEBUG: print("<SS TREE> pop any",pp)
+                                pp = curr_d.pop(loc)
+                                print("<TREE> pop any",pp)
                                 return (True, out)
 
                             if SUPER_DEBUG: print("<SECONDARY SLOT> Val:", slot_val, "not found in:", sub_dict)
@@ -813,6 +807,22 @@ class DetailManager:
                     
                 if SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)
                 return (False, "")
+
+            tree_info = info.copy()
+            if multi:
+                collect = []
+                found = False
+                result = True
+                while result:
+                    result, val = tree_search(tree_info)
+                    if result:
+                        collect.append(val)
+                        found = True
+
+                return found, collect
+            else:
+                return tree_search(tree_info)
+            
 
             tree_info = copy.deepcopy(info)
             if multi:
