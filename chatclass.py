@@ -242,12 +242,10 @@ class ChatManager:
         while repeat and rc < 5:
             # Parse the message and get an understanding
             full_uds, bd = self._parse_message_overall(msg)
-            
             true_sip = full_uds.get_sip()
 
             if rc == 0:
-                # On first cycle
-                sip = true_sip
+                sip = true_sip # On first cycle
             else:
                 sip = sip.same_state()
 
@@ -265,7 +263,7 @@ class ChatManager:
             if DEBUG: print("<RTM LOOP> Repeats", rc,"True SIP", true_sip.toString(),"Pass gate:",pg)
 
             if not true_sip.is_trans_state() and not sip.is_same_state():
-                if DEBUG: print("<RTM LOOP> Not trans state, breaking")
+                if DEBUG: print("<RTM LOOP> Not trans state or same_state, breaking")
                 break
 
             repeat = not same_state_flagged or zone_overwrite
@@ -302,6 +300,8 @@ class ChatManager:
         og_int = uds.get_og_intent()
         self._parse_message_details(msg, nums,og_int)
 
+        self._gatekeeper_preprocess()
+
         return uds, bd
     
     # Calculate, zonecheck, gatekeep then internalize changes
@@ -320,6 +320,7 @@ class ChatManager:
             self.samestateflag = False
             stateobj = sip.get_state_obj()
         if DEBUG: print("<REACTION> Curr state", self._get_curr_state()["key"], "Nxt stateobj", stateobj["key"])
+        
         # Check if current target state is in a zone_policy crossroad 
         ow_flag, stateobj = self._zone_policy_overwrite(stateobj)
 
@@ -338,6 +339,13 @@ class ChatManager:
     def _get_slots_from_state(self, stateobj):
         self.gatekeeper.scan_state_obj(stateobj)
 
+    def _try_gatekeeper_gate(self):
+        curr_info = self._get_current_info()
+        if SUPER_DEBUG: print("<CHAT MGR TRY GATE> Current info:",curr_info)
+        pf, rs, info_topup = self.gatekeeper.try_gate(curr_info)
+        self.push_detail_to_dm(info_topup, ow=False) # Detail update. No Overwrite
+        return (pf, rs)
+
     # CHANGES STATE
     # Updates state according to outcome
     def _advance_to_new_state(self, nextstate):
@@ -348,11 +356,7 @@ class ChatManager:
         def _set_thread_pending(hs, ps):
             self.statethreader.set_thread_pending(hs, ps)
         
-        curr_info = self._get_current_info()
-        if SUPER_DEBUG: print("Current info:",curr_info)
-        passed, req_slots, info_topup = self.gatekeeper.try_gate(curr_info)
-
-        self.push_detail_to_dm(info_topup, ow=False) # Detail update. No Overwrite
+        passed, req_slots = self._try_gatekeeper_gate()
 
         if DEBUG: print("Gate passed:",passed)
 
@@ -453,6 +457,13 @@ class ChatManager:
         if DEBUG: print("Reading chat history")
         hist_info = self.iparser.parse_chat_history(history_list)
         self.dmanager.log_detail(hist_info, OVERWRITE=0)
+        return
+
+    # Calls the gatekeeper to get default slot values
+    # Updates slot values
+    def _gatekeeper_preprocess(self):
+        gk_topup = self.gatekeeper.preprocess() # Fill default slot values AFTER parsing
+        self.push_detail_to_dm(gk_topup, ow=0)
         return
 
     ### Chat logging

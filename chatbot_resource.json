@@ -689,7 +689,7 @@
                 "flag_normal_pay_cmi",
                 "flag_bujiao_month_cmi"
             ],
-            "replies": ["您是正常缴还是补缴呢？"]
+            "replies": []
         },
         "propose_plan": {
             "key": "propose_plan",

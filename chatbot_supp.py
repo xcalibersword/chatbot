@@ -217,6 +217,12 @@ class ReqGatekeeper:
         
         return (passed, unfilled_slots, info_topup)
 
+    # For now this fills default slots with their default values.
+    def preprocess(self):
+        slots = self.get_slots()
+        topup = self.assign_default_values(slots)[1]
+        return topup
+
     def assign_default_values(self, unfilled):
         def is_default(s):
             return s[1] == self.def_slot_flag
