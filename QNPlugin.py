@@ -130,8 +130,11 @@ def select_copy():
 def log_err():
     chatbot = os.getcwd()
     filename = os.path.join(chatbot,"errorlog",GLOBAL["today_date"] +".txt")
-    f = open(filename, "w+")
-    f.write(traceback.format_exc())
+    
+    with open (filename, "w+") as f:
+        prevs = f.read()
+        prevs = prevs + traceback.format_exc()
+        f.write(prevs)
 
 # Returns a reverse ordered list
 def getRawText():
