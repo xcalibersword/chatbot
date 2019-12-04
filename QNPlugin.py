@@ -5,7 +5,7 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.5
+clipboard_sleep = 0.2
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
 self_userID = "temporary"
@@ -182,6 +182,7 @@ def getRawText():
 
     time.sleep(clipboard_sleep)
 
+ 
     raw_text_list = raw_text.splitlines()
     processed_text_list = []
     for sent in raw_text_list:
@@ -222,6 +223,21 @@ def get_customer_id(self_id,rawText):
     return custid
 
 
+def remove_QN_fluff(txt):
+    fluff_list = [(1,"新消息")]
+    out = txt
+    for pos, f in fluff_list:
+        f_len = len(f)
+        if pos:
+            # End position
+            if out[-f_len:] == f:
+                out = out[:-f_len]
+        else:
+            # Start position
+            if out[:f_len] == f:
+                out = out[f_len:]
+    return out
+
 def processText(cW,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     recentText = rawText[:50]
@@ -252,7 +268,13 @@ def processText(cW,rawText):
             curr_text = collect_texts(curr_text, sent) # Collect messages
     GLOBAL["got_new_message"] = (not GLOBAL["last_query_time"] == querytime) or (not GLOBAL["last_query"] == query)
     
+    query = remove_QN_fluff(query)
+
     if GLOBAL["got_new_message"]:
+        if query == "":
+            GLOBAL["got_new_message"] = False
+            return query, custid
+
         print("New Message deteced",querytime, query)
         GLOBAL["last_query_time"] = querytime
         GLOBAL["last_query"] = query
@@ -325,21 +347,14 @@ def select_chat_input_box(cW):
         
         setActiveScreen(cW.input_dlg) # Select text input box
         
-        # #ctrl + right
-        # keybd_event(17, 0, KEY_PRESS, 0)
-        # keybd_event(39, 0, KEY_PRESS, 0)
-        # sleep(cmd_sleep)
-        # #ctrl + right release
-        # keybd_event(39, 0, KEY_LETGO, 0)
-        # keybd_event(17, 0, KEY_LETGO, 0)
-
+        # Check for blank text box.
         while True:
             txtlen = win32gui.SendMessage(cW.input_dlg,win32con.WM_GETTEXTLENGTH,0,0)
             if txtlen == 0:
                 time.sleep(GLOBAL["human_input_sleep"])
                 txtlen = win32gui.SendMessage(cW.input_dlg,win32con.WM_GETTEXTLENGTH,0,0)
                 if txtlen == 0:
-                    print("Message Sent!!!")
+                    print("Blank textbox dectected!")
                     break
             
     return
