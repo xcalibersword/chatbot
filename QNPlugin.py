@@ -181,6 +181,7 @@ def getRawText():
             succeed = True
         except Exception as e:
             print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
+            log_err()
         rpt += 1
 
     time.sleep(clipboard_sleep)
