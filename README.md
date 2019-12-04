@@ -5,13 +5,13 @@
 - pypiwin32
 - jdk 12.0.2
 - pywin32
-- 
+- Jpype1
 
 ## Key Features to be built for
-- Calculate
-- Check deadlines
-- Product details
--  
+- Calculate product price
+- Check regional payment deadline
+- Check product benefit coverage
+- Check region coverage
 
 ## File directory
 - chatbot_server : deploy bot for testing locally
@@ -56,6 +56,7 @@
     - emotion 
     - emoji 
     - pictures
+- Sentiment analysis (identify complains, tone)
 
 ## Art of conversation
 - Understand Context

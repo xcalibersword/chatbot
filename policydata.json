@@ -27,6 +27,12 @@
                 "公积金":"propose_custom_gjj_jishu",
                 "社保":"propose_custom_sb_jishu"
             }
+        ],
+        "purchase_type_crossroad":[
+            "ss_purchase_cmi_flag",{
+                "still_can": "city_crossroad",
+                "too_late": "inform_pay_deadline"
+            }
         ]
     },
     "class_policy_rules":{
@@ -37,10 +43,10 @@
             ["purchase", "city_crossroad"]
         ],
         "propose_plan_state":[
-            ["affirm", "confirm_plan"],
+            ["affirm", "initplus"],
             ["purchase", "city_crossroad"],
             ["inform", "city_crossroad"],
-            ["next_step", "confirm_plan"]
+            ["next_step", "initplus"]
         ],
         "prop_cust_jishu_state":[
             ["inform", "SAME_STATE"],
@@ -53,22 +59,18 @@
     "policy_rules":{  
         "init": [
             ["greet","SAME_STATE"],
-            ["purchase", "city_crossroad"],
-            ["inform","city_crossroad"],
+            ["purchase", "purchase_type_crossroad"],
+            ["inform","purchase_type_crossroad"],
             ["affirm", "initplus"],
             ["deny", "goodbye"]
         ],
         "initplus": [
             ["greet", "init"],
-            ["purchase", "city_crossroad"],
-            ["inform","city_crossroad"],
+            ["purchase", "purchase_type_crossroad"],
+            ["inform","purchase_type_crossroad"],
             ["deny", "goodbye"]
         ],
-        "init_sale": [
-            ["affirm", "city_crossroad"],
-            ["purchase", "city_crossroad"]
-        ],
-        "confirm_plan": [
+        "offer_product_links": [
             ["purchase","city_crossroad"],
             ["inform","city_crossroad"],
             ["next_step", "provide_taobao_link"],

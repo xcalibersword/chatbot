@@ -62,11 +62,12 @@ class Chatbot():
         return self.dbr.fetch_user_info(user)
 
     def make_new_chatmgr(self, chat):
-        makeCM = lambda c: ChatManager(c, self.ip, self.pk, self.rg, self.dm, self.gk)
+        makeCM = lambda c: ChatManager(c, self.cl, self.ip, self.pk, self.rg, self.dm, self.gk)
         return makeCM(chat)
 
     def start(self):
         comps = master_initalize()
+        self.cl = comps['calculator']
         self.dm = comps['dmanager']
         self.ip = comps['iparser']
         self.pk = comps['pkeeper']

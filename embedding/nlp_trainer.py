@@ -285,11 +285,11 @@ model.fit(x=embed_xvals,y=cat_yval,epochs=150,verbose=1,validation_split=0.0,bat
 model.save(save_model_name)
 print("This Model has been saved! Rejoice")
 
-test_in = ["12345","50001","我在苏州的不是首次","我是要付社保行吗","您好","哦了解了", "我已经填好了", "我拍好了", "流程到底是怎么样的？", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
+test_in = ["我在苏州的不是首次","我是要付社保行吗","您好","哦了解了", "我已经填好了", "我拍好了", "流程到底是怎么样的？", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
 
 ti = myTokenize(test_in)
 # print("input",test_in)
-input_array = arrayWordToInt(ti,word_index,1)
+input_array = arrayWordToInt(ti,word_index,0)
 input_array = np.reshape(input_array,(input_array.shape[0],input_array.shape[2])) # Remove the 1 in the middle
 output_array = model.predict(input_array)
 # print("raw",output_array)

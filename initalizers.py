@@ -2,27 +2,36 @@ import json
 import os
 from cbsv import read_json
 from embedding.nlp_api import Predictor
-from chatbot_supp import SIP, Policy, InfoVault, InfoParser, ReqGatekeeper, Humanizer
+from chatbot_supp import SIP, Policy, InfoVault, InfoParser, ReqGatekeeper, Humanizer, Calculator
 from chatclass import DetailManager, ReplyGenerator, PolicyKeeper
 
-# Converts a dict of states to a dict of state keys
-def state_key_dict(states):
-    ks = states.keys() # These are strings
-    out = {}
-    for k in ks:
-        out[k] = states[k]["key"]
-    return out
+def init_calculator(jdata):
+    formulae = jdata["formulae"]
+    return Calculator(formulae)
 
-def init_replygen(jdata, inf):
-    def _init_humanizer(info):
-        i = info["humanizer"]
-        return Humanizer(i)
-    hz = _init_humanizer(inf)
-    FORMAT_DB = jdata["reply_formatting"]
-    DEFAULT_RESPONSE = jdata["intents"]["unknown"]["replies"]
-    return ReplyGenerator(FORMAT_DB,hz,DEFAULT_RESPONSE)
+def init_detailmanager(jdata, sideinfo):
+    vault = InfoVault(jdata)
+    ss = sideinfo["secondary_slots"]
+    zl = sideinfo["zones"]
+    return DetailManager(vault,ss, zl)
+
+def init_gatekeeper(sideinfo):
+    conds = sideinfo["conditional_reqs"]
+    default_vals = sideinfo["default_slot_vals"]
+    return ReqGatekeeper(conds,default_vals)
+
+def init_infoparser(sideinfo):
+    relevant = sideinfo["info_parser"]
+    return InfoParser(relevant)
 
 def init_policykeeper(jdata, pdata):
+    # Converts a dict of states to a dict of state keys
+    def state_key_dict(states):
+        ks = states.keys() # These are strings
+        out = {}
+        for k in ks:
+            out[k] = states[k]["key"]
+        return out
     INTENTS = jdata["intents"]
     STATES = jdata["states"]
     STATE_KEYS = state_key_dict(jdata["states"]) # state_index: state_key
@@ -112,20 +121,15 @@ def init_policykeeper(jdata, pdata):
 
     return PolicyKeeper(POLICY_RULES, ZONE_POLICIES, INTENTS, STATES, pp)
 
-def init_infoparser(sideinfo):
-    relevant = sideinfo["info_parser"]
-    return InfoParser(relevant)
+def init_replygen(jdata, inf):
+    def _init_humanizer(info):
+        i = info["humanizer"]
+        return Humanizer(i)
+    hz = _init_humanizer(inf)
+    FORMAT_DB = jdata["reply_formatting"]
+    DEFAULT_RESPONSE = jdata["intents"]["unknown"]["replies"]
+    return ReplyGenerator(FORMAT_DB,hz,DEFAULT_RESPONSE)
 
-def init_detailmanager(jdata, sideinfo):
-    vault = InfoVault(jdata)
-    ss = sideinfo["secondary_slots"]
-    zl = sideinfo["zones"]
-    return DetailManager(vault,ss, zl)
-
-def init_gatekeeper(sideinfo):
-    conds = sideinfo["conditional_reqs"]
-    default_vals = sideinfo["default_slot_vals"]
-    return ReqGatekeeper(conds,default_vals)
 
 def master_initalize(filename = ""):
     # INTENTS = jdata["intents"]
@@ -143,9 +147,11 @@ def master_initalize(filename = ""):
     sideinfo = read_json(si_filepath)
 
     components = {}
+    components["calculator"] = init_calculator(jdata)
     components["dmanager"] = init_detailmanager(jdata,sideinfo)
-    components["iparser"] = init_infoparser(sideinfo)
-    components["replygen"] = init_replygen(jdata,sideinfo)
-    components["pkeeper"] = init_policykeeper(jdata,pdata)
     components["gkeeper"] = init_gatekeeper(sideinfo)
+    components["iparser"] = init_infoparser(sideinfo)
+    components["pkeeper"] = init_policykeeper(jdata,pdata)
+    components["replygen"] = init_replygen(jdata,sideinfo)
+
     return components

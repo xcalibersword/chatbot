@@ -22,7 +22,7 @@
         ]
     },
     "zones": [
-        "city", "work_hrs_flag", "chosen_fee","chosen_service"
+        "city", "work_hrs_flag", "chosen_fee","chosen_service","ss_purchase_cmi_flag"
     ],
     "secondary_slots": [
         {
@@ -46,33 +46,21 @@
             }
         },
         {
-            "writeto": "area_specific_fee",
+            "writeto": "ss_purchase_cmi_flag",
             "search_tree": {
-                "city_district": {
-                    "上海市": {
-                        "chosen_fee":{
-                            "一共": "上海市一共",
-                            "服务费": "上海市服务费",
-                            "公积金缴纳": "上海市公积金",
-                            "社保缴纳": "上海市社保"
+                "purchase_type": {
+                    "normal": {
+                        "w_normal_cmi_flag":{
+                            "1.0": "still_can",
+                            "0.0": "too_late"
                         }
                     },
-                    "北京市": {
-                        "chosen_fee":{
-                            "一共": "北京市一共",
-                            "服务费": "北京市服务费",
-                            "公积金缴纳": "北京市公积金",
-                            "社保缴纳": "北京市社保"
+                    "bujiao": {
+                        "w_bujiao_cmi_flag":{
+                            "1.0": "still_can",
+                            "0.0": "too_late"
                         }
-                    },
-                    "苏州园区": {
-                        "chosen_fee":{
-                            "一共": "苏州园区一共",
-                            "服务费": "苏州园区服务费",
-                            "公积金缴纳": "苏州园区公积金",
-                            "社保缴纳": "苏州园区社保"
-                        }
-                    }
+                    }   
                 }
             }
         },
@@ -92,13 +80,66 @@
                     "17": "yes"
                 }
             }
+        },
+        {
+            "writeto": "ss_purchase_for_month",
+            "search_tree":{
+                "ctx_slots.target_month":{
+                    "ctx_this_month":["state_month"],
+                    "ctx_next_month":["state_month","+",1],
+                    "ctx_last_month":["state_month","-",1]
+                },
+                "target_month":{
+                    "_ANY":["target_month"]
+                }
+            }
+
+        },
+        {
+            "writeto": "ss_sb_jishu_figure",
+            "search_tree":{
+                "ctx_slots.jishu_amt":{
+                    "ctx_min":[["city_info",["sb_jishu"]]],
+                    "ctx_max":[["city_info",["sb_jishu_max_limit"]]]
+                },
+                "given_amount":{
+                    "_ANY":["given_amount"]
+                }
+            }
+        },
+        {
+            "writeto": "ss_gjj_jishu_figure",
+            "search_tree":{
+                "ctx_slots.jishu_amt":{
+                    "ctx_min":[["city_info",["gjj_jishu"]]],
+                    "ctx_max":[["city_info",["gjj_jishu_max_limit"]]]
+                },
+                "given_amount":{
+                    "_ANY":["given_amount"]
+                }
+            }
+        },
+        {
+            "writeto": "ss_user_spec_component_value",
+            "search_tree":{
+                "chosen_fee":{
+                    "一共": ["shebao_jiaona_total"],
+                    "社保缴纳":[["city_info",["shebao_payment"]]],
+                    "社保基数":[["city_info",["sb_jishu"]]],
+                    "公积金缴纳":[["city_info",["gongjijin_fee"]]],
+                    "公积金基数":[["city_info",["gjj_jishu"]]],
+                    "服务费":["svc_fee_total"]
+                }
+            }
         }
     ],
     "default_slot_vals": {
         "首次":"yes",
         "要社保":"yes",
-        "要公积金":"yes",
-        "given_amount": ""
+        "要公积金":"no",
+        "exclude_svc_fee":"include",
+        "given_amount": "",
+        "purchase_type":"normal"
     },
     "info_parser": {
         "permanent_slots": [
@@ -108,7 +149,9 @@
             ["要公积金","gongjijin_slot"],
             ["首次","gen_shouci_slot"],
             ["chosen_fee","fee_slot"],
-            ["xufei","xufei_slot"]
+            ["xufei","xufei_slot"],
+            ["exclude_svc_fee", "exclude_svc_fee_slot"],
+            ["purchase_type","purchase_type_slot"]
         ],
         "COMMENT":"ctx slots are also permanent",
         "contextual_slots":[
@@ -116,7 +159,8 @@
             ["date","ctx_day_slot"],
             ["ask_keyi","keyi_slot"],
             ["say_thanks","thanks_slot"],
-            ["yourenma","yourenma_slot"]
+            ["yourenma","yourenma_slot"],
+            ["jishu_amt", "ctx_minmax_slot"]
         ],
         "slots": {
             "month_slot":{
@@ -138,7 +182,7 @@
                 "公积金":["一金|公积金"]
             },
             "fee_slot": {
-                "服务费":["服务费|手续费"],
+                "服务费":["(?<!(算|括|上|加|有))(服务费|手续费)"],
                 "首次费":["开户","首次费","没(开|交|缴)过"],
                 "社保缴纳":["(五险|社保)(缴纳)*"],
                 "社保基数":["社保基数","缴(纳|费)基数"],
@@ -213,12 +257,11 @@
             },
             "gongjijin_slot": {
                 "yes": [
-                    "(?<!(没|不))(要|交|付|缴|代缴|缴纳)*公积金",
-                    "(?<!(没|不))(和|加)公积金",
+                    "(?<!(没|不))(和|加|要|交|付|缴|代缴|缴纳)*公积金",
                     "(?<!(没|不))一金"
                 ],
                 "no": [
-                    "(没|不)(要*)(要|交|付|缴|代缴|缴纳)公积金",
+                    "(没|不)(要*)(加|要|交|付|缴|代缴|缴纳)公积金",
                     "(光|只|单独)(要*)(要|交|付|缴|代缴|缴纳)社保"
                 ]
             },
@@ -233,6 +276,20 @@
                     "(光|只|单独)(要*)(要|交|付|缴|代缴|缴纳)公积金"
                 ]
             },
+            "exclude_svc_fee_slot":{
+                "include":[
+                    "(?<!(没|不|别))(算|添加|加上|加|包括)服务费"
+                ],
+                "exclude":[
+                    "esf",
+                    "除了服务费",
+                    "(没|没有|不|不要|别)(算|添加|包括|加上|加)服务费"
+                ]
+            },
+            "purchase_type_slot":{
+                "normal":["正常"],
+                "bujiao":["补"]
+            },
             "default_yes": {
                 "NO_MATCH": ["yes"]
             },
@@ -241,13 +298,9 @@
             },
             "wantnot": {
                 "yes": [
-                    "(?<!不)(要|对)",
-                    "(?<!不)要*交"
+                    "(?<!不)要交"
                 ],
-                "no": [
-                    "不要",
-                    "(不|没)(交|代缴|缴)"
-                ]
+                "no": []
             },
             "yesno": {
                 "yes": [
@@ -264,16 +317,23 @@
                     "不$"
                 ]
             },
-            "dummy_slot":{
-                "no_match":["abcdef!@#$!$"]
+            "DUMMY_SLOT":{
+                "dummy":["abcdef!@#$!$"]
             },
             "ctx_month_slot":{
+                "ctx_last_month":[
+                    "去月",
+                    "上(个*)月"
+                ],
                 "ctx_this_month":[
                     "当月",
-                    "现在"
+                    "本月",
+                    "现在",
+                    "这(个*)月"
                 ],
                 "ctx_next_month":[
-                    "下(个*)月"
+                    "下(个*)月",
+                    "明月"
                 ]
             },
             "ctx_day_slot":{
@@ -283,6 +343,16 @@
                 ],
                 "ctx_tomorrow":[
                     "明天"
+                ]
+            },
+            "ctx_minmax_slot":{
+                "ctx_min":[
+                    "最低",
+                    "最划算"
+                ],
+                "ctx_max": [
+                    "最高",
+                    "高额"
                 ]
             }
         }

@@ -10,7 +10,11 @@ from datetime import datetime
 from chatbot_supp import *
 from chatbot_utils import dive_for_values
 
+
+SUPER_DEBUG = 0
 DEBUG = 1
+
+DEBUG = DEBUG or SUPER_DEBUG
 
 # A conversation thread manager using stack and dict
 class StateThreader():
@@ -200,13 +204,14 @@ class ZoneTracker:
 
 # Coordinates everything about a chat
 class ChatManager:
-    def __init__(self, chat, iparser, pkeeper, replygen, dmanager, gkeeper):
+    def __init__(self, chat, calc, iparser, pkeeper, replygen, dmanager, gkeeper):
         # Internal properties
         self.chat = chat
         self.chatID = self.chat.getID()
         self.samestateflag = False
 
         # Helper classes
+        self.calculator = calc
         self.iparser = iparser
         self.pkeeper = pkeeper
         self.replygen = replygen
@@ -231,55 +236,76 @@ class ChatManager:
     def respond_to_message(self, msg):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&") # For clarity in terminal
      
-        repeat = True
-        rc = 0
-        while repeat and rc < 5:
+        firstpass = True
+        for rc in range(0, 5):
             # Parse the message and get an understanding
             full_uds, bd = self._parse_message_overall(msg)
-            if rc == 0:
-                sip = full_uds.get_sip()
+            true_sip = full_uds.get_sip()
+
+            if firstpass:
+                firstpass = False
+                sip = true_sip # This is to prevent example affirm applying more than once
+            else:
+                sip = sip.same_state()
+
+            # Calls the calculator to crunch numbers for state change
+            self._calculate()
 
             # Digest and internalize the new info
-            repeat, pg = self.react_to_sip(sip)
+            zone_overwrite, pg = self.react_to_sip(sip)
 
-            # Request a reply text
-            intent = full_uds.get_intent()
+            if DEBUG: print("<RTM LOOP> Repeats", rc,"curr sip", sip.toString(), "True SIP", true_sip.toString(),"Pass gate:",pg)
 
-            if DEBUG: print("<RTM> Repeats", rc, "Pass gate:",pg)
-            # if repeat:
-            #     sip = SIP.same_state()
+            if not true_sip.is_trans_state() and not sip.is_same_state():
+                if DEBUG: print("<RTM LOOP> Not trans state or same_state, breaking")
+                break
 
-            rc += 1
-       
-        reply, calc_topup = self._fetch_reply(intent)
-        self.push_detail_to_dm(calc_topup)
-
-        curr_info = self._get_current_info()
+        # Calls the calculator to crunch numbers for replying
+        calc_ext = self._calculate()
+    
+        intent = full_uds.get_intent()
+        reply = self._fetch_reply(intent, calc_ext)
+        
+        # Clean up
+        self._post_process(full_uds)
 
         # Records message logs
         self._record_messages_in_chat(msg,reply)
+
+        # Return this for debugging purposes
+        curr_info = self._get_current_info()
         return (reply, bd, curr_info)
 
+    # Makes sense of message.
+    # Calls policykeeper to get intent (NLP) and next state
+    # Calls gatekeeper to scan requirements
+    # Calls iparser to fill slots, with requirements from gatekeeper
     # Takes in message text, returns (understanding object, nlp breakdown)
     def _parse_message_overall(self,msg):
         # Inital understanding
         uds, bd, nums = self._policykeeper_parse(msg)
         if DEBUG: print("Initial UDS:")
         if DEBUG: uds.printout()
-        self.gatekeeper.scan_SIP(uds.get_sip()) # THIS IS USEFUL for pre-filling slots
+        self.gatekeeper.scan_SIP(uds.get_sip()) # Used for pre-filling slots
 
         # Mine message details. 
         # This is after gatekeep because gatekeep sets the slots.
         og_int = uds.get_og_intent()
         self._parse_message_details(msg, nums,og_int)
 
+        # Preprocess to fill slots with default vals
+        self._gatekeeper_preprocess()
+
         return uds, bd
     
-    # Process, gatekeep then internalize changes
+    # Calculate, zonecheck, gatekeep then internalize changes
+    # Converts same_state_obj to the current state.
+    # Checks if the state is crossroad and needs to be overwritten
+    # Gatekeeper gets requirements from state again in case it changed.
     # Results in change in chat details and change in state
     # Returns boolean indicating whether or not the state was overwritten.
     def react_to_sip(self, sip):
-        
+
         if sip.is_same_state():
             if DEBUG: print("<REACTION> SAME STATE FLAGGED")
             self.samestateflag = True
@@ -288,12 +314,15 @@ class ChatManager:
             self.samestateflag = False
             stateobj = sip.get_state_obj()
         if DEBUG: print("<REACTION> Curr state", self._get_curr_state()["key"], "Nxt stateobj", stateobj["key"])
+        
         # Check if current target state is in a zone_policy crossroad 
         ow_flag, stateobj = self._zone_policy_overwrite(stateobj)
 
-        # Gatekeeper gets the requirements from the state
-        self._get_slots_from_state(stateobj)
-        # Gatekeeper tries the gate
+        if ow_flag:
+            # Gatekeeper gets the requirements from the state
+            self._get_slots_from_state(stateobj)
+        
+        # Gatekeeper tries the gate and CHANGES STATE
         pass_gate = self._advance_to_new_state(stateobj)
 
         return (ow_flag, pass_gate)
@@ -303,6 +332,13 @@ class ChatManager:
 
     def _get_slots_from_state(self, stateobj):
         self.gatekeeper.scan_state_obj(stateobj)
+
+    def _try_gatekeeper_gate(self):
+        curr_info = self._get_current_info()
+        if SUPER_DEBUG: print("<CHAT MGR TRY GATE> Current info:",curr_info)
+        pf, rs, info_topup = self.gatekeeper.try_gate(curr_info)
+        self.push_detail_to_dm(info_topup, ow=False) # Detail update. No Overwrite
+        return (pf, rs)
 
     # CHANGES STATE
     # Updates state according to outcome
@@ -314,37 +350,33 @@ class ChatManager:
         def _set_thread_pending(hs, ps):
             self.statethreader.set_thread_pending(hs, ps)
         
-        curr_info = self._get_current_info()
-        print("Current info:",curr_info)
-        passed, req_slots, info_topup = self.gatekeeper.try_gate(curr_info)
-
-        self.push_detail_to_dm(info_topup, ow=False) # Detail update. No Overwrite
+        passed, req_slots = self._try_gatekeeper_gate()
 
         if DEBUG: print("Gate passed:",passed)
 
         if passed:
             self._move_forward_state(nextstate)
         else:
-            # Update DetailManager
-            self.push_req_slots_to_dm(req_slots)
-
             # Didnt pass gate
+            self.push_req_slots_to_dm(req_slots)            
             constructed_sip = _make_info_sip(req_slots)
             infostate = constructed_sip.get_state_obj()
             _set_thread_pending(infostate, nextstate)
 
         return passed
 
-    # Overwrites state if in zone policy
+    # Overwrites state if currently in zone policy aka crossroad
     def _zone_policy_overwrite(self, og_nxt_state):
         csk = og_nxt_state["key"]
         zones = self._get_zones()
         overwrite_flag, ow_state = self.pkeeper.zone_policy_overwrite(csk,zones)
-        if DEBUG: print("<ZONE POLICY>",overwrite_flag,ow_state)
+        if DEBUG: print("<ZONE POLICY> Overwrite:",overwrite_flag,ow_state)
         if overwrite_flag:
-            return (True, ow_state)
+            next_state = ow_state
         else:
-            return (False, og_nxt_state)
+            next_state = og_nxt_state
+
+        return (overwrite_flag, next_state)
 
     def push_req_slots_to_dm(self, required_slots):
         if len(required_slots) > 0:
@@ -356,14 +388,16 @@ class ChatManager:
 
     ### Ask Helpers
     # Ask replygen for a reply
-    def _fetch_reply(self,intent):
-        information = self._get_current_info()
+    def _fetch_reply(self,intent, calc_ext):
+        info = self._get_current_info()
+        info["calc_ext"] = calc_ext #Add calc ext to the info to be passed in
+
         curr_state = self._get_curr_state()
         if DEBUG: print("<Fetch Reply> Current State",curr_state)
         # samestateflag = self.statethreader.state_never_change()
-        samestateflag = self.samestateflag
+        ssflag = self.samestateflag
         # print("curr_state", curr_state['key'], "samestate",samestateflag)
-        return self.replygen.get_reply(curr_state, intent, samestateflag, information)
+        return self.replygen.get_reply(curr_state, intent, ssflag, info)
 
     # Asks dmanager for info
     def _get_current_info(self):
@@ -387,16 +421,44 @@ class ChatManager:
         self.push_detail_to_dm(details)
         return
 
+    # Ask calculator to crunch numbers.
+    # Updates information dict
+    def _calculate(self):
+        info = self._get_current_info()
+        print("INFO FOR CALC", info)
+        curr_state = self._get_curr_state()
+        topup, calc_ext = self.calculator.calculate(curr_state, info)
+        self.push_detail_to_dm(topup) # Adds persist values to info
+        return calc_ext
+
+    # Clears up values
+    def _post_process(self, uds):
+        pd = {}
+        sip = uds.get_sip()
+        clearlist = sip.get_clears()
+        for to_clear in clearlist:
+            pd[to_clear] = ""
+
+        self.push_detail_to_dm(pd)
+        return 
+
     ### Detail logging
     def push_detail_to_dm(self, d, ow=1):
         self.dmanager.log_detail(d, OVERWRITE=1)
         self.ztracker.update_zones_from_dm(self.dmanager)
         return 
 
-    def read_chat_history(self, history):
+    def read_chat_history(self, history_list):
         if DEBUG: print("Reading chat history")
-        hist_info = self.iparser.parse_chat_history(history)
+        hist_info = self.iparser.parse_chat_history(history_list)
         self.dmanager.log_detail(hist_info, OVERWRITE=0)
+        return
+
+    # Calls the gatekeeper to get default slot values
+    # Updates slot values
+    def _gatekeeper_preprocess(self):
+        gk_topup = self.gatekeeper.preprocess() # Fill default slot values AFTER parsing
+        self.push_detail_to_dm(gk_topup, ow=0)
         return
 
     ### Chat logging
@@ -452,7 +514,7 @@ class PolicyKeeper:
     def get_understanding(self, msg, curr_state):
         # Call NLP Model predict
         intent, breakdown, nums = self._NLP_predict(msg)
-        print("NLP intent:",intent)
+        print("<GET UNDERSTANDING> NLP intent:",intent)
         # Check intent against background info
         uds = self.intent_to_next_state(curr_state, intent)
         return uds, breakdown, nums
@@ -473,7 +535,7 @@ class PolicyKeeper:
 
         policy = self.POLICY_RULES[csk]
         default_null_int = self.INTENT_DICT["no_intent"]
-        uds = Understanding(intent_obj, default_null_int,SIP.same_state())
+        uds = Understanding(intent_obj, default_null_int, SIP.same_state())
         for intent_lst in policy.get_intents():
             if 0: print("intent_list",list(map(lambda x: x[0],intent_lst)))
             for pair in intent_lst:
@@ -504,10 +566,10 @@ class PolicyKeeper:
                     next_sip = self._create_state_obj(target)
                     if DEBUG: print("<ZPOL OVERWRITE> new SIP:",next_sip)
                     return (True, next_sip)
-
+            if DEBUG: print("<ZPOL OVERWRITE> Zone {} not in curr zones: {}".format(z_name, curr_zones))
             return (False, "")
 
-        print("<ZPOL> curr state key:",csk)
+        if 1: print("<ZPOL> curr state key:",csk)
 
         if check_zonepolicies(csk):
             zpd = self.ZONE_POLICIES[csk]
@@ -516,8 +578,7 @@ class PolicyKeeper:
             return (False, "")
         
 
-# MANAGES DETAILS (previously held by Chat)
-# TODO: Differentiate between contextual chat info and user info?
+# MANAGES DETAILS
 class DetailManager:
     def __init__(self, info_vault,secondary_slots,zonelist):
         self.vault = info_vault
@@ -553,7 +614,7 @@ class DetailManager:
         return
 
     def log_detail(self, new_info, OVERWRITE = 1, DEBUG = 0):
-        if DEBUG: print("Logging", new_info)
+        if DEBUG: print("Logging：", new_info)
         for d in new_info:
             deet = new_info[d]
             # Check to make sure its not empty
@@ -562,6 +623,11 @@ class DetailManager:
                     continue
                 else:
                     self.chat_prov_info[d] = new_info[d]
+            else:
+                # Remove entry if empty
+                if d in self.chat_prov_info:
+                    print("<LOG DETAIL> Removing empty",d)
+                    self.chat_prov_info.pop(d)
                 
         self._add_secondary_slots()
 
@@ -591,25 +657,103 @@ class DetailManager:
         return
 
     def _add_secondary_slots(self):
-        
-        curr_info = self.fetch_info()
-        ss_default_flag = "DEFAULT"
+        def mini_calc(raw, branch):
+            # Mini calcualtions
+            loc, opr, v = branch
+            opr = opr.replace(" ","")
+            raw = float(raw)
+            v = float(v)
+            if opr == "-":
+                final = raw - v
+            elif opr == "+":
+                final = raw + v
+            else:
+                print("<SECONDARY SLOT GETV> unknown opr {}".format(opr))
+                final = raw
+            return final 
+
+        def get_value(branch, info):
+            if isinstance(branch,list):
+                raw_vd = dive_for_values(branch,info)
+                if raw_vd == {}:
+                    if DEBUG: print("<SECONDARY SLOT GETV> {} not found in info".format(branch))
+                    final = ""
+                else:
+                    raw = list(raw_vd.values())[0] # Assume dict is size 1
+                    if len(branch) == 3:
+                        final = mini_calc(raw, branch)
+                    else:
+                        final = raw
+
+                return final
+
+            return branch
 
         def tree_search(tree, info):
-            slot, sub_dict = list(tree.items())[0]
-            while slot in info:
-                slot_val = str(info[slot]) # To convert ints to strings. I.e. for hours
-                if slot_val in sub_dict:
-                    ss_branch = sub_dict[slot_val]
-                    if isinstance(ss_branch, dict):
-                        slot, sub_dict = list(ss_branch.items())[0]
-                    else:
-                        return (True, ss_branch)
+            def dot_loc_to_list(sn):
+                # Converts subdict notation like ctx_slots.ctx_this_month to a list
+                if "." in sn:
+                    loc_list = sn.split(".")
+                    if SUPER_DEBUG: print("<SECONDARY SLOT> LOC LIST", loc_list)
+                    slot = loc_list[0]
                 else:
-                    if DEBUG: print("<SECONDARY SLOT> Val not found:", slot_val)
-                    break
+                    loc_list = [sn]
+                
+                slot = loc_list[0]
+                return (slot, loc_list)
+
+            any_val_key = "_ANY"
+            for slotname, sub_dict in list(tree.items()):
+                slot, loc_list = dot_loc_to_list(slotname)
+                while slot in info:
+                    # Gets the value from info. Handles nested vals (eg "groupname.detailname")
+                    curr_d = info.copy()
+                    for loc in loc_list:
+                        infoval = curr_d.get(loc,"")
+                        if infoval == "":
+                            # IF not found
+                            if SUPER_DEBUG: print("<SECONDARY SLOT> ERROR {} not found".format(loc))
+                            slot_val = ""
+                            break
+                            
+                        elif isinstance(infoval, dict):
+                            # If is a subdict
+                            curr_d = infoval
+                        else:
+                            # If found value
+                            slot_val = str(curr_d[loc]) # To convert ints to strings. I.e. for hours
+                    
+                    if SUPER_DEBUG: print("Currently looking for:", slot, "value:", slot_val)
+                    # Check if value is in the subdict and returns the value of it
+                    if slot_val in sub_dict:
+                        ss_branch = sub_dict[slot_val]
+                        if isinstance(ss_branch, dict):
+                            # Is a subtree
+                            if SUPER_DEBUG: print("Found a subtree",ss_branch, "in",sub_dict)
+                            slotname, sub_dict = list(ss_branch.items())[0]
+                            slot, loc_list = dot_loc_to_list(slotname)
+                            continue
+
+                        else:
+                            # Is a leaf
+                            out = get_value(ss_branch, info)
+                            return (True, out)
+                    else:
+                        # Fallback and look for _ANY match
+                        if any_val_key in sub_dict:
+                            # Is a _ANY leaf
+                            a_branch = sub_dict.get(any_val_key,-1)
+                            out = get_value(a_branch, info)
+                            return (True, out)
+
+                        if SUPER_DEBUG: print("<SECONDARY SLOT> Val:", slot_val, "not found in:", sub_dict)
+                        break
+                
+            if SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)
             return (False, "")
 
+        curr_info = self.fetch_info()
+        ss_default_flag = "DEFAULT"
         entries = {}
         for secondslot in self.second_slots:
             target = secondslot["writeto"]
@@ -619,7 +763,8 @@ class DetailManager:
             if f: 
                 entries[target] = val
             elif ss_default_flag in secondslot:
-                 entries[target] = secondslot[ss_default_flag]
+                defval = get_value(secondslot[ss_default_flag], curr_info)
+                entries[target] = defval
         
         self.chat_prov_info.update(entries)
         return 
@@ -663,159 +808,55 @@ class ReplyGenerator:
         
     # OVERALL METHOD
     def get_reply(self, curr_state, intent, secondslot, info = -1):
+        print("<GET_REPLY> INFO",info)
         rdb = self.getreplydb(intent, curr_state, secondslot)
-        infoplus, info_topup = self._enhance_info(curr_state, info)
+        infoplus = self._enhance_info(curr_state, info)
         reply = self.generate_reply_message(rdb, infoplus)
-        return (reply, info_topup)
+        return reply
 
-    # Performs calculations and formats text message replies 
-    ############## Major function ##############
     def _enhance_info(self,curr_state,info):
         RF_DEBUG = 0
-        enhanced = info.copy()
-        if RF_DEBUG: print("initial info", enhanced)
-        rep_ext = {}
-        l_calc_ext = {}
-        topup = {}
-
         cskey = curr_state["key"]
-        state_calcs = False
+        rep_ext = {}
+        enhanced = info.copy()
 
         formatDB = self.formatDB["msg_formats"]
-        calcDB = self.formatDB["calcs"]
 
-        def add_enh(key, value, ext_dict,subdict_name, pv = False, overwrite = False):
-            if RF_DEBUG: print("Enhancing!{}:{}".format(key,value))
-
-            if key in ext_dict and not overwrite:
-                ext_dict[key] = ext_dict[key] + value
-            else:
-                ext_dict[key] = value
-            
-            # Dict of info to be returned and written into main info
-            if pv:
-                topup[key] = value
-                enhanced[key] = value # Write to enhanced main dict
-            else:
-                if not subdict_name in enhanced: enhanced[subdict_name] = {} 
-                enhanced[subdict_name].update(ext_dict) # Write to the the subdict in enhanced
-
-        def add_txt_enh(key, rawstr,_pv = False):
+        def add_txt_enh(key, rawstr):
             wstr = rawstr.format(**enhanced)
             enhstr = cbsv.conv_numstr(wstr)
-            return add_enh(key,enhstr,rep_ext,"rep_ext",pv = _pv)
+            return cu.add_enh(key,enhstr,rep_ext,"rep_ext",{},enhanced, persist = False)
         
-        def add_calc_enh(key, rawstr, _pv = False):
-            flt = round(float(rawstr),2) # Round all displayed numbers to 2 dp
-            return add_enh(key,flt,l_calc_ext,"calc_ext", pv = _pv, overwrite = True)
-
         def needs_txt_enh(tmp,curr_state_key):
             states = tmp["states"]
             return curr_state_key in states
 
-        def needs_calc(state):
-            return "calcs" in state
+        def get_reply_template(pulled):
+            if isinstance(pulled, list):
+                return random.choice(pulled)
+            return pulled
 
-        def add_formula_conditional_vars(f,vd):
-            ret = {}
-            # This assumes all conditions are joined by AND
-            conds = f.get("conditions",[])
-            for cond in conds:
-                k, v, setval = cond
-                if not k in vd:
-                    print("ERROR {} not in info".format(k))
-                    return False
-                
-                met = (vd[k] == v) # Simple match
-                vkey, tval, fval = setval
-                ret[vkey] = tval if met else fval
+        def enhance_if_vals(vd, ifvl):
+            for deet in list(ifvl.keys()):
+                if not deet in vd:
+                    continue
+                formatmap = ifvl[deet]
+                contents = vd[deet]
+                if not isinstance(vd[deet],list):
+                    contents = [vd[deet]]
 
-            vd.update(ret)
-            return
-
-        # Big method.
-        # Takes in a formula (dict)
-        # Returns a value of the result
-        def resolve_formula(f):
-            reqvar_key = "req_vars"
-            opvar_key = "optional_vars"
-            def op_on_all(vnames, op, vdic):
-                def operate(a,b,op):
-                    a = float(a) # Force every variable involved to float
-                    b = float(b)
-                    return op(a,b)
-                out = None
-                for vname in vnames:
-                    isnumbr = cbsv.is_number(vname)
-                    rel_val = vname if isnumbr else vdic[vname] # variables can be real numbers or variable names
-                    if out == None:
-                        out = rel_val
+                for deetval in contents:
+                    dstr = str(cbsv.conv_numstr(deetval,wantint=1)) # Because json keys can only be str
+                    if dstr in formatmap:
+                        enstr = get_reply_template(formatmap[dstr])
+                        
                     else:
-                        out = operate(out,rel_val,op)
-                return out
-
-            # Process the formula steps    
-            instr = f["steps"]
-            steps = list(instr.keys())
-            steps = list(map(lambda x: (x.split(","), instr[x]),steps))
-            steps.sort(key=lambda t: float(t[0][0])) # If no conversion it sorts as string
-
-            if RF_DEBUG: print("<RESOLVE FORMULA> steps aft sort",steps)
-            req_vars = f[reqvar_key]
-            op_vars = f.get(opvar_key, [])
-            vd = dive_for_values(req_vars,enhanced)
-            op_vars_d = dive_for_values(op_vars, enhanced,failzero=True)
-            vd.update(op_vars_d)
-
-            # Conditional values
-            add_formula_conditional_vars(f,vd)
-            if RF_DEBUG: print("<RESOLVE FORMULA> Value Dict",vd)
-
-            #CALCULATIONS 
-            vd["OUTCOME"] = 0
-            for stp in steps:
-                (NA, opname),(valnames,tkey)  = stp
-                opname.replace(" ","") #Spacing messes up the recognition of logical operators
-                if not tkey in vd:
-                    vd[tkey] = 0
-
-                if opname == "add":
-                    opr = lambda a,b: a+b
-                elif opname == "multi":
-                    opr = lambda a,b: a*b
-                elif opname == "sub":
-                    opr = lambda a,b: a-b
-                elif opname == "div":
-                    opr = lambda a,b: a/b
-                elif opname == "equals":
-                    opr = lambda a,b: (1 if a == b else 0)
-                elif opname == "isgreater":
-                    opr = lambda a,b: (1 if a > b else 0)
-                else:
-                    print("<RESOLVE FORMULA> ERROR Unknown operator:",opname)
-                    opr = lambda a,b: a # Unknown oeprator just returns a
-                vd[tkey] = op_on_all(valnames,opr,vd)
-            return vd["OUTCOME"]
-
-        ### MAIN METHOD LOGIC ###
-        # Calculations
-        if needs_calc(curr_state):
-            state_calcs = curr_state["calcs"]
-            for fname in state_calcs:
-                if RF_DEBUG: print("<RESOLVE FORMULA> Performing:",fname)
-                if not fname in calcDB:
-                    print("<RESOLVE FORMULA> ERROR! No such formula:{}".format(fname))
-                else:
-                    formula = calcDB[fname]
-                    pv_flag = formula.get("persist_value",False)
-                    target_key = formula["writeto"]
-                    result = resolve_formula(formula)
-                    add_calc_enh(target_key,result,pv_flag)
-                if RF_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
-            
-            if RF_DEBUG: print("<RESOLVE FORMULA> Postcalc enh",enhanced)
-        else:
-            if RF_DEBUG: print("<RESOLVE FORMULA> No calculation performed")
+                        enstr = formatmap.get("DEFAULT",False)
+                        if not enstr:
+                            raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(dstr,formatmap))
+                            
+                    add_txt_enh(target_key,enstr)
+            return
 
         # Message extensions and formatting
         # Template in format database
@@ -825,36 +866,17 @@ class ReplyGenerator:
                 lookout = tmp["lookfor"].copy()
                 vd = dive_for_values(lookout, enhanced, failzero=True) # Failzero true for rep ext
                 
-                if RF_DEBUG: print("TMP",tmp)
+                if RF_DEBUG: print("<ENH INFO> TMP",tmp)
 
                 ifpr = tmp.get("if_present",{})
                 for deet in list(ifpr.keys()):
-                    enstr = ifpr[deet]
+                    enstr = get_reply_template(ifpr[deet])
                     add_txt_enh(target_key,enstr)
                 
                 ifvl = tmp.get("if_value",{})
-                for deet in list(ifvl.keys()):
-                    if not deet in vd:
-                        continue
-                    formatmap = ifvl[deet]
-                    if isinstance(vd[deet],list):
-                        # E.g. reqinfo is a list
-                        contents = vd[deet]
-                    else:
-                        contents = [vd[deet]]
-
-                    for deetval in contents:
-                        dstr = str(cbsv.conv_numstr(deetval,wantint=1)) # Because json keys can only be str
-                        if dstr in formatmap:
-                            enstr = formatmap[dstr]
-                        else:
-                            enstr = formatmap.get("DEFAULT",False)
-                            if not enstr:
-                                raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(dstr,formatmap))
-                                
-                        add_txt_enh(target_key,enstr)
-        
-        return (enhanced, topup)
+                enhance_if_vals(vd, ifvl)
+                
+        return enhanced
 
     # Returns the a reply database either from intent or from state
     def getreplydb(self, intent, curr_state, issamestate):
@@ -877,25 +899,25 @@ class ReplyGenerator:
         lookups = [intent, curr_state] if issamestate else [curr_state, intent]
 
         rdb = []
+        # Retrieves the intent object from lookup
         for obj in lookups:
             if obj == cbsv.NO_INTENT():
-                # This is for when intent is prioritized but no intent is detected
+                # This is for when intent is prioritized before state but no intent is detected
                 continue
 
             if rdb == []:
-                rdb = get_replylist(obj)
+                rdb = get_replylist(obj) # this may be [] as well
                 self.hflag = get_hflag(obj)
             else:
                 break
         
         if LOCALDEBUG: print("rdb:",rdb)
 
-        if rdb == []:
-            rdb = self.default_confused # OP
+        if rdb == []: rdb = self.default_confused # In case really no answer
 
         return rdb
 
-    # Generates a pure reply
+    # Generates a reply. Purely a string
     def generate_reply_message(self, rdb, info):
         def rand_response(response_list):
             return random.choice(response_list)
@@ -906,7 +928,7 @@ class ReplyGenerator:
         if DEBUG: print("<GEN REPLY> template",reply_template)
         final_msg = reply_template
         if isinstance(info, dict):
-            if DEBUG: print("<GEN REPLY> Enhanced info:",info)
+            if SUPER_DEBUG: print("<GEN REPLY> Enhanced info:",info)
             
             # Uses kwargs to fill this space
             final_msg = reply_template.format(**info)
@@ -945,14 +967,13 @@ class Chat:
         if self.convo_index < 2:
             return
         return self.curr_chatlog[self.convo_index - 2]
-    
 
     ## TODO Database interaction?
     def get_previous_issues(self):
         pass
         # return self.user.get_issues()
 
-    # Writes to a file eventually
+    # Calls chatbot_be to write the conversation messages to a json
     def record_to_database(self):
         if self.save_chat_logs:
             log = self.get_chatlog()
