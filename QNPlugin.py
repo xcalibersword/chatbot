@@ -5,7 +5,7 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.05
+clipboard_sleep = 0.5
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
 self_userID = "temporary"
@@ -168,6 +168,8 @@ def getRawText():
         print("EmptyClipboard EXCEPTION:",e)
         log_err()
 
+    time.sleep(clipboard_sleep)
+
     rpt = 0
     succeed = False
     while not succeed and rpt < rpt_limit + 10:
@@ -177,6 +179,8 @@ def getRawText():
         except Exception as e:
             print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
         rpt += 1
+
+    time.sleep(clipboard_sleep)
 
     raw_text_list = raw_text.splitlines()
     processed_text_list = []
