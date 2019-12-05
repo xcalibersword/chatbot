@@ -108,7 +108,7 @@ class Predictor:
         wordlist = list(lesser_cut)
 
         string = self._remove_symbols(string)
-        string = preprocess_sequence(string)
+        string = preprocess_sequence(string) # REMOVES STOPWORDS
         
         jbstring = jb.cut(string,cut_all=True)
         jbstring = postprocess_sequence(jbstring)

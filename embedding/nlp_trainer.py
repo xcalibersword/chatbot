@@ -147,7 +147,7 @@ def myTokenize(nparr):
             seq = nparr.tolist()
 
         seq = seq.replace(" ", "")
-        seq = preprocess_sequence(seq)
+        seq = preprocess_sequence(seq) # REMOVES STOPWORDS
         jbseq = jb.lcut(seq, cut_all=True)
         jbseq = postprocess_sequence(jbseq)
         jbseq = pad_sequences([jbseq,], maxlen = max_review_length, dtype = object, value="_NA")

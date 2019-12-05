@@ -1,6 +1,7 @@
 STR_DIGITSET = {"0","1","2","3","4","5","6","7","8","9","."}
 CHI_DIGITSET = {"一","二","三","四","五","六","七","八","九","十","百","千","万","亿"}
-STOPWORDS = {"的","了","呢","得","着"}
+REPLACE_SET = {"？":"?","~":"-"} # From: To
+STOPWORDS = {"的","了","呢","得","着","而且"}
 
 def is_a_number(thing):
     if not isinstance(thing, str):
@@ -19,8 +20,16 @@ def is_a_number(thing):
     return True
 
 def preprocess_sequence(sequence):
-    o = remove_stopwords(sequence)
-    return o
+    out = ""
+    seq = remove_stopwords(sequence)
+    for char in seq:
+        if char in REPLACE_SET:
+            new_char = REPLACE_SET.get(char,char)
+            out = out + new_char
+        else:
+            out = out + char
+    
+    return out
 
 def postprocess_sequence(sequence):
     o = replace_number_tokens(sequence)
@@ -34,6 +43,7 @@ def replace_number_tokens(seq):
             out.append(number_token)
         else:
             out.append(token)
+        
     return out
 
 def remove_stopwords(seq):

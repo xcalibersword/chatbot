@@ -650,6 +650,7 @@
         "doublecheck_component_value": {
             "key": "doublecheck_component_value",
             "gated": true,
+            "humanify":false,
             "terminal_state":true,
             "thread": "t_doublecheck",
             "req_info": [
@@ -1783,7 +1784,7 @@
                     },
                     "w_comp_is_main_wo_svc":{
                         "1":"",
-                        "2":"这已经包括服务费",
+                        "2":["已经包括了服务费", "已经加上了服务费", "服务费已经算在里面"],
                         "3":{
                             "exclude_svc_fee":{
                                 "not_mentioned": "",
