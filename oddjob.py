@@ -1,6 +1,10 @@
 import json
 <<<<<<< master
+<<<<<<< master
 from decimal import Decimal
+=======
+import re
+>>>>>>> Create val_slots using RE
 =======
 import re
 >>>>>>> Create val_slots using RE
@@ -20,6 +24,7 @@ def dump_to_json(filename, data, DEBUG = 0):
         print("Finished writing to " + str(filename))
 
 <<<<<<< master
+<<<<<<< master
 test = {"abc":123,"memem":7461}
 test = Decimal(5.12345)
 print(test, type(test))
@@ -31,6 +36,8 @@ print(test3, type(test3))
 # tt = str(test)
 # print(tt)
 =======
+=======
+>>>>>>> Create val_slots using RE
 test = "I want 10-12月"
 test = "要交9到12月份"
 reDB = "(1?[0-9])月?(~|-|到)(1?[0-9])月?"
@@ -40,6 +47,9 @@ tt2 = re.search(db2, test)
 print("first: ",tt)
 print("1:", tt.group(1))
 print("2:", tt2.group(2))
+<<<<<<< master
+>>>>>>> Create val_slots using RE
+=======
 >>>>>>> Create val_slots using RE
 
 # json_data = read_json("chatbot_resource.json")
