@@ -841,7 +841,7 @@ class ReplyGenerator:
         return reply
 
     def _enhance_info(self,curr_state,info):
-        RF_DEBUG = 0
+        RF_DEBUG = 1
         cskey = curr_state["key"]
         rep_ext = {}
         enhanced = info.copy()
@@ -851,9 +851,12 @@ class ReplyGenerator:
         def add_txt_enh(key, rawstr):
             wstr = rawstr.format(**enhanced)
             enhstr = cbsv.conv_numstr(wstr)
-            return cu.add_enh(key,enhstr,rep_ext,"rep_ext",{},enhanced, persist = False)
+            if RF_DEBUG: print("Writing {} to {}".format(rawstr, key))
+            cu.add_enh(key,enhstr,rep_ext,"rep_ext",{},enhanced, persist = False)
+            if RF_DEBUG: print("<ADD ENH> Intermediate enh:", enhanced)
+            return 
         
-        def needs_txt_enh(tmp,curr_state_key):
+        def curr_state_needs_txt_enh(tmp,curr_state_key):
             states = tmp["states"]
             return curr_state_key in states
 
@@ -862,32 +865,60 @@ class ReplyGenerator:
                 return random.choice(pulled)
             return pulled
 
-        def enhance_if_vals(vd, ifvl):
-            for deet in list(ifvl.keys()):
-                if not deet in vd:
-                    continue
-                formatmap = ifvl[deet]
-                contents = vd[deet]
-                if not isinstance(vd[deet],list):
-                    contents = [vd[deet]]
+        def enhance_if_vals(vd, ifvl, tkey):
+            def if_val_tree_enh(t_info, name_tree, tkey):
+                if isinstance(name_tree, str):
+                    # ivtree is a leaf
+                    add_txt_enh(tkey,name_tree) # Enhance right away
+                    return
 
-                for deetval in contents:
-                    dstr = str(cbsv.conv_numstr(deetval,wantint=1)) # Because json keys can only be str
-                    if dstr in formatmap:
-                        enstr = get_reply_template(formatmap[dstr])
-                        
-                    else:
-                        enstr = formatmap.get("DEFAULT",False)
-                        if not enstr:
-                            raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(dstr,formatmap))
-                            
-                    add_txt_enh(target_key,enstr)
+                # Branch
+                print('<ENHANCE IF VAL> Nametree',name_tree)
+                print("<ENHANCE IF VAL2> < vn:", name_tree[0], "< cases:",name_tree[1])
+
+                valname, cases = name_tree 
+                case_keys = list(cases.keys())
+                    
+                if valname in t_info:
+                    info_val_value = t_info.get(valname)
+                    if isinstance(info_val_value, dict):
+                        subtree = info_val_value
+                        if RF_DEBUG: print("<ENHANCE IF VAL> Subdict found", subtree)
+                        return if_val_tree_enh(t_info, subtree, tkey)
+
+                    if not isinstance(info_val_value, list):
+                        info_val_value = [info_val_value]
+
+                    for iv in info_val_value:
+                        str_iv = str(cbsv.conv_numstr(iv,wantint=True))
+                        print("<ENHANCE IF VAL> Looking for {} in {}".format(str_iv, case_keys))
+                        matched = False
+                        if str_iv in case_keys:
+                            matched = True
+                            subtree = cases.get(str_iv)
+                            if_val_tree_enh(t_info, subtree, tkey)
+
+                    if not matched:
+                        if RF_DEBUG:print ("<ENHANCE IF VAL> No match for ", info_val_value,"in",case_keys)
+                        default_branch = cases.get("DEFAULT",False)
+                        if default_branch:
+                            return if_val_tree_enh(t_info, default_branch, tkey)
+                else:
+                    if not enstr: raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(valname,info))
+
+                return
+            
+            print("<ENHANCE IF VAL> Write to:", tkey)
+            ifval_list = ifvl.items()
+            for name_tree in ifval_list:
+                if_val_tree_enh(vd, name_tree, tkey)
+                    
             return
 
         # Message extensions and formatting
         # Template in format database
         for tmp in formatDB:
-            if needs_txt_enh(tmp,cskey):
+            if curr_state_needs_txt_enh(tmp,cskey):
                 target_key = tmp["writeto"]
                 lookout = tmp["lookfor"].copy()
                 vd = dive_for_values(lookout, enhanced, failzero=True) # Failzero true for rep ext
@@ -900,8 +931,9 @@ class ReplyGenerator:
                     add_txt_enh(target_key,enstr)
                 
                 ifvl = tmp.get("if_value",{})
-                enhance_if_vals(vd, ifvl)
-                
+                enhance_if_vals(vd, ifvl, target_key)
+        
+        print("<ENH POST> Enhanced:", enhanced)
         return enhanced
 
     # Returns the a reply database either from intent or from state
