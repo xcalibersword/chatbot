@@ -2,22 +2,8 @@
     "conditional_reqs": {
         "city": [
             [
-                "TEMPLATE value",
-                [
-                    [
-                        "TEMPLATE additional_requirement",
-                        "yesno"
-                    ]
-                ]
-            ],
-            [
                 "苏州",
-                [
-                    [
-                        "苏州区",
-                        "苏州区_slot"
-                    ]
-                ]
+                [["苏州区","苏州区_slot"]]
             ]
         ]
     },
@@ -123,11 +109,12 @@
             "writeto": "ss_user_spec_component_value",
             "search_tree":{
                 "chosen_fee":{
-                    "一共": ["shebao_jiaona_total"],
-                    "社保缴纳":[["city_info",["shebao_payment"]]],
+                    "一共": ["shebao_basic_total"],
+                    "社保缴纳":["shebao_jiaona_total"],
                     "社保基数":[["city_info",["sb_jishu"]]],
                     "公积金缴纳":[["city_info",["gongjijin_fee"]]],
                     "公积金基数":[["city_info",["gjj_jishu"]]],
+                    "首次费":[["city_info",["shouci_fee"]]],
                     "服务费":["svc_fee_total"]
                 }
             }
@@ -137,7 +124,7 @@
         "首次":"yes",
         "要社保":"yes",
         "要公积金":"no",
-        "exclude_svc_fee":"include",
+        "exclude_svc_fee":"not_mentioned",
         "given_amount": "",
         "purchase_type":"normal"
     },
@@ -149,7 +136,6 @@
             ["要公积金","gongjijin_slot"],
             ["首次","gen_shouci_slot"],
             ["chosen_fee","fee_slot"],
-            ["xufei","xufei_slot"],
             ["exclude_svc_fee", "exclude_svc_fee_slot"],
             ["purchase_type","purchase_type_slot"]
         ],
@@ -160,7 +146,8 @@
             ["ask_keyi","keyi_slot"],
             ["say_thanks","thanks_slot"],
             ["yourenma","yourenma_slot"],
-            ["jishu_amt", "ctx_minmax_slot"]
+            ["jishu_amt", "ctx_minmax_slot"],
+            ["xufei","xufei_slot"]
         ],
         "slots": {
             "month_slot":{
@@ -310,6 +297,21 @@
                     "(?<!不)对"
                 ],
                 "no": [
+                    "no",
+                    "nope",
+                    "不是",
+                    "没有",
+                    "不$"
+                ]
+            },
+            "reverse_yesno_slot":{
+                "no": [
+                    "yes",
+                    "(?<!没)有",
+                    "(?<!不)是",
+                    "(?<!不)对"
+                ],
+                "yes": [
                     "no",
                     "nope",
                     "不是",

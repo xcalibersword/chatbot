@@ -5,7 +5,8 @@
             "default_set": false,
             "slotfills": {
                 "wantnot":"yes",
-                "yesno":"yes"
+                "yesno":"yes",
+                "reverse_yesno_slot": "no"
             },
             "default_target": "NA",
             "replies": []
@@ -15,7 +16,8 @@
             "default_set": false,
             "slotfills": {
                 "wantnot":"no",
-                "yesno":"no"
+                "yesno":"no",
+                "reverse_yesno_slot": "yes"
             },
             "default_target": "NA",
             "replies": []
@@ -651,7 +653,6 @@
             "terminal_state":true,
             "thread": "t_doublecheck",
             "req_info": [
-                ["given_amount","DUMMY_SLOT"],
                 ["chosen_fee","fee_slot"],
                 ["要社保", "DEFAULT_SV"],
                 ["要公积金", "DEFAULT_SV"],
@@ -698,7 +699,7 @@
             "propose_plan_state": true,
             "req_info": [
                 ["city","city"],
-                ["首次","DEFAULT_SV"],
+                ["首次","reverse_yesno_slot"],
                 ["要公积金","wantnot"],
                 ["要社保", "DEFAULT_SV"]
             ],
@@ -1069,7 +1070,7 @@
                 "if_value": {
                     "requested_info": {
                         "city": "您是哪个城市呢？",
-                        "首次": "是首次吗？",
+                        "首次": "之前有交过吗？",
                         "要公积金": "交公积金吗？",
                         "苏州区": "是市区还是园区呢？",
                         "chosen_fee": "哪个部分？（比如：社保/公积金/服务费）",
@@ -1814,6 +1815,7 @@
                         "DEFAULT":"{chosen_fee}是{w_spec_component_value}的 "
                     },
                     "exclude_svc_fee":{
+                        "not_mentioned": "",
                         "exclude": "包括服务费要多加{svc_fee_total}哦",
                         "include": "包括服务费是{w_alt_component_value}"
                     }
@@ -1832,7 +1834,8 @@
                 "if_value": {
                     "component_val_match_flag":{
                         "1":"是的亲 {rep_ext[component_val_correction]}",
-                        "0":"不是啊亲 {rep_ext[component_val_correction]}"
+                        "0":"不是啊亲 {rep_ext[component_val_correction]}",
+                        "-1":"{rep_ext[component_val_correction]}"
                     }
                 }
             }
@@ -2421,10 +2424,16 @@
             "persist_value": false,
             "conditions":[],
             "req_vars":[
-                "given_amount",
                 "w_spec_component_value"
             ],
+            "optional_vars":[
+                "given_amount"
+            ],
             "steps":{
+                "0,equals":[
+                    ["given_amount",0],
+                    "w_no_given_amt"
+                ],
                 "1,add": [
                     ["given_amount",1],
                     "w_upper"
@@ -2447,6 +2456,10 @@
                 ],
                 "6,equals":[
                     ["w_sum_true",2],
+                    "OUTCOME"
+                ],
+                "7,sub":[
+                    ["OUTCOME","w_no_given_amt"],
                     "OUTCOME"
                 ]
             }

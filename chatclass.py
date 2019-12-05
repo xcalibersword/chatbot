@@ -740,7 +740,7 @@ class DetailManager:
                                 out = get_value(ss_branch, t_info)
                                 # Cut from info
                                 pp = curr_d.pop(loc)
-                                print("<TREE> pop leaf",pp)
+                                if SUPER_DEBUG: print("<TREE> pop leaf",pp)
                                 return (True, out)
                         else:
                             # Fallback and look for _ANY match
@@ -750,7 +750,7 @@ class DetailManager:
                                 out = get_value(a_branch, t_info)
                                 # Cut from info
                                 pp = curr_d.pop(loc)
-                                print("<TREE> pop any",pp)
+                                if SUPER_DEBUG: print("<TREE> pop any",pp)
                                 return (True, out)
 
                             if SUPER_DEBUG: print("<SECONDARY SLOT> Val:", slot_val, "not found in:", sub_dict)
