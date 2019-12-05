@@ -38,3 +38,5 @@ oddjob.py
 localfiles/
 
 cb/
+
+database.json

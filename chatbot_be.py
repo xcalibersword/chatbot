@@ -7,28 +7,41 @@ from cb_sql import write_to_sqltable, fetch_uid_from_sqltable
 
 dbfolder = "userdata"
 DEBUG = 0
-JSON_DATABASE = 0
+JSON_DATABASE = 1
 
 class DatabaseRunner():
     def __init__(self):
-        self.backup_delay = 60
+        self.backup_delay = 30
         self.timer_on = False
         
         if JSON_DATABASE:
-            base_directry = os.getcwd()
-            dbfilename = "database.json"
-            # self.dbfilepath = os.path.join(base_directry,dbfolder,dbfilename)
-            self.dbfilepath = os.path.join(base_directry,dbfilename) # For testing purpose
-            if DEBUG: print("Loading info from", self.dbfilepath)
+            self.database = self._read_json_db()
+        else:
+            self.database = {}
+
+    def _read_json_db(self):
+        def _create_json_db():
             if not check_file_exists(self.dbfilepath):
                 print("Creating empty database file")
                 dump_to_json(self.dbfilepath,{}, OVERRIDE = 1) # Create an empty file
-            self.database = read_json(self.dbfilepath)
-        else:
-            self.database = {}
-        
+            return
+
+        base_directry = os.getcwd()
+        dbfilename = "database.json"
+        # self.dbfilepath = os.path.join(base_directry,dbfolder,dbfilename)
+        self.dbfilepath = os.path.join(base_directry,dbfilename) # For testing purpose
+        _create_json_db()
+
+        if DEBUG: print("Loading info from", self.dbfilepath)
+        return read_json(self.dbfilepath)
+              
     def fetch_user_info(self, user):
-        if not user in self.database:
+        def _fetch_from_JSON(user):
+            # self.database reflects the entire json database
+            if not user in self.database:
+                self.database[user] = {}
+
+        def _fetch_from_SQL(user):
             # Create empty entry for new user
             fetch = fetch_uid_from_sqltable(user)
             if isinstance(fetch, dict):
@@ -36,6 +49,12 @@ class DatabaseRunner():
             else:
                 ndic = {}
             self.database[user] = ndic
+
+        if not user in self.database:
+            if JSON_DATABASE:
+                _fetch_from_JSON(user)
+            else:
+                _fetch_from_SQL(user)
         return self.database[user]
 
     def trigger_backup(self):
@@ -59,14 +78,17 @@ class DatabaseRunner():
         self.trigger_backup()
 
     def _true_write_to_db(self):
-        if DEBUG: print("Writing userinfo to database")
         def destroy_empty_records():
             for user in list(self.database.keys()):
                 if self.database[user] == {}:
                     self.database.pop(user)
+
+        if DEBUG: print("Writing userinfo to database")
         destroy_empty_records()
-        write_to_sqltable(self.database)
-        # dump_to_json(self.dbfilepath, self.database)
+        if JSON_DATABASE:
+            dump_to_json(self.dbfilepath, self.database)
+        else:
+            write_to_sqltable(self.database)
         self.timer_on = False
 
 # Assumes messages are in a list structure

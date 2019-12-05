@@ -4,7 +4,7 @@ import re
 import json
 
 
-WRITE_TO_FILE = 0 # Switch to turn of writing for testing purposes.
+WRITE_TO_FILE = 1 # Switch to turn of writing for testing purposes.
 
 DEBUG = 0
 
@@ -118,35 +118,3 @@ def read_json(json_filename):
 
 def check_file_exists(filepath):
     return os.path.isfile(filepath)
-
-if __name__ == "__main__":
-
-    k = {
-        "a": 1,
-        "b": 2
-    }
-    td = {
-        k["a"]:123
-    }
-
-    print(list(k.keys()))
-
-
-# 2009年8月
-# 2011年8月12日
-# 北京 2011年8月12日
-
-# TESTING REGEX
-# Check if search allows trailing chars
-# E.g. plan alakazam = plan a
-
-if __name__ == "__main__":
-    def chk(inp):
-        mtch = re.search("[^ ]+(?=day)",inp)
-        if mtch:
-            print(mtch)
-            print(mtch.group(0))    
-        return
-    while 1:
-        i = input()
-        chk(i)
