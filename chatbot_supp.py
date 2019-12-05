@@ -183,6 +183,15 @@ class ReqGatekeeper:
         if DEBUG: print("<SCAN STATE OBJ> slots:",slots)
         self.requirements = ReqGatekeeper.slots_to_reqs(self.slots)      
 
+    def _get_unfilled_slots(self, info):
+        slots = self.get_slots()
+        uf_slots = slots.copy()
+        for s in uf_slots.copy():
+            detail = s[0]
+            if detail in info:
+                uf_slots.remove(s)
+        return uf_slots
+
     # If pass, returns True, (Pending state)
     # If fail, returns False, (Next state)
     def try_gate(self, info):
@@ -197,15 +206,10 @@ class ReqGatekeeper:
 
         else:
             self._add_cond_reqs(info)
-            unfilled_slots = self.get_slots()
 
             if SUPER_DEBUG: print("<TRY GATE> Trying with info:",info, "required:",self.get_requirements())
             # for catgry in list(info.keys()):
-            for s in unfilled_slots.copy():
-                detail = s[0]
-                if detail in info:
-                    unfilled_slots.remove(s)
-            
+            unfilled_slots = self._get_unfilled_slots(info)
             # Fill slots with default values if needed
             unfilled_slots, info_topup = self.assign_default_values(unfilled_slots)
 
@@ -218,9 +222,9 @@ class ReqGatekeeper:
         return (passed, unfilled_slots, info_topup)
 
     # For now this fills default slots with their default values.
-    def preprocess(self):
-        slots = self.get_slots()
-        topup = self.assign_default_values(slots)[1]
+    def preprocess(self, curr_info):
+        no_val_slots = self._get_unfilled_slots(curr_info)
+        topup = self.assign_default_values(no_val_slots)[1]
         return topup
 
     def assign_default_values(self, unfilled):

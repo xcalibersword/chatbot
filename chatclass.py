@@ -457,7 +457,8 @@ class ChatManager:
     # Calls the gatekeeper to get default slot values
     # Updates slot values
     def _gatekeeper_preprocess(self):
-        gk_topup = self.gatekeeper.preprocess() # Fill default slot values AFTER parsing
+        curr_info = self._get_current_info()
+        gk_topup = self.gatekeeper.preprocess(curr_info) # Fill default slot values AFTER parsing
         self.push_detail_to_dm(gk_topup, ow=0)
         return
 
