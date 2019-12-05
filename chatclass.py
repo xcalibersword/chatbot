@@ -865,21 +865,10 @@ class ReplyGenerator:
                 return random.choice(pulled)
             return pulled
 
-        def enhance_if_vals(vd, ifvl, tkey):
+        def enhance_if_vals(vd, ifvl, tkey):   
+            # Recursive function
             def if_val_tree_enh(t_info, name_tree, tkey):
-                if isinstance(name_tree, str):
-                    # ivtree is a leaf
-                    add_txt_enh(tkey,name_tree) # Enhance right away
-                    return
-
-                # Branch
-                print('<ENHANCE IF VAL> Nametree',name_tree)
-                print("<ENHANCE IF VAL2> < vn:", name_tree[0], "< cases:",name_tree[1])
-
-                valname, cases = name_tree 
-                case_keys = list(cases.keys())
-                    
-                if valname in t_info:
+                def search_tree_and_enhance(valname):
                     info_val_value = t_info.get(valname)
                     if isinstance(info_val_value, dict):
                         subtree = info_val_value
@@ -891,7 +880,7 @@ class ReplyGenerator:
 
                     for iv in info_val_value:
                         str_iv = str(cbsv.conv_numstr(iv,wantint=True))
-                        print("<ENHANCE IF VAL> Looking for {} in {}".format(str_iv, case_keys))
+                        print("<ENHANCE IF VAL> Val:{} Looking for {} in {}".format(valname, str_iv, case_keys))
                         matched = False
                         if str_iv in case_keys:
                             matched = True
@@ -903,15 +892,38 @@ class ReplyGenerator:
                         default_branch = cases.get("DEFAULT",False)
                         if default_branch:
                             return if_val_tree_enh(t_info, default_branch, tkey)
-                else:
-                    if not enstr: raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(valname,info))
 
-                return
+                if not isinstance(name_tree, dict):
+                    # Break case
+                    if isinstance(name_tree, str):
+                        # ivtree is a leaf
+                        add_txt_enh(tkey,name_tree) # Enhance
+                        return
+
+                    if isinstance(name_tree, list):
+                        print("Nametree is a list",name_tree)
+                        # ivtree is a leaf list
+                        enhstr = get_reply_template(name_tree)
+                        add_txt_enh(tkey,enhstr) # Enhance chosen string
+                        return
+                else:
+                    # Search case
+                    print('<ENHANCE IF VAL> Nametree',name_tree)
+
+                    iv_trees = list(name_tree.items())
+                    for valname, cases in iv_trees:
+                        # Branch
+                        case_keys = list(cases.keys())
+                            
+                        if valname in t_info:
+                            search_tree_and_enhance(valname)
+                        else:
+                            if not enstr: raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(valname,info))
+
+                    return
             
             print("<ENHANCE IF VAL> Write to:", tkey)
-            ifval_list = ifvl.items()
-            for name_tree in ifval_list:
-                if_val_tree_enh(vd, name_tree, tkey)
+            if_val_tree_enh(vd, ifvl, tkey)
                     
             return
 

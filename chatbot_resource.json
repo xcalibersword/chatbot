@@ -653,6 +653,7 @@
             "terminal_state":true,
             "thread": "t_doublecheck",
             "req_info": [
+                ["city","city"],
                 ["chosen_fee","fee_slot"],
                 ["要社保", "DEFAULT_SV"],
                 ["要公积金", "DEFAULT_SV"],
@@ -1295,47 +1296,22 @@
                 }
             },
             {
-                "writeto": "str_default_gjj_jishu",
-                "states": [
-                    "propose_plan"
-                ],
-                "lookfor": [
-                    ["city_info",["gjj_jishu"]]
-                ],
-                "if_value": {
-                    "gjj_jishu": {
-                        "0": "",
-                        "DEFAULT": "（按照最低基数为{city_info[gjj_jishu]}元）"
-                    }
-                }
-            },
-            {
                 "writeto":"str_gjj_jishu",
                 "states": ["propose_plan"],
                 "lookfor":[
                     "custom_gjj_flag",
                     "ss_gjj_jishu_figure",
-                    ["rep_ext",["str_default_gjj_jishu"]]
+                    ["city_info",["gjj_jishu"]]
                 ],
                 "if_value":{
                     "custom_gjj_flag":{
                         "1": "（按照{ss_gjj_jishu_figure}基数）",
-                        "DEFAULT":"{rep_ext[str_default_gjj_jishu]}"
-                    }
-                }
-            },
-            {
-                "writeto": "str_default_sb_jishu",
-                "states": [
-                    "propose_plan"
-                ],
-                "lookfor": [
-                    ["city_info",["sb_jishu"]]
-                ],
-                "if_value": {
-                    "sb_jishu": {
-                        "0": "",
-                        "DEFAULT": "（按照最低基数为{city_info[sb_jishu]}元）"
+                        "DEFAULT":{
+                            "gjj_jishu": {
+                                "0": "",
+                                "DEFAULT": "（按照最低基数为{city_info[gjj_jishu]}元）"
+                            }
+                        }
                     }
                 }
             },
@@ -1345,12 +1321,17 @@
                 "lookfor":[
                     "custom_sb_flag",
                     "ss_sb_jishu_figure",
-                    ["rep_ext",["str_default_sb_jishu"]]
+                    ["city_info",["sb_jishu"]]
                 ],
                 "if_value":{
                     "custom_sb_flag":{
                         "1": "（按照{ss_sb_jishu_figure}基数）",
-                        "DEFAULT":"{rep_ext[str_default_sb_jishu]}"
+                        "DEFAULT":{
+                            "sb_jishu": {
+                                "0": "",
+                                "DEFAULT": "（按照最低基数为{city_info[sb_jishu]}元）"
+                            }
+                        }
                     }
                 }
             },
@@ -1475,7 +1456,10 @@
                 ],
                 "if_value": {
                     "w_bujiao_cmi_flag": {
-                        "1":["可以补缴，补缴不算连续哈","可以补缴啊 请注意：补缴不算连续哦，望知悉"],
+                        "1":[
+                                "可以补缴，补缴不算连续哈",
+                                "可以补缴 请注意：补缴不算连续哦，望知悉哦"
+                            ],
                         "0":"不可以补 {rep_ext[topup_info_extra]}"
                     }
                 }
@@ -1591,29 +1575,7 @@
                     }
                 }
 
-            },
-            {
-                "writeto":"pay_curr_month_msg",
-                "states": [
-                    "inform_pay_deadline"
-                ],
-                "lookfor": [
-                    "ss_purchase_for_month",
-                    "w_normal_cmi_flag",
-                    ["rep_ext",[
-                        "topup_can_not_msg",
-                        "normal_pay_can_not_msg"
-                        ]
-                    ]
-                ],
-                "if_value": {
-                    "w_normal_cmi_flag":{
-                        "1":"{rep_ext[normal_pay_can_not_msg]}",
-                        "0":"{rep_ext[normal_pay_can_not_msg]}，只{rep_ext[topup_can_not_msg]}"
-                    }
-                }
-            },
-            
+            },    
             {
                 "writeto":"pay_deadline_info",
                 "states": [
@@ -1622,6 +1584,7 @@
                 "lookfor": [
                     "ss_purchase_for_month",
                     "spec_month",
+                    "w_normal_cmi_flag",
                     ["rep_ext",[
                         "topup_can_not_msg",
                         "normal_pay_can_not_msg"
@@ -1633,7 +1596,12 @@
                 },
                 "if_value": {
                     "spec_month":{
-                        "1":"{rep_ext[pay_curr_month_msg]}",
+                        "1":{
+                            "w_normal_cmi_flag":{
+                                "1":"{rep_ext[normal_pay_can_not_msg]}",
+                                "0":"{rep_ext[normal_pay_can_not_msg]}，只{rep_ext[topup_can_not_msg]}"
+                            }
+                        },
                         "0":"{rep_ext[normal_pay_can_not_msg]}",
                         "2":"{rep_ext[topup_can_not_msg]}"
                     }
@@ -1797,23 +1765,6 @@
                 }
             },
             {
-                "writeto":"component_val_correction_svcfee",
-                "states": [
-                    "doublecheck_component_value"
-                ],
-                "lookfor":[
-                    "exclude_svc_fee",
-                    "w_alt_component_value"
-                ],
-                "if_value":{
-                    "exclude_svc_fee":{
-                        "not_mentioned": "",
-                        "exclude": "包括服务费要多加{svc_fee_total}哦",
-                        "include": "包括服务费是{w_alt_component_value}"
-                    }
-                }
-            },
-            {
                 "writeto":"component_val_correction",
                 "states": [
                     "doublecheck_component_value"
@@ -1822,19 +1773,24 @@
                     "chosen_fee",
                     "ss_user_spec_component_value",
                     "w_spec_component_value",
-                    "svc_fee_total",
                     "w_comp_is_main_wo_svc",
-                    ["calc_ext",["component_val_match_flag"]],
-                    ["rep_ext",["component_val_correction_svcfee"]]
+                    "exclude_svc_fee",
+                    ["calc_ext",["component_val_match_flag"]]
                 ],
                 "if_value": {
                     "component_val_match_flag":{
-                        "DEFAULT":"{chosen_fee}是{w_spec_component_value}的 "
+                        "DEFAULT":"{chosen_fee}{w_spec_component_value} "
                     },
                     "w_comp_is_main_wo_svc":{
                         "1":"",
-                        "2":"已经包括服务费",
-                        "3":"{rep_ext[component_val_correction_svcfee]}"
+                        "2":"这已经包括服务费",
+                        "3":{
+                            "exclude_svc_fee":{
+                                "not_mentioned": "",
+                                "exclude": "包括服务费要多加{svc_fee_total}哦",
+                                "include": "不包括服务费是{w_alt_component_value}"
+                            }
+                        }
                     }
                 }
             },
@@ -1844,7 +1800,6 @@
                     "doublecheck_component_value"
                 ],
                 "lookfor": [
-                    "chosen_fee",
                     ["rep_ext",["component_val_correction"]],
                     ["calc_ext",["component_val_match_flag"]]
                 ],
