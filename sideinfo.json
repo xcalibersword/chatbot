@@ -163,18 +163,22 @@
             ["yourenma","yourenma_slot"],
             ["jishu_amt", "ctx_minmax_slot"]
         ],
-        "slots": {
-            "duration_slot":{
-                "map":{
-                    "present":[
-                        "(1?[0-9])月?-(1?[0-9])月?",
-                        "从?(1?[0-9])月?到(1?[0-9])月?"
-                    ],
-                    "NO_MATCH":["absent"]
-                }
+        "val_slots":{
+            "from_month":{
+                "group_pos": 1,
+                "map": [
+                    "(1?[0-9])月?(~|-|到)(1?[0-9])月?"
+                ]
             },
+            "to_month" :{
+                "group_pos": 2,
+                "map":[
+                    "(?<=(~|-|到))(1?[0-9])月?"
+                ]
+            }
+        },
+        "slots": {
             "month_slot":{
-                "multi":true,
                 "map":{
                     "1":["(?<!(十|1))(一|1)月"],
                     "2":["(?<!(十|1))(二|2)月"],
