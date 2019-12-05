@@ -1,4 +1,5 @@
 import json
+import re
 
 # Working file to automatically do things like format json info
 
@@ -14,11 +15,15 @@ def dump_to_json(filename, data, DEBUG = 0):
     if DEBUG:
         print("Finished writing to " + str(filename))
 
-test = {"abc":123,"memem":7461}
-
-print(test)
-tt = str(test)
-print(tt)
+test = "I want 10-12月"
+test = "要交9到12月份"
+reDB = "(1?[0-9])月?(~|-|到)(1?[0-9])月?"
+db2 = "(?<=(~|-|到))(1?[0-9])月?"
+tt = re.search(reDB, test)
+tt2 = re.search(db2, test)
+print("first: ",tt)
+print("1:", tt.group(1))
+print("2:", tt2.group(2))
 
 # json_data = read_json("chatbot_resource.json")
 

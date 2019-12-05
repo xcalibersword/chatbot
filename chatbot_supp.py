@@ -357,6 +357,7 @@ class InfoParser():
         self.regexDB = {}
         self.perm_slots = json_dict["permanent_slots"]
         self.ctx_slots = json_dict["contextual_slots"]
+        self.val_slots = json_dict["val_slots"]
         slots = json_dict["slots"]
         self._build_slots_DB(slots)
 
