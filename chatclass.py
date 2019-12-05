@@ -641,7 +641,7 @@ class DetailManager:
 
     # Info without vault
     def get_user_info(self):
-        not_user_info = ["requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", "flag_sb_gjj", 'w_shebao_payment', 'shebao_basic_total', 'shebao_jiaona_total', 'target_month', 'given_amount','city_info'] #TODO find a proper way to store this info in JSON
+        not_user_info = ["requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", "flag_sb_gjj", 'w_shebao_payment', 'shebao_jiaona_total', 'target_month', 'given_amount','city_info'] #TODO find a proper way to store this info in JSON
         dic = self.chat_prov_info.copy()
         for i in not_user_info:
             if i in dic: 

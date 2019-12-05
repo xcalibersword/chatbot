@@ -581,7 +581,7 @@ class Calculator():
         # Calculations
         state_calcs = get_calcs(curr_state)
         for fname in state_calcs:
-            if CALC_DEBUG: print("<RESOLVE FORMULA> Performing:",fname)
+            if CALC_DEBUG or 1: print("<RESOLVE FORMULA> Performing:",fname)
             if not fname in calcDB:
                 print("<RESOLVE FORMULA> ERROR! No such formula:{}".format(fname))
             else:
@@ -616,9 +616,13 @@ class Calculator():
         # Returns a result value 
         def op_on_all(vnames, op, vdic):
             def operate(a,b,op):
-                a = float(a) # Force every variable involved to float
-                b = float(b)
-                return op(a,b)
+                try:
+                    a = float(a) # Force every variable involved to float
+                    b = float(b)
+                    return op(a,b)
+                except:
+                    print("Could not convert to float:{},{}".format(a,b))
+                    exit()
             out = None
             for vname in vnames:
                 isnumbr = cbsv.is_number(vname)
@@ -662,7 +666,12 @@ class Calculator():
                         print("<COND VALS> WARNING {} not in info".format(k))
                         met = False
                     else:
-                        met = (vd[k] == v) # Simple match
+                        if isinstance(v, list):
+                            for val in v:
+                                met = (vd[k] == val)
+                                if met: break
+                        else:
+                            met = (vd[k] == v) # Simple match
 
                     ret[vkey] = tval if met else fval
 

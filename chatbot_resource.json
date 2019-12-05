@@ -1797,6 +1797,23 @@
                 }
             },
             {
+                "writeto":"component_val_correction_svcfee",
+                "states": [
+                    "doublecheck_component_value"
+                ],
+                "lookfor":[
+                    "exclude_svc_fee",
+                    "w_alt_component_value"
+                ],
+                "if_value":{
+                    "exclude_svc_fee":{
+                        "not_mentioned": "",
+                        "exclude": "包括服务费要多加{svc_fee_total}哦",
+                        "include": "包括服务费是{w_alt_component_value}"
+                    }
+                }
+            },
+            {
                 "writeto":"component_val_correction",
                 "states": [
                     "doublecheck_component_value"
@@ -1805,19 +1822,19 @@
                     "chosen_fee",
                     "ss_user_spec_component_value",
                     "w_spec_component_value",
-                    "w_alt_component_value",
-                    "exclude_svc_fee",
                     "svc_fee_total",
-                    ["calc_ext",["component_val_match_flag"]]
+                    "w_comp_is_main_wo_svc",
+                    ["calc_ext",["component_val_match_flag"]],
+                    ["rep_ext",["component_val_correction_svcfee"]]
                 ],
                 "if_value": {
                     "component_val_match_flag":{
                         "DEFAULT":"{chosen_fee}是{w_spec_component_value}的 "
                     },
-                    "exclude_svc_fee":{
-                        "not_mentioned": "",
-                        "exclude": "包括服务费要多加{svc_fee_total}哦",
-                        "include": "包括服务费是{w_alt_component_value}"
+                    "w_comp_is_main_wo_svc":{
+                        "1":"",
+                        "2":"已经包括服务费",
+                        "3":"{rep_ext[component_val_correction_svcfee]}"
                     }
                 }
             },
@@ -2386,14 +2403,16 @@
         "calc_component_value":{
             "writeto":[
                 ["w_spec_component_value", "OUTCOME"],
-                ["w_alt_component_value", "w_main_n_svc"]
+                ["w_alt_component_value", "w_main_n_svc"],
+                ["w_comp_is_main_wo_svc", "w_is_main_wo_svc"]
             ],
             "persist_value": true,
             "conditions":[
-                ["chosen_fee", "服务费", ["w_main_multi", 0, 1]],
-                ["exclude_svc_fee","exclude",["w_exc_svc_fee",1,0]]
+                ["chosen_fee", "一共", ["w_no_svc_fee_inside", 0, 1]],
+                ["chosen_fee", ["服务费","首次费"], ["w_main_multi", 0, 1]],
+                ["exclude_svc_fee","exclude",["w_exc_svc_fee", 1, 0]]
             ],
-            "req_vars":[
+            "req_vars": [
                 "given_amount",
                 "svc_fee_total",
                 "chosen_fee",
@@ -2401,21 +2420,33 @@
                 "ss_user_spec_component_value"
             ],
             "steps":{
-                "0,multi":[
+                "1,multi":[
                     ["ss_user_spec_component_value","w_main_multi"],
                     "w_main_amt"
                 ],
-                "1,multi": [
-                    ["svc_fee_total","w_exc_svc_fee"],
+                "2,multi":[
+                    ["svc_fee_total","w_no_svc_fee_inside"],
+                    "w_svc_fee_total"
+                ],
+                "3,multi": [
+                    ["w_svc_fee_total","w_exc_svc_fee"],
                     "w_svc_fee_amt"
                 ],
-                "2,add":[
-                    ["w_main_amt","svc_fee_total"],
+                "6,add":[
+                    ["w_main_amt","w_svc_fee_amt"],
                     "w_main_n_svc"
                 ],
-                "3,sub":[
+                "7,sub":[
                     ["w_main_n_svc", "w_svc_fee_amt"],
                     "OUTCOME"
+                ],
+                "9,multi":[
+                    ["w_main_multi",2],
+                    "ww_main_multi"
+                ],
+                "10,add":[
+                    ["ww_main_multi","w_no_svc_fee_inside"],
+                    "w_is_main_wo_svc"
                 ]
             }
         },
