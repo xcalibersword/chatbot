@@ -202,7 +202,6 @@ class ReqGatekeeper:
             # If the gate is open
             passed = True
             unfilled_slots = []
-            info_topup = {}
 
         else:
             self._add_cond_reqs(info)
@@ -210,8 +209,6 @@ class ReqGatekeeper:
             if SUPER_DEBUG: print("<TRY GATE> Trying with info:",info, "required:",self.get_requirements())
             # for catgry in list(info.keys()):
             unfilled_slots = self._get_unfilled_slots(info)
-            # Fill slots with default values if needed
-            unfilled_slots, info_topup = self.assign_default_values(unfilled_slots)
 
             if DEBUG: print("<TRY GATE> Unfilled_slots:",unfilled_slots)
             if len(unfilled_slots) == 0:
@@ -219,7 +216,7 @@ class ReqGatekeeper:
 
             passed = is_passed(unfilled_slots)
         
-        return (passed, unfilled_slots, info_topup)
+        return (passed, unfilled_slots)
 
     # For now this fills default slots with their default values.
     def preprocess(self, curr_info):

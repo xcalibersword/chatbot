@@ -11,7 +11,7 @@ from chatbot_supp import *
 from chatbot_utils import dive_for_values
 
 
-SUPER_DEBUG = 0
+SUPER_DEBUG = 1
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
@@ -237,7 +237,7 @@ class ChatManager:
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&") # For clarity in terminal
      
         firstpass = True
-        for rc in range(0, 5):
+        for rc in range(0, 7):
             # Parse the message and get an understanding
             full_uds, bd = self._parse_message_overall(msg)
             true_sip = full_uds.get_sip()
@@ -248,25 +248,31 @@ class ChatManager:
             else:
                 sip = sip.same_state()
 
-            # Calls the calculator to crunch numbers for state change
+            # Calls the calculator. Crunch numbers for state change
             self._calculate()
 
+            state_bef = self._get_curr_state()
             # Digest and internalize the new info
-            zone_overwrite, pg = self.react_to_sip(sip)
+            zone_overwrite, pg = self.react_to_sip(sip) #STATE CHANGE
+            state_aft = self._get_curr_state()
 
-            if DEBUG: print("<RTM LOOP> Repeats", rc,"curr sip", sip.toString(), "True SIP", true_sip.toString(),"Pass gate:",pg)
+            if DEBUG: print("<RTM LOOP> Repeats", rc,"Curr SIP", sip.toString(), "True SIP", true_sip.toString(),"Zone Overwrite",zone_overwrite,"Pass gate:",pg)
 
             if not true_sip.is_trans_state() and not sip.is_same_state():
                 if DEBUG: print("<RTM LOOP> Not trans state or same_state, breaking")
                 break
+                
+            if state_bef == state_aft:
+                if DEBUG: print("<RTM LOOP> Same state before and after, breaking")
+                break
 
-        # Calls the calculator to crunch numbers for replying
+        # Calls calculator. Crunch numbers for replying
         calc_ext = self._calculate()
     
         intent = full_uds.get_intent()
         reply = self._fetch_reply(intent, calc_ext)
         
-        # Clean up
+        # Clean up. 
         self._post_process(full_uds)
 
         # Records message logs
@@ -336,8 +342,7 @@ class ChatManager:
     def _try_gatekeeper_gate(self):
         curr_info = self._get_current_info()
         if SUPER_DEBUG: print("<CHAT MGR TRY GATE> Current info:",curr_info)
-        pf, rs, info_topup = self.gatekeeper.try_gate(curr_info)
-        self.push_detail_to_dm(info_topup, ow=False) # Detail update. No Overwrite
+        pf, rs = self.gatekeeper.try_gate(curr_info)
         return (pf, rs)
 
     # CHANGES STATE
@@ -431,21 +436,22 @@ class ChatManager:
         self.push_detail_to_dm(topup) # Adds persist values to info
         return calc_ext
 
-    # Clears up values
+    # Clears up values based on state information
     def _post_process(self, uds):
         pd = {}
         sip = uds.get_sip()
         clearlist = sip.get_clears()
-        for to_clear in clearlist:
-            pd[to_clear] = ""
-
-        self.push_detail_to_dm(pd)
+        self.push_detail_to_clear(clearlist)
         return 
 
     ### Detail logging
     def push_detail_to_dm(self, d, ow=1):
         self.dmanager.log_detail(d, OVERWRITE=1)
         self.ztracker.update_zones_from_dm(self.dmanager)
+        return 
+
+    def push_detail_to_clear(self, d):
+        self.dmanager.clear_details(d)
         return 
 
     def read_chat_history(self, history_list):
@@ -603,7 +609,7 @@ class DetailManager:
 
     # Adds a zone dict to the supplied dict
     # E.g. "zones":{"city":"shanghai"}
-    def _update_zones(self):
+    def _update_zones_local(self):
         d = self.chat_prov_info
         zones_d = {}
         for zone in self.zonelist:
@@ -626,9 +632,8 @@ class DetailManager:
                     self.chat_prov_info[d] = new_info[d]
             else:
                 # Remove entry if empty
-                if d in self.chat_prov_info:
-                    print("<LOG DETAIL> Removing empty",d)
-                    self.chat_prov_info.pop(d)
+                ds = [d] # list
+                self.clear_details(ds)
                 
         self._add_secondary_slots()
 
@@ -636,7 +641,15 @@ class DetailManager:
 
         self.write_info_to_db()
 
-        self._update_zones()
+        self._update_zones_local()
+        return
+
+    # Given a list of values, clears it
+    def clear_details(self, detail_list):
+        for d in detail_list:
+            if d in self.chat_prov_info:
+                print("<CLEAR DETAIL> Removing empty",d)
+                self.chat_prov_info.pop(d)
         return
 
     # Info without vault
@@ -703,35 +716,41 @@ class DetailManager:
                 slot = loc_list[0]
                 return (slot, loc_list)
 
+            # Iterative tree search
             def tree_search(t_info):
+                def locate_subdict_and_val(loc_list, curr_d):
+                    for loc in loc_list:
+                        final_loc = loc
+                        infoval = curr_d.get(loc,"")
+                        if infoval == "":
+                            # IF not found
+                            if SUPER_DEBUG: print("<SS TREE> ERROR {} not found".format(loc))
+                            s_val = ""
+                            break
+                            
+                        elif isinstance(infoval, dict):
+                            # If is a subdict
+                            curr_d = infoval
+                        else:
+                            # If found value
+                            s_val = str(curr_d[loc]) # To convert ints to strings. I.e. for hours
+                    return s_val, curr_d, final_loc
+
                 any_val_key = "_ANY"
                 for slotname, sub_dict in list(tree.items()):
                     slot, loc_list = dot_loc_to_list(slotname)
                     while slot in t_info:
                         # Gets the value from info. Handles nested vals (eg "groupname.detailname")
                         curr_d = t_info
-                        for loc in loc_list:
-                            infoval = curr_d.get(loc,"")
-                            if infoval == "":
-                                # IF not found
-                                if SUPER_DEBUG: print("<TREE> ERROR {} not found".format(loc))
-                                slot_val = ""
-                                break
-                                
-                            elif isinstance(infoval, dict):
-                                # If is a subdict
-                                curr_d = infoval
-                            else:
-                                # If found value
-                                slot_val = str(curr_d[loc]) # To convert ints to strings. I.e. for hours
-                        
-                        if SUPER_DEBUG: print("<TREE> Currently looking for:", slot, "value:", slot_val)
+                        slot_val, curr_d, sv_key = locate_subdict_and_val(loc_list, curr_d)
+                            
+                        if SUPER_DEBUG: print("<SS TREE> Currently looking for:", slot, "value:", slot_val)
                         # Check if value is in the subdict and returns the value of it
                         if slot_val in sub_dict:
                             ss_branch = sub_dict[slot_val]
                             if isinstance(ss_branch, dict):
                                 # Is a subtree
-                                if SUPER_DEBUG: print("<TREE> Found a subtree",ss_branch, "in",sub_dict)
+                                if SUPER_DEBUG: print("<SS TREE> Found a subtree",ss_branch, "in",sub_dict)
                                 slotname, sub_dict = list(ss_branch.items())[0]
                                 slot, loc_list = dot_loc_to_list(slotname)
                                 continue
@@ -740,8 +759,8 @@ class DetailManager:
                                 # Is a leaf
                                 out = get_value(ss_branch, t_info)
                                 # Cut from info
-                                pp = curr_d.pop(loc)
-                                if SUPER_DEBUG: print("<TREE> pop leaf",pp)
+                                pp = curr_d.pop(sv_key)
+                                if SUPER_DEBUG: print("<SS TREE> pop leaf",pp)
                                 return (True, out)
                         else:
                             # Fallback and look for _ANY match
@@ -750,8 +769,8 @@ class DetailManager:
                                 a_branch = sub_dict.get(any_val_key,-1)
                                 out = get_value(a_branch, t_info)
                                 # Cut from info
-                                pp = curr_d.pop(loc)
-                                if SUPER_DEBUG: print("<TREE> pop any",pp)
+                                pp = curr_d.pop(sv_key)
+                                if SUPER_DEBUG: print("<SS TREE> pop any",pp)
                                 return (True, out)
 
                             if SUPER_DEBUG: print("<SECONDARY SLOT> Val:", slot_val, "not found in:", sub_dict)
@@ -762,15 +781,13 @@ class DetailManager:
 
             tree_info = info.copy()
             if multi:
+                # Multiple slot
                 collect = []
-                found = False
-                result = True
-                while result:
+                while True:
                     result, val = tree_search(tree_info)
-                    if result:
-                        collect.append(val)
-                        found = True
-
+                    if not result: break # Once cannot find, break
+                    collect.append(val)
+                found = not (collect == [])
                 return found, collect
             else:
                 return tree_search(tree_info)
@@ -841,7 +858,7 @@ class ReplyGenerator:
         return reply
 
     def _enhance_info(self,curr_state,info):
-        RF_DEBUG = 1
+        RF_DEBUG = 0 or SUPER_DEBUG
         cskey = curr_state["key"]
         rep_ext = {}
         enhanced = info.copy()
@@ -853,7 +870,6 @@ class ReplyGenerator:
             enhstr = cbsv.conv_numstr(wstr)
             if RF_DEBUG: print("Writing {} to {}".format(rawstr, key))
             cu.add_enh(key,enhstr,rep_ext,"rep_ext",{},enhanced, persist = False)
-            if RF_DEBUG: print("<ADD ENH> Intermediate enh:", enhanced)
             return 
         
         def curr_state_needs_txt_enh(tmp,curr_state_key):
@@ -868,55 +884,61 @@ class ReplyGenerator:
         def enhance_if_vals(vd, ifvl, tkey):   
             # Recursive function
             def if_val_tree_enh(t_info, name_tree, tkey):
-                def search_tree_and_enhance(valname):
+                def enhance_end_branch(branch):
+                    if isinstance(branch, str):
+                        # ivtree is a leaf
+                        add_txt_enh(tkey,branch) # Enhance
+                        return
+
+                    if isinstance(branch, list):
+                        print("Enh branch is a list",branch)
+                        # ivtree is a leaf list
+                        enhstr = get_reply_template(branch)
+                        add_txt_enh(tkey,enhstr) # Enhance chosen string
+                        return
+                def search_tree_and_enhance(cases, valname):
+                    case_keys = list(cases.keys())
                     info_val_value = t_info.get(valname)
+
                     if isinstance(info_val_value, dict):
                         subtree = info_val_value
                         if RF_DEBUG: print("<ENHANCE IF VAL> Subdict found", subtree)
-                        return if_val_tree_enh(t_info, subtree, tkey)
+                        return if_val_tree_enh(t_info, subtree, tkey) # RECURSIVE CALL
 
                     if not isinstance(info_val_value, list):
                         info_val_value = [info_val_value]
 
+                    # Go through curr_info values
                     for iv in info_val_value:
-                        str_iv = str(cbsv.conv_numstr(iv,wantint=True))
-                        print("<ENHANCE IF VAL> Val:{} Looking for {} in {}".format(valname, str_iv, case_keys))
+                        str_iv = str(cbsv.conv_numstr(iv,wantint=True)) # Convert info value to string because json keys are strings
+                        if RF_DEBUG: print("<ENHANCE IF VAL> Val:{} Looking for {} in cases: {}".format(valname, str_iv, case_keys))
                         matched = False
+                        # Try to match curr_info values with tree cases
                         if str_iv in case_keys:
                             matched = True
                             subtree = cases.get(str_iv)
                             if_val_tree_enh(t_info, subtree, tkey)
 
                     if not matched:
-                        if RF_DEBUG:print ("<ENHANCE IF VAL> No match for ", info_val_value,"in",case_keys)
+                        if RF_DEBUG:print ("<ENHANCE IF VAL> No match for ", info_val_value,"in cases:",case_keys)
                         default_branch = cases.get("DEFAULT",False)
                         if default_branch:
                             return if_val_tree_enh(t_info, default_branch, tkey)
+                    else:
+                        return
 
                 if not isinstance(name_tree, dict):
                     # Break case
-                    if isinstance(name_tree, str):
-                        # ivtree is a leaf
-                        add_txt_enh(tkey,name_tree) # Enhance
-                        return
-
-                    if isinstance(name_tree, list):
-                        print("Nametree is a list",name_tree)
-                        # ivtree is a leaf list
-                        enhstr = get_reply_template(name_tree)
-                        add_txt_enh(tkey,enhstr) # Enhance chosen string
-                        return
+                    enhance_end_branch(name_tree)
                 else:
                     # Search case
-                    print('<ENHANCE IF VAL> Nametree',name_tree)
-
+                    if RF_DEBUG: print('<ENHANCE IF VAL> Nametree',name_tree)
                     iv_trees = list(name_tree.items())
                     for valname, cases in iv_trees:
-                        # Branch
-                        case_keys = list(cases.keys())
-                            
+                        # Get all the limbs of the tree
                         if valname in t_info:
-                            search_tree_and_enhance(valname)
+                            # If specified value is present
+                            search_tree_and_enhance(cases, valname)
                         else:
                             if not enstr: raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(valname,info))
 

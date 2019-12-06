@@ -1372,7 +1372,6 @@
                     [
                         "calc_ext",
                         [
-                            "w_shebao_jishu",
                             "w_gongjijin_fee"
                         ]
                     ],
@@ -2051,8 +2050,7 @@
             "persist_value": false,
             "req_vars": [
                 [
-                    "city_info",
-                    ["gongjijin_fee"]
+                    "city_info",["gongjijin_fee"]
                 ]
             ],
             "optional_vars": [
