@@ -454,6 +454,13 @@
             "default_target": "provide_taobao_link",
             "replies": []
         },
+        "request_notify":{
+            "key": "request_notify",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "SAME_STATE",
+            "replies": ["恩恩，有问题我们会及时联系您的"]
+        },
         "inform_done":{
             "key": "182 inform_done",
             "default_set": false,
