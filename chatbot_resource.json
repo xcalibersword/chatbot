@@ -742,29 +742,6 @@
                 "{rep_ext[entire_plan_proposal]}"
             ]
         },
-        "propose_plan_bj": {
-            "key": "propose_plan_bj",
-            "gated": true,
-            "thread": "t_presale",
-            "propose_plan_state": true,
-            "req_info": [
-                ["city", "city"],
-                ["首次","DEFAULT_SV"],
-                ["要公积金", "wantnot"],
-                ["要社保","DEFAULT_SV"]
-            ],
-            "calcs": [
-                "calc_flag_sb_gjj",
-                "flag_shouci",
-                "sum_svc_fee",
-                "shebao_fee_amt",
-                "bj_shebao_basic",
-                "bj_shebao_basic2"
-            ],
-            "replies": [
-                "{rep_ext[bj_entire_plan_proposal]}"
-            ]
-        },
         "offer_product_links": {
             "key": "282 offer_product_links",
             "gated": false,
@@ -1100,6 +1077,7 @@
                         "首次": "之前有交过吗？",
                         "要公积金": "交公积金吗？",
                         "苏州区": "是市区还是园区呢？",
+                        "北京农城": "是城镇还是农业呢？",
                         "chosen_fee": "哪个部分？（比如：社保/公积金/服务费）",
                         "ss_purchase_for_month": "要缴哪月？",
                         "given_amount": "要什么基数？",
@@ -1254,8 +1232,7 @@
             {
                 "writeto": "首次ext",
                 "states": [
-                    "propose_plan",
-                    "propose_plan_bj"
+                    "propose_plan"
                 ],
                 "lookfor": [
                     "首次"
@@ -1307,7 +1284,6 @@
                 "writeto": "product",
                 "states": [
                     "propose_plan",
-                    "propose_plan_bj",
                     "ctx_inform_how_much"
                 ],
                 "lookfor": [
@@ -1388,59 +1364,6 @@
                         "1": "应缴{w_shebao_payment}元 {rep_ext[str_sb_jishu]}",
                         "10": "公积金{calc_ext[w_gongjijin_fee]}元 {rep_ext[str_gjj_jishu]}",
                         "11": "应缴{w_shebao_payment}元 {rep_ext[str_sb_jishu]}，公积金{calc_ext[w_gongjijin_fee]}元 {rep_ext[str_gjj_jishu]}"
-                    }
-                }
-            },
-            {
-                "writeto": "bj_proposal",
-                "states": [
-                    "<COMMENT> for beijing",
-                    "propose_plan_bj"
-                ],
-                "lookfor": [
-                    [
-                        "city_info",
-                        [
-                            "sb_jishu",
-                            "gjj_jishu",
-                            "shebao_payment",
-                            "gongjijin_fee"
-                        ]
-                    ],
-                    "flag_sb_gjj"
-
-                ],
-                "if_value": {
-                    "flag_sb_gjj": {
-                        "1": "最低缴费{city_info[shebao_payment]}元（按照最低基数{city_info[sb_jishu]}）",
-                        "10": "公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）",
-                        "11": "最低缴费{city_info[shebao_payment]}元（按照最低基数{city_info[sb_jishu]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
-                    }
-                }
-            },
-            {
-                "writeto": "bj_proposal2",
-                "states": [
-                    "<COMMENT> for beijing",
-                    "propose_plan_bj"
-                ],
-                "lookfor": [
-                    [
-                        "city_info",
-                        [
-                            "sb_jishu2",
-                            "gjj_jishu",
-                            "shebao_payment2",
-                            "gongjijin_fee"
-                        ]
-                    ],
-                    "flag_sb_gjj"
-                ],
-                "if_value": {
-                    "flag_sb_gjj": {
-                        "1": "最低基数为{city_info[sb_jishu2]}元, 应缴纳{city_info[shebao_payment2]}元",
-                        "10": "最低基数为{city_info[gjj_jishu]}元, 应缴纳{city_info[gongjijin_fee]}元",
-                        "11": "最低缴费{city_info[shebao_payment2]}元（按照最低基数{city_info[sb_jishu2]}），公积金{city_info[gongjijin_fee]}元（按基数{city_info[gjj_jishu]}）"
                     }
                 }
             },
@@ -1736,42 +1659,6 @@
                     }
                 }
             }, 
-            {
-                "writeto": "bj_entire_plan_proposal",
-                "states": [
-                    "propose_plan_bj"
-                ],
-                "lookfor": [
-                    "city",
-                    ["city_info",
-                        [
-                            "svc_fee",
-                            "dbl_svc_fee",
-                            "shouci_fee"
-                        ]
-                    ],
-                    ["rep_ext",
-                        [
-                            "product",
-                            "bj_proposal",
-                            "bj_proposal2",
-                            "首次ext"
-                        ]
-                    ],
-                    "flag_sb_gjj",
-                    ["calc_ext",
-                        [
-                            "bj_shebao_basic_total",
-                            "bj_shebao_basic_total2"
-                        ]
-                    ]
-                ],
-                "if_value": {
-                    "city": {
-                        "北京": "农业户口：{rep_ext[product]}{rep_ext[bj_proposal]} {rep_ext[首次ext]}，共计{calc_ext[bj_shebao_basic_total]}元\n 城镇户口：{rep_ext[product]}{rep_ext[bj_proposal2]} {rep_ext[首次ext]}，共计{calc_ext[bj_shebao_basic_total2]}元\n服务费单项{city_info[svc_fee]}元，双项{city_info[dbl_svc_fee]}元（23号之后最低缴纳基数会提高、服务费会贵一些）北京首保：需要开户费{city_info[shouci_fee]}元，公司统一制卡，周期6个月左右，制卡完成会联系邮寄给你"
-                    }
-                }
-            },
             {
                 "writeto": "how_much_reply",
                 "states": [
@@ -2145,142 +2032,6 @@
                 ]
             }
         },
-        "bj_shebao_basic": {
-            "conditions": [
-                ["flag_sb_gjj",1,["w_sb_flag",1,0]],
-                ["flag_sb_gjj",10,["w_gjj_flag",1,0]],
-                ["flag_sb_gjj",11,["both_flag",1,0]]
-            ],
-            "req_vars": [
-                "flag_sb_gjj",
-                [
-                    "city_info",
-                    [
-                        "shebao_payment",
-                        "gongjijin_fee"
-                    ]
-                ],
-                [
-                    "calc_ext",
-                    [
-                        "w_shouci_fee"
-                    ]
-                ]
-            ],
-            "steps": {
-                "1,add": [
-                    [
-                        "both_flag",
-                        "w_sb_flag"
-                    ],
-                    "w_sb_flag"
-                ],
-                "2,add": [
-                    [
-                        "both_flag",
-                        "w_gjj_flag"
-                    ],
-                    "w_gjj_flag"
-                ],
-                "10,multi": [
-                    [
-                        "gongjijin_fee",
-                        "w_gjj_flag"
-                    ],
-                    "w_gjj_jiaona"
-                ],
-                "11,multi": [
-                    [
-                        "shebao_payment",
-                        "w_sb_flag"
-                    ],
-                    "w_sb_jiaona"
-                ],
-                "12,add": [
-                    [
-                        "w_sb_jiaona",
-                        "w_gjj_jiaona"
-                    ],
-                    "jiaona_total"
-                ],
-                "13,add": [
-                    [
-                        "jiaona_total",
-                        "w_shouci_fee"
-                    ],
-                    "OUTCOME"
-                ]
-            },
-            "writeto": "bj_shebao_basic_total"
-        },
-        "bj_shebao_basic2": {
-            "conditions": [
-                ["flag_sb_gjj",1,["w_sb_flag",1,0]],
-                ["flag_sb_gjj",10,["w_gjj_flag",1,0]],
-                ["flag_sb_gjj",11,["both_flag",1,0]]
-            ],
-            "req_vars": [
-                "flag_sb_gjj",
-                [
-                    "city_info",
-                    [
-                        "shebao_payment2",
-                        "gongjijin_fee"
-                    ]
-                ],
-                [
-                    "calc_ext",
-                    [
-                        "w_shouci_fee"
-                    ]
-                ]
-            ],
-            "steps": {
-                "1,add": [
-                    [
-                        "both_flag",
-                        "w_sb_flag"
-                    ],
-                    "w_sb_flag"
-                ],
-                "2,add": [
-                    [
-                        "both_flag",
-                        "w_gjj_flag"
-                    ],
-                    "w_gjj_flag"
-                ],
-                "10,multi": [
-                    [
-                        "gongjijin_fee",
-                        "w_gjj_flag"
-                    ],
-                    "w_gjj_jiaona"
-                ],
-                "11,multi": [
-                    [
-                        "shebao_payment2",
-                        "w_sb_flag"
-                    ],
-                    "w_sb_jiaona"
-                ],
-                "12,add": [
-                    [
-                        "w_sb_jiaona",
-                        "w_gjj_jiaona"
-                    ],
-                    "jiaona_total"
-                ],
-                "13,add": [
-                    [
-                        "jiaona_total",
-                        "w_shouci_fee"
-                    ],
-                    "OUTCOME"
-                ]
-            },
-            "writeto": "bj_shebao_basic_total2"
-        },
         "flag_custom_gjj": {
             "writeto": "custom_gjj_flag",
             "conditions": [],
@@ -2500,17 +2251,37 @@
                     "link_sb": "https://item.taobao.com/item.htm?id=598103220826",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598525470715"
                 },
-                "北京市": {
+                "北京城镇": {
                     "sb_jishu": 3613,
-                    "shebao_payment": 1629.17,
-                    "sb_jishu2": 3613,
-                    "shebao_payment2": 1636.4,
+                    "sb_jishu_multi": 0.452544,
+                    "shebao_payment": 1636.4,
+                    "sb_jishu_max_limit": 23565,
                     "gjj_jishu": 2409,
+                    "gjj_jishu_multi":0.206725,
+                    "gjj_jishu_max_limit": 37786,
                     "svc_fee": 40,
                     "dbl_svc_fee": 80,
                     "shouci_fee": 50,
                     "pay_deadline": 20,
                     "gongjijin_fee": 498,
+                    "bujiao_period": 3,
+                    "xufei_deadline": 15,
+                    "link_sb": "https://item.taobao.com/item.htm?id=598975115885",
+                    "link_gjj":"https://item.taobao.com/item.htm?id=598365788936"
+                },
+                "北京农业": {
+                    "sb_jishu": 3613,
+                    "sb_jishu_multi": 0.450544,
+                    "shebao_payment": 1629.17,
+                    "sb_jishu_max_limit": 23565,
+                    "gjj_jishu": 2409,
+                    "gjj_jishu_multi":0.206725,
+                    "gongjijin_fee": 498,
+                    "gjj_jishu_max_limit": 37786,
+                    "svc_fee": 40,
+                    "dbl_svc_fee": 80,
+                    "shouci_fee": 50,
+                    "pay_deadline": 20,
                     "bujiao_period": 3,
                     "xufei_deadline": 15,
                     "link_sb": "https://item.taobao.com/item.htm?id=598975115885",
