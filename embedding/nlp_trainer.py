@@ -272,20 +272,20 @@ outs = Dense(units=num_intents, activation='sigmoid')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
 
-LEARN_RATE = 4e-5 
+LEARN_RATE = 2.5e-5 
 optimizer = Adam(learning_rate=LEARN_RATE)
 # optimizer = RMSprop(learning_rate = 3e-5)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 # Best so far bs = 32
-model.fit(x=embed_xvals,y=cat_yval,epochs=150,verbose=1,validation_split=0.0,batch_size=32,shuffle=True)
+model.fit(x=embed_xvals,y=cat_yval,epochs=150,verbose=1,validation_split=0.0,batch_size=32,shuffle=True) # Can't have validation because of the number of intents.
 
 # Post Training
 model.save(save_model_name)
 print("This Model has been saved! Rejoice")
 
-test_in = ["我在苏州的不是首次","我是要付社保行吗","您好","哦了解了", "我已经填好了", "我拍好了", "流程到底是怎么样的？", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
+test_in = ["我在苏州的不是首次","我是要付社保行吗","哦了解了", "我已经填好了", "我拍好了", "流程到底是怎么样的？", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
 
 ti = myTokenize(test_in)
 # print("input",test_in)

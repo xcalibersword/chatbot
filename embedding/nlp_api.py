@@ -28,7 +28,7 @@ VDLIMIT = 60000 #35000 includes gongjijin
 
 USE_WORD2VECTOR = False
 
-DEBUG = True
+DEBUG = False
 
 def read_json(json_filename):
     try:
@@ -133,10 +133,10 @@ class Predictor:
                 try:
                     fi = float(item)
                 except Exception as e:
-                    print("<FILTER NUMBERS>",e)
+                    print("<FILTER NUMBERS> Exception",e)
                 
                 out.append(fi)
-        print("<FILTER NUMBERS>",out)
+        if DEBUG: print("<FILTER NUMBERS>",out)
         return out
 
     def pred_to_word(self,pred):
@@ -171,19 +171,52 @@ class Predictor:
             p_out = self.pred_to_word(out)
             print(p_out)
 
+def test_predictor(pred_obj):
+    # Test the predictor
+    fail_dict = {}
+    score = 0
+    for testin, ans in test_set:
+        out = pred_obj.predict(testin)
+        pred = out["prediction"]
+        passed = pred == ans
+        if passed: score+=1
+        if passed:
+            passedstr = "PASSED" 
+        else:
+            passedstr = "@@@@@@@@@@@@@@@@@@ FAILED TEST"
+            if ans in fail_dict:
+                fail_dict[ans] = fail_dict[ans] + 1
+            else:
+                fail_dict[ans] = 1
+        
+        
+        print("In:",testin, "passed?", passed)
+        if not passed or DEBUG:
+            print(passedstr, "Expected:", ans)
+            print("Predicted Intent:",out)
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+    print("---------------RESULTS---------------")
+    print("Performance:{}/{}".format(score,len(test_set)))
+    print("Failed topics:")
+    for t, c in fail_dict.items():
+        print(t,c)
+    print("---------------------------------------------")
+
 if MAIN:
     # Test suite    
-    test_ins = [
+    test_set = [
         ("我在上海，以前交过","inform"),
         ("上海的以前没交过","inform"),
         ("我在北京，不是首次","inform"),
         ("苏州的，之前有开户口","inform"),
         ("我之前有开户口","inform"),
-        ("哦，没开过户口","inform"),
         ("加上一金的话？","inform"),
         ("6月份的话？","inform"),
         ("12000","inform"),
         ("12月呢？","inform"),
+        ("哦，没开过户口","inform"),
+        ("嗯没有交公积金","inform"),
         ("支付过了哦","inform_paid"),
         ("已经付好啦","inform_paid"),
         ("费用已付注意查收","inform_paid"),
@@ -203,10 +236,13 @@ if MAIN:
         ("社保基数用8000的","ask_custom_jishu"),
         ("可以不要按照最低的吧","ask_custom_jishu"),
         ("按照12000的","ask_custom_jishu"),
+        ("社保交了之后可以改基数吗？","ask_custom_jishu"),
         ("怀孕了还可以代缴吗","query_pregnant"),
         ("怀孕了还可以买吗","query_pregnant"),
-        ("怎么去拍啊","how_to_pai"),
-        ("我应该怎么拍","how_to_pai"),
+        ("是在淘宝上拍那个吗","query_how_settle"),
+        ("直接拍就可以了吧","query_how_settle"),
+        ("怎么去拍啊","query_how_settle"),
+        ("接着怎么去拍呢","request_link"),
         ("有没有链接？","request_link"),
         ("我该拍哪个？","request_link"),
         ("拍哪个宝贝？","request_link"),
@@ -222,6 +258,10 @@ if MAIN:
         ("你说了啥？","confused"),
         ("没了，谢谢","deny"),
         ("没","deny"),
+        ("你们公司在几号截止的呢","query_pay_date"),
+        ("你们一般什么时候下单？","query_pay_date"),
+        ("深圳的还可以交吗","query_pay_deadline"),
+        ("这个月还可以下单吗","query_pay_deadline"),
         ("首次要提供什材料吗？","query_req_resources"),
         ("需要我提供什东西吗","query_req_resources"),
         ("要参保的话需要什么资料","query_req_resources"),
@@ -252,52 +292,28 @@ if MAIN:
         ("您好我这个月离职","complicated"),
         ("我准备离职中间两个月不交社保。这里可以帮我代缴吗","complicated"),
         ("我给朋友推荐了你们公司","complicated"),
-        ("社保交了之后可以改基数吗？","complicated"),
-        ("不缴公积金会有什么影响啊","query_various_effects"),
         ("会有什么影响吗？","query_various_effects"),
-        ("断了会怎么样","query_break_effects"),
+        ("有什么后果吗？","query_various_effects"),
+        ("不缴公积金会有什么影响啊","query_break"),
+        ("断了会怎么样吗","query_break"),
         ("费用为啥80","doublecheck_value"),
         ("这个1937是包括费用么","doublecheck_value"),
         ("1000是吧","doublecheck_value"),
         ("生病之后去办理医保可以吗","query_sick"),
         ("参保可以吗 因为我已经生病了","query_sick"),
-        ("看病没关系吧","query_sick_light")
+        ("看病没关系吧","query_sick_light"),
+        ("好了就联系我哦","request_notify"),
+        ("如果那边有什么问题要及时通知我哦","request_notify")
     ]
 
     print("Please enter the model filename")
     nmf = input()
     if len(nmf) < 2:
-        print("No name given,using", model_filename)
-        nmf = model_filename
+        nmf = "trained.h5"
+        print("No name given,using", nmf)
 
     pp = Predictor(nmf)
+    test_predictor(pp)
 
-    fail_dict = {}
-    score = 0
-    for testin, ans in test_ins:
-        
-        out = pp.predict(testin)
-        pred = out["prediction"]
-        passed = pred == ans
-        if passed: score+=1
-        if passed:
-            passedstr = "PASSED" 
-        else:
-            passedstr = "@@@@@@@@@@@@@@@@@@ FAILED TEST"
-            if ans in fail_dict:
-                fail_dict[ans] = fail_dict[ans] + 1
-            else:
-                fail_dict[ans] = 1
-
-        print("In:",testin)
-        print(passedstr, "Expected:", ans)
-        print("Predicted Intent:",out)
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-
-    print("---------------------------")
-    print("Performance:{}/{}".format(score,len(test_ins)))
-    print("Failed topics:")
-    for t, c in fail_dict.items():
-        print(t,c)
-    print("---------------------------")
+    
     # pp.predict_loop()
