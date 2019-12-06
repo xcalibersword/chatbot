@@ -225,6 +225,24 @@
             "default_target": "inform_gjj_card",
             "replies": []
         },
+        "query_guakao": {
+            "key": "info_guakao",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "对的，这边交是挂靠公司"
+            ]
+        },
+        "query_have_service_fee":{
+            "key": "info_service_fee",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "有啊亲，单缴社保或公积金是40, 双缴算80"
+            ]
+        },
         "query_housing": {
             "key": "info_housing",
             "default_set": true,
