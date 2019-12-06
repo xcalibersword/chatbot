@@ -97,17 +97,16 @@ def send_message_QN(reply,cW,mode):
         win32gui.SendMessage(cW.send_but, 0xF5, 0, 0)
         print("Message Sent: {}".format(reply))
 
-def setActiveScreen(target_window):
+def setActiveScreen(target_window, CLICK_INSIDE = False):
     win32gui.SetForegroundWindow(target_window)
 
-    rect = win32gui.GetWindowRect(target_window)
-    # Finds the top right position
-    win32api.SetCursorPos((rect[2]-50,rect[1]+10))
-    
-    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0,0,0)
-    time.sleep(cmd_sleep)
-    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0,0,0)
-    time.sleep(cmd_sleep)
+    left, top, right, bot = win32gui.GetWindowRect(target_window)
+    if CLICK_INSIDE: 
+        win32api.SetCursorPos((left+1,top+100)) # Finds the top leftmost position
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0,0,0)
+        time.sleep(cmd_sleep)
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0,0,0)
+        time.sleep(cmd_sleep)
 
 def select_copy():
     #ctrl a
@@ -185,7 +184,7 @@ def getRawText():
 
         succeed = True
         # The end of the loop
-        
+
     raw_text_list = raw_text.splitlines()
     processed_text_list = []
     for sent in raw_text_list:
@@ -286,7 +285,7 @@ def processText(cW,rawText):
     return query,custid
 
 def mine_chat_text(cW):
-    setActiveScreen(cW.msg_dlg)
+    setActiveScreen(cW.msg_dlg, CLICK_INSIDE=True)
     select_copy()
     return getRawText()
 
