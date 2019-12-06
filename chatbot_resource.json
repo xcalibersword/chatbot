@@ -37,8 +37,7 @@
             "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
-                "换句话来说...",
-                "我的意思是..."
+                "换句话来说...","我的意思是..."
             ]
         },
         "complain":{
@@ -56,8 +55,7 @@
             "humanify": false,
             "default_target": "SAME_STATE",
             "replies": [
-                "？？？",
-                "？"
+                "？？？","？"
             ]
         },
         "no_intent": {
@@ -174,14 +172,12 @@
             "default_target": "ask_how_much_crossroad",
             "replies": []
         },
-        "query_break_gjj":{
-            "key": "info_break_gjj",
+        "query_break":{
+            "key": "inform_break",
             "default_set": true,
             "humanify": false,
-            "default_target": "SAME_STATE",
-            "replies": [
-                "主要是影响贷款"
-            ]
+            "default_target": "inform_break_effects",
+            "replies": []
         },
         "query_bujiao": {
             "key": "query_bujiao",
@@ -574,9 +570,7 @@
             "thread": "BASE",
             "humanify":true,
             "req_info": "",
-            "replies": [
-                "亲 还有别的要问吗？"
-            ]
+            "replies": ["亲 还有别的要问吗？","亲 有其他问题吗？"]
         },
         "city_crossroad":{
             "key": "city_crossroad",
@@ -585,9 +579,7 @@
             "thread": "t_presale",
             "humanify": false,
             "req_info": "",
-            "replies": [
-                "亲是哪个城市呢？"
-            ]
+            "replies": ["亲是哪个城市呢？"]
         },
         "unsupported_city":{
             "key": "unsupported_city",
@@ -866,6 +858,14 @@
                 "{rep_ext[curr_mth_option_info]}"
             ]
         },
+        "inform_break_effects":{
+            "key": "inform_break_effects",
+            "gated": true,
+            "thread": "t_break_effects",
+            "terminal_state": true,
+            "req_info": [["chosen_service","service_slot"]],
+            "replies":["{rep_ext[break_info]}"]
+        },
         "inform_fahuo":{
             "key": "inform_fahuo",
             "gated": false,
@@ -1142,6 +1142,22 @@
                     }
                 }
             },
+            {
+                "writeto": "break_info",
+                "states": [
+                    "inform_break_effects"
+                ],
+                "lookfor": [
+                    "chosen_fee"
+                ],
+                "if_value": {
+                    "chosen_fee": {
+                        "社保":"社保断了可能会影响买房的",
+                        "公积金":"断公积金主要是影响贷款"
+                    }
+                }
+            },
+            
             {
                 "writeto": "finish_payment_info",
                 "states": [
@@ -1618,20 +1634,6 @@
                         "苏州市区": "市区默认是缴纳在姑苏区，如需缴纳在高新区或吴中区或相城区，需留言备注以及服务费每月多加20元",
                         "成都市": "默认缴纳锦江区，如需缴纳高新西区或天府新区（需留言备注以及服务费每个月额外加20元）天府新区的公积金是8%+8%，锦江、高新的公积金比例是6%+6%",
                         "DEFAULT": "亲 不好意思，目前没有信息 😢"
-                    }
-                }
-            },
-            {
-                "writeto": "long首次ext",
-                "states": [],
-                "lookfor": [
-                    "首次",
-                    "city_info"
-                ],
-                "if_value": {
-                    "首次": {
-                        "yes": "如果以前在{city}没有缴纳过，需要付开户费{city_info[shouci_fee]}元",
-                        "no": ""
                     }
                 }
             },
@@ -2362,10 +2364,11 @@
                     "sb_jishu": 2335,
                     "gjj_jishu": 1101,
                     "shebao_payment": 0,
-                    "svc_fee": 999,
+                    "svc_fee": 40,
                     "shouci_fee": 50,
                     "pay_deadline": 20,
                     "gongjijin_fee": 100,
+                    "bujiao_period": 3,
                     "xufei_deadline": 10,
                     "link_sb": "https://item.taobao.com/item.htm?id=598103220826",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598232148577"

@@ -10,7 +10,7 @@
         ]
     },
     "zones": [
-        "city", "work_hrs_flag", "chosen_fee","chosen_service","ss_purchase_cmi_flag"
+        "city", "work_hrs_flag", "chosen_fee","ss_purchase_cmi_flag"
     ],
     "secondary_slots": [
         {
