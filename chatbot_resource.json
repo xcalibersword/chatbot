@@ -1422,19 +1422,32 @@
                     "inform_pay_deadline"
                 ],
                 "lookfor": [
-                    "city_district",
-                    ["city_info",["bujiao_period"]]
+                    "city_district"
                 ],
                 "if_value": {
                     "city_district": {
-                        "上海市": "{city_district}可以补缴最近{city_info[bujiao_period]}个月",
-                        "杭州市": "{city_district}可补缴最近{city_info[bujiao_period]}个月的社保公积金，补缴费30元/月；（不做跨年补缴）有补缴的请注意：补缴的月份：个人查不到生育工伤，社保局只收个人部分，地税收取单位部分，地税扣缴时五险是一并征收的，还有疑问可0571-12366确认。且补缴不算连续哦！",
-                        "北京市": "{city_district} 可补缴最近{city_info[bujiao_period]}个月的社保公积金，补缴费40元/月；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
-                        "苏州园区": "{city_district} 可补缴最近{city_info[bujiao_period]}个月的社保公积金；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
-                        "苏州市区": "{city_district} 可补缴最近{city_info[bujiao_period]}个月的社保公积金；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
-                        "广州市": "{city_district} 可补缴最近{city_info[bujiao_period]}个月的社保公积金，额外收取补缴费40元/月；可以单独缴纳公积金；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
-                        "DEFAULT": "亲 不好意思，目前没有{city_district}的信息 😢"
+                        "上海市": "",
+                        "杭州市": "补缴费30元/月；（不做跨年补缴）有补缴的请注意：补缴的月份：个人查不到生育工伤，社保局只收个人部分，地税收取单位部分，地税扣缴时五险是一并征收的，还有疑问可0571-12366确认。且补缴不算连续哦！",
+                        "北京市": "补缴费40元/月；不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
+                        "苏州园区": "不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
+                        "苏州市区": "不能单独缴纳公积金，必须与社保一起操作，不能只补缴；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
+                        "广州市": "额外收取补缴费40元/月；可以单独缴纳公积金；参保办理成功后，所缴保费无法退回，拍下前请考虑清楚。",
+                        "DEFAULT": ""
                     }
+                }
+            },
+            {
+                "writeto": "topup_window_info",
+                "states": [
+                    "inform_topup",
+                    "inform_pay_deadline"
+                ],
+                "lookfor": [
+                    "city_district",
+                    ["city_info",["bujiao_period"]]
+                ],
+                "if_present":{
+                    "city_district":"{city_district}可以补缴最近{city_info[bujiao_period]}个月的社保公积金"
                 }
             },
             {
@@ -1445,15 +1458,15 @@
                 ],
                 "lookfor": [
                     ["calc_ext",["w_bujiao_cmi_flag"]],
-                    ["rep_ext",["topup_info_extra"]]
+                    ["rep_ext",["topup_window_info","topup_info_extra"]]
                 ],
                 "if_value": {
                     "w_bujiao_cmi_flag": {
                         "1":[
-                                "可以补缴，补缴不算连续哈",
-                                "可以补缴 请注意：补缴不算连续哦，望知悉哦"
+                                "可以补缴，补缴不算连续哈 {rep_ext[topup_info_extra]}",
+                                "可以补缴 请注意：补缴不算连续哦，望知悉哦 {rep_ext[topup_info_extra]}"
                             ],
-                        "0":"不可以补 {rep_ext[topup_info_extra]}"
+                        "0":"不可以补 {rep_ext[topup_window_info]}"
                     }
                 }
             },
@@ -1465,7 +1478,7 @@
                 "lookfor": [
                     "ss_purchase_for_month",
                     ["calc_ext",["w_bujiao_cmi_flag"]],
-                    ["rep_ext",["topup_info_extra","topup_can_not_msg"]]
+                    ["rep_ext",["topup_can_not_msg","topup_info_extra"]]
                 ],
                 "if_value": {
                     "w_bujiao_cmi_flag":{
@@ -1562,7 +1575,7 @@
                 ],
                 "lookfor": [
                     "w_normal_cmi_flag",
-                    ["rep_ext",["pay_normal_deadline_info_extra"]]
+                    ["rep_ext",["pay_date_info"]]
                 ],
                 "if_value": {
                     "w_normal_cmi_flag":{
