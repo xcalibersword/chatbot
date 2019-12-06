@@ -5,7 +5,7 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.2
+clipboard_sleep = 0.1
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
 self_userID = "temporary"
@@ -44,6 +44,7 @@ class QianNiuWindow:
         win32gui.EnumWindows(self._window_enum_callback, regex)
     def hide_always_on_top_windows(self):
         win32gui.EnumWindows(self._window_enum_callback_hide, None)
+
     def _window_enum_callback_hide(self, hwnd, unused):
         if hwnd != self.main_window: # ignore self
             # Is the window visible and marked as an always-on-top (topmost) window?
@@ -103,8 +104,8 @@ def setActiveScreen(target_window):
     # Finds the top right position
     win32api.SetCursorPos((rect[2]-50,rect[1]+10))
     
-    time.sleep(cmd_sleep)
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0,0,0)
+    time.sleep(cmd_sleep)
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0,0,0)
     time.sleep(cmd_sleep)
 
@@ -142,51 +143,49 @@ def getRawText():
     rpt_limit = 10
     succeed = False
     while not succeed and rpt < rpt_limit:
+        rpt += 1
         try:
             win32clipboard.OpenClipboard()
             succeed = True
         except Exception as e:
             print("OPEN CLIPBOARD EXCEPTION:",e,"Trying again...")
             log_err()
-        rpt += 1
+            continue
+        finally:
+            time.sleep(clipboard_sleep)
 
-    time.sleep(clipboard_sleep)
-
-    rpt = 0
-    raw_text = ""
-    while raw_text == "" and rpt < rpt_limit:
+        raw_text = ""
         try:
             raw_text = win32clipboard.GetClipboardData()
         except Exception as e:
             print("GET CLIPBOARD EXCEPTION:",e,"Trying again...")
             log_err()
-        rpt += 1
+            continue
+        finally:
+            time.sleep(clipboard_sleep)
+    
 
-    time.sleep(clipboard_sleep)
+        try:
+            win32clipboard.EmptyClipboard()
+        except Exception as e:
+            print("EmptyClipboard EXCEPTION:",e)
+            log_err()
+            continue
+        finally:
+            time.sleep(clipboard_sleep)
 
-    try:
-        win32clipboard.EmptyClipboard()
-        succeed = True
-    except Exception as e:
-        print("EmptyClipboard EXCEPTION:",e)
-        log_err()
-
-    time.sleep(clipboard_sleep)
-
-    rpt = 0
-    succeed = False
-    while not succeed and rpt < rpt_limit + 10:
         try:
             win32clipboard.CloseClipboard()
-            succeed = True
         except Exception as e:
             print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
             log_err()
-        rpt += 1
+            continue
+        finally:
+            time.sleep(clipboard_sleep)
 
-    time.sleep(clipboard_sleep)
-
- 
+        succeed = True
+        # The end of the loop
+        
     raw_text_list = raw_text.splitlines()
     processed_text_list = []
     for sent in raw_text_list:
