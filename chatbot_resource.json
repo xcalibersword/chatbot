@@ -1148,10 +1148,10 @@
                     "inform_break_effects"
                 ],
                 "lookfor": [
-                    "chosen_fee"
+                    "chosen_service"
                 ],
                 "if_value": {
-                    "chosen_fee": {
+                    "chosen_service": {
                         "社保":"社保断了可能会影响买房的",
                         "公积金":"断公积金主要是影响贷款"
                     }
