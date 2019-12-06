@@ -83,21 +83,21 @@
             ["purchase","city_crossroad"],
             ["affirm", "inform_pai"],
             ["next_step","inform_pai"],
-            ["inform_done","finished_payment"],
-            ["inform_paid","finished_payment"],
-            ["thankyou", "finished_payment"],
+            ["inform_done","inform_finished_payment"],
+            ["inform_paid","inform_finished_payment"],
+            ["thankyou", "inform_finished_payment"],
             ["deny","initplus"]
         ],
         "inform_pai": [
             ["inform", "city_crossroad"],
             ["purchase","city_crossroad"],
-            ["affirm", "finished_payment"],
-            ["next_step", "finished_payment"],
-            ["inform_done", "finished_payment"],
-            ["inform_paid","finished_payment"],
-            ["thankyou","finished_payment"]
+            ["affirm", "inform_finished_payment"],
+            ["next_step", "inform_finished_payment"],
+            ["inform_done", "inform_finished_payment"],
+            ["inform_paid","inform_finished_payment"],
+            ["thankyou","inform_finished_payment"]
         ],
-        "finished_payment": [
+        "inform_finished_payment": [
             ["inform", "city_crossroad"],
             ["purchase","city_crossroad"],
             ["affirm", "initplus"],
