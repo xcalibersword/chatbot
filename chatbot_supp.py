@@ -366,17 +366,8 @@ class InfoParser():
 
     def _build_slots_DB(self, jdata):
         for catkey in list(jdata.keys()):
-            obj = jdata[catkey]
-            cached_slot = {}
-            # Multi flag
-            cached_slot["multi"] = obj.get("multi",False) # False by default
-            
-            # Get category regex
-            category = obj.get("map", {})
-            if category == {}:
-                print ("<BUILD SLOTS DB> ERROR NO CATEGORY FOR {}".format(catkey))
-                continue 
-            cat_map = {}
+            self.regexDB[catkey] = {}
+            category = jdata[catkey]
             for value in list(category.keys()):
                 termlist = category[value]
                 regexlist = self.list_to_regexList(termlist)
