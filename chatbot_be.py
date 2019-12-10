@@ -3,11 +3,12 @@
 import os
 import threading
 from cbsv import read_json, dump_to_json, check_file_exists
-from cb_sql import write_to_sqltable, fetch_uid_from_sqltable
+from cb_sql import MSSQL_readwriter
+
 
 dbfolder = "userdata"
 DEBUG = 0
-JSON_DATABASE = 1
+JSON_DATABASE = 0
 
 class DatabaseRunner():
     def __init__(self):
@@ -16,8 +17,11 @@ class DatabaseRunner():
         
         if JSON_DATABASE:
             self.database = self._read_json_db()
+            self.SQLrw = None
         else:
             self.database = {}
+            self.SQLrw = MSSQL_readwriter()
+
 
     def _read_json_db(self):
         def _create_json_db():
@@ -34,6 +38,24 @@ class DatabaseRunner():
 
         if DEBUG: print("Loading info from", self.dbfilepath)
         return read_json(self.dbfilepath)
+
+    def modify_db_fetched(self, dbf):
+        mod = {}
+        modlist = {"cust_city":{"writeto":"city","swaps":[("苏州","苏州"),("上海","上海")]}}
+        for d_name, val in dbf.items():
+            if d_name in modlist:
+                curr_mod = modlist[d_name]
+                new_key = curr_mod["writeto"]
+                for regex, output in curr_mod["swaps"]:
+                    if regex in val:
+                        outval = output
+                    else: 
+                        outval = val
+                
+                mod[new_key] = outval
+            else:
+                mod[d_name] = val
+        return mod
               
     def fetch_user_info(self, user):
         def _fetch_from_JSON(user):
@@ -43,9 +65,9 @@ class DatabaseRunner():
 
         def _fetch_from_SQL(user):
             # Create empty entry for new user
-            fetch = fetch_uid_from_sqltable(user)
+            fetch = self.SQLrw.fetch_user_info_from_sqltable(user)
             if isinstance(fetch, dict):
-                ndic = fetch
+                ndic = self.modify_db_fetched(fetch)
             else:
                 ndic = {}
             self.database[user] = ndic
@@ -88,7 +110,7 @@ class DatabaseRunner():
         if JSON_DATABASE:
             dump_to_json(self.dbfilepath, self.database)
         else:
-            write_to_sqltable(self.database)
+            self.SQLrw.write_to_sqltable(self.database)
         self.timer_on = False
 
 # Assumes messages are in a list structure
