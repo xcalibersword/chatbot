@@ -214,7 +214,7 @@ def get_customer_id(self_id,rawText):
     custid = ""
     for sent in rawText:
         if re.search(date_time_pattern,sent):
-            if re.search(self_id,sent):
+            if self_sent_message(self_id, sent):
                 # Contains Self ID
                 continue
             else:
@@ -240,6 +240,11 @@ def remove_QN_fluff(txt):
                 out = out[f_len:]
     return out
 
+def self_sent_message(selfID, namedate_string):
+    idlen = len(self_userID)
+    is_self = (namedate_string[:idlen] == selfID)
+    return is_self
+
 def processText(cW,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     recentText = rawText[:50]
@@ -251,8 +256,8 @@ def processText(cW,rawText):
     print("RECENT TEXT", recentText[:10])
     for sent in recentText:
         if re.search(date_time_pattern,sent):
-            # Name line
-            if re.search(cW.userID,sent):
+            # NameDate line
+            if self_sent_message(cW, sent):
                 # Self
                 if self_last_sent == "":
                     self_last_sent = curr_text[:-2] # Remove the 已读/未读
