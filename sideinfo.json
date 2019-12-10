@@ -119,7 +119,7 @@
                     "一共": ["shebao_basic_total"],
                     "社保缴纳":["w_shebao_payment"],
                     "社保基数":[["city_info",["sb_jishu"]]],
-                    "公积金缴纳":["w_gjj_payment"],
+                    "公积金缴纳":["w_gjj_fee"],
                     "公积金基数":[["city_info",["gjj_jishu"]]],
                     "首次费":[["city_info",["shouci_fee"]]],
                     "服务费":["svc_fee_total"]

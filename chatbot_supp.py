@@ -533,7 +533,7 @@ class InfoParser():
 class Calculator():
     def __init__(self, formulae):
         self.formula_db = formulae
-        self.debug = 0
+        self.debug = 1
 
     def calculate(self, curr_state, curr_info):
         topup, temp = self._do_all_calculations(curr_state, curr_info)
@@ -545,7 +545,7 @@ class Calculator():
         l_calc_ext = {}
         calc_topup = {}
         CALC_DEBUG = self.debug
-        enhanced = info.copy()
+        enhanced = info.copy() 
         calcDB = self.formula_db.copy()
 
         def get_calcs(state):
@@ -618,7 +618,7 @@ class Calculator():
                     b = float(b)
                     return op(a,b)
                 except:
-                    print("Could not convert to float:{},{}".format(a,b))
+                    print("<OPERATION> ERROR Could not convert to float:a<{}>,b<{}>".format(a,b))
                     exit()
             out = None
             for vname in vnames:
@@ -630,7 +630,7 @@ class Calculator():
                     out = operate(out,rel_val,op)
             return out
         def get_operator(opname):
-            opname.replace(" ","") #Spacing messes up the recognition of logical operators
+            opname = opname.replace(" ","") #Spacing messes up the recognition of logical operators
             if opname == "add":
                 opr = lambda a,b: a+b
             elif opname == "multi":
@@ -647,7 +647,8 @@ class Calculator():
                 opr = lambda a,b: (1 if (a > 0 or b > 0) else 0)
             else:
                 print("<RESOLVE FORMULA> ERROR Unknown operator:",opname)
-                opr = lambda a,b: a # Unknown operator just returns a
+                raise Exception
+                # opr = lambda a,b: a # Unknown operator just returns a
             return opr
 
         def get_variables(f, enh):

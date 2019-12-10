@@ -1,1 +1,1 @@
-Current API_model is: 0412_Model.h5
+Current API_model is: 0612_Model.h5
