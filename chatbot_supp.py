@@ -373,7 +373,10 @@ class InfoParser():
             cached_slot["multi"] = obj.get("multi",False) # False by default
             
             # Get category regex
-            category = obj["map"]
+            category = obj.get("map", {})
+            if category == {}:
+                print ("<BUILD SLOTS DB> ERROR NO CATEGORY FOR {}".format(catkey))
+                continue 
             cat_map = {}
             for value in list(category.keys()):
                 termlist = category[value]
