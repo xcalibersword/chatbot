@@ -3,6 +3,7 @@
 import os
 import threading
 from decimal import Decimal
+from datetime import datetime
 from cbsv import read_json, dump_to_json, check_file_exists
 from cb_sql import MSSQL_readwriter
 
@@ -41,6 +42,23 @@ class DatabaseRunner():
         return read_json(self.dbfilepath)
 
     def modify_db_fetched(self, dbf):
+        # Database dates are datetimes. Incompatible with Json.
+        def datetime_obj_to_str(dateobj):
+            if isinstance(dateobj, datetime):
+                return str(dateobj)
+            return dateobj
+
+        # Database values are Decimals. Incompatible with Json.
+        def decimal_obj_to_float(dobj):
+            if isinstance(dobj, Decimal):
+                return float(dobj)
+            return dobj
+
+        def convert_object_to_values(obj):
+            obj = decimal_obj_to_float(obj)
+            obj = datetime_obj_to_str(obj)
+            return obj
+
         mod = {}
         modlist = {"cust_city":{"writeto":"city","swaps":[("苏州","苏州"),("上海","上海")]}}
         for d_name, val in dbf.items():
@@ -55,7 +73,7 @@ class DatabaseRunner():
                 
                 mod[new_key] = outval
             else:
-                mod[d_name] = decimal_obj_to_float(val)
+                mod[d_name] = convert_object_to_values(val)
         print("<MODIFIED FETCH>",mod)
         return mod
               
