@@ -1908,6 +1908,7 @@
             }
         },
         "shebao_fee_amt": {
+            "writeto": "w_shebao_payment",
             "conditions": [
                 ["custom_sb_flag",1,["use_custom_sb",1,0]]
             ],
@@ -1936,8 +1937,7 @@
                     ["w_custom_sb_sum", "w_default_sb_sum"],
                     "OUTCOME"
                 ]
-            },
-            "writeto": "w_shebao_payment"
+            }
         },
         "gongjijin_fee_amt": {
             "writeto": "w_gjj_fee",

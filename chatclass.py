@@ -11,7 +11,7 @@ from chatbot_supp import *
 from chatbot_utils import dive_for_values
 
 
-SUPER_DEBUG = 1
+SUPER_DEBUG = 0
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
@@ -249,6 +249,7 @@ class ChatManager:
                 sip = sip.same_state()
 
             # Calls the calculator. Crunch numbers for state change
+            if SUPER_DEBUG: print("########################################## LOOP CALCULATOR ##########################################")
             self._calculate()
 
             state_bef = self._get_curr_state()
@@ -267,7 +268,8 @@ class ChatManager:
                 break
 
         # Calls calculator. Crunch numbers for replying
-        calc_ext = self._calculate()
+        if SUPER_DEBUG: print("########################################## REPLY CALCULATOR ##########################################")
+        calc_ext = self._calculate(double=True)
     
         intent = full_uds.get_intent()
         reply = self._fetch_reply(intent, calc_ext)
@@ -428,12 +430,17 @@ class ChatManager:
 
     # Ask calculator to crunch numbers.
     # Updates information dict
-    def _calculate(self):
+    def _calculate(self,double=False):
         info = self._get_current_info()
-        print("INFO FOR CALC", info)
         curr_state = self._get_curr_state()
+        if SUPER_DEBUG: print("<CALCULATE> Info for calc", info)
         topup, calc_ext = self.calculator.calculate(curr_state, info)
+        if DEBUG: print("<CALCULATE> DM TOPUP",topup)
         self.push_detail_to_dm(topup) # Adds persist values to info
+
+        if double:
+            # This is to solve the problem of secondary slots not catching calculated values
+            calc_ext = self._calculate(double=False)
         return calc_ext
 
     # Clears up values based on state information

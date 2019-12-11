@@ -554,6 +554,7 @@ class Calculator():
         # Auto includes l_calc_ext and calc_topup
         def add_calc_enh(key, rawstr, _pv = False):
             flt = round(float(rawstr),2) # Round all displayed numbers to 2 dp
+            if CALC_DEBUG: print("<ENHANCE> Calc Ext {}:{}".format(key,rawstr))
             return cu.add_enh(key,flt,l_calc_ext, "calc_ext", calc_topup, enhanced, persist = _pv, overwrite = True)
 
         def assign_outputs(target_key, result_dict):
@@ -588,7 +589,7 @@ class Calculator():
                 result_dict = self.resolve_formula(formula, enhanced)
                 assign_outputs(target_key, result_dict)
 
-            if CALC_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
+            # if CALC_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
         
         if CALC_DEBUG: print("<RESOLVE FORMULA> Postcalc enh",enhanced)
         if state_calcs == [] and CALC_DEBUG: print("<RESOLVE FORMULA> No calculation performed")
@@ -611,19 +612,23 @@ class Calculator():
 
         # Given variables, an operator and a dictionary,
         # Returns a result value 
-        def op_on_all(vnames, op, vdic):
+        def op_on_all(varnames, op, vdic):
             def operate(a,b,op):
                 try:
                     a = float(a) # Force every variable involved to float
                     b = float(b)
                     return op(a,b)
                 except:
-                    print("<OPERATION> ERROR Could not convert to float:a<{}>,b<{}>".format(a,b))
+                    print("<FORMULA OPERATION> ERROR Could not convert to float:a<{}>,b<{}>".format(a,b))
                     exit()
             out = None
-            for vname in vnames:
+            for vname in varnames:
                 isnumbr = cbsv.is_number(vname)
                 rel_val = vname if isnumbr else vdic[vname] # variables can be real numbers or variable names
+                if rel_val == "":
+                    print("<FORMULA OPERATION> ERROR no value for {} in {}".format(vname, varnames))
+                    rel_val = 0
+
                 if out == None:
                     out = rel_val
                 else:
