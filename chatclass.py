@@ -950,7 +950,7 @@ class ReplyGenerator:
                             # If specified value is present
                             search_tree_and_enhance(cases, valname)
                         else:
-                            if not enstr: raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(valname,info))
+                            raise Exception("<ENHANCE IF VAL> Error {} not in {}".format(valname,t_info))
 
                     return
             
