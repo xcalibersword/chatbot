@@ -102,19 +102,27 @@ def build_context_info():
     info_dict = {"yyyymm":yearmonth_str}
     return info_dict
 
-def set_exec_time_limit():
-    def signal_handler(signum, frame):
-        raise Exception("Timed out!")
+class Alarmy:
+    def __init__(self):
+        self.job_done = False
 
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(10)   # Ten seconds
+    def set_exec_time_limit(self):
+        def signal_handler(signum, frame):
+            if not self.job_done:
+                raise Exception("Timed out!")
+            return
+        self.job_done = False
+        signal.signal(signal.SIGALRM, signal_handler)
+        signal.alarm(10)   # Ten seconds
 
-def alarm_off():
-    yield
+    def alarm_off(self):
+        self.job_done = True
 
 
 class MSSQL_readwriter:
     def __init__(self):
+        self.alarmy = Alarmy()
+
         self.write_conn = None
         self.connect_to_write()
 
@@ -125,10 +133,10 @@ class MSSQL_readwriter:
         global SQL_WRITE_ENABLED
         if SQL_WRITE_ENABLED:
             print("Trying to connect to Write...")
-            set_exec_time_limit()
+            self.alarmy.set_exec_time_limit()
             try:
                 self.write_conn = msql.connect(server=db_host, user=db_user, password=db_pass, database=db_dbname)
-                alarm_off()
+                self.alarmy.alarm_off()
                 print("Connected to Write!")
             except Exception as e:
                 print("Write Connection Exception!",e)
@@ -139,10 +147,10 @@ class MSSQL_readwriter:
         global SQL_READ_ENABLED
         if SQL_READ_ENABLED:
             print("Trying to connect to Read...")
-            set_exec_time_limit()
+            self.alarmy.set_exec_time_limit()
             try:
                 self.read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass) 
-                alarm_off()
+                self.alarmy.alarm_off()
                 # read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass, database=db_read_dbname) 
                 print("Connected to Read!")
             except Exception as e:
@@ -166,13 +174,15 @@ class MSSQL_readwriter:
     def fetch_all_from_con(self, tabnam, columns = "*", condition = ""):
         query = "SELECT {} FROM {} {}".format(columns,tabnam,condition)
         if check_local_files_bad(query):
-            return ()
+            return []
 
         conn = self.read_conn
         try:
             with conn.cursor(as_dict=True) as cursor:
                 cursor.execute(query,[])
                 result = cursor.fetchall()
+            if result is None:
+                result = []
             return result
         except Exception as e:
             print("<FETCH ALL ERROR>", e)
