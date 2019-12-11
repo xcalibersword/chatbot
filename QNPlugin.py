@@ -28,6 +28,9 @@ class QianNiuWindow:
         self.msg_dlg = None
         self.userID = "女人罪爱" # HARDCODED. More general so that you don't catch 同事
 
+    def get_userID(self):
+        return self.userID
+        
     def SetAsForegroundWindow(self):
         # First, make sure all (other) always-on-top windows are hidden.
         self.hide_always_on_top_windows()
@@ -249,6 +252,7 @@ def self_sent_message(selfID, namedate_string):
 def processText(cW,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     recentText = rawText[:50]
+    self_name = cW.get_userID()
     custid = ""
     self_last_sent = ""
     query = ""
@@ -258,7 +262,7 @@ def processText(cW,rawText):
     for sent in recentText:
         if re.search(date_time_pattern,sent):
             # NameDate line
-            if self_sent_message(cW, sent):
+            if self_sent_message(self_name, sent):
                 # Self
                 if self_last_sent == "":
                     self_last_sent = curr_text[:-2] # Remove the 已读/未读
