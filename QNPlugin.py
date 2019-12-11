@@ -243,6 +243,7 @@ def remove_QN_fluff(txt):
 def self_sent_message(selfID, namedate_string):
     idlen = len(self_userID)
     is_self = (namedate_string[:idlen] == selfID)
+    print("<SELF SENT MESSAGE>",namedate_string[:idlen], "comparison", selfID)
     return is_self
 
 def processText(cW,rawText):
