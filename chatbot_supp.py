@@ -424,6 +424,9 @@ class InfoParser():
     # Returns a pure value
     def get_category_value(self, text, category, PDB = True):
         if not category in self.regexDB:
+            if "DEFAULT" in category:
+                return ""
+
             if PDB and DEBUG: print("<GET CAT VAL> No such category:{}".format(category))
             return ""
         catDB = self.regexDB[category]
@@ -533,7 +536,8 @@ class InfoParser():
 class Calculator():
     def __init__(self, formulae):
         self.formula_db = formulae
-        self.debug = 1
+        self.DEBUG = 1
+        self.SUPER_DEBUG = 0
 
     def calculate(self, curr_state, curr_info):
         topup, temp = self._do_all_calculations(curr_state, curr_info)
@@ -544,7 +548,8 @@ class Calculator():
     def _do_all_calculations(self, curr_state, info):
         l_calc_ext = {}
         calc_topup = {}
-        CALC_DEBUG = self.debug
+        CALC_DEBUG = self.DEBUG
+        CALC_SUPER_DEBUG = self.SUPER_DEBUG
         enhanced = info.copy() 
         calcDB = self.formula_db.copy()
 
@@ -554,7 +559,7 @@ class Calculator():
         # Auto includes l_calc_ext and calc_topup
         def add_calc_enh(key, rawstr, _pv = False):
             flt = round(float(rawstr),2) # Round all displayed numbers to 2 dp
-            if CALC_DEBUG: print("<ENHANCE> Calc Ext {}:{}".format(key,rawstr))
+            if CALC_SUPER_DEBUG: print("<ENHANCE> Adding to Calc Ext {}:{}".format(key,rawstr))
             return cu.add_enh(key,flt,l_calc_ext, "calc_ext", calc_topup, enhanced, persist = _pv, overwrite = True)
 
         def assign_outputs(target_key, result_dict):
@@ -579,7 +584,7 @@ class Calculator():
         # Calculations
         state_calcs = get_calcs(curr_state)
         for fname in state_calcs:
-            if CALC_DEBUG or 1: print("<RESOLVE FORMULA> Performing:",fname)
+            if CALC_DEBUG: print("<RESOLVE FORMULA> Performing:",fname)
             if not fname in calcDB:
                 print("<RESOLVE FORMULA> ERROR! No such formula:{}".format(fname))
             else:
@@ -607,7 +612,6 @@ class Calculator():
             stps = list(instr.keys())
             stps = list(map(lambda x: (x.split(","), instr[x]),stps))
             stps.sort(key=lambda t: float(t[0][0])) # If no conversion it sorts as string
-            if self.debug: print("<RESOLVE FORMULA> steps aft sort",stps)
             return stps
 
         # Given variables, an operator and a dictionary,
@@ -694,7 +698,7 @@ class Calculator():
 
             # Fetch conditional values
             add_formula_conditional_vars(f,vd)
-            if self.debug: print("<RESOLVE FORMULA> Value Dict",vd)
+            if self.SUPER_DEBUG: print("<RESOLVE FORMULA> Value Dict",vd)
             return vd
 
         

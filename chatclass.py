@@ -400,7 +400,7 @@ class ChatManager:
         info["calc_ext"] = calc_ext #Add calc ext to the info to be passed in
 
         curr_state = self._get_curr_state()
-        if DEBUG: print("<Fetch Reply> Current State",curr_state)
+        if DEBUG: print("<Fetch Reply> Current State",curr_state.get("key","unknown"))
         # samestateflag = self.statethreader.state_never_change()
         ssflag = self.samestateflag
         # print("curr_state", curr_state['key'], "samestate",samestateflag)
@@ -661,7 +661,10 @@ class DetailManager:
 
     # Info without vault
     def get_user_info(self):
-        not_user_info = ["requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", "flag_sb_gjj", 'w_shebao_payment', 'shebao_jiaona_total', 'target_month', 'given_amount','city_info'] #TODO find a proper way to store this info in JSON
+        not_user_info = [
+            "requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", "flag_sb_gjj", 'w_shebao_payment', 'shebao_jiaona_total', 
+            'target_month', 'given_amount','city_info', "ss_purchase_cmi_flag", "exclude_svc_fee", "w_fee_type_flag", "w_normal_cmi_flag"
+        ] #TODO find a proper way to store this info in JSON
         dic = self.chat_prov_info.copy()
         for i in not_user_info:
             if i in dic: 
@@ -858,7 +861,7 @@ class ReplyGenerator:
         
     # OVERALL METHOD
     def get_reply(self, curr_state, intent, secondslot, info = -1):
-        print("<GET_REPLY> INFO",info)
+        print("<GET_REPLY> INFO calc_ext:",info.get("calc_ext", {}), "rep_ext", info.get("rep_ext", {}))
         rdb = self.getreplydb(intent, curr_state, secondslot)
         infoplus = self._enhance_info(curr_state, info)
         reply = self.generate_reply_message(rdb, infoplus)
@@ -951,7 +954,7 @@ class ReplyGenerator:
 
                     return
             
-            print("<ENHANCE IF VAL> Write to:", tkey)
+            if RF_DEBUG: print("<ENHANCE IF VAL> Write to:", tkey)
             if_val_tree_enh(vd, ifvl, tkey)
                     
             return
@@ -974,7 +977,7 @@ class ReplyGenerator:
                 ifvl = tmp.get("if_value",{})
                 enhance_if_vals(vd, ifvl, target_key)
         
-        print("<ENH POST> Enhanced:", enhanced)
+        if RF_DEBUG: print("<ENH POST> Enhanced:", enhanced)
         return enhanced
 
     # Returns the a reply database either from intent or from state
@@ -1009,8 +1012,6 @@ class ReplyGenerator:
                 self.hflag = get_hflag(obj)
             else:
                 break
-        
-        if LOCALDEBUG: print("rdb:",rdb)
 
         if rdb == []: rdb = self.default_confused # In case really no answer
 
@@ -1024,7 +1025,7 @@ class ReplyGenerator:
             return self.humanizer.humanify(msg,i)
 
         reply_template = rand_response(rdb)
-        if DEBUG: print("<GEN REPLY> template",reply_template)
+        if DEBUG: print("<GEN REPLY> Template:",reply_template)
         final_msg = reply_template
         if isinstance(info, dict):
             if SUPER_DEBUG: print("<GEN REPLY> Enhanced info:",info)

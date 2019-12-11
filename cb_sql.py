@@ -162,11 +162,8 @@ class MSSQL_readwriter:
         if DEBUG: print("<SQL FETCH INFO> Looking for {}".format(user_name))
         found, f_dict = self.execute_predef_query(iq, user_name)
 
-        if not found:
-            return NO_INFO
-
         uid_f = f_dict
-        return uid_f
+        return found, uid_f
 
     def fetch_all_from_sqltable(self,tablename):
         f = self.fetch_all_from_con(tablename)

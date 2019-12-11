@@ -10,7 +10,7 @@ from cb_sql import MSSQL_readwriter
 
 dbfolder = "userdata"
 DEBUG = 0
-JSON_DATABASE = 1
+READ_FROM_JSON = 1
 WRITE_TO_JSON = 1
 
 class DatabaseRunner():
@@ -18,7 +18,7 @@ class DatabaseRunner():
         self.backup_delay = 30
         self.timer_on = False
         
-        if JSON_DATABASE:
+        if READ_FROM_JSON:
             self.database = self._read_json_db()
         else:
             self.database = {}
@@ -80,11 +80,12 @@ class DatabaseRunner():
             }
         }
         for d_name, val in dbf.items():
+            print("Mod",mod," + ", d_name)
             if d_name in modlist:                    
                 curr_mod = modlist[d_name]
                 new_key = curr_mod["writeto"]
                 if curr_mod.get("if_present",False):
-                    mod[new_key] = curr_mod.["if_present"]
+                    outval = curr_mod["if_present"]
                     if curr_mod.get("keep_og", True):
                         mod[d_name] = convert_object_to_values(val)
 
@@ -97,7 +98,7 @@ class DatabaseRunner():
                 mod[new_key] = outval
             else:
                 mod[d_name] = convert_object_to_values(val)
-        print("<MODIFIED FETCH>",mod)
+        print("<MODIFIED FETCH>", mod)
         return mod
               
     def fetch_user_info(self, user):
@@ -108,8 +109,8 @@ class DatabaseRunner():
 
         def _fetch_from_SQL(user):
             # Create empty entry for new user
-            fetch = self.SQLrw.fetch_user_info_from_sqltable(user)
-            if isinstance(fetch, dict):
+            found, fetch = self.SQLrw.fetch_user_info_from_sqltable(user)
+            if found:
                 ndic = self.modify_db_fetched(fetch)
                 have_existing_entry = True
             else:
@@ -121,7 +122,7 @@ class DatabaseRunner():
         if not user in self.database:
             success = _fetch_from_SQL(user)
             if not success:
-                if JSON_DATABASE:
+                if READ_FROM_JSON:
                     _fetch_from_JSON(user)
             
         return self.database[user]
