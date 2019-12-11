@@ -91,9 +91,6 @@
         {
             "writeto": "ss_sb_jishu_figure",
             "search_tree":{
-                "shebao_jishu":{
-                    "_ANY":["shebao_jishu"]
-                },
                 "ctx_slots.jishu_amt":{
                     "ctx_min":[["city_info",["sb_jishu"]]],
                     "ctx_max":[["city_info",["sb_jishu_max_limit"]]]
@@ -106,9 +103,6 @@
         {
             "writeto": "ss_gjj_jishu_figure",
             "search_tree":{
-                "gjj_jishu":{
-                    "_ANY":["gjj_jishu"]
-                },
                 "ctx_slots.jishu_amt":{
                     "ctx_min":[["city_info",["base_gjj_jishu"]]],
                     "ctx_max":[["city_info",["base_gjj_jishu_max_limit"]]]

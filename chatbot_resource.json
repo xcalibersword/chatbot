@@ -2050,29 +2050,44 @@
             "conditions": [],
             "persist_value": true,
             "req_vars": [
-                "ss_gjj_jishu_figure",
                 ["city_info",
                     ["base_gjj_jishu","base_gjj_jishu_max_limit"]
                 ]
             ],
+            "optional_vars":[
+                "ss_gjj_jishu_figure",
+                "gjj_jishu"
+            ],
             "steps": {
+                "0,equals":[
+                    ["gjj_jishu",0],
+                    "w_no_gjj_jishu"
+                ],
                 "1,add":[
                     [1,0],
                     "OUTCOME"
                 ],
-                "2,isgreater": [
-                    ["ss_gjj_jishu_figure","base_gjj_jishu_max_limit"],
+                "3,multi":[
+                    ["ss_gjj_jishu_figure",0],
+                    "ss_gjj_jishu_figure"
+                ],
+                "4,add":[
+                    ["ss_gjj_jishu_figure", "gjj_jishu"],
+                    "w_gjj_jishu_figure"
+                ],
+                "5,isgreater": [
+                    ["w_gjj_jishu_figure","base_gjj_jishu_max_limit"],
                     "w_over"
                 ],
-                "3,add":[
+                "6,add":[
                     ["OUTCOME", "w_over"],
                     "OUTCOME"
                 ],
-                "4,isgreater":[
-                    ["base_gjj_jishu","ss_gjj_jishu_figure"],
+                "7,isgreater":[
+                    ["base_gjj_jishu","w_gjj_jishu_figure"],
                     "w_under"
                 ],
-                "5,sub":[
+                "8,sub":[
                     ["OUTCOME", "w_under"],
                     "OUTCOME"
                 ]
@@ -2083,29 +2098,44 @@
             "conditions": [],
             "persist_value": true,
             "req_vars": [
-                "ss_sb_jishu_figure",
                 ["city_info",
                     ["sb_jishu","sb_jishu_max_limit"]
                 ]
             ],
+            "optional_vars":[
+                "ss_sb_jishu_figure",
+                "shebao_jishu"
+            ],
             "steps": {
-                "1,add":[
+                "0,equals":[
+                    ["shebao_jishu",0],
+                    "w_no_sb_jishu"
+                ],
+                "2,multi":[
+                    ["ss_sb_jishu_figure",0],
+                    "ss_sb_jishu_figure"
+                ],
+                "3,add":[
+                    ["ss_sb_jishu_figure", "shebao_jishu"],
+                    "w_sb_jishu_figure"
+                ],
+                "4,add":[
                     [1,0],
                     "OUTCOME"
                 ],
-                "2,isgreater": [
-                    ["ss_sb_jishu_figure","sb_jishu_max_limit"],
+                "5,isgreater": [
+                    ["w_sb_jishu_figure","sb_jishu_max_limit"],
                     "w_over"
                 ],
-                "3,add":[
+                "6,add":[
                     ["OUTCOME", "w_over"],
                     "OUTCOME"
                 ],
-                "4,isgreater":[
-                    ["sb_jishu","ss_sb_jishu_figure"],
+                "7,isgreater":[
+                    ["sb_jishu","w_sb_jishu_figure"],
                     "w_under"
                 ],
-                "5,sub":[
+                "8,sub":[
                     ["OUTCOME", "w_under"],
                     "OUTCOME"
                 ]
@@ -2116,10 +2146,10 @@
             "conditions": [],
             "persist_value": true,
             "req_vars": [
-                "ss_gjj_jishu_figure",
-                ["city_info",
-                    ["base_gjj_jishu_multi"]
-                ]
+                ["city_info",["base_gjj_jishu_multi"]]
+            ],
+            "optional_vars":[
+                "ss_gjj_jishu_figure"
             ],
             "steps": {
                 "1,multi": [
@@ -2133,8 +2163,10 @@
             "conditions": [],
             "persist_value": true,
             "req_vars": [
-                "ss_sb_jishu_figure",
                 ["city_info",["sb_jishu_multi"]]
+            ],
+            "optional_vars":[
+                "ss_sb_jishu_figure"
             ],
             "steps": {
                 "1,multi": [
