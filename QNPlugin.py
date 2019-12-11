@@ -8,7 +8,6 @@ GLOBAL = {}
 clipboard_sleep = 0.1
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
-self_userID = "temporary"
 
 KEY_PRESS = 0
 KEY_LETGO = 2
@@ -244,7 +243,7 @@ def remove_QN_fluff(txt):
     return out
 
 def self_sent_message(selfID, namedate_string):
-    idlen = len(self_userID)
+    idlen = len(selfID)
     is_self = (namedate_string[:idlen] == selfID)
     print("<SELF SENT MESSAGE>",namedate_string[:idlen], "comparison", selfID)
     return is_self
