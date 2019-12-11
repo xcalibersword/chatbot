@@ -2,10 +2,16 @@
 
 ## Project Dependencies
 - tensorflow 1.14
-- pypiwin32
-- jdk 12.0.2
 - pywin32
 - Jpype1
+- jieba
+- pandas
+- keras
+- pymssql<3.0
+- aiohttp
+- python-socketio
+- JAVA VERSION
+- jdk 12.0.2
 
 ## Key Features to be built for
 - Calculate product price
