@@ -80,7 +80,7 @@ class DatabaseRunner():
             }
         }
         for d_name, val in dbf.items():
-            print("Mod",mod," + ", d_name)
+            print("<MOD DB FETCH> Mod",mod," + ", d_name)
             if d_name in modlist:                    
                 curr_mod = modlist[d_name]
                 new_key = curr_mod["writeto"]

@@ -1,7 +1,7 @@
 # A set of tools to interact with SQL
 import os
 import pymssql as msql # Ignore the error message from this. But it means this is lib incompatible with Python 3.8 and above.
-
+import signal 
 from datetime import datetime
 from localfiles.details import get_read_details, get_write_details
 write_info = get_write_details()
@@ -67,7 +67,6 @@ DEBUG = 1
 SQL_READ_ENABLED = True
 SQL_WRITE_ENABLED = False
 LOCALFILES_PRESENT = ""
-NO_WRITE_TO_SQL = False and SQL_READ_ENABLED
 
 # db_host = "40.68.37.158" #ADVENTURE WORKS
 # db_user = "Sample user"
@@ -103,6 +102,17 @@ def build_context_info():
     info_dict = {"yyyymm":yearmonth_str}
     return info_dict
 
+def set_exec_time_limit():
+    def signal_handler(signum, frame):
+        raise Exception("Timed out!")
+
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(10)   # Ten seconds
+
+def alarm_off():
+    yield
+
+
 class MSSQL_readwriter:
     def __init__(self):
         self.write_conn = None
@@ -112,17 +122,32 @@ class MSSQL_readwriter:
         self.connect_to_read()
 
     def connect_to_write(self):
+        global SQL_WRITE_ENABLED
         if SQL_WRITE_ENABLED:
             print("Trying to connect to Write...")
-            self.write_conn = msql.connect(server=db_host, user=db_user, password=db_pass, database=db_dbname) 
-            print("Connected to Write!")
+            set_exec_time_limit()
+            try:
+                self.write_conn = msql.connect(server=db_host, user=db_user, password=db_pass, database=db_dbname)
+                alarm_off()
+                print("Connected to Write!")
+            except Exception as e:
+                print("Write Connection Exception!",e)
+                SQL_WRITE_ENABLED = False
+
         
     def connect_to_read(self):
+        global SQL_READ_ENABLED
         if SQL_READ_ENABLED:
             print("Trying to connect to Read...")
-            self.read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass) 
-            # read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass, database=db_read_dbname) 
-            print("Connected to Read!")
+            set_exec_time_limit()
+            try:
+                self.read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass) 
+                alarm_off()
+                # read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass, database=db_read_dbname) 
+                print("Connected to Read!")
+            except Exception as e:
+                print("Read Connection Exception!",e)
+                SQL_READ_ENABLED = False
 
 
     def insert_test(self):
@@ -171,7 +196,7 @@ class MSSQL_readwriter:
 
     # Writes to the connection
     def commit_to_con(self,conn, comcmd, comvals):
-        if NO_WRITE_TO_SQL:
+        if SQL_WRITE_ENABLED:
             print("<BACKEND WARNING: Writing to SQL has been disabled> Restore it in cb_sql.py.\nCommand not executed:{}".format(comcmd))
             return
 
@@ -192,7 +217,7 @@ class MSSQL_readwriter:
 
     # Writes to a predefined table
     def write_to_sqltable(self,users_info):
-        if not SQL_READ_ENABLED:
+        if not SQL_WRITE_ENABLED:
             return 
         connection = self.write_conn
         userids = self.fetch_all_from_con(tablename, columns = "userID")
@@ -215,6 +240,11 @@ class MSSQL_readwriter:
             self.commit_to_con(connection, qry, vals)
 
     def execute_predef_query(self, query, uid):
+        matchfound = False
+        out = {}
+        if not SQL_READ_ENABLED:
+            return (matchfound, out)
+        
         context_info = build_context_info()
         table = query.get("table")
         tb_id_col = query.get("cust_tb_id_col")
@@ -225,8 +255,7 @@ class MSSQL_readwriter:
         if DEBUG: print("<PREDEF Q> fetched {} queries".format(str(len(f_rows))))
 
         count = 0
-        matchfound = False
-        out = {}
+        
         for row in f_rows:
             if row.get(tb_id_col,"") == uid:
                 if DEBUG: print("<PREDEF Q> FOUND a match for {}".format(uid), "L00ked through {} rows".format(count))
