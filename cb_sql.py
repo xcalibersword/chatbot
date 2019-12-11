@@ -64,7 +64,7 @@ write_conn = None
 read_conn = None
 
 DEBUG = 1
-SQL_READ_ENABLED = True
+SQL_READ_ENABLED = False
 SQL_WRITE_ENABLED = False
 LOCALFILES_PRESENT = ""
 
