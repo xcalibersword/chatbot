@@ -18,7 +18,7 @@ DEBUG = 0
 ############## All supporting Libraries: ##############
 # Can be installed via pip
 # Required libraries: 
-# - mypysql used in cb_sql
+# - pymssql<3.0  used in cb_sql
 
 # Server libraries:
 # - python-socketio
