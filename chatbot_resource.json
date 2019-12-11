@@ -624,7 +624,12 @@
             "transition_state": true,
             "thread": "t_howmuch",
             "humanify": false,
-            "req_info": [["chosen_fee","fee_slot"]],
+            "req_info": [
+                ["要社保","DEFAULT_SV"],
+                ["要公积金","DEFAULT_SV"],
+                ["首次", "yesno"],
+                ["chosen_fee","fee_slot"]
+            ],
             "replies": []
         },
         "ctx_inform_how_much":{
@@ -1305,14 +1310,14 @@
                 "states": ["propose_custom_base_gjj_jishu"],
                 "lookfor": [
                     "city_district",
-                    "ss_gjj_jishu_figure",
+                    "gjj_jishu",
                     "w_custom_gjj_fee",
                     "custom_gjj_flag",
                     ["city_info",["base_gjj_jishu","base_gjj_jishu_max_limit"]]
                 ],
                 "if_value": {
                     "custom_gjj_flag":{
-                        "1":"亲 公积金按照{ss_gjj_jishu_figure}基数的话，应缴{w_custom_gjj_fee}元 不包括服务费，开户费哦",
+                        "1":"亲 公积金按照{gjj_jishu}基数的话，应缴{w_custom_gjj_fee}元 不包括服务费，开户费哦",
                         "0":"亲 {city_info[base_gjj_jishu]}是{city_district}公积金的最低缴纳基数了哦",
                         "2":"亲 {city_info[base_gjj_jishu_max_limit]}是{city_district}公积金的最高缴纳基数了哦"
                     }
@@ -1323,14 +1328,14 @@
                 "states": ["propose_custom_sb_jishu"],
                 "lookfor": [
                     "city_district",
-                    "ss_sb_jishu_figure",
+                    "shebao_jishu",
                     "w_custom_sb_fee",
                     "custom_sb_flag",
                     ["city_info",["sb_jishu","sb_jishu_max_limit"]]
                 ],
                 "if_value": {
                     "custom_sb_flag":{
-                        "1":"亲 社保按照{ss_sb_jishu_figure}基数的话，应缴{w_custom_sb_fee}元 不包括服务费，开户费哦",
+                        "1":"亲 社保按照{shebao_jishu}基数的话，应缴{w_custom_sb_fee}元 不包括服务费，开户费哦",
                         "0":"亲 {city_info[sb_jishu]}是{city_district}社保的最低缴纳基数了哦",
                         "2":"亲 {city_info[sb_jishu_max_limit]}是{city_district}社保的最高缴纳基数了哦"
                     }
@@ -1358,12 +1363,12 @@
                 "states": ["propose_plan"],
                 "lookfor":[
                     "custom_gjj_flag",
-                    "ss_gjj_jishu_figure",
+                    "gjj_jishu",
                     ["city_info",["base_gjj_jishu"]]
                 ],
                 "if_value":{
                     "custom_gjj_flag":{
-                        "1": "（按照{ss_gjj_jishu_figure}基数）",
+                        "1": "（按照{gjj_jishu}基数）",
                         "DEFAULT":{
                             "base_gjj_jishu": {
                                 "0": "",
@@ -1378,12 +1383,12 @@
                 "states": ["propose_plan"],
                 "lookfor":[
                     "custom_sb_flag",
-                    "ss_sb_jishu_figure",
+                    "shebao_jishu",
                     ["city_info",["sb_jishu"]]
                 ],
                 "if_value":{
                     "custom_sb_flag":{
-                        "1": "（按照{ss_sb_jishu_figure}基数）",
+                        "1": "（按照{shebao_jishu}基数）",
                         "DEFAULT":{
                             "sb_jishu": {
                                 "0": "",
@@ -2149,11 +2154,24 @@
                 ["city_info",["base_gjj_jishu_multi"]]
             ],
             "optional_vars":[
-                "ss_gjj_jishu_figure"
+                "ss_gjj_jishu_figure",
+                "gjj_jishu"
             ],
             "steps": {
+                "0,equals": [
+                    ["gjj_jishu",0],
+                    "no_gjj_jishu"
+                ],
                 "1,multi": [
-                    ["ss_gjj_jishu_figure","base_gjj_jishu_multi"],
+                    ["ss_gjj_jishu_figure","no_gjj_jishu"],
+                    "w_gjj_jishu_figure"
+                ],
+                "2,add": [
+                    ["w_gjj_jishu_figure", "gjj_jishu"],
+                    "w_gjj_jishu"
+                ],
+                "3,multi": [
+                    ["w_gjj_jishu","base_gjj_jishu_multi"],
                     "OUTCOME"
                 ]
             }
@@ -2166,11 +2184,24 @@
                 ["city_info",["sb_jishu_multi"]]
             ],
             "optional_vars":[
-                "ss_sb_jishu_figure"
+                "ss_sb_jishu_figure",
+                "shebao_jishu"
             ],
             "steps": {
+                "0,equals": [
+                    ["shebao_jishu",0],
+                    "no_sb_jishu"
+                ],
                 "1,multi": [
-                    ["ss_sb_jishu_figure","sb_jishu_multi"],
+                    ["ss_sb_jishu_figure","no_sb_jishu"],
+                    "w_sb_jishu_figure"
+                ],
+                "2,add": [
+                    ["w_sb_jishu_figure", "shebao_jishu"],
+                    "w_sb_jishu"
+                ],
+                "3,multi": [
+                    ["w_sb_jishu","sb_jishu_multi"],
                     "OUTCOME"
                 ]
             }
