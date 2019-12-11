@@ -41,6 +41,7 @@ class DatabaseRunner():
         if DEBUG: print("Loading info from", self.dbfilepath)
         return read_json(self.dbfilepath)
 
+    # Assuming there is a match
     def modify_db_fetched(self, dbf):
         # Database dates are datetimes. Incompatible with Json.
         def datetime_obj_to_str(dateobj):
@@ -60,12 +61,34 @@ class DatabaseRunner():
             return obj
 
         mod = {}
-        modlist = {"cust_city":{"writeto":"city","swaps":[("苏州","苏州"),("上海","上海")]}}
+        default_details = {"首次":"no"}
+        mod.update(default_details)
+        modlist = {
+            "cust_city":{
+                "writeto":"city",
+                "swaps":[("苏州","苏州"),("上海","上海")]
+            },
+            "shebao_jishu":{
+                "writeto":"要社保",
+                "if_present":"yes",
+                "keep_og":True
+            },
+            "gjj_jishu":{
+                "writeto":"要公积金",
+                "if_present":"yes",
+                "keep_og":True
+            }
+        }
         for d_name, val in dbf.items():
-            if d_name in modlist:
+            if d_name in modlist:                    
                 curr_mod = modlist[d_name]
                 new_key = curr_mod["writeto"]
-                for regex, output in curr_mod["swaps"]:
+                if curr_mod.get("if_present",False):
+                    mod[new_key] = curr_mod.["if_present"]
+                    if curr_mod.get("keep_og", True):
+                        mod[d_name] = convert_object_to_values(val)
+
+                for regex, output in curr_mod.get("swaps",[]):
                     if regex in val:
                         outval = output
                     else: 
