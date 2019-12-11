@@ -770,13 +770,12 @@
             "humanify": false,
             "req_info": [
                 ["chosen_service","service_slot"],
-                ["city","city"],
-                ["given_amount", "DUMMY_SLOT"]
+                ["city","city"]
             ],
-            "replies": ["想用{given_amount}的{chosen_service}基数是吧？"]
+            "replies": []
         },
-        "propose_custom_base_gjj_jishu":{
-            "key": "propose_custom_base_gjj_jishu",
+        "propose_custom_gjj_jishu":{
+            "key": "propose_custom_gjj_jishu",
             "gated": true,
             "transition_state": true,
             "humanify": false,
@@ -1112,8 +1111,8 @@
                         "ss_purchase_for_month": "要缴哪月？",
                         "given_amount": "要什么基数？",
                         "chosen_service":"指的是社保还是公积金？",
-                        "ss_sb_jishu_figure": "要按照什么基数？",
-                        "ss_gjj_jishu_figure": "要按照什么基数？",
+                        "shebao_jishu": "要按照什么基数？",
+                        "gjj_jishu": "要按照什么基数？",
                         "purchase_type": "是正常缴还是补缴？"
                     }
                 }
@@ -1307,7 +1306,7 @@
             },
             {
                 "writeto": "custom_gjj_fee_str",
-                "states": ["propose_custom_base_gjj_jishu"],
+                "states": ["propose_custom_gjj_jishu"],
                 "lookfor": [
                     "city_district",
                     "gjj_jishu",
@@ -2051,7 +2050,10 @@
             }
         },
         "flag_custom_gjj": {
-            "writeto": "custom_gjj_flag",
+            "writeto": [
+                ["custom_gjj_flag","OUTCOME"],
+                ["gjj_jishu", "w_gjj_jishu_figure"]
+            ],
             "conditions": [],
             "persist_value": true,
             "req_vars": [
@@ -2073,7 +2075,7 @@
                     "OUTCOME"
                 ],
                 "3,multi":[
-                    ["ss_gjj_jishu_figure",0],
+                    ["ss_gjj_jishu_figure","w_no_gjj_jishu"],
                     "ss_gjj_jishu_figure"
                 ],
                 "4,add":[
@@ -2099,7 +2101,10 @@
             }
         },
         "flag_custom_sb": {
-            "writeto": "custom_sb_flag",
+            "writeto": [
+                ["custom_sb_flag","OUTCOME"],
+                ["shebao_jishu", "w_sb_jishu_figure"]
+            ],
             "conditions": [],
             "persist_value": true,
             "req_vars": [
@@ -2117,7 +2122,7 @@
                     "w_no_sb_jishu"
                 ],
                 "2,multi":[
-                    ["ss_sb_jishu_figure",0],
+                    ["ss_sb_jishu_figure","w_no_sb_jishu"],
                     "ss_sb_jishu_figure"
                 ],
                 "3,add":[
@@ -2160,10 +2165,10 @@
             "steps": {
                 "0,equals": [
                     ["gjj_jishu",0],
-                    "no_gjj_jishu"
+                    "w_no_gjj_jishu"
                 ],
                 "1,multi": [
-                    ["ss_gjj_jishu_figure","no_gjj_jishu"],
+                    ["ss_gjj_jishu_figure","w_no_gjj_jishu"],
                     "w_gjj_jishu_figure"
                 ],
                 "2,add": [
