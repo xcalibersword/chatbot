@@ -113,7 +113,7 @@ def read_json(json_filename):
         return data
     except Exception as e:
         print("Exception opening{}".format(json_filename), e)
-        return ()
+        return {}
         
 
 def check_file_exists(filepath):

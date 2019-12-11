@@ -1,140 +1,257 @@
 # A set of tools to interact with SQL
+import os
+import pymssql as msql # Ignore the error message from this. But it means this is lib incompatible with Python 3.8 and above.
 
-# import pymysql
-# import pymssql
+from datetime import datetime
+from localfiles.details import get_read_details, get_write_details
+write_info = get_write_details()
+read_info = get_read_details()
 
-if __name__ == "__main__":
-    from localfiles.details import get_all_details
-    cached_info = get_all_details()
+SQL_JSON = {
+    "predef_queries":{
+        "init_get_info_query":{
+            "cust_tb_id_col":"淘宝会员名",
+            "writevals":[
+                ("cust_city", "缴费城市"),
+                ("shebao_jishu", "社保基数"),
+                ("gjj_jishu", "公积金基数"),
+                ("shebao_svc_fee", "社保服务费"),
+                ("start_date","计费开始日期"),
+                ("curr_payment_status", "员工缴费状态")
+            ],
+            "table": "基本信息",
+            "conditions": "where 员工缴费状态='正常缴费' or 员工缴费状态='新进'or 员工缴费状态='新进补缴'"
+        },
+        "cust_payment_status_query": {
+            "cust_tb_id_col":"淘宝会员名",
+            "writevals":[
+                ("cust_city", "缴费城市")
+            ],
+            "column":"员工缴费状态", 
+            "table": "基本信息",
+            "conditions": "where 员工缴费状态='正常缴费' or 员工缴费状态='新进'or 员工缴费状态='新进补缴'"
+        },
+        "bill_info_history_query": {
+            "cust_tb_id_col":"淘宝会员名",
+            "writevals":[],
+            "column": "账单月份_文本值",
+            "table": "billinfo_淘宝_主表",
+            "conditions": "where 账单月份_文本值 = '{yyyymm}'"
+        }
+    }
+}
 
-    # DB ACCESS SETTINGS
-    db_host = cached_info["sql_address"]
-    db_port = cached_info["sql_port"]
-    db_user = cached_info["username"]
-    db_pass = cached_info["pass"]
-    db_dbname = "chatbot_schema"
-    db_charset = "utf8mb4"
-    # db_cc = pymysql.cursors.DictCursor
 
-    tablename = "table1"
-
-SQL_ENABLED = False
-NO_WRITE_TO_SQL = False and SQL_ENABLED
+# DB ACCESS SETTINGS
+db_host = write_info["sql_address"]
+db_port = write_info["sql_port"]
+db_user = write_info["username"]
+db_pass = write_info["pass"]
+db_dbname = "Northwind"
+db_tablename = "dbo.Customers"
+db_charset = "utf8mb4"
 
 
-if SQL_ENABLED:
-    stdcon = {}
-    # stdcon = pymysql.connect(host=db_host,
-    #                         user=db_user,
-    #                         password=db_pass,
-    #                         db=db_dbname,
-    #                         charset=db_charset,
-    #                         cursorclass=pymysql.cursors.DictCursor)
+db_read_host = read_info["sql_address"]
+db_read_port = read_info["sql_port"]
+db_read_user = read_info["username"]
+db_read_pass = read_info["pass"]
+db_read_dbname = read_info["dbname"]
+db_read_queries = SQL_JSON["predef_queries"]
+INITIAL_QUERY = db_read_queries["init_get_info_query"]
 
-def hello():
-    pass
-    # connection = pymysql.connect(host=db_host,
-    #                         user=db_user,
-    #                         password=db_pass,
-    #                         db=db_dbname,
-    #                         charset=db_charset,
-    # #                         cursorclass=pymysql.cursors.DictCursor)
-    # try:
-    #     vals = ('我是个鸟儿', '甲城市')
-    #     slots = "(userID, city)"
-    #     # vals = ('testuid', 'abc')
-    #     sqlcmd = "INSERT INTO " + tablename + " " + slots + " VALUES (%s, %s)"
-    #     print("query:",sqlcmd)
-    #     commit_to_con(connection, sqlcmd, vals)
+write_conn = None
+read_conn = None
 
+DEBUG = 1
+SQL_READ_ENABLED = True
+SQL_WRITE_ENABLED = False
+LOCALFILES_PRESENT = ""
+NO_WRITE_TO_SQL = False and SQL_READ_ENABLED
+
+# db_host = "40.68.37.158" #ADVENTURE WORKS
+# db_user = "Sample user"
+# db_pass = "password"
+# db_dbname = "AdventureWorks2012"
+
+NO_INFO = {}
+
+def have_localfiles():
+    global LOCALFILES_PRESENT
+    if LOCALFILES_PRESENT == "":
+        foldername = "localfiles"
+        filename = "details.py"
+        localpath = os.path.join(foldername,filename)
+        LOCALFILES_PRESENT = os.path.exists(localpath)
+    return LOCALFILES_PRESENT
+
+def check_local_files_bad(sql):
+    if have_localfiles():
+        return False
+    else:
+        print("<CB SQL> No details file provided, unable to read/write to Database")
+        return True
+
+def add_to_str(s, thing):
+    return s + thing + ";"
+
+def build_context_info():
+    dt_now = datetime.now()
+    year = dt_now.year
+    month = dt_now.month
+    yearmonth_str = str(year) + str(month)
+    info_dict = {"yyyymm":yearmonth_str}
+    return info_dict
+
+class MSSQL_readwriter:
+    def __init__(self):
+        self.write_conn = None
+        self.connect_to_write()
+
+        self.read_conn = None
+        self.connect_to_read()
+
+    def connect_to_write(self):
+        if SQL_WRITE_ENABLED:
+            print("Trying to connect to Write...")
+            self.write_conn = msql.connect(server=db_host, user=db_user, password=db_pass, database=db_dbname) 
+            print("Connected to Write!")
         
-    #     sql = "SELECT * FROM " + tablename
-    #     sqlval = ()
-    #     fetch_from_con(connection, sql, sqlval)
-    # finally:
-    #     connection.close()
+    def connect_to_read(self):
+        if SQL_READ_ENABLED:
+            print("Trying to connect to Read...")
+            self.read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass) 
+            # read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass, database=db_read_dbname) 
+            print("Connected to Read!")
 
-def fetch_from_con(con, sql, sqlvals):
-    if not SQL_ENABLED:
-        print("<BACKEND WARNING: Reading from SQL has been disabled> Restore it in cb_sql.py.\nCommand not executed:{}".format(sql))
-        return ()
-    with con.cursor() as cursor:
-        cursor.execute(sql, sqlvals)
-        result = cursor.fetchall()
-    print(result)
-    return result
 
-def fetch_all_from_con(tabnam, columns = "*", condition = ""):
-    if 1:
-        print("<BACKEND WARNING: Reading from SQL has been disabled> Restore it in cb_sql.py.\n")
-        return ()
-    # query = "SELECT {} FROM {} {}".format(columns,tabnam,condition)
-    # print("Q:", query)
-    # with stdcon.cursor() as cursor:
-    #     cursor.execute(query,[])
-    #     result = cursor.fetchall()
-    # return result
+    def insert_test(self):
+        connection = self.write_conn
+        try:
+            vals = ('我是个鸟儿', '甲城市')
+            slots = "(userID, city)"
+            # vals = ('testuid', 'abc')
+            sqlcmd = "INSERT INTO " + tablename + " " + slots + " VALUES (%s, %s)"
+            print("query:",sqlcmd)
+            self.commit_to_con(connection, sqlcmd, vals)
+            
+        finally:
+            connection.close()
 
-def commit_to_con(con, comcmd, comvals):
-    if 1:
-        print("<BACKEND WARNING: Writing to SQL has been disabled> Restore it in cb_sql.py.\nCommand not executed:{}".format(comcmd))
-        return
+    def fetch_all_from_con(self, tabnam, columns = "*", condition = ""):
+        query = "SELECT {} FROM {} {}".format(columns,tabnam,condition)
+        if check_local_files_bad(query):
+            return ()
 
-    # try:
-    #     with con.cursor() as cursor:
-    #         cursor.execute(comcmd, comvals)
+        conn = self.read_conn
+        try:
+            with conn.cursor(as_dict=True) as cursor:
+                cursor.execute(query,[])
+                result = cursor.fetchall()
+            return result
+        except Exception as e:
+            print("<FETCH ALL ERROR>", e)
 
-    #     # connection is not autocommit by default. Must commit to save changes.
-    #     con.commit()
-    #     print("Committed to db")
-    # except Exception as e:
-    #     print("EXCEPTION! Rolling back", e)
-    #     print("Failed command:",comcmd)
-    #     con.rollback()
+    def fetch_lines_matching_value(self, tablename, column_name, value):
+        cond = "WHERE " + column_name + "='" + str(value) + "'"
+        f = self.fetch_all_from_con(tablename, condition = cond)
+        return f
 
-def fetch_uid_from_sqltable(userID):
-    # cond = "WHERE userID='" + str(userID) + "'"
-    # f = fetch_all_from_con(tablename, condition = cond)
-    # if len(f) > 0:
-    #     f = f[0]
-    # return f
-    return "a"
+    def fetch_user_info_from_sqltable(self, user_name):
+        iq = INITIAL_QUERY
+        if DEBUG: print("<SQL FETCH INFO> Looking for {}".format(user_name))
+        found, f_dict = self.execute_predef_query(iq, user_name)
 
-def fetch_all_from_sqltable():
-    f = fetch_all_from_con(tablename)
-    if len(f) > 0:
-        f = f[0]
-    return f
+        if not found:
+            return NO_INFO
 
-# Writes to a predefined table
-def write_to_sqltable(info):
-    return
-    # if not SQL_ENABLED:
-    #     return 
-    # connection = stdcon
-    # userids = fetch_all_from_con(tablename, columns = "userID")
-    # userids = map(lambda x: x['userID'],userids)
-    # print("uids",userids)
+        uid_f = f_dict
+        return uid_f
+
+    def fetch_all_from_sqltable(self,tablename):
+        f = self.fetch_all_from_con(tablename)
+        return f
+
+    # Writes to the connection
+    def commit_to_con(self,conn, comcmd, comvals):
+        if NO_WRITE_TO_SQL:
+            print("<BACKEND WARNING: Writing to SQL has been disabled> Restore it in cb_sql.py.\nCommand not executed:{}".format(comcmd))
+            return
+
+        if check_local_files_bad("COMMIT"):
+            return ()
+
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(comcmd, comvals)
+
+            # connection is not autocommit by default. Must commit to save changes.
+            conn.commit()
+            print("Committed to db")
+        except Exception as e:
+            print("EXCEPTION! Rolling back", e)
+            print("Failed command:",comcmd)
+            conn.rollback()
+
+    # Writes to a predefined table
+    def write_to_sqltable(self,users_info):
+        if not SQL_READ_ENABLED:
+            return 
+        connection = self.write_conn
+        userids = self.fetch_all_from_con(tablename, columns = "userID")
+        userids = map(lambda x: x['userID'],userids)
+        print("uids",userids)
+        
+        users = list(users_info.keys())
+        
+        for uk in users:
+            userinfo = users_info[uk].copy()
+            vals = list(userinfo.values())
+            if DEBUG: print("<WRITE TO SQL> uinfo",userinfo)
+            cols = ', '.join(userinfo.keys())
+            qmarks = ', '.join(['%s'] * len(userinfo)) # Generates n * ? separated by commas
+            if uk in userids:
+                delq = "DELETE FROM %s WHERE userID = '%s'" % (tablename, uk)
+                self.commit_to_con(connection, delq, ())
+
+            qry = "INSERT INTO %s (%s) VALUES (%s)" % (tablename, cols, qmarks)
+            self.commit_to_con(connection, qry, vals)
+
+    def execute_predef_query(self, query, uid):
+        context_info = build_context_info()
+        table = query.get("table")
+        tb_id_col = query.get("cust_tb_id_col")
+        write_vals = query.get("writevals")
+        conds = query.get("conditions")
+        conds = conds.format(context_info) # Fill with dynamic values
+        f_rows = self.fetch_all_from_con(table, condition= conds)
+        if DEBUG: print("<PREDEF Q> fetched {} queries".format(str(len(f_rows))))
+
+        count = 0
+        matchfound = False
+        out = {}
+        for row in f_rows:
+            if row.get(tb_id_col,"") == uid:
+                if DEBUG: print("<PREDEF Q> FOUND a match for {}".format(uid), "L00ked through {} rows".format(count))
+                for k, colname in write_vals:
+                    out[k] = row.get(colname, "")
+                
+                matchfound = True
+            count += 1
+
+        if out == {}:
+            if DEBUG: print("<PREDEF Q> NO MATCH for {}".format(uid))
+
+        return (matchfound, out)
+
     
-    # users = list(info.keys())
-    
-    # for uk in users:
-    #     userinfo = info[uk].copy()
-    #     vals = list(userinfo.values())
-    #     print("uinfo",userinfo)
-    #     cols = ', '.join(userinfo.keys())
-    #     qmarks = ', '.join(['%s'] * len(userinfo)) # Generates n * ? separated by commas
-    #     if uk in userids:
-    #         delq = "DELETE FROM %s WHERE userID = '%s'" % (tablename, uk)
-    #         commit_to_con(connection, delq, ())
-
-    #     qry = "INSERT INTO %s (%s) VALUES (%s)" % (tablename, cols, qmarks)
-    #     commit_to_con(connection, qry, vals)
 
 asdf = {"alina":{"userID":"小花朵","city":"北京", "首次":"yes"}}
 
-# if __name__ == "__main__":
-#     r = fetch_all_from_con(tablename)
-#     print(r)
-#     f = fetch_uid_from_sqltable("hoe")
-#     print(f)
+if __name__ == "__main__":
+    sqr = MSSQL_readwriter()
+    tablename = db_tablename
+    uid = "dreampaopao"
+    pq = db_read_queries["init_get_info_query"]
+    pf = sqr.execute_predef_query(pq, uid)
+    print(pf)
