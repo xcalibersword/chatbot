@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 
 # Working file to automatically do things like format json info
 
@@ -15,10 +16,15 @@ def dump_to_json(filename, data, DEBUG = 0):
         print("Finished writing to " + str(filename))
 
 test = {"abc":123,"memem":7461}
+test = Decimal(5.12345)
+print(test, type(test))
+test2 = test.to_integral_value()
+print(test2, type(test2))
+test3 = float(test2)
+print(test3, type(test3))
 
-print(test)
-tt = str(test)
-print(tt)
+# tt = str(test)
+# print(tt)
 
 # json_data = read_json("chatbot_resource.json")
 

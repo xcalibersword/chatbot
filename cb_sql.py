@@ -1,6 +1,8 @@
 # A set of tools to interact with SQL
 import os
 import pymssql as msql # Ignore the error message from this. But it means this is lib incompatible with Python 3.8 and above.
+
+from datetime import datetime
 from localfiles.details import get_read_details, get_write_details
 write_info = get_write_details()
 read_info = get_read_details()
@@ -61,6 +63,7 @@ INITIAL_QUERY = db_read_queries["init_get_info_query"]
 write_conn = None
 read_conn = None
 
+DEBUG = 1
 SQL_READ_ENABLED = True
 SQL_WRITE_ENABLED = False
 LOCALFILES_PRESENT = ""
@@ -92,6 +95,14 @@ def check_local_files_bad(sql):
 def add_to_str(s, thing):
     return s + thing + ";"
 
+def build_context_info():
+    dt_now = datetime.now()
+    year = dt_now.year
+    month = dt_now.month
+    yearmonth_str = str(year) + str(month)
+    info_dict = {"yyyymm":yearmonth_str}
+    return info_dict
+
 class MSSQL_readwriter:
     def __init__(self):
         self.write_conn = None
@@ -102,15 +113,16 @@ class MSSQL_readwriter:
 
     def connect_to_write(self):
         if SQL_WRITE_ENABLED:
+            print("Trying to connect to Write...")
             self.write_conn = msql.connect(server=db_host, user=db_user, password=db_pass, database=db_dbname) 
-            print("Connected!")
+            print("Connected to Write!")
         
     def connect_to_read(self):
         if SQL_READ_ENABLED:
-            print("Trying to connect...")
+            print("Trying to connect to Read...")
             self.read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass) 
             # read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass, database=db_read_dbname) 
-            print("Connected!")
+            print("Connected to Read!")
 
 
     def insert_test(self):
@@ -146,8 +158,9 @@ class MSSQL_readwriter:
         return f
 
     def fetch_user_info_from_sqltable(self, user_name):
-        q = INITIAL_QUERY
-        found, f_dict = self.execute_predef_query(q, user_name)
+        iq = INITIAL_QUERY
+        if DEBUG: print("<SQL FETCH INFO> Looking for {}".format(user_name))
+        found, f_dict = self.execute_predef_query(iq, user_name)
 
         if not found:
             return NO_INFO
@@ -194,7 +207,7 @@ class MSSQL_readwriter:
         for uk in users:
             userinfo = users_info[uk].copy()
             vals = list(userinfo.values())
-            print("<WRITE TO SQL> uinfo",userinfo)
+            if DEBUG: print("<WRITE TO SQL> uinfo",userinfo)
             cols = ', '.join(userinfo.keys())
             qmarks = ', '.join(['%s'] * len(userinfo)) # Generates n * ? separated by commas
             if uk in userids:
@@ -205,22 +218,21 @@ class MSSQL_readwriter:
             self.commit_to_con(connection, qry, vals)
 
     def execute_predef_query(self, query, uid):
-        context_info = {"yyyymm":"201912"}
+        context_info = build_context_info()
         table = query.get("table")
         tb_id_col = query.get("cust_tb_id_col")
         write_vals = query.get("writevals")
         conds = query.get("conditions")
         conds = conds.format(context_info) # Fill with dynamic values
         f_rows = self.fetch_all_from_con(table, condition= conds)
-        print("<PREDEF Q> fetched {} queries".format(str(len(f_rows))))
+        if DEBUG: print("<PREDEF Q> fetched {} queries".format(str(len(f_rows))))
 
         count = 0
         matchfound = False
         out = {}
         for row in f_rows:
             if row.get(tb_id_col,"") == uid:
-                print("<PREDEF Q> FOUND a match for {}".format(uid))
-                print("L00ked through {} rows".format(count))
+                if DEBUG: print("<PREDEF Q> FOUND a match for {}".format(uid), "L00ked through {} rows".format(count))
                 for k, colname in write_vals:
                     out[k] = row.get(colname, "")
                 
@@ -228,7 +240,7 @@ class MSSQL_readwriter:
             count += 1
 
         if out == {}:
-            print("<PREDEF Q> NO MATCH for {}".format(uid))
+            if DEBUG: print("<PREDEF Q> NO MATCH for {}".format(uid))
 
         return (matchfound, out)
 

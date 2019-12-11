@@ -2,13 +2,15 @@
 
 import os
 import threading
+from decimal import Decimal
 from cbsv import read_json, dump_to_json, check_file_exists
 from cb_sql import MSSQL_readwriter
 
 
 dbfolder = "userdata"
 DEBUG = 0
-JSON_DATABASE = 0
+JSON_DATABASE = 1
+WRITE_TO_JSON = 1
 
 class DatabaseRunner():
     def __init__(self):
@@ -17,11 +19,10 @@ class DatabaseRunner():
         
         if JSON_DATABASE:
             self.database = self._read_json_db()
-            self.SQLrw = None
         else:
             self.database = {}
-            self.SQLrw = MSSQL_readwriter()
 
+        self.SQLrw = MSSQL_readwriter()
 
     def _read_json_db(self):
         def _create_json_db():
@@ -54,7 +55,8 @@ class DatabaseRunner():
                 
                 mod[new_key] = outval
             else:
-                mod[d_name] = val
+                mod[d_name] = decimal_obj_to_float(val)
+        print("<MODIFIED FETCH>",mod)
         return mod
               
     def fetch_user_info(self, user):
@@ -68,15 +70,19 @@ class DatabaseRunner():
             fetch = self.SQLrw.fetch_user_info_from_sqltable(user)
             if isinstance(fetch, dict):
                 ndic = self.modify_db_fetched(fetch)
+                have_existing_entry = True
             else:
                 ndic = {}
+                have_existing_entry = False
             self.database[user] = ndic
+            return have_existing_entry
 
         if not user in self.database:
-            if JSON_DATABASE:
-                _fetch_from_JSON(user)
-            else:
-                _fetch_from_SQL(user)
+            success = _fetch_from_SQL(user)
+            if not success:
+                if JSON_DATABASE:
+                    _fetch_from_JSON(user)
+            
         return self.database[user]
 
     def trigger_backup(self):
@@ -100,14 +106,14 @@ class DatabaseRunner():
         self.trigger_backup()
 
     def _true_write_to_db(self):
-        def destroy_empty_records():
+        def destroy_local_empty_records():
             for user in list(self.database.keys()):
                 if self.database[user] == {}:
                     self.database.pop(user)
 
         if DEBUG: print("Writing userinfo to database")
-        destroy_empty_records()
-        if JSON_DATABASE:
+        destroy_local_empty_records()
+        if WRITE_TO_JSON:
             dump_to_json(self.dbfilepath, self.database)
         else:
             self.SQLrw.write_to_sqltable(self.database)
