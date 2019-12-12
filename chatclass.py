@@ -445,7 +445,6 @@ class ChatManager:
 
     # Clears up values based on state information
     def _post_process(self, uds):
-        pd = {}
         sip = uds.get_sip()
         clearlist = sip.get_clears()
         self.push_detail_to_clear(clearlist)
@@ -457,6 +456,7 @@ class ChatManager:
         self.ztracker.update_zones_from_dm(self.dmanager)
         return 
 
+    # Takes a list of details and asks dmanager to clear them
     def push_detail_to_clear(self, d):
         self.dmanager.clear_details(d)
         return 
@@ -611,8 +611,6 @@ class DetailManager:
 
     def _set_chatID(self, chatID):
         self.chatID = chatID
-        # prev_info = self.dbrunner.fetch_user_info(chatID)
-        # self.chat_prov_info.update(prev_info)
 
     # Adds a zone dict to the supplied dict
     # E.g. "zones":{"city":"shanghai"}
@@ -816,7 +814,10 @@ class DetailManager:
                 entries[target] = val
             elif ss_default_flag in secondslot:
                 defval = get_value(secondslot[ss_default_flag], curr_info)
-                entries[target] = defval
+                if defval == "":
+                    continue
+                else:
+                    entries[target] = defval
         
         self.chat_prov_info.update(entries)
         return 
@@ -868,7 +869,7 @@ class ReplyGenerator:
         return reply
 
     def _enhance_info(self,curr_state,info):
-        RF_DEBUG = 0 or SUPER_DEBUG
+        RF_DEBUG = 0 or SUPER_DEBUG # DEBUG FLAG
         cskey = curr_state["key"]
         rep_ext = {}
         enhanced = info.copy()
