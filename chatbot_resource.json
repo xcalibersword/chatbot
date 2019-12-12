@@ -311,13 +311,12 @@
             ]
         },
         "query_phone": {
-            "key": "info phone number NEED TO UPATE",
+            "key": "inform_phone_number",
             "default_set": true,
             "humanify": true,
             "default_target": "SAME_STATE",
             "replies": [
-                "亲亲在白天上班时间联系哦：15221004815",
-                "上海电话：亲可以在白天上班时间电话咨询哦：021-64360181转602"
+                "亲亲在白天上班时间联系哦：4000801807"
             ]
         },
         "query_pregnant": {
@@ -443,7 +442,7 @@
             ]
         },
         "complicated": {
-            "key": "404 too complicated",
+            "key": "complicated",
             "default_set": true,
             "default_target": "complication_crossroad",
             "replies": []
@@ -621,6 +620,7 @@
             "gated": false,
             "thread": "EXIT",
             "humanify": false,
+            "deactivate_state":true,
             "req_info": "",
             "replies": [
                 "亲 我是值班客服 看不到系统数据 您白天上班时间联系我们吧 谢谢亲"
@@ -762,7 +762,7 @@
             ]
         },
         "offer_product_links": {
-            "key": "282 offer_product_links",
+            "key": "offer_product_links",
             "gated": false,
             "thread": "t_presale",
             "req_info": [],
@@ -1187,7 +1187,7 @@
                 ],
                 "if_value": {
                     "chosen_service": {
-                        "社保":"社保断了可能会影响买房的",
+                        "社保":"这个小店不太清楚哦，小店只负责代缴哈",
                         "公积金":"断公积金主要是影响贷款"
                     }
                 }
