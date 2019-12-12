@@ -211,7 +211,14 @@ def collect_texts(collector, new):
     # Because reversed message order, new comes before old
     return  new + collector 
 
-def get_customer_id(self_id,rawText):
+def get_pure_customer_id(dtp, line):
+    no_date = re.sub(dtp,"",line)
+    delimited = no_date.split(" ")
+    cust_id = delimited[0]
+    print("Got customer ID: {}".format(cust_id))
+    return cust_id
+
+def get_customer_id_from_history(self_id,rawText):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     custid = ""
     for sent in rawText:
@@ -220,7 +227,8 @@ def get_customer_id(self_id,rawText):
                 # Contains Self ID
                 continue
             else:
-                custid = custid = re.sub(date_time_pattern,"",sent)
+     
+                custid = get_pure_customer_id(date_time_pattern, sent)
                 break
     
     if custid == "": print("<GET CUSTOMER ID> Cannot find Customer ID")
@@ -267,7 +275,7 @@ def processText(cW,rawText):
                     self_last_sent = curr_text[:-2] # Remove the 已读/未读
             else:
                 # Customer
-                custid = re.sub(date_time_pattern,"",sent)
+                custid = get_pure_customer_id(date_time_pattern, sent)
                 if querytime == "": querytime = re.search(date_time_pattern,sent).group(0)
                 query = collect_texts(query, curr_text)
 
@@ -311,7 +319,7 @@ def check_new_message(cW):
 def read_history(cW,bot):
     print('<HISTORY> Reading chat history')
     history = mine_chat_text(cW)
-    cust_QN_ID = get_customer_id(cW.userID,history)
+    cust_QN_ID = get_customer_id_from_history(cW.userID,history)
     mhist = get_only_messages(history,cW)
     bot.parse_transferred_messages(cust_QN_ID, mhist)
     return 
