@@ -270,9 +270,11 @@ class ChatManager:
             if DEBUG: print("<RTM LOOP> Repeats", rc,"Curr SIP", sip.toString(), "True SIP", true_sip.toString(),"Zone Overwrite",zone_overwrite,"Pass gate:",pg)
 
             # Breaks
-            if not true_sip.is_trans_state() or state_bef == state_aft:
-                if not true_sip.is_trans_state() and DEBUG: print("<RTM LOOP> Not trans state, breaking")
-                if state_bef == state_aft and DEBUG: print("<RTM LOOP> Same state before and after, breaking")
+            c1 = (not true_sip.is_trans_state() and not sip.is_same_state()) 
+            c2 = state_bef == state_aft
+            if c1 or c2:
+                if c1 and DEBUG: print("<RTM LOOP> Not trans state, breaking")
+                if c2 and DEBUG: print("<RTM LOOP> Same state before and after, breaking")
                 break
 
         # Calls calculator. Crunch numbers for replying
@@ -834,6 +836,7 @@ class DetailManager:
         out = {}
         out.update(self.chat_prov_info)
         self.vault.add_vault_info(out)
+        print("<FETCH INFO> CTX SLOTS", out.get("ctx_slots","")) #DEBUG
         return out
 
     def _check_db_init(self):
@@ -938,10 +941,15 @@ class ReplyGenerator:
                             if_val_tree_enh(t_info, subtree, tkey)
 
                     if not matched:
-                        if RF_DEBUG:print ("<ENHANCE IF VAL> No match for ", info_val_value,"in cases:",case_keys)
+                        if RF_DEBUG: print("<ENHANCE IF VAL> No match for",info_val_value,"in cases:",case_keys)
+                        
                         default_branch = cases.get("DEFAULT",False)
-                        if default_branch:
+
+                        # Check this way because DEFAULT can be blank
+                        if isinstance(default_branch,str):
+                            if RF_DEBUG: print("<ENHANCE IF VAL> Returning default value")
                             return if_val_tree_enh(t_info, default_branch, tkey)
+                        raise Exception("<ENHANCE IF VAL> No value to write to {}".format(tkey))
                     else:
                         return
 

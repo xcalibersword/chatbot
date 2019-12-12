@@ -91,9 +91,19 @@
         {
             "writeto": "ss_jishu_amount",
             "search_tree":{
-                "ctx_slots.jishu_amt":{
-                    "ctx_min":[["city_info",["base_gjj_jishu"]]],
-                    "ctx_max":[["city_info",["base_gjj_jishu_max_limit"]]]
+                "chosen_service":{
+                    "社保":{
+                        "ctx_slots.jishu_amt":{
+                            "ctx_min":[["city_info",["base_sb_jishu"]]],
+                            "ctx_max":[["city_info",["base_sb_jishu_max_limit"]]]
+                        }
+                    },
+                    "公积金":{
+                        "ctx_slots.jishu_amt":{
+                            "ctx_min":[["city_info",["base_gjj_jishu"]]],
+                            "ctx_max":[["city_info",["base_gjj_jishu_max_limit"]]]
+                        }
+                    }
                 },
                 "given_amount":{
                     "_ANY":["given_amount"]

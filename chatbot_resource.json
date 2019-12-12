@@ -1342,6 +1342,21 @@
                 }
             },
             {
+                "writeto": "minmax_fee_ext", 
+                "states": ["propose_custom_sb_jishu","propose_custom_gjj_jishu"],
+                "lookfor": [
+                    ["ctx_slots",["jishu_amt"]]
+                ],
+                "if_value":{
+                    "jishu_amt":{
+                        "ctx_max": "最高的",
+                        "ctx_min": "最低的",
+                        "DEFAULT": ""
+                    }
+                }
+
+            },
+            {
                 "writeto": "custom_gjj_fee_str",
                 "states": ["propose_custom_gjj_jishu"],
                 "lookfor": [
@@ -1349,11 +1364,12 @@
                     "gjj_jishu",
                     "w_custom_gjj_fee",
                     "custom_gjj_flag",
+                    ["rep_ext", "minmax_fee_ext"],
                     ["city_info",["base_gjj_jishu","base_gjj_jishu_max_limit"]]
                 ],
                 "if_value": {
                     "custom_gjj_flag":{
-                        "1":"亲 公积金按照{gjj_jishu}基数的话，应缴{w_custom_gjj_fee}元 不包括服务费，开户费哦",
+                        "1":"亲 公积金按照{rep_ext[minmax_fee_ext]}{gjj_jishu}基数，应缴{w_custom_gjj_fee}元 不包括服务费，开户费哦",
                         "0":"亲 {city_info[base_gjj_jishu]}是{city_district}公积金的最低缴纳基数了哦",
                         "2":"亲 {city_info[base_gjj_jishu_max_limit]}是{city_district}公积金的最高缴纳基数了哦"
                     }
@@ -1367,11 +1383,12 @@
                     "shebao_jishu",
                     "w_custom_sb_fee",
                     "custom_sb_flag",
+                    ["rep_ext", "minmax_fee_ext"],
                     ["city_info",["base_sb_jishu","base_sb_jishu_max_limit"]]
                 ],
                 "if_value": {
                     "custom_sb_flag":{
-                        "1":"亲 社保按照{shebao_jishu}基数的话，应缴{w_custom_sb_fee}元 不包括服务费，开户费哦",
+                        "1":"亲 社保按照{rep_ext[minmax_fee_ext]}{shebao_jishu}基数，应缴{w_custom_sb_fee}元 不包括服务费，开户费哦",
                         "0":"亲 {city_info[base_sb_jishu]}是{city_district}社保的最低缴纳基数了哦",
                         "2":"亲 {city_info[base_sb_jishu_max_limit]}是{city_district}社保的最高缴纳基数了哦"
                     }
