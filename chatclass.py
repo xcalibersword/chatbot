@@ -671,8 +671,11 @@ class DetailManager:
     # Info without vault
     def get_user_info(self):
         not_user_info = [
-            "requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", "flag_sb_gjj", 'w_shebao_payment', 'shebao_jiaona_total', 
-            'target_month', 'given_amount','city_info', "ss_purchase_cmi_flag", "exclude_svc_fee", "w_fee_type_flag", "w_normal_cmi_flag"
+            "requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", 
+            "flag_sb_gjj", 'w_shebao_payment', 'shebao_jiaona_total', 
+            'target_month', 'given_amount','city_info', "ss_purchase_cmi_flag",
+             "exclude_svc_fee", "w_fee_type_flag", "w_normal_cmi_flag",
+             "bill_settled_flag"
         ] #TODO find a proper way to store this info in JSON
         dic = copy.deepcopy(self.chat_prov_info)
         for i in not_user_info:
@@ -945,10 +948,10 @@ class ReplyGenerator:
                     if not matched:
                         if RF_DEBUG: print("<ENHANCE IF VAL> No match for",info_val_value,"in cases:",case_keys)
                         
-                        default_branch = cases.get("DEFAULT",False)
+                        default_branch = cases.get("DEFAULT", None)
 
                         # Check this way because DEFAULT can be blank
-                        if not isinstance(default_branch,bool):
+                        if not default_branch == None:
                             if RF_DEBUG: print("<ENHANCE IF VAL> Returning default value")
                             return if_val_tree_enh(t_info, default_branch, tkey)
                         raise Exception("<ENHANCE IF VAL> No value to write to {}".format(tkey))
