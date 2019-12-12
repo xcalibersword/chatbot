@@ -1349,8 +1349,8 @@
                 ],
                 "if_value":{
                     "jishu_amt":{
-                        "ctx_max": "最高的",
-                        "ctx_min": "最低的",
+                        "ctx_max": "最高",
+                        "ctx_min": "最低",
                         "DEFAULT": ""
                     }
                 }

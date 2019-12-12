@@ -398,7 +398,9 @@ class InfoParser():
         if not self.ctxsk in d:
             d[self.ctxsk] = {}
         ctx_d = d[self.ctxsk]
+        print("CTX PARSE before", ctx_d)
         self._parse_function(text,ctx_d,self.ctx_slots)
+        print("CTX PARSE after", ctx_d)
         return
 
 

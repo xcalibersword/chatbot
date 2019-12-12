@@ -1,10 +1,12 @@
 # All Chat related Classes
 
+import cbsv
+import copy
+import os
 import re
 import random
-import cbsv
 import string
-import os
+
 import chatbot_be
 from datetime import datetime
 from chatbot_supp import *
@@ -672,7 +674,7 @@ class DetailManager:
             "requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", "flag_sb_gjj", 'w_shebao_payment', 'shebao_jiaona_total', 
             'target_month', 'given_amount','city_info', "ss_purchase_cmi_flag", "exclude_svc_fee", "w_fee_type_flag", "w_normal_cmi_flag"
         ] #TODO find a proper way to store this info in JSON
-        dic = self.chat_prov_info.deepcopy()
+        dic = copy.deepcopy(self.chat_prov_info)
         for i in not_user_info:
             if i in dic: 
                 dic.pop(i)
@@ -796,7 +798,7 @@ class DetailManager:
                 if SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)
                 return (False, "")
 
-            tree_info = info.deepcopy()
+            tree_info = copy.deepcopy(info)
             if multi:
                 # Multiple slot
                 collect = []
@@ -882,7 +884,7 @@ class ReplyGenerator:
         RF_DEBUG = 1 or SUPER_DEBUG # DEBUG FLAG
         cskey = curr_state["key"]
         rep_ext = {}
-        enhanced = info.deepcopy()
+        enhanced = copy.deepcopy(info)
 
         formatDB = self.formatDB["msg_formats"]
 
@@ -946,7 +948,7 @@ class ReplyGenerator:
                         default_branch = cases.get("DEFAULT",False)
 
                         # Check this way because DEFAULT can be blank
-                        if isinstance(default_branch,str):
+                        if not isinstance(default_branch,bool):
                             if RF_DEBUG: print("<ENHANCE IF VAL> Returning default value")
                             return if_val_tree_enh(t_info, default_branch, tkey)
                         raise Exception("<ENHANCE IF VAL> No value to write to {}".format(tkey))
