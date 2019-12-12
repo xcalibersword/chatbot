@@ -670,17 +670,24 @@ class DetailManager:
 
     # Info without vault
     def get_user_info(self):
+        relevant_user_info = {
+            "city", "city_district", "要社保", "要公积金", 
+            "首次","shebao_jishu", "gjj_jishu", 
+            "svc_fee_total", "shebao_basic_total",
+            "made_purchase"
+        }
         not_user_info = [
             "requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", 
             "flag_sb_gjj", 'w_shebao_payment', 'shebao_jiaona_total', 
             'target_month', 'given_amount','city_info', "ss_purchase_cmi_flag",
              "exclude_svc_fee", "w_fee_type_flag", "w_normal_cmi_flag",
-             "bill_settled_flag"
+             "bill_settled_flag", "w_spec_component_value", "ss_jishu_amount", 
         ] #TODO find a proper way to store this info in JSON
-        dic = copy.deepcopy(self.chat_prov_info)
-        for i in not_user_info:
-            if i in dic: 
-                dic.pop(i)
+        dic = {}
+        chat_info = self.chat_prov_info
+        for key, contents in chat_info.items():
+            if key in relevant_user_info: 
+                dic[key] = contents
         return dic
     
     def _update_server_state_info(self):
