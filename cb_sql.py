@@ -37,6 +37,18 @@ SQL_JSON = {
             "column": "账单月份_文本值",
             "table": "billinfo_淘宝_主表",
             "conditions": "where 账单月份_文本值 = '{yyyymm}'"
+        },
+        "yuangongxinxi_query": {
+            "cust_tb_id_col":"淘宝ID",
+            "writevals":[
+                ("cust_city", "缴费城市"),
+                ("shebao_jishu", "社保基数"),
+                ("gjj_jishu", "公积金基数"),
+                ("shebao_svc_fee", "社保服务费"),
+            ],
+            "column":"员工缴费状态", 
+            "table": "员工信息",
+            "conditions": "where 员工缴费状态='正常缴费' or 员工缴费状态='新进'or 员工缴费状态='新进补缴'"
         }
     }
 }
