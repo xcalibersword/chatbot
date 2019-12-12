@@ -2,7 +2,7 @@ import cbsv
 import re
 import chatbot_utils as cu
 
-SUPER_DEBUG = 0
+SUPER_DEBUG = 1
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
@@ -30,6 +30,7 @@ class SIP:
         self.state_slots = self.state_obj["req_info"] if self.gated_bool else []
         self.state_clears = self.state_obj.get("clear_info",[])
         self.pending_state = ""
+        self.deactivate = self.state_obj.get("deactivate_state", False)
 
     def set_actions(self, action, pending_act = None):
         self.action = action
@@ -71,8 +72,8 @@ class SIP:
     def is_trans_state(self):
         return self.transition_state
 
-    def is_go_back(self):
-        return self.go_back == True
+    def is_deactivate(self):
+        return self.deactivate
 
     def toString(self):
         return ("State key",self.state_key,"cs",self.state_change, "slots",self.state_slots)
@@ -396,8 +397,8 @@ class InfoParser():
     def _contextual_parse(self, text, d):
         if not self.ctxsk in d:
             d[self.ctxsk] = {}
-        if DEBUG: print("CTX",self.ctx_slots)
-        self._parse_function(text,d[self.ctxsk],self.ctx_slots)
+        ctx_d = d[self.ctxsk]
+        self._parse_function(text,ctx_d,self.ctx_slots)
         return
 
 
@@ -537,7 +538,7 @@ class Calculator():
     def __init__(self, formulae):
         self.formula_db = formulae
         self.DEBUG = 1
-        self.SUPER_DEBUG = 0
+        self.SUPER_DEBUG = 1
 
     def calculate(self, curr_state, curr_info):
         topup, temp = self._do_all_calculations(curr_state, curr_info)

@@ -563,7 +563,7 @@
     },
     "states": {
         "init": {
-            "key": "201 state_init",
+            "key": "init",
             "gated": false,
             "thread": "BASE",
             "humanify": true,
@@ -571,12 +571,14 @@
             "replies": []
         },
         "initplus": {
-            "key": "202 state_init++",
+            "key": "initplus",
             "gated": false,
             "thread": "BASE",
             "humanify":true,
             "req_info": "",
-            "replies": ["亲 还有别的要问吗？","亲 有其他问题吗？"]
+            "replies": [
+                "{rep_ext[initplus_reply]}"
+            ]
         },
         "city_crossroad":{
             "key": "city_crossroad",
@@ -828,6 +830,8 @@
             "gated": false,
             "thread": "NONE",
             "req_info": "",
+            "deactivate_state": true,
+            "calcs":["flag_bill_settled"],
             "replies": [
                 "好的，谢谢光临 😘"
             ]
@@ -1106,6 +1110,7 @@
             "thread": "t_pai",
             "terminal_state": true,
             "req_info": [["city","city"]],
+            "calcs":["flag_bill_settled"],
             "replies": ["{rep_ext[finish_payment_info]}"]
         }
     },
@@ -1776,6 +1781,19 @@
                         "-1":"{rep_ext[component_val_correction]}"
                     }
                 }
+            },
+            {
+                "writeto":"initplus_reply",
+                "states": ["initplus"],
+                "lookfor":[
+                    "bill_settled_flag"
+                ],
+                "if_value":{
+                    "bill_settled_flag":{
+                        "1":"",
+                        "DEFAULT":["亲 还有别的要问吗？","亲 有其他问题吗？"]
+                    }
+                }
             }
         ]
     },
@@ -2335,6 +2353,15 @@
                     ["OUTCOME","w_no_given_amt"],
                     "OUTCOME"
                 ]
+            }
+        },
+        "flag_bill_settled":{
+            "writeto":"bill_settled_flag",
+            "persist_value": true,
+            "conditions": [],
+            "req_vars":[],
+            "steps":{
+                "1,add":[[1,0],"OUTCOME"]
             }
         }
     },

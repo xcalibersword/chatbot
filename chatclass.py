@@ -209,6 +209,7 @@ class ChatManager:
         self.chat = chat
         self.chatID = self.chat.getID()
         self.samestateflag = False
+        self.active = True
 
         # Helper classes
         self.calculator = calc
@@ -230,12 +231,21 @@ class ChatManager:
 
     def _get_zones(self):
         return self.ztracker.get_zones()
+
+    def deactivate(self):
+        self.active = False
+
+    def is_inactive(self):
+        return not self.active
     
     ############### PRIMARY METHOD ###############
     # Takes in a message, returns (text reply, intent breakdown, current info)
     def respond_to_message(self, msg):
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&") # For clarity in terminal
-     
+        if self.is_inactive():
+            no_reply = ""
+            return (no_reply, {}, {})
+
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&") # For clarity in terminal     
         firstpass = True
         for rc in range(0, 7):
             # Parse the message and get an understanding
@@ -259,12 +269,10 @@ class ChatManager:
 
             if DEBUG: print("<RTM LOOP> Repeats", rc,"Curr SIP", sip.toString(), "True SIP", true_sip.toString(),"Zone Overwrite",zone_overwrite,"Pass gate:",pg)
 
-            if not true_sip.is_trans_state() and not sip.is_same_state():
-                if DEBUG: print("<RTM LOOP> Not trans state or same_state, breaking")
-                break
-                
-            if state_bef == state_aft:
-                if DEBUG: print("<RTM LOOP> Same state before and after, breaking")
+            # Breaks
+            if not true_sip.is_trans_state() or state_bef == state_aft:
+                if not true_sip.is_trans_state() and DEBUG: print("<RTM LOOP> Not trans state, breaking")
+                if state_bef == state_aft and DEBUG: print("<RTM LOOP> Same state before and after, breaking")
                 break
 
         # Calls calculator. Crunch numbers for replying
@@ -313,6 +321,8 @@ class ChatManager:
     # Results in change in chat details and change in state
     # Returns boolean indicating whether or not the state was overwritten.
     def react_to_sip(self, sip):
+        if sip.is_deactivate():
+            self.deactivate()
 
         if sip.is_same_state():
             if DEBUG: print("<REACTION> SAME STATE FLAGGED")
@@ -401,9 +411,7 @@ class ChatManager:
 
         curr_state = self._get_curr_state()
         if DEBUG: print("<Fetch Reply> Current State",curr_state.get("key","unknown"))
-        # samestateflag = self.statethreader.state_never_change()
         ssflag = self.samestateflag
-        # print("curr_state", curr_state['key'], "samestate",samestateflag)
         return self.replygen.get_reply(curr_state, intent, ssflag, info)
 
     # Asks dmanager for info
@@ -868,7 +876,7 @@ class ReplyGenerator:
         return reply
 
     def _enhance_info(self,curr_state,info):
-        RF_DEBUG = 0 or SUPER_DEBUG # DEBUG FLAG
+        RF_DEBUG = 1 or SUPER_DEBUG # DEBUG FLAG
         cskey = curr_state["key"]
         rep_ext = {}
         enhanced = info.copy()
