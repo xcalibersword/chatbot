@@ -89,19 +89,7 @@
 
         },
         {
-            "writeto": "ss_sb_jishu_figure",
-            "search_tree":{
-                "ctx_slots.jishu_amt":{
-                    "ctx_min":[["city_info",["sb_jishu"]]],
-                    "ctx_max":[["city_info",["sb_jishu_max_limit"]]]
-                },
-                "given_amount":{
-                    "_ANY":["given_amount"]
-                }
-            }
-        },
-        {
-            "writeto": "ss_gjj_jishu_figure",
+            "writeto": "ss_jishu_amount",
             "search_tree":{
                 "ctx_slots.jishu_amt":{
                     "ctx_min":[["city_info",["base_gjj_jishu"]]],
@@ -150,10 +138,10 @@
         "contextual_slots":[
             ["target_month","ctx_month_slot"],
             ["date","ctx_day_slot"],
+            ["jishu_amt", "ctx_minmax_slot"],
             ["ask_keyi","keyi_slot"],
             ["say_thanks","thanks_slot"],
             ["yourenma","yourenma_slot"],
-            ["jishu_amt", "ctx_minmax_slot"],
             ["xufei","xufei_slot"]
         ],
         "slots": {
@@ -364,12 +352,10 @@
             },
             "ctx_minmax_slot":{
                 "ctx_min":[
-                    "最低",
-                    "最划算"
+                    "(?<!不)(.*)最(低|划算)"
                 ],
                 "ctx_max": [
-                    "最高",
-                    "高额"
+                    "(?<!不)(.*)(最高|高额)"
                 ]
             }
         }

@@ -535,8 +535,7 @@ class PolicyKeeper:
 
     def _create_state_obj(self, sk):
         if not sk in self.STATE_DICT:
-            print("<PolicyKeeper> Illegal state:",sk)
-            return SIP.same_state().get_state_key() # Bad.
+            raise Exception("<PolicyKeeper> Illegal state:{}".format(sk))
         state_obj = self.STATE_DICT[sk]
         return state_obj
 
