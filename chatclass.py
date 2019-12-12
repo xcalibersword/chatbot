@@ -11,7 +11,7 @@ from chatbot_supp import *
 from chatbot_utils import dive_for_values
 
 
-SUPER_DEBUG = 0
+SUPER_DEBUG = 1
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
@@ -672,7 +672,7 @@ class DetailManager:
             "requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", "flag_sb_gjj", 'w_shebao_payment', 'shebao_jiaona_total', 
             'target_month', 'given_amount','city_info', "ss_purchase_cmi_flag", "exclude_svc_fee", "w_fee_type_flag", "w_normal_cmi_flag"
         ] #TODO find a proper way to store this info in JSON
-        dic = self.chat_prov_info.copy()
+        dic = self.chat_prov_info.deepcopy()
         for i in not_user_info:
             if i in dic: 
                 dic.pop(i)
@@ -796,7 +796,7 @@ class DetailManager:
                 if SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)
                 return (False, "")
 
-            tree_info = info.copy()
+            tree_info = info.deepcopy()
             if multi:
                 # Multiple slot
                 collect = []
@@ -882,7 +882,7 @@ class ReplyGenerator:
         RF_DEBUG = 1 or SUPER_DEBUG # DEBUG FLAG
         cskey = curr_state["key"]
         rep_ext = {}
-        enhanced = info.copy()
+        enhanced = info.deepcopy()
 
         formatDB = self.formatDB["msg_formats"]
 
