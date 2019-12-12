@@ -39,7 +39,7 @@ def _dive(c_list, c_dir, failzero = False, DEBUG = 1):
                     return out 
             else:
                 nextdir = c_dir[nextdirname]
-                out.update(_dive(nestlist,nextdir))
+                out.update(_dive(nestlist,nextdir,failzero,DEBUG))
         else:
             if valname in c_dir:
                 rawval = c_dir[valname]
