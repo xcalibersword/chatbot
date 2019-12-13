@@ -182,7 +182,7 @@
         "ask_turnaround_time":{
             "key": "ask_turnaround_time",
             "default_set": true,
-            "default_target": "inform_turnaround_time",
+            "default_target": "turnaround_time_crossroad",
             "replies": []
         },  
         "query_break":{
@@ -669,6 +669,14 @@
                 "{rep_ext[how_much_reply]}"
             ]
         },
+        "turnaround_time_crossroad":{
+            "key": "turnaround_time_crossroad",
+            "gated": true,
+            "thread": "t_turnaround",
+            "terminal_state": false,
+            "req_info": [["chosen_service", "DEFAULT_SV"]],
+            "replies": []
+        },
         "ask_if_issue": {
             "key": "251 whats wrong",
             "gated": false,
@@ -1060,16 +1068,6 @@
             "req_info": [["city","city"]],
             "replies": [
                 "亲，{rep_ext[topup_gjj_info]}"
-            ]
-        },
-        "inform_turnaround_time":{
-            "key": "inform_turnaround_time",
-            "gated": true,
-            "thread": "t_turnaround",
-            "terminal_state": true,
-            "req_info": [["city","city"]],
-            "replies": [
-                "亲，{rep_ext[turnaround_time_info]}"
             ]
         },
         "inform_weixin": {

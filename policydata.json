@@ -32,6 +32,12 @@
                 "still_can": "city_crossroad",
                 "too_late": "inform_pay_deadline"
             }
+        ],
+        "turnaround_time_crossroad": [
+            "chosen_service",{
+                "社保":"inform_when_check_shebao",
+                "DEFAULT": "inform_when_check_shebao"
+            }
         ]
     },
     "class_policy_rules":{
