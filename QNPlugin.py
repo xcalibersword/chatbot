@@ -196,7 +196,7 @@ def getRawText():
     processed_text_list.reverse()
     return processed_text_list
 
-# Checks if last sent message matches with bot generated message
+# Check_counts if last sent message matches with bot generated message
 def check_if_edited(self_last_sent, query, custID):
     if not self_last_sent == GLOBAL["self_last_sent_msg"]:
         GLOBAL["self_last_sent_msg"] = self_last_sent
@@ -378,10 +378,25 @@ def select_chat_input_box(cW):
             
     return
 
+def is_new_chat(cid):
+    return not (cid == GLOBAL["last_cust_id"])
+
 def main(cW,bot,SeekImagePath,mode,cycle_delay): 
-    checks = 0
+    check_counts = 0
+    GLOBAL["last_cust_id"] = ""
     while True:
         query, custID = check_new_message(cW)
+
+        no_history = is_new_chat(custID) # Mainly to trigger history check on first chat
+
+        if check_counts >= GLOBAL["new_chat_check_interval"]:
+            newchat = SeekNewCustomerChat(SeekImagePath)
+            check_counts = 0
+
+        if no_history or newchat:
+            read_history(cW,bot)
+            GLOBAL["last_cust_id"] = custID
+            GLOBAL["got_new_message"] = True
         
         if GLOBAL["got_new_message"]:
             reply_template = bot.get_bot_reply(custID,query) # Gets a tuple of 3 things
@@ -393,15 +408,7 @@ def main(cW,bot,SeekImagePath,mode,cycle_delay):
             else:
                 send_message_QN(reply,cW,mode)
                 
-        elif checks >= GLOBAL["new_chat_check_interval"]:
-            newchat = SeekNewCustomerChat(SeekImagePath)
-            checks = 0
-            if newchat:
-                read_history(cW,bot)
-                GLOBAL["got_new_message"] = True
-                continue
-
-        checks += 1
+        check_counts += 1
         
         select_chat_input_box(cW) # This only does something if mode is "human control"
 
