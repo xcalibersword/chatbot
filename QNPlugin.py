@@ -243,7 +243,7 @@ def get_customer_id_from_history(self_id,rawText):
 def remove_QN_fluff(txt):
     regex_fluff_list = ["该用户由(.*)客服转交给(.*)客服"]
     fluff_list = [(True,"新消息"),(False,"以上为历史消息")]
-    out = txt.copy()
+    out = txt
     for reg in regex_fluff_list:
         mch = re.search(reg, out)
         if mch:
