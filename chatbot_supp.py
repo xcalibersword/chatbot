@@ -2,7 +2,7 @@ import cbsv
 import re
 import chatbot_utils as cu
 
-SUPER_DEBUG = 1
+SUPER_DEBUG = 0
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
@@ -539,8 +539,8 @@ class InfoParser():
 class Calculator():
     def __init__(self, formulae):
         self.formula_db = formulae
-        self.DEBUG = 1
-        self.SUPER_DEBUG = 1
+        self.DEBUG = DEBUG
+        self.SUPER_DEBUG = SUPER_DEBUG
 
     def calculate(self, curr_state, curr_info):
         topup, temp = self._do_all_calculations(curr_state, curr_info)

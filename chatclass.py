@@ -13,7 +13,7 @@ from chatbot_supp import *
 from chatbot_utils import dive_for_values
 
 
-SUPER_DEBUG = 1
+SUPER_DEBUG = 0
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
@@ -891,7 +891,7 @@ class ReplyGenerator:
         return reply
 
     def _enhance_info(self,curr_state,info):
-        RF_DEBUG = 1 or SUPER_DEBUG # DEBUG FLAG
+        RF_DEBUG = 0 or SUPER_DEBUG # DEBUG FLAG
         cskey = curr_state["key"]
         rep_ext = {}
         enhanced = copy.deepcopy(info)
