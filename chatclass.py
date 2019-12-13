@@ -848,7 +848,7 @@ class DetailManager:
         out = {}
         out.update(self.chat_prov_info)
         self.vault.add_vault_info(out)
-        print("<FETCH INFO> CTX SLOTS", out.get("ctx_slots","")) #DEBUG
+        if SUPER_DEBUG: print("<FETCH INFO> CTX SLOTS", out.get("ctx_slots","")) #DEBUG
         return out
 
     def _check_db_init(self):
@@ -884,7 +884,7 @@ class ReplyGenerator:
         
     # OVERALL METHOD
     def get_reply(self, curr_state, intent, secondslot, info = -1):
-        print("<GET_REPLY> INFO calc_ext:",info.get("calc_ext", {}), "rep_ext", info.get("rep_ext", {}))
+        if DEBUG: print("<GET_REPLY> INFO calc_ext:",info.get("calc_ext", {}), "rep_ext", info.get("rep_ext", {}))
         rdb = self.getreplydb(intent, curr_state, secondslot)
         infoplus = self._enhance_info(curr_state, info)
         reply = self.generate_reply_message(rdb, infoplus)
@@ -924,7 +924,6 @@ class ReplyGenerator:
                         return
 
                     if isinstance(branch, list):
-                        print("Enh branch is a list",branch)
                         # ivtree is a leaf list
                         enhstr = get_reply_template(branch)
                         add_txt_enh(tkey,enhstr) # Enhance chosen string

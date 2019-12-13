@@ -247,9 +247,9 @@ def remove_QN_fluff(txt):
     for reg in regex_fluff_list:
         mch = re.search(reg, out)
         if mch:
-            match_str = mch.group[0]
+            match_str = mch.group(0)
             print("before", out)
-            out.replace(match_str," ")
+            out = out.replace(match_str," ")
             print("after", out)
 
     for pos, f in fluff_list:
@@ -267,7 +267,7 @@ def remove_QN_fluff(txt):
 def self_sent_message(selfID, namedate_string):
     idlen = len(selfID)
     is_self = (namedate_string[:idlen] == selfID)
-    print("<SELF SENT MESSAGE>",namedate_string[:idlen], "comparison", selfID)
+    # print("<SELF SENT MESSAGE>",namedate_string[:idlen], "comparison", selfID)
     return is_self
 
 def processText(cW,rawText):
