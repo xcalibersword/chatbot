@@ -117,7 +117,7 @@ def build_context_info():
 class Alarmy:
     def __init__(self):
         self.job_done = False
-        self.timeout = 10
+        self.lto = 10
 
     def set_exec_time_limit(self):
         def timeout_callback():
@@ -125,7 +125,7 @@ class Alarmy:
                 raise Exception("Timed out!")
             return
         self.job_done = False
-        timer = threading.Timer(self.timeout, timeout_callback)
+        timer = threading.Timer(self.lto, timeout_callback)
         timer.start()
 
     def alarm_off(self):
@@ -135,7 +135,8 @@ class Alarmy:
 class MSSQL_readwriter:
     def __init__(self):
         # self.alarmy = Alarmy()
-        self.timeout = 10
+        self.lto = 10 # Login time out
+        self.qto = 5 # Query time out
 
         self.write_conn = None
         self.connect_to_write()
@@ -155,7 +156,7 @@ class MSSQL_readwriter:
             print("Trying to connect to Write...")
             try:
                 
-                self.write_conn = msql.connect(server=db_host, user=db_user, password=db_pass, database=db_dbname,login_timeout=self.timeout)
+                self.write_conn = msql.connect(server=db_host, user=db_user, password=db_pass, database=db_dbname,login_timeout=self.lto,timeout=self.qto)
                 print("Connected to Write!")
             except Exception as e:
                 print("Write Connection Exception!",e)
@@ -166,7 +167,7 @@ class MSSQL_readwriter:
         if SQL_READ_ENABLED:
             print("Trying to connect to Read...")
             try:
-                self.read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass,login_timeout=self.timeout) 
+                self.read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass,login_timeout=self.lto,timeout=self.qto) 
                 # read_conn = msql.connect(server=db_read_host, user=db_read_user, password=db_read_pass, database=db_read_dbname) 
                 print("Connected to Read!")
             except Exception as e:

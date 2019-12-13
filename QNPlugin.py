@@ -388,7 +388,8 @@ def main(cW,bot,SeekImagePath,mode,cycle_delay):
         query, custID = check_new_message(cW)
 
         no_history = is_new_chat(custID) # Mainly to trigger history check on first chat
-
+        
+        newchat = False
         if check_counts >= GLOBAL["new_chat_check_interval"]:
             newchat = SeekNewCustomerChat(SeekImagePath)
             check_counts = 0
