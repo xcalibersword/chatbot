@@ -8,14 +8,13 @@ DEBUG = 1
 DEBUG = DEBUG or SUPER_DEBUG
 
 # Have a message class? Or some sort of flag for messages. Indicate state-changing messages.
-PREV_STATE_F = {"key":"299 PREV_STATE", "gated": False}
-# PENDING_STATE_F = {"key":"PENDING_STATE", "gated": False}
-SAME_STATE_F_OBJ = {"key":"same_state","gated":False}
+PREV_STATE_F = {"key":"299 PREV_STATE", "gated": False} # HARDCODED
+SAME_STATE_F_OBJ = {"key":"same_state","gated":False} # HARDCODED
 
 # SIP = State Info Packet
 # A packet that has info about state and has constructors for set states like go_back
 class SIP:
-    trans_state_flag = "transition_state"
+    trans_state_flag = "transition_state" # HARDCODED
     def __init__(self, state, cs = True):
         self.parse_state(state)
         self.state_change = cs
@@ -30,7 +29,7 @@ class SIP:
         self.state_slots = self.state_obj["req_info"] if self.gated_bool else []
         self.state_clears = self.state_obj.get("clear_info",[])
         self.pending_state = ""
-        self.deactivate = self.state_obj.get("deactivate_state", False)
+        self.deactivate = self.state_obj.get("deactivate_state", False) # HARDCODED
 
     def set_actions(self, action, pending_act = None):
         self.action = action
@@ -108,7 +107,7 @@ class ReqGatekeeper:
         self.gate_closed = False
         self.conds = conds
         self.default_slot_vals = default_slot_vals
-        self.def_slot_flag = "DEFAULT_SV"
+        self.def_slot_flag = "DEFAULT_SV" # HARDCODED
 
     def open_gate(self):
         self.gate_closed = False
@@ -363,7 +362,7 @@ class InfoParser():
 
     @classmethod
     def CTX_SLOT_KEY(cls):
-        return "ctx_slots"
+        return "ctx_slots" # HARDCODED
 
     def _build_slots_DB(self, jdata):
         for catkey in list(jdata.keys()):
@@ -398,14 +397,12 @@ class InfoParser():
         if not self.ctxsk in d:
             d[self.ctxsk] = {}
         ctx_d = d[self.ctxsk]
-        print("CTX PARSE before", ctx_d)
         self._parse_function(text,ctx_d,self.ctx_slots)
-        print("CTX PARSE after", ctx_d)
         return
 
 
     def _no_match_val(self, catDB):
-        keyword = "NO_MATCH"
+        keyword = "NO_MATCH" # HARDCODED
         defval = ""
         if keyword in catDB:
             defval = catDB[keyword]
@@ -599,7 +596,7 @@ class Calculator():
 
             # if CALC_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
         
-        if CALC_DEBUG: print("<RESOLVE FORMULA> Postcalc enh",enhanced)
+        if CALC_SUPER_DEBUG: print("<RESOLVE FORMULA> Postcalc enh",enhanced)
         if state_calcs == [] and CALC_DEBUG: print("<RESOLVE FORMULA> No calculation performed")
         
         return (calc_topup, l_calc_ext)
@@ -611,7 +608,10 @@ class Calculator():
         def get_steps(f):
             instr = f.get("steps",[])
             if instr == []:
-                raise Exception("<RESOLVE FORMULA> Error fetching steps", f)
+                emsg = "<RESOLVE FORMULA> Error fetching steps {}".format(str(f))
+                cu.log_error(emsg)
+                raise Exception(emsg)
+                
             stps = list(instr.keys())
             stps = list(map(lambda x: (x.split(","), instr[x]),stps))
             stps.sort(key=lambda t: float(t[0][0])) # If no conversion it sorts as string
@@ -626,7 +626,8 @@ class Calculator():
                     b = float(b)
                     return op(a,b)
                 except:
-                    print("<FORMULA OPERATION> ERROR Could not convert to float:a<{}>,b<{}>".format(a,b))
+                    emsg = "<FORMULA OPERATION> ERROR Could not convert to float:a<{}>,b<{}>".format(a,b)
+                    cu.log_error(emsg)
                     exit()
             out = None
             for vname in varnames:
@@ -658,8 +659,9 @@ class Calculator():
             elif opname == "OR":
                 opr = lambda a,b: (1 if (a > 0 or b > 0) else 0)
             else:
-                print("<RESOLVE FORMULA> ERROR Unknown operator:",opname)
-                raise Exception
+                emsg = "<RESOLVE FORMULA> ERROR Unknown operator:"+opname
+                print(emsg)
+                raise Exception(emsg)
                 # opr = lambda a,b: a # Unknown operator just returns a
             return opr
 

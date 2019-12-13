@@ -1,3 +1,5 @@
+import os
+
 # Useful Functions
 # Recursively looks in dicts for nested dicts until finds values.
 # Returns a dict
@@ -68,4 +70,18 @@ def add_enh(key, value, ext_dict, subdict_name, topup, enhanced, persist = False
         # Subdict names inlcude calc_ext and rep_ext
         if not subdict_name in enhanced: enhanced[subdict_name] = {} 
         enhanced[subdict_name].update(ext_dict) # Write to the the subdict in enhanced
+    return
+
+def log_error(elog):
+    print("###! ERROR LOG !###",elog)
+    chatbot_directory = os.getcwd()
+    filename = os.path.join(chatbot_directory,"errorlog.txt")
+    
+    try:
+        with open (filename, "w+") as f:
+            prevs = f.read()
+            new = prevs + elog
+            f.write(new)
+    except Exception as e:
+        print("Failed to log error!", e)
     return

@@ -134,13 +134,13 @@ def select_copy():
     win32api.keybd_event(17, 0, KEY_LETGO, 0)
     time.sleep(cmd_sleep)
 
-def log_err():
+def log_err(elog):
     chatbot = os.getcwd()
     filename = os.path.join(chatbot,"errorlog",GLOBAL["today_date"] +".txt")
     
     with open (filename, "w+") as f:
         prevs = f.read()
-        prevs = prevs + traceback.format_exc()
+        prevs = prevs + elog + traceback.format_exc()
         f.write(prevs)
 
 # Returns a reverse ordered list
@@ -155,7 +155,7 @@ def getRawText():
             succeed = True
         except Exception as e:
             print("OPEN CLIPBOARD EXCEPTION:",e,"Trying again...")
-            log_err()
+            log_err("OPEN CLIPBOARD")
             continue
         finally:
             time.sleep(clipboard_sleep)
@@ -165,7 +165,7 @@ def getRawText():
             raw_text = win32clipboard.GetClipboardData()
         except Exception as e:
             print("GET CLIPBOARD EXCEPTION:",e,"Trying again...")
-            log_err()
+            log_err("GET CLIPBOARD")
             continue
         finally:
             time.sleep(clipboard_sleep)
@@ -175,7 +175,7 @@ def getRawText():
             win32clipboard.EmptyClipboard()
         except Exception as e:
             print("EmptyClipboard EXCEPTION:",e)
-            log_err()
+            log_err("EMPTY CLIPBOARD")
             continue
         finally:
             time.sleep(clipboard_sleep)
@@ -184,7 +184,7 @@ def getRawText():
             win32clipboard.CloseClipboard()
         except Exception as e:
             print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
-            log_err()
+            log_err("CLOSE CLIPBOARD")
             continue
         finally:
             time.sleep(clipboard_sleep)
@@ -241,16 +241,17 @@ def get_customer_id_from_history(self_id,rawText):
 
 
 def remove_QN_fluff(txt):
-    regex_fluff_list = ["该用户由(.*)客服转交给(.*)客服"]
-    fluff_list = [(True,"新消息"),(False,"以上为历史消息")]
+    regex_fluff_list = ["该用户由(.*)客服转交给(.*)客服","以上为历史消息"]
+    fluff_list = [(True,"新消息")]
     out = txt
+    print("<FLUFF> before", out)
     for reg in regex_fluff_list:
         mch = re.search(reg, out)
         if mch:
             match_str = mch.group(0)
-            print("before", out)
+            
             out = out.replace(match_str," ")
-            print("after", out)
+            
 
     for pos, f in fluff_list:
         f_len = len(f)
@@ -262,6 +263,8 @@ def remove_QN_fluff(txt):
             # Start position
             if out[:f_len] == f:
                 out = out[f_len:]
+
+    print("<FLUFF> after", out)
     return out
 
 def self_sent_message(selfID, namedate_string):
@@ -290,7 +293,7 @@ def processText(cW,rawText):
             else:
                 # Customer
                 custid = get_pure_customer_id(date_time_pattern, sent)
-                if querytime == "": querytime = re.search(date_time_pattern,sent).group(0)
+                if querytime == "": querytime = re.search(date_time_pattern,sent).group(0) # Get datetime of the query
                 query = collect_texts(query, curr_text)
 
             if len(query) > 0 and len(self_last_sent) > 0:
@@ -308,7 +311,7 @@ def processText(cW,rawText):
             GLOBAL["got_new_message"] = False
             return query, custid
 
-        print("New Message deteced",querytime, query)
+        print("<PROCESS TEXT> New Message detected",querytime, query)
         GLOBAL["last_query_time"] = querytime
         GLOBAL["last_query"] = query
     
@@ -369,9 +372,8 @@ def SeekNewCustomerChat(clickImage):
     try:
         screen.click(clickImage)
         return True
-    except Exception:
-        print("No new chat")
-        log_err()
+    except Exception as e:
+        print("No new chat", e)
         return False
 
 def select_chat_input_box(cW):
@@ -453,7 +455,7 @@ if __name__ == "__main__":
         cW.find_handle()
         print(cW.userID,cW.msg_dlg,cW.input_dlg,cW.send_but)
     except:
-        log_err()
+        log_err("WINDOW HANDLE FIND")
     
     #START OCR & BOT
     projectDIR = os.getcwd()

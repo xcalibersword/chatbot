@@ -189,7 +189,7 @@ class ZoneTracker:
     # Fetches info from the dm
     def update_zones_from_dm(self, dm):
         all_info = dm.fetch_info()
-        zkey = "zones"
+        zkey = "zones" # HARDCODED
         if zkey in all_info:
             zone_dic = all_info[zkey]
             for z, val in zone_dic.items():
@@ -245,11 +245,11 @@ class ChatManager:
     def respond_to_message(self, msg):
         if self.is_inactive():
             no_reply = ""
-            return (no_reply, {}, {})
+            return (no_reply, {}, self._get_current_info())
 
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&") # For clarity in terminal     
         firstpass = True
-        for rc in range(0, 7):
+        for rc in range(0, 5):
             # Parse the message and get an understanding
             full_uds, bd = self._parse_message_overall(msg)
             true_sip = full_uds.get_sip()
@@ -675,14 +675,14 @@ class DetailManager:
             "首次","shebao_jishu", "gjj_jishu", 
             "svc_fee_total", "shebao_basic_total",
             "made_purchase"
-        }
+        } # HARDCODED
         not_user_info = [
             "requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", 
             "flag_sb_gjj", 'w_shebao_payment', 'shebao_jiaona_total', 
             'target_month', 'given_amount','city_info', "ss_purchase_cmi_flag",
              "exclude_svc_fee", "w_fee_type_flag", "w_normal_cmi_flag",
              "bill_settled_flag", "w_spec_component_value", "ss_jishu_amount", 
-        ] #TODO find a proper way to store this info in JSON
+        ] #TODO find a proper way to store this info in JSON # HARDCODED
         dic = {}
         chat_info = self.chat_prov_info
         for key, contents in chat_info.items():
@@ -717,7 +717,7 @@ class DetailManager:
 
         def get_value(branch, info):
             if isinstance(branch,list):
-                raw_vd = dive_for_values(branch,info)
+                raw_vd = dive_for_values(branch,info, DEBUG=SUPER_DEBUG)
                 if raw_vd == {}:
                     if DEBUG: print("<SECONDARY SLOT GETV> {} not found in info".format(branch))
                     final = ""
@@ -765,7 +765,7 @@ class DetailManager:
                             s_val = str(curr_d[loc]) # To convert ints to strings. I.e. for hours
                     return s_val, curr_d, final_loc
 
-                any_val_key = "_ANY"
+                any_val_key = "_ANY" # HARDCODED
                 for slotname, sub_dict in list(tree.items()):
                     slot, loc_list = dot_loc_to_list(slotname)
                     while slot in t_info:
@@ -823,7 +823,7 @@ class DetailManager:
             
 
         curr_info = self.fetch_info()
-        ss_default_flag = "DEFAULT"
+        ss_default_flag = "DEFAULT" # HARDCODED
         entries = {}
         for secondslot in self.second_slots:
             target = secondslot["writeto"]
@@ -1011,7 +1011,7 @@ class ReplyGenerator:
     def getreplydb(self, intent, curr_state, issamestate):
         def get_hflag(obj):
             # Default is true
-            hflag = obj.get("humanify", True)
+            hflag = obj.get("humanify", True) # HARDCODED
             return hflag
 
         def get_replylist(obj):
