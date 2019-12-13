@@ -87,6 +87,13 @@
                 "抱歉哦亲😞，小店暂时不提供这项业务哦"
             ]
         },
+        "define":{
+            "key": "define",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "give_defintion",
+            "replies": []
+        },
         "doublecheck_value": {
             "key": "107 doublecheck value",
             "default_set": true,
@@ -683,6 +690,15 @@
                 "亲,{rep_ext[request_string]}"
             ]
         },
+        "give_defintion":{
+            "key": "give_definition",
+            "gated": false,
+            "humanify":false,
+            "terminal_state":true,
+            "req_info":[["spec_element", "element_slot"]],
+            "thread": "t_define",
+            "replies":["{rep_ext[definition_info]}"]
+        },
         "doublecheck_component_value": {
             "key": "doublecheck_component_value",
             "gated": true,
@@ -1127,11 +1143,12 @@
                 "if_value": {
                     "requested_info": {
                         "city": "您是哪个城市呢？",
-                        "首次": "之前有交过吗？",
+                        "首次": ["之前有交过吗？","以前有代缴过吗？"],
                         "要公积金": "交公积金吗？",
                         "苏州区": "是市区还是园区呢？",
                         "北京农城": "是城镇还是农业呢？",
                         "chosen_fee": "哪个部分？（比如：社保/公积金/服务费）",
+                        "spec_element": "问哪个呢？",
                         "ss_purchase_for_month": "要缴哪月？",
                         "given_amount": "要什么基数？",
                         "chosen_service":"指的是社保还是公积金？",
@@ -1189,6 +1206,19 @@
                     "chosen_service": {
                         "社保":"这个小店不太清楚哦，小店只负责代缴哈",
                         "公积金":"断公积金主要是影响贷款"
+                    }
+                }
+            },
+            {
+                "writeto":"definition_info",
+                "states":["give_definition"],
+                "lookfor":[
+                    "spec_element"
+                ],
+                "if_value":{
+                    "spec_element":{
+                        "减员":"就是上家把钱转出来",
+                        "挂靠":"就是说跟可以借用我们公司的名字"
                     }
                 }
             },
