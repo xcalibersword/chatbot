@@ -1,4 +1,9 @@
-import threading,re,os,time,traceback,datetime
+import datetime
+import re
+import os 
+import time
+import traceback
+import threading
 import win32gui, win32api, win32clipboard, win32con, jpype
 from chatbot import Chatbot
 import pandas as pd
@@ -236,8 +241,17 @@ def get_customer_id_from_history(self_id,rawText):
 
 
 def remove_QN_fluff(txt):
-    fluff_list = [(1,"新消息")]
-    out = txt
+    regex_fluff_list = ["该用户由(.*)客服转交给(.*)客服"]
+    fluff_list = [(True,"新消息"),(False,"以上为历史消息")]
+    out = txt.copy()
+    for reg in regex_fluff_list:
+        mch = re.search(reg, out)
+        if mch:
+            match_str = mch.group[0]
+            print("before", out)
+            out.replace(match_str," ")
+            print("after", out)
+
     for pos, f in fluff_list:
         f_len = len(f)
         if pos:
