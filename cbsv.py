@@ -11,9 +11,6 @@ DEBUG = 0
 def DEFAULT_CONFUSED():
     return ["不好意思,我听不懂","不好意思,我不明白亲说啥"]
 
-def PREV_STATE_FLAG():
-    return "299 PREV_STATE"
-
 def CHINA_CITIES():
     cities = ["上海","北京","深圳","杭州","广州", "上海", "成都", "shanghai", "beijing"]
     return cities
@@ -24,12 +21,6 @@ def DIGITS():
 
 def DIGITSET():
     return {0,1,2,3,4,5,6,7,8,9}
-
-def INFO_GATHER_STATE_KEY():
-    return "221 recv info"
-
-# def INFO_GATHER_STATE_REPLIES():
-#     return 
 
 def is_number(n):
     return isinstance(n, float) or isinstance(n, int)

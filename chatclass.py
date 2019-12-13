@@ -1040,7 +1040,7 @@ class ReplyGenerator:
             else:
                 break
 
-        if rdb == []: rdb = self.default_confused # In case really no answer
+        if rdb == []: rdb = self.default_confused # In case really no answer. Not to be confused with intentionally blank answers.
 
         return rdb
 
@@ -1057,7 +1057,7 @@ class ReplyGenerator:
         if isinstance(info, dict):
             if SUPER_DEBUG: print("<GEN REPLY> Enhanced info:",info)
             
-            # Uses kwargs to fill this space
+            # Uses kwargs to fill the reply slots
             final_msg = reply_template.format(**info)
 
         if self.hflag: final_msg = _humanify(final_msg, info)
@@ -1073,7 +1073,6 @@ class Chat:
         self.convo_history = convo_history
         self.convo_index = 0
         self.save_chat_logs = True
-        # self.info = {}
 
     def getID(self):
         return self.chatID
@@ -1087,18 +1086,6 @@ class Chat:
         self.curr_chatlog.append(human_prefix(username, recieved))
         self.curr_chatlog.append(robot_prefix(sent))
         self.convo_index = self.convo_index + 2
-
-    def pop_prev_msg(self):
-        # TODO failsafe when empty?
-        # Need to get the previous previous message
-        if self.convo_index < 2:
-            return
-        return self.curr_chatlog[self.convo_index - 2]
-
-    ## TODO Database interaction?
-    def get_previous_issues(self):
-        pass
-        # return self.user.get_issues()
 
     # Calls chatbot_be to write the conversation messages to a json
     def record_to_database(self):
