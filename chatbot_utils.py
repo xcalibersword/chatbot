@@ -1,10 +1,29 @@
 import os
 
 # Useful Functions
-# Recursively looks in dicts for nested dicts until finds values.
-# Returns a dict
-def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1):
 
+# Wrapper function for dive_for_values where the detail path is a dot list
+def dive_for_dot_values(dot_list, info_dir, failzero = False, DEBUG = 1):
+    if not isinstance(dot_list, str):
+        print("<DIVE FOR DOT> Bad input", dot_list)
+        return {}
+    pathlist = dot_list.split(".")
+
+    new_nest_list = []
+    while 1:
+        if len(pathlist) == 0:
+            break
+        curr = pathlist.pop(-1)
+        if new_nest_list == []:
+            new_nest_list = [curr]
+        else:
+            new_nest_list = [curr, new_nest_list]
+
+    return dive_for_values(new_nest_list, info_dir, failzero, DEBUG)
+
+# Recursively looks in dicts for nested dicts until finds values.
+# Returns a dict of values
+def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1):
     if isinstance(nest_list,list) and len(nest_list) > 0:
         inner_list = nest_list[0]
         if len(inner_list) < 2:

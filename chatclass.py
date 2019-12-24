@@ -881,10 +881,11 @@ class DetailManager:
 
 # Generates reply text based on current state info
 class ReplyGenerator:
-    def __init__(self, formattingDB, humanizer, def_confused):
+    def __init__(self, formattingDB, humanizer, announcer, def_confused):
         self.formatDB = formattingDB
         self.formatter = string.Formatter()
         self.humanizer = humanizer
+        self.announcer = announcer
         self.hflag = True
         self.default_confused = def_confused
         
@@ -893,7 +894,7 @@ class ReplyGenerator:
         if DEBUG: print("<GET_REPLY> INFO calc_ext:",info.get("calc_ext", {}), "rep_ext", info.get("rep_ext", {}))
         rdb = self.getreplydb(intent, curr_state, secondslot)
         infoplus = self._enhance_info(curr_state, info)
-        reply = self.generate_reply_message(rdb, infoplus)
+        reply = self.generate_reply_message(rdb, curr_state, infoplus)
         return reply
 
     def _enhance_info(self,curr_state,info):
@@ -1051,11 +1052,16 @@ class ReplyGenerator:
         return rdb
 
     # Generates a reply. Purely a string
-    def generate_reply_message(self, rdb, info):
+    def generate_reply_message(self, rdb, curr_state, info):
         def rand_response(response_list):
             return random.choice(response_list)
-        def _humanify(msg, i):
-            return self.humanizer.humanify(msg,i)
+        def _humanify(msg):
+            if not self.hflag:
+                # Do nothing
+                return msg 
+            return self.humanizer.humanify(msg,info)
+        def _announceify(msg):
+            return self.announcer.add_announcements(msg,curr_state,info)
 
         reply_template = rand_response(rdb)
         if DEBUG: print("<GEN REPLY> Template:",reply_template)
@@ -1066,7 +1072,9 @@ class ReplyGenerator:
             # Uses kwargs to fill the reply slots
             final_msg = reply_template.format(**info)
 
-        if self.hflag: final_msg = _humanify(final_msg, info)
+        # Post-enhancement message additions
+        final_msg = _humanify(final_msg)
+        final_msg = _announceify(final_msg)
         return final_msg
 
 # Deals only with text

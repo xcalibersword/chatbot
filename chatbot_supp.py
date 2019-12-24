@@ -267,7 +267,62 @@ class Humanizer():
                 human_msg = add_humanlike_text(inf_val, dic, human_msg)
             
         return human_msg
+
+class Announcer():
+    def __init__(self,announce_list):
+        self.al = announce_list
+
+    
+    def get_announce_list(self, cstate, cinfo):
+        def _check_condition(an):
+            curr_state = cstate
+            curr_info = cinfo
+            et = an["trigger"]
+            etd = an["trigger_d"]
+            if et == "state":
+                trigger_state = etd["statename"]
+                if curr_state == trigger_state:
+                    return True
+            elif et == "slotfill":
+                sn = etd["slotname"]
+                val = etd["value"]
+                info_vd = cu.dive_for_dot_values(sn, curr_info)
+                info_val = info_vd[sn]
+                print("Checking slotfill. ", sn, "value:",info_val)
+                if info_val == val:
+                    return True
+            else:
+                print("<Announce> Unrecognized trigger type:", et)
+            return False
+            
+        a_to_make = []
+        for ann in self.al:
+            make_a = _check_condition(ann)
+            if make_a:
+                entry = {}
+                entry["key"] = ann["key"]
+                entry["text"] = ann["text"]
+                entry["pos"] = ann["position"]
+                a_to_make.append(entry)
+        return a_to_make
+    
+    def add_announcements(self, msg, state, info):
+        def add_announcement_text(in_msg, ann):
+            pos = ann["pos"]
+            ann_text = ann["text"]
+            if pos == 1:
+                return ann_text + in_msg
+            elif pos == 0:
+                return in_msg + ann_text
+            return in_msg
+        alist = self.get_announce_list(state, info)
         
+        out_msg = msg
+
+        if SUPER_DEBUG: print("<ANNOUNCE>",out_msg, "| announcement list", alist)
+        for announcement in alist:
+            out_msg = add_announcement_text(out_msg, announcement)
+        return out_msg
 
 class Policy():
     def __init__(self, g_intents, s_intents = []):

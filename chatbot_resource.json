@@ -28,7 +28,7 @@
             "humanify": true,
             "default_target": "SAME_STATE",
             "replies": [
-                "您好 有什么能帮助您的?"
+                "您好 有什么能帮助您的？"
             ]
         },
         "confused": {
@@ -1745,6 +1745,7 @@
                     "propose_plan"
                 ],
                 "lookfor": [
+                    "city",
                     "city_district",
                     "svc_fee_total",
                     "shebao_basic_total",
@@ -1757,10 +1758,8 @@
                         ]
                     ]
                 ],
-                "if_value": {
-                    "city_district": {
-                        "DEFAULT": "{city_district}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{svc_fee_total}元，{rep_ext[首次ext]} 共计{shebao_basic_total}元。"
-                    }
+                "if_present": {
+                    "city_district":"{city_district}目前{rep_ext[product]}{rep_ext[proposal]}，服务费{svc_fee_total}元，{rep_ext[首次ext]} 每月一共是{shebao_basic_total}元。"
                 }
             }, 
             {
@@ -2507,13 +2506,13 @@
                     "link_gjj":"https://item.taobao.com/item.htm?id=598601929883"
                 },
                 "杭州市": {
-                    "base_sb_jishu": 3321.6,
-                    "base_gjj_jishu": 2010,
-                    "shebao_payment": 1288.79,
                     "base_sb_jishu_max_limit": 25000,
+                    "base_sb_jishu": 3321.6,
+                    "shebao_payment": 1285.47,
+                    "base_sb_jishu_multi": 0.387,
                     "base_gjj_jishu_max_limit": 30000,
+                    "base_gjj_jishu": 2010,
                     "base_gjj_jishu_multi":0.50,
-                    "base_sb_jishu_multi": 0.50,
                     "svc_fee": 40,
                     "shouci_fee": 50,
                     "pay_deadline": 15,
