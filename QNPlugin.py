@@ -10,7 +10,8 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.1
+clipboard_sleep = 0.05
+clipboard_err_sleep = 0.5
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
 
@@ -145,54 +146,61 @@ def log_err(elog):
 
 # Returns a reverse ordered list
 def getRawText():
-    rpt = 0
-    rpt_limit = 10
-    succeed = False
-    while not succeed and rpt < rpt_limit:
-        rpt += 1
-        try:
-            win32clipboard.OpenClipboard()
-            succeed = True
-        except Exception as e:
-            print("OPEN CLIPBOARD EXCEPTION:",e,"Trying again...")
-            log_err("OPEN CLIPBOARD")
-            continue
-        finally:
-            time.sleep(clipboard_sleep)
-
+    def get_from_clipboard():
+        rpt = 0
+        rpt_limit = 10
+        succeed = False
         raw_text = ""
-        try:
-            raw_text = win32clipboard.GetClipboardData()
-        except Exception as e:
-            print("GET CLIPBOARD EXCEPTION:",e,"Trying again...")
-            log_err("GET CLIPBOARD")
-            continue
-        finally:
-            time.sleep(clipboard_sleep)
-    
 
-        try:
-            win32clipboard.EmptyClipboard()
-        except Exception as e:
-            print("EmptyClipboard EXCEPTION:",e)
-            log_err("EMPTY CLIPBOARD")
-            continue
-        finally:
-            time.sleep(clipboard_sleep)
+        while not succeed and rpt < rpt_limit:
+            rpt += 1
+            raw_text = ""
 
-        try:
-            win32clipboard.CloseClipboard()
-        except Exception as e:
-            print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
-            log_err("CLOSE CLIPBOARD")
-            continue
-        finally:
-            time.sleep(clipboard_sleep)
+            try:
+                win32clipboard.OpenClipboard()
+                succeed = True
+            except Exception as e:
+                print("OPEN CLIPBOARD EXCEPTION:",e,"Trying again...")
+                log_err("OPEN CLIPBOARD")
+                continue
+            finally:
+                time.sleep(clipboard_sleep)
 
-        succeed = True
-        # The end of the loop
+            try:
+                raw_text = win32clipboard.GetClipboardData()
+            except Exception as e:
+                print("GET CLIPBOARD EXCEPTION:",e,"Trying again...")
+                log_err("GET CLIPBOARD")
+                time.sleep(clipboard_err_sleep)
+                continue
+            finally:
+                time.sleep(clipboard_sleep)
+        
+            try:
+                win32clipboard.EmptyClipboard()
+            except Exception as e:
+                print("EmptyClipboard EXCEPTION:",e)
+                log_err("EMPTY CLIPBOARD")
+                time.sleep(clipboard_err_sleep)
+                continue
+            finally:
+                time.sleep(clipboard_sleep)
 
-    raw_text_list = raw_text.splitlines()
+            try:
+                win32clipboard.CloseClipboard()
+            except Exception as e:
+                print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
+                log_err("CLOSE CLIPBOARD")
+                time.sleep(clipboard_err_sleep)
+                continue
+            finally:
+                time.sleep(clipboard_sleep)
+
+            succeed = True
+            # The end of the loop
+        return raw_text.splitlines()
+
+    raw_text_list = get_from_clipboard()
     processed_text_list = []
     for sent in raw_text_list:
         sent = sent.strip()
@@ -242,17 +250,15 @@ def get_customer_id_from_history(self_id,rawText):
 
 def remove_QN_fluff(txt):
     regex_fluff_list = ["该用户由(.*)客服转交给(.*)客服","以上为历史消息"]
-    fluff_list = [(True,"新消息")]
+    fluff_list = [(1,"新消息")]
     out = txt
-    print("<FLUFF> before", out)
+    bef = out
     for reg in regex_fluff_list:
         mch = re.search(reg, out)
         if mch:
             match_str = mch.group(0)
-            
             out = out.replace(match_str," ")
             
-
     for pos, f in fluff_list:
         f_len = len(f)
         if pos:
@@ -264,7 +270,7 @@ def remove_QN_fluff(txt):
             if out[:f_len] == f:
                 out = out[f_len:]
 
-    print("<FLUFF> after", out)
+    if not bef == out: print("<FLUFF> Before", bef, "After", out)
     return out
 
 def self_sent_message(selfID, namedate_string):

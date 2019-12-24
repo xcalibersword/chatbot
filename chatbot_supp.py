@@ -4,6 +4,7 @@ import chatbot_utils as cu
 
 SUPER_DEBUG = 0
 DEBUG = 1
+CALCULATOR_DEBUG = 0
 
 DEBUG = DEBUG or SUPER_DEBUG
 
@@ -536,7 +537,7 @@ class InfoParser():
 class Calculator():
     def __init__(self, formulae):
         self.formula_db = formulae
-        self.DEBUG = DEBUG
+        self.DEBUG = CALCULATOR_DEBUG
         self.SUPER_DEBUG = SUPER_DEBUG
 
     def calculate(self, curr_state, curr_info):
