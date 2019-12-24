@@ -249,6 +249,7 @@ class ChatManager:
 
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&") # For clarity in terminal     
         firstpass = True
+        pg_fail = False
         for rc in range(0, 5):
             # Parse the message and get an understanding
             full_uds, bd = self._parse_message_overall(msg)
@@ -256,7 +257,7 @@ class ChatManager:
 
             if firstpass:
                 firstpass = False
-                sip = true_sip # This is to prevent example affirm applying more than once
+                sip = true_sip # This is to prevent intents (eg affirm) applying more than once
             else:
                 sip = sip.same_state()
 
@@ -271,12 +272,16 @@ class ChatManager:
 
             if DEBUG: print("<RTM LOOP> Repeats", rc,"Curr SIP", sip.toString(), "True SIP", true_sip.toString(),"Zone Overwrite",zone_overwrite,"Pass gate:",pg)
 
+            if not pg and not pg_fail:
+                pg_fail = True
+                continue
+
             # Breaks
-            c1 = (not true_sip.is_trans_state() and not sip.is_same_state()) 
-            c2 = state_bef == state_aft
-            if c1 or c2:
-                if c1 and DEBUG: print("<RTM LOOP> Not trans state, breaking")
-                if c2 and DEBUG: print("<RTM LOOP> Same state before and after, breaking")
+            case1 = (not true_sip.is_trans_state() and not sip.is_same_state()) 
+            case2 = state_bef == state_aft
+            if case1 or case2:
+                if case1 and DEBUG: print("<RTM LOOP> Not trans state, breaking")
+                if case2 and DEBUG: print("<RTM LOOP> Same state before and after, breaking")
                 break
 
         # Calls calculator. Crunch numbers for replying
