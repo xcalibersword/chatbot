@@ -79,8 +79,8 @@
             "search_tree":{
                 "ctx_slots.target_month":{
                     "ctx_this_month":["state_month"],
-                    "ctx_next_month":["state_month","+",1],
-                    "ctx_last_month":["state_month","-",1]
+                    "ctx_next_month":["state_month","+",1, 0],
+                    "ctx_last_month":["state_month","-",1, 0]
                 },
                 "target_month":{
                     "_ANY":["target_month"]
@@ -315,16 +315,15 @@
             "ctx_month_slot":{
                 "ctx_last_month":[
                     "去月",
-                    "上(个*)月"
+                    "上(个?)月"
                 ],
                 "ctx_this_month":[
-                    "当月",
-                    "本月",
-                    "现在",
-                    "这(个*)月"
+                    "(今|本|当)月",
+                    "现在$",
+                    "这(个?)月"
                 ],
                 "ctx_next_month":[
-                    "下(个*)月",
+                    "下(个?)月",
                     "明月"
                 ]
             },

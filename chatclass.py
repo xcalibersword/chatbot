@@ -10,7 +10,7 @@ import string
 import chatbot_be
 from datetime import datetime
 from chatbot_supp import *
-from chatbot_utils import dive_for_values
+from chatbot_utils import dive_for_values, cbround
 
 
 SUPER_DEBUG = 0
@@ -702,7 +702,7 @@ class DetailManager:
     def _add_secondary_slots(self):
         def mini_calc(raw, branch):
             # Mini calcualtions
-            loc, opr, v = branch
+            loc, opr, v, dp = branch
             opr = opr.replace(" ","")
             raw = float(raw)
             v = float(v)
@@ -713,6 +713,7 @@ class DetailManager:
             else:
                 print("<SECONDARY SLOT GETV> unknown opr {}".format(opr))
                 final = raw
+            final = cbround(final, dp) # Round to specified dp
             return final 
 
         def get_value(branch, info):
@@ -723,7 +724,7 @@ class DetailManager:
                     final = ""
                 else:
                     raw = list(raw_vd.values())[0] # Assume dict is size 1
-                    if len(branch) == 3:
+                    if len(branch) > 1:
                         final = mini_calc(raw, branch)
                     else:
                         final = raw

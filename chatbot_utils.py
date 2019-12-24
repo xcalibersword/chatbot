@@ -85,3 +85,12 @@ def log_error(elog):
     except Exception as e:
         print("Failed to log error!", e)
     return
+
+
+def cbround(val, dp = 0):
+    if dp == 0:
+        dp_arg = None # round doesnt work with just 0
+    else:
+        dp_arg = dp
+    
+    return round(val,dp_arg)
