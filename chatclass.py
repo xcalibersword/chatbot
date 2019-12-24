@@ -289,10 +289,10 @@ class ChatManager:
         calc_ext = self._calculate(double=True)
     
         intent = full_uds.get_intent()
-        reply = self._fetch_reply(intent, calc_ext)
+        reply, topup = self._fetch_reply(intent, calc_ext)
         
         # Clean up. 
-        self._post_process(full_uds)
+        self._post_process(full_uds, topup)
 
         # Records message logs
         self._record_messages_in_chat(msg,reply)
@@ -461,7 +461,9 @@ class ChatManager:
         return calc_ext
 
     # Clears up values based on state information
-    def _post_process(self, uds):
+    def _post_process(self, uds, topup):
+        self.push_detail_to_dm(topup)
+
         sip = uds.get_sip()
         clearlist = sip.get_clears()
         self.push_detail_to_clear(clearlist)
@@ -894,8 +896,8 @@ class ReplyGenerator:
         if DEBUG: print("<GET_REPLY> INFO calc_ext:",info.get("calc_ext", {}), "rep_ext", info.get("rep_ext", {}))
         rdb = self.getreplydb(intent, curr_state, secondslot)
         infoplus = self._enhance_info(curr_state, info)
-        reply = self.generate_reply_message(rdb, curr_state, infoplus)
-        return reply
+        reply, topup = self.generate_reply_message(rdb, curr_state, infoplus)
+        return reply, topup
 
     def _enhance_info(self,curr_state,info):
         RF_DEBUG = 0 or SUPER_DEBUG # DEBUG FLAG
@@ -1065,17 +1067,18 @@ class ReplyGenerator:
 
         reply_template = rand_response(rdb)
         if DEBUG: print("<GEN REPLY> Template:",reply_template)
-        final_msg = reply_template
-        if isinstance(info, dict):
-            if SUPER_DEBUG: print("<GEN REPLY> Enhanced info:",info)
-            
-            # Uses kwargs to fill the reply slots
-            final_msg = reply_template.format(**info)
+        if SUPER_DEBUG: print("<GEN REPLY> Enhanced info:",info)
+        
+        # Pre-enhancement additions to base template
+        reply_template, topup = _announceify(reply_template)
+
+        # Uses kwargs to fill the reply slots
+        final_msg = reply_template.format(**info)
 
         # Post-enhancement message additions
         final_msg = _humanify(final_msg)
-        final_msg = _announceify(final_msg)
-        return final_msg
+        
+        return final_msg, topup
 
 # Deals only with text
 # Does not deal with state or information

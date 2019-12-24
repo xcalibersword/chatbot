@@ -271,58 +271,95 @@ class Humanizer():
 class Announcer():
     def __init__(self,announce_list):
         self.al = announce_list
+        self.subdict_key = "announce_flags"
 
+    def get_announce_subdict(self, inf):
+        sdk = self.subdict_key
+        return inf.get(sdk,{})
     
     def get_announce_list(self, cstate, cinfo):
-        def _check_condition(an):
-            curr_state = cstate
-            curr_info = cinfo
-            et = an["trigger"]
-            etd = an["trigger_d"]
-            if et == "state":
-                trigger_state = etd["statename"]
-                if curr_state == trigger_state:
-                    return True
-            elif et == "slotfill":
-                sn = etd["slotname"]
-                val = etd["value"]
-                info_vd = cu.dive_for_dot_values(sn, curr_info)
-                info_val = info_vd[sn]
-                print("Checking slotfill. ", sn, "value:",info_val)
-                if info_val == val:
-                    return True
-            else:
-                print("<Announce> Unrecognized trigger type:", et)
-            return False
-            
-        a_to_make = []
-        for ann in self.al:
-            make_a = _check_condition(ann)
-            if make_a:
-                entry = {}
+        def get_flag(a):
+            ak = a["key"]
+            sd = self.get_announce_subdict(cinfo)
+            return sd.get(ak,0)
+
+        def _make_entry(ann):
+            repeat = ann.get("repeat",True)
+            flagged = get_flag(ann)
+            entry = {}
+            make = False
+            if repeat or not flagged:
+                # Only fail is no repeat + flagged
                 entry["key"] = ann["key"]
                 entry["text"] = ann["text"]
                 entry["pos"] = ann["position"]
-                a_to_make.append(entry)
-        return a_to_make
+                make = True
+            return make, entry
+
+        def _check_condition(an):
+            print("Check condition", an)
+            csk = cstate["key"]
+            curr_info = cinfo
+            etype = an["trigger"]
+            etd = an["trigger_d"]
+            if etype == "state":
+                trigger_states = etd["statenames"]
+                print("cstate",csk, "trig states", trigger_states)
+                if csk in trigger_states:
+                    return True
+            elif etype == "slotfill":
+                sn = etd["slotname"]
+                val = etd["value"]
+                info_vd = cu.dive_for_dot_values(sn, curr_info)
+                info_val = info_vd.get(sn,"")
+                if info_val == val:
+                    return True
+            else:
+                print("<Announce> Unrecognized trigger type:", etype)
+            return False
+            
+        anns_to_make = []
+        for ann in self.al:
+            make_a = _check_condition(ann)
+            if make_a:
+                mf, entry = _make_entry(ann)
+                if mf: anns_to_make.append(entry)
+        return anns_to_make
     
     def add_announcements(self, msg, state, info):
+        sdk = self.subdict_key
+        sd = self.get_announce_subdict(info)
+
+        def flag_annoucement(a):
+            ak = a["key"]
+            sd[ak] = 1
+
+        def make_topup():
+            # Create topup subdict
+            tup = {}
+            tup[sdk] = sd
+            return tup
+
         def add_announcement_text(in_msg, ann):
             pos = ann["pos"]
             ann_text = ann["text"]
-            if pos == 1:
-                return ann_text + in_msg
-            elif pos == 0:
-                return in_msg + ann_text
+                
+            if pos == 0:
+                return ann_text + " " + in_msg
+            elif pos == 1:
+                return in_msg + " " + ann_text
             return in_msg
         alist = self.get_announce_list(state, info)
         
         out_msg = msg
 
-        if SUPER_DEBUG: print("<ANNOUNCE>",out_msg, "| announcement list", alist)
+        if SUPER_DEBUG or 1: print("<ANNOUNCE>",out_msg, "| announcement list", alist)
         for announcement in alist:
             out_msg = add_announcement_text(out_msg, announcement)
-        return out_msg
+            flag_annoucement(announcement)
+
+        topup = make_topup()
+        return out_msg, topup
 
 class Policy():
     def __init__(self, g_intents, s_intents = []):
