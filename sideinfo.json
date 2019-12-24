@@ -76,18 +76,19 @@
         },
         {
             "writeto": "ss_purchase_for_month",
-            "multi":true,
             "search_tree":{
                 "ctx_slots.target_month":{
                     "ctx_this_month":["state_month"],
                     "ctx_next_month":["state_month","+",1, 0],
                     "ctx_last_month":["state_month","-",1, 0]
                 },
+                "from_month":{
+                    "_ANY":["from_month"]
+                },
                 "target_month":{
                     "_ANY":["target_month"]
                 }
             }
-
         },
         {
             "writeto": "ss_jishu_amount",
@@ -157,39 +158,19 @@
             ["yourenma","ctx_yourenma_slot"],
             ["xufei","xufei_slot"]
         ],
-        "val_slots":{
-            "from_month":{
+        "pos_slots":[
+            {
+                "key":"from_month",
                 "group_pos": 1,
-                "map": [
-                    "(1?[0-9])月?(~|-|到)(1?[0-9])月?"
-                ]
+                "map": "(1?[0-9])月?(~|-|到)(1?[0-9])月?"
+                
             },
-            "to_month" :{
+            {
+                "key":"to_month",
                 "group_pos": 2,
-                "map":[
-                    "(?<=(~|-|到))(1?[0-9])月?"
-                ]
+                "map":"(?<=(~|-|到))(1?[0-9])月?"
             }
-        },
-        "slots": {
-            "duration_slot":{
-                "map":{
-                    "present":[
-                        "(1?[0-9])月?-(1?[0-9])月?",
-                        "从?(1?[0-9])月?到(1?[0-9])月?"
-                    ],
-                    "NO_MATCH":["absent"]
-                }
-=======
->>>>>>> Create val_slots using RE
-            },
-            "to_month" :{
-                "group_pos": 2,
-                "map":[
-                    "(?<=(~|-|到))(1?[0-9])月?"
-                ]
-            }
-        },
+        ],
         "slots": {
             "month_slot":{
                 "map":{
@@ -303,8 +284,6 @@
                     ]
                 }
             },
-<<<<<<< master
-=======
             "北京农城_slot":{
                 "map":{
                     "北京农业": [
@@ -315,7 +294,6 @@
                     ]
                 }
             },
->>>>>>> Fix sideinfo slot formatting
             "gongjijin_slot": {
                 "map":{
                     "yes": [
@@ -357,45 +335,6 @@
                 "map":{
                     "normal":["正常"],
                     "bujiao":["补"]
-                }
-            },
-            "service_slot":{
-                "社保":["五险|社保"],
-                "公积金":["金|公积金"]
-            },
-            "shebao_slot":{
-                "map":{
-                    "yes":[
-                        "(?<!(没|不))(要|交|付|缴|代缴|缴纳)社保",
-                        "(?<!(没|不))(和|加)社保",
-                        "(?<!(没|不))五险"
-                    ],
-                    "no":[
-                        "(没|不)(要?)(要|交|付|缴|代缴|缴纳)社保",
-                        "(光|只|单独)(要?)(要|交|付|缴|代缴|缴纳)公积金"
-                    ]
-                }
-            },
-            "exclude_svc_fee_slot":{
-                "map":{
-                    "include":[
-                        "(?<!(没|不|别))(算|添加|加上|加|包括)服务费"
-                    ],
-                    "exclude":[
-                        "esf",
-                        "除了服务费",
-                        "(没|没有|不|不要|别)(算|添加|包括|加上|加)服务费"
-                    ]
-                }
-            },
-            "北京农城_slot":{
-                "map"{
-                    "北京农业": [
-                        "农村","农业"
-                    ],
-                    "北京城镇": [
-                        "城镇","城市"
-                    ]
                 }
             },
             "default_yes": {
@@ -446,7 +385,6 @@
                 }
             },
             "ctx_month_slot":{
-                "multi": true,
                 "map":{
                     "ctx_last_month":[
                         "去月",

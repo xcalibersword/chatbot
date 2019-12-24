@@ -4,7 +4,7 @@ import chatbot_utils as cu
 
 SUPER_DEBUG = 0
 DEBUG = 1
-CALCULATOR_DEBUG = 0
+CALCULATOR_DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
 
@@ -221,8 +221,8 @@ class ReqGatekeeper:
 
     # For now this fills default slots with their default values.
     def preprocess(self, curr_info):
-        no_val_slots = self._get_unfilled_slots(curr_info)
-        topup = self.assign_default_values(no_val_slots)[1]
+        unfilled_slots = self._get_unfilled_slots(curr_info)
+        topup = self.assign_default_values(unfilled_slots)[1]
         return topup
 
     def assign_default_values(self, unfilled):
@@ -358,7 +358,7 @@ class InfoParser():
         self.regexDB = {}
         self.perm_slots = json_dict["permanent_slots"]
         self.ctx_slots = json_dict["contextual_slots"]
-        self.val_slots = json_dict["val_slots"]
+        self.pos_slots = json_dict["pos_slots"]
         slots = json_dict["slots"]
         self._build_slots_DB(slots)
 
@@ -387,7 +387,27 @@ class InfoParser():
 
             self.regexDB[catkey] = cached_slot
 
+    def _parse_pos_slots(self, text, out):
+        def pos_regex(pattern, grp_num):
+            match = re.search(pattern, text)
+            if match:
+                val = match.group(grp_num)
+            else:
+                val = ""
+            return val
 
+        vsl = self.pos_slots
+        out_dict = {}
+        for vs in vsl:
+            pattern = vs.get("map")
+            grp_num = vs.get("group_pos")
+            pv = pos_regex(pattern, grp_num)
+            if not pv == "":
+                print("<VAL SLOTS> PV", pv)
+                wk = vs.get("key")
+                out_dict[wk] = pv
+
+        out.update(out_dict)
 
     # Updates dict directly
     def _match_slot(self, text, slot, d, PDB = True):
@@ -415,7 +435,6 @@ class InfoParser():
         self._parse_function(text,ctx_d,self.ctx_slots)
         return
 
-
     def _no_match_val(self, catDB):
         keyword = "NO_MATCH" # HARDCODED
         defval = ""
@@ -424,6 +443,7 @@ class InfoParser():
         
         return defval
 
+    # Get slot value from intent
     def _intent_blanket_slotfill(self, intent, slots, d):
         int_slotpairs = intent.get("slotfills",[])
         out = {}
@@ -489,6 +509,8 @@ class InfoParser():
         self._parse_function(text, out, slots)
         # Permanent slot parse (overwrites existing slots)
         self._default_parse(text,out)
+        # Positional slots
+        self._parse_pos_slots(text,out)
         # Contextual parse
         self._contextual_parse(text, out)
         # if DEBUG: print("<PARSE> Final details:",out)

@@ -13,7 +13,7 @@ from chatbot_supp import *
 from chatbot_utils import dive_for_values, cbround
 
 
-SUPER_DEBUG = 0
+SUPER_DEBUG = 1
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
@@ -38,7 +38,7 @@ class StateThreader():
     def _get_threadID(self, state):
         return state["thread"]
 
-    # UNUSED intentionally. KIV.
+    # UNUSED. KIV.
     def state_never_change(self):
         return not self.state_changed
 
@@ -856,6 +856,7 @@ class DetailManager:
                 else:
                     entries[target] = defval
         
+        if SUPER_DEBUG: print("<SS TREE SEARCH> Entries:",entries)
         self.chat_prov_info.update(entries)
         return 
 
