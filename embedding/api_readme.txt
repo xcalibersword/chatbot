@@ -1,1 +1,2 @@
-Current API_model is: 0612_Model.h5
+Current API_Model is: xmas_Model.h5
+Score: 89/98
