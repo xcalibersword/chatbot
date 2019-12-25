@@ -991,7 +991,7 @@
             "terminal_state": true,
             "humanify":false,
             "calcs": [
-                "calc_specified_month",
+                "format_specified_month",
                 "flag_normal_pay_cmi",
                 "flag_bujiao_month_cmi"
             ],
@@ -1842,7 +1842,7 @@
         ]
     },
     "formulae": {
-        "calc_specified_month":{
+        "format_specified_month":{
             "writeto":"spec_month",
             "persist_value": true,
             "conditions":[],

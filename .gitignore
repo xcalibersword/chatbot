@@ -42,3 +42,5 @@ cb/
 database.json
 
 dump.json
+
+errorlog.txt

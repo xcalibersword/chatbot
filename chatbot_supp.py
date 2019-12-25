@@ -4,7 +4,7 @@ import chatbot_utils as cu
 
 SUPER_DEBUG = 0
 DEBUG = 1
-CALCULATOR_DEBUG = 0
+CALCULATOR_DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
 
@@ -221,8 +221,8 @@ class ReqGatekeeper:
 
     # For now this fills default slots with their default values.
     def preprocess(self, curr_info):
-        no_val_slots = self._get_unfilled_slots(curr_info)
-        topup = self.assign_default_values(no_val_slots)[1]
+        unfilled_slots = self._get_unfilled_slots(curr_info)
+        topup = self.assign_default_values(unfilled_slots)[1]
         return topup
 
     def assign_default_values(self, unfilled):
@@ -450,6 +450,7 @@ class InfoParser():
         self.regexDB = {}
         self.perm_slots = json_dict["permanent_slots"]
         self.ctx_slots = json_dict["contextual_slots"]
+        self.pos_slots = json_dict["pos_slots"]
         slots = json_dict["slots"]
         self._build_slots_DB(slots)
 
@@ -459,13 +460,46 @@ class InfoParser():
 
     def _build_slots_DB(self, jdata):
         for catkey in list(jdata.keys()):
-            self.regexDB[catkey] = {}
-            category = jdata[catkey]
+            obj = jdata[catkey]
+            cached_slot = {}
+            # Multi flag
+            cached_slot["multi"] = obj.get("multi",False) # False by default
+            
+            # Get category regex
+            category = obj.get("map", {})
+            if category == {}:
+                print ("<BUILD SLOTS DB> ERROR NO CATEGORY FOR {}".format(catkey))
+                continue 
+            cat_map = {}
             for value in list(category.keys()):
                 termlist = category[value]
                 regexlist = self.list_to_regexList(termlist)
-                self.regexDB[catkey][value] = regexlist
+                cat_map[value] = regexlist
+            cached_slot["map"] = cat_map
 
+            self.regexDB[catkey] = cached_slot
+
+    def _parse_pos_slots(self, text, out):
+        def pos_regex(pattern, grp_num):
+            match = re.search(pattern, text)
+            if match:
+                val = match.group(grp_num)
+            else:
+                val = ""
+            return val
+
+        vsl = self.pos_slots
+        out_dict = {}
+        for vs in vsl:
+            pattern = vs.get("map")
+            grp_num = vs.get("group_pos")
+            pv = pos_regex(pattern, grp_num)
+            if not pv == "":
+                print("<VAL SLOTS> PV", pv)
+                wk = vs.get("key")
+                out_dict[wk] = pv
+
+        out.update(out_dict)
 
     # Updates dict directly
     def _match_slot(self, text, slot, d, PDB = True):
@@ -493,7 +527,6 @@ class InfoParser():
         self._parse_function(text,ctx_d,self.ctx_slots)
         return
 
-
     def _no_match_val(self, catDB):
         keyword = "NO_MATCH" # HARDCODED
         defval = ""
@@ -502,6 +535,7 @@ class InfoParser():
         
         return defval
 
+    # Get slot value from intent
     def _intent_blanket_slotfill(self, intent, slots, d):
         int_slotpairs = intent.get("slotfills",[])
         out = {}
@@ -522,8 +556,12 @@ class InfoParser():
 
             if PDB and DEBUG: print("<GET CAT VAL> No such category:{}".format(category))
             return ""
-        catDB = self.regexDB[category]
-        value = self._no_match_val(catDB)
+        slot_obj = self.regexDB[category]
+        mf = slot_obj["multi"]
+        add_to_val = lambda v, token: v.append(token) if mf else (v.insert(0,token))
+        catDB = slot_obj["map"]
+        match_list = [self._no_match_val(catDB)]
+
         found = False
         vals = list(catDB.keys())
         for v in vals:
@@ -532,12 +570,23 @@ class InfoParser():
             if m:
                 if PDB and SUPER_DEBUG: print("<GET CAT VAL> Matched {} value:{} at {}".format(category,v,m))
                 if found:
-                    if PDB: print("<GET CAT VAL> Double value. Prev:", value, ", Current:",v)
-                # token = m.group(0)
-                value = v
-                found = True
-                # if DEBUG: print("<PARSER> Found a ", category, ":", v)
+                    if PDB: print("<GET CAT VAL> Double value. Prev:", match_list, ", Current:",v)
+                    if mf:
+                        add_to_val(match_list, v)
+                    continue
+                else:
+                    match_list.pop(0) # Remove default value
+                    add_to_val(match_list, v)
+                    found = True
+                    # if DEBUG: print("<PARSER> Found a ", category, ":", v)
         
+        if not mf:
+            value = match_list[0]
+        else:
+            if found:
+                value = match_list
+            else:
+                value = ""
         return value
 
     ### MAIN FUNCTION ### 
@@ -552,6 +601,8 @@ class InfoParser():
         self._parse_function(text, out, slots)
         # Permanent slot parse (overwrites existing slots)
         self._default_parse(text,out)
+        # Positional slots
+        self._parse_pos_slots(text,out)
         # Contextual parse
         self._contextual_parse(text, out)
         # if DEBUG: print("<PARSE> Final details:",out)
