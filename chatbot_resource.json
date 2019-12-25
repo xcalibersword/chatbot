@@ -1533,10 +1533,11 @@
                 ],
                 "lookfor": [
                     "city_district",
-                    ["city_info",["bujiao_period"]]
+                    ["city_info",["bujiao_period"]],
+                    ["calc_ext", ["w_bujiao_earliest_mth"]]
                 ],
                 "if_present":{
-                    "city_district":"{city_district}可以补缴最近{city_info[bujiao_period]}个月的社保公积金"
+                    "city_district":"{city_district}可以补缴最近{city_info[bujiao_period]}个月的社保公积金。现在最多能补到{calc_ext[w_bujiao_earliest_mth]}月"
                 }
             },
             {
@@ -1954,7 +1955,10 @@
             }
         },
         "flag_bujiao_month_cmi":{
-            "writeto": "w_bujiao_cmi_flag",
+            "writeto": [
+                ["w_bujiao_cmi_flag","OUTCOME"],
+                ["w_bujiao_earliest_mth","w_final_lower_limit", 0]
+            ],
             "conditions": [],
             "req_vars": [
                 "state_month",
@@ -1970,13 +1974,13 @@
                     "w_lower_limit"
                 ],
                 "2,isgreater":[
-                    [0,"w_lower_limit"],"w_topup"
+                    [0,"w_lower_limit"],"w_year_topup"
                 ],
                 "3,multi":[
-                    [12,"w_topup"],"w_topup_val"
+                    [12,"w_year_topup"],"w_year_topup_val"
                 ],
                 "4,add":[
-                    ["w_lower_limit","w_topup_val"],
+                    ["w_lower_limit","w_year_topup_val"],
                     "w_final_lower_limit"
                 ],
                 "5,isgreater": [

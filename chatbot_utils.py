@@ -4,7 +4,6 @@ import os
 
 # Wrapper function for dive_for_values where the detail path is a dot list
 def dive_for_dot_values(dot_list, info_dir, failzero = False, DEBUG = 1, as_val = 0):
-    print("AS VALUE inital", as_val)
     if not isinstance(dot_list, str):
         if isinstance(dot_list,list) and len(dot_list) == 1:
             dot_list = dot_list[0]
@@ -94,7 +93,6 @@ def _dive(c_list, c_dir, failzero = False, DEBUG = 1):
             else:
                 if DEBUG: print("<DIVE> ERROR! Cannot find variable<{}> in {}".format(valname,c_dir))
     
-    print("DIVE for", c_list,"RETURNING", out)
     return out
 
 def add_enh(key, value, ext_dict, subdict_name, topup, enhanced, persist = False, overwrite = False, DEBUG = 0):

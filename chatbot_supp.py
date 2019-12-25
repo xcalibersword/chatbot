@@ -701,18 +701,28 @@ class Calculator():
             return state.get("calcs", [])
 
         # Auto includes l_calc_ext and calc_topup
-        def add_calc_enh(key, rawstr, _pv = False):
-            flt = round(float(rawstr),2) # Round all displayed numbers to 2 dp
+        def add_calc_enh(key, rawstr, rnd = 2, _pv = False):
+            if rnd == 0:
+                rnd = None
+            flt = round(float(rawstr),rnd) # Round all displayed numbers to 2 dp
             if CALC_SUPER_DEBUG: print("<ENHANCE> Adding to Calc Ext {}:{}".format(key,rawstr))
             return cu.add_enh(key,flt,l_calc_ext, "calc_ext", calc_topup, enhanced, persist = _pv, overwrite = True)
 
         def assign_outputs(target_key, result_dict):
             def assign_multiple_outputs(tk_list):
                 # Forumala Multi output
-                for tk, vdk in tk_list:
+                for item in tk_list:
+                    tk = item[0]
+                    vdk = item[1]
                     result = result_dict.get(vdk,"")
                     if not result == "":
-                        add_calc_enh(tk,result,pv_flag)
+                        if len(item) == 3:
+                            # Round to specified DP
+                            r = item[2] 
+                            add_calc_enh(tk,result, rnd = r, _pv = pv_flag)
+                        else:
+                            add_calc_enh(tk,result, _pv = pv_flag)
+
                     else:
                         print("<RESOLVE FORMULA> ERROR {} not found in formula".format(vdk))
                 return 
@@ -721,7 +731,7 @@ class Calculator():
                 assign_multiple_outputs(target_key)
             else:
                 result = result_dict["OUTCOME"]
-                add_calc_enh(target_key,result,pv_flag)
+                add_calc_enh(target_key,result, _pv = pv_flag)
             return
            
         ### MAIN METHOD LOGIC ###
