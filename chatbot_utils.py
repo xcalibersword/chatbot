@@ -3,11 +3,12 @@ import os
 # Useful Functions
 
 # Wrapper function for dive_for_values where the detail path is a dot list
-def dive_for_dot_values(dot_list, info_dir, failzero = False, DEBUG = 1, as_value = 0):
+def dive_for_dot_values(dot_list, info_dir, failzero = False, DEBUG = 1, as_val = 0):
+    print("AS VALUE inital", as_val)
     if not isinstance(dot_list, str):
         if isinstance(dot_list,list) and len(dot_list) == 1:
             dot_list = dot_list[0]
-            return dive_for_dot_values(dot_list,info_dir, failzero, DEBUG)
+            return dive_for_dot_values(dot_list,info_dir, failzero, DEBUG, as_val)
         else:
             print("<DIVE FOR DOT> Bad input. Expected string", dot_list)
             return {}
@@ -29,11 +30,13 @@ def dive_for_dot_values(dot_list, info_dir, failzero = False, DEBUG = 1, as_valu
             new_nest_list = [curr, new_nest_list]
             nested = True
     if nested: new_nest_list = [new_nest_list]
-    return dive_for_values(new_nest_list, info_dir, failzero, DEBUG, as_value)
+
+    out = dive_for_values(new_nest_list, info_dir, failzero, DEBUG, as_val)
+    return out
 
 # Recursively looks in dicts for nested dicts until finds values.
 # Returns a dict of values
-def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1, as_value = 0):
+def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1, as_val = 0):
     if isinstance(nest_list,int) or isinstance(nest_list,float):
         return nest_list
         
@@ -53,8 +56,8 @@ def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1, as_value =
     dive_result = _dive(nest_list, info_dir, failzero, DEBUG)
     
     # IF there is only 1 entry
-    if len(dive_result) == 1 and as_value:
-        dive_value = list(dive_result.items())[0][1]
+    if len(dive_result) == 1 and as_val:
+        dive_value = list(dive_result.values())[0]
         return dive_value
 
     return dive_result
@@ -91,6 +94,7 @@ def _dive(c_list, c_dir, failzero = False, DEBUG = 1):
             else:
                 if DEBUG: print("<DIVE> ERROR! Cannot find variable<{}> in {}".format(valname,c_dir))
     
+    print("DIVE for", c_list,"RETURNING", out)
     return out
 
 def add_enh(key, value, ext_dict, subdict_name, topup, enhanced, persist = False, overwrite = False, DEBUG = 0):
