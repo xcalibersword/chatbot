@@ -4,7 +4,7 @@ import chatbot_utils as cu
 
 SUPER_DEBUG = 0
 DEBUG = 1
-CALCULATOR_DEBUG = 1
+CALCULATOR_DEBUG = 0
 
 DEBUG = DEBUG or SUPER_DEBUG
 

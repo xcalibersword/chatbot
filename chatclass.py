@@ -13,7 +13,7 @@ from chatbot_supp import *
 from chatbot_utils import dive_for_dot_values, dive_for_values, cbround
 
 
-SUPER_DEBUG = 1
+SUPER_DEBUG = 0
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
@@ -680,7 +680,7 @@ class DetailManager:
             "city", "city_district", "要社保", "要公积金", 
             "首次","shebao_jishu", "gjj_jishu", 
             "svc_fee_total", "shebao_basic_total",
-            "made_purchase"
+            "made_purchase", "苏州区", "北京农城"
         } # HARDCODED
         not_user_info = [
             "requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", 

@@ -55,7 +55,7 @@ def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1, as_val = 0
                 
     dive_result = _dive(nest_list, info_dir, failzero, DEBUG)
     
-    # IF there is only 1 entry
+    # as_val. Returns a raw value IF there is only 1 entry
     if len(dive_result) == 1 and as_val:
         dive_value = list(dive_result.values())[0]
         return dive_value
