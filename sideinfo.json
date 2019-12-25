@@ -98,14 +98,14 @@
                 "chosen_service":{
                     "社保":{
                         "ctx_slots.jishu_amt":{
-                            "ctx_min":[["city_info",["base_sb_jishu"]]],
-                            "ctx_max":[["city_info",["base_sb_jishu_max_limit"]]]
+                            "ctx_min":["city_info.base_sb_jishu"],
+                            "ctx_max":["city_info.base_sb_jishu_max_limit"]
                         }
                     },
                     "公积金":{
                         "ctx_slots.jishu_amt":{
-                            "ctx_min":[["city_info",["base_gjj_jishu"]]],
-                            "ctx_max":[["city_info",["base_gjj_jishu_max_limit"]]]
+                            "ctx_min":["city_info.base_gjj_jishu"],
+                            "ctx_max":["city_info.base_gjj_jishu_max_limit"]
                         }
                     }
                 },
@@ -133,10 +133,10 @@
                 "chosen_fee":{
                     "一共": ["shebao_basic_total"],
                     "社保缴纳":["w_shebao_payment"],
-                    "社保基数":[["city_info",["sb_jishu"]]],
+                    "社保基数":["city_info.sb_jishu"],
                     "公积金缴纳":["w_gjj_fee"],
-                    "公积金基数":[["city_info",["base_gjj_jishu"]]],
-                    "首次费":[["city_info",["shouci_fee"]]],
+                    "公积金基数":["city_info.base_gjj_jishu"],
+                    "首次费":["city_info.shouci_fee"],
                     "服务费":["svc_fee_total"]
                 }
             }
