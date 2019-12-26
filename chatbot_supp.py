@@ -680,13 +680,49 @@ class InfoParser():
 class Calculator():
     def __init__(self, formulae):
         self.formula_db = formulae
+        self.build_output_db(self.formula_db)
+        self.req_var_key = "req_vars"
+        self.outputs_key = "writeto"
+        self.feedback_count = 0
+
         self.DEBUG = CALCULATOR_DEBUG
         self.SUPER_DEBUG = SUPER_DEBUG
 
+    # Builds a lookup table of Output -> Formula Key
+    def build_output_db(self, fdb):
+        table = {}
+        for fname, formula in list(fdb.items()):
+            outputs = formula.get(self.outputs_key,[]) # HARDCODED
+            for op in outputs:
+                table[op] = fname # Put the key of the formula inside?
+        self.outputs_lookup = table
+
+    # Main Callable function #
     def calculate(self, curr_state, curr_info):
+        self.feedback_count = 0
         topup, temp = self._do_all_calculations(curr_state, curr_info)
         return (topup, temp)
+    
+    # Looks through the formula table to get a list of formulas that must be executed before proceeding
+    def trace_req_vars(self, req_vars):
+        fkey_queue = []
+        for rq_v in req_vars:
+            if rq_v in self.outputs_lookup:
+                fkey = self.outputs_lookup[rq_v]
+                fkey_queue.append(fkey)
+        return fkey_queue
+
+    def _get_req_vars(self, f):
+        rvs = f.get(self.req_var_key)
+        return rvs
         
+    def precalculate(self, f, info):
+        rvs = self._get_req_vars(f)
+        flist = self.trace_req_vars(rvs)
+        for f in flist:
+            self.new_resolve_formula(f, info) # This calls precalculate
+        return
+
     # Performs calculations and formats text message replies 
     ############## Major function ##############
     def _do_all_calculations(self, curr_state, info):
@@ -754,7 +790,22 @@ class Calculator():
         if state_calcs == [] and CALC_DEBUG: print("<RESOLVE FORMULA> No calculation performed")
         
         return (calc_topup, l_calc_ext)
+        
+    def detect_inf_feedback(self):
+        limit = 20
+        self.feedback_count += 1
+        return self.feedback_count > limit
 
+    def new_resolve_formula(self, f, info):
+        if self.detect_inf_feedback():
+            cu.log_error("<RESOLVE FORMULA> Infinite Precalc Feedback Loop")
+        self.precalculate(f, info) # This calls new_resolve_formula. Beware of infinite feedback loops
+        vd = self._core_resolve_formula(f, info)
+        return vd
+
+    def _core_resolve_formula(self, f, enh):
+        return self.resolve_formula(f,enh)
+    
     # Big method.
     # Takes in a formula (dict)
     # Returns a value of the result
