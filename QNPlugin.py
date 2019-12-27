@@ -10,8 +10,8 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.25
-clipboard_open_sleep = 1
+clipboard_sleep = 0.10
+clipboard_open_sleep = 0.5
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
 
@@ -148,9 +148,16 @@ def log_err(elog):
 def getRawText():
     def get_from_clipboard():
         rpt = 0
-        rpt_limit = 10
-        succeed = False
+        rpt_limit = 50
         raw_text = ""
+
+
+        names = [
+            "OPEN CLIPBOARD",
+            "GET CLIPBOARD",
+            "EMPTY CLIPBOARD",
+            "CLOSE CLIPBOARD"
+        ]
 
         tasks = [
             win32clipboard.OpenClipboard, 
@@ -159,13 +166,11 @@ def getRawText():
             win32clipboard.CloseClipboard
         ]
 
-        count = 0
         for lmbda in tasks:
+            count = 0
             succeed = False
             while not succeed and rpt < rpt_limit:
                 rpt += 1
-                raw_text = ""
-
                 try:
                     if count == 1:
                         raw_text = lmbda()
@@ -178,22 +183,15 @@ def getRawText():
                     count += 1
                     succeed = True
                 except Exception as e:
-                    if count == 0:
-                        print("OPEN CLIPBOARD EXCEPTION:",e,"Trying again...")
-                        log_err("OPEN CLIPBOARD")
-                    elif count == 1:
-                        print("GET CLIPBOARD EXCEPTION:",e,"Trying again...")
-                        log_err("GET CLIPBOARD")
-                    elif count == 2:
-                        print("EmptyClipboard EXCEPTION:",e)
-                        log_err("EMPTY CLIPBOARD")
-                    elif count == 3:
-                        print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
-                        log_err("CLOSE CLIPBOARD")
-                    
+                    taskname = names[count]
+                    # print(taskname, "EXCEPTION:",e,"Trying again...")
+                    log_err(taskname)
                     
                 time.sleep(clipboard_sleep)
                 # End of single task loop
+                if count > 1:
+                    taskname = names[count]
+                    print(taskname,"took",count,"tries")
             # The end of the overall task list loop
         return raw_text.splitlines()
 
