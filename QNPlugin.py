@@ -10,8 +10,8 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.05
-clipboard_err_sleep = 0.5
+clipboard_sleep = 0.2
+clipboard_err_sleep = 0.3
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
 
@@ -152,52 +152,44 @@ def getRawText():
         succeed = False
         raw_text = ""
 
-        while not succeed and rpt < rpt_limit:
-            rpt += 1
-            raw_text = ""
+        tasks = [
+            win32clipboard.OpenClipboard, 
+            win32clipboard.GetClipboardData,
+            win32clipboard.EmptyClipboard,
+            win32clipboard.CloseClipboard
+        ]
 
-            try:
-                win32clipboard.OpenClipboard()
-                succeed = True
-            except Exception as e:
-                print("OPEN CLIPBOARD EXCEPTION:",e,"Trying again...")
-                log_err("OPEN CLIPBOARD")
-                continue
-            finally:
-                time.sleep(clipboard_sleep)
+        count = 0
+        for lmbda in tasks:
+            succeed = False
+            while not succeed and rpt < rpt_limit:
+                rpt += 1
+                raw_text = ""
 
-            try:
-                raw_text = win32clipboard.GetClipboardData()
-            except Exception as e:
-                print("GET CLIPBOARD EXCEPTION:",e,"Trying again...")
-                log_err("GET CLIPBOARD")
-                time.sleep(clipboard_err_sleep)
-                continue
-            finally:
-                time.sleep(clipboard_sleep)
-        
-            try:
-                win32clipboard.EmptyClipboard()
-            except Exception as e:
-                print("EmptyClipboard EXCEPTION:",e)
-                log_err("EMPTY CLIPBOARD")
-                time.sleep(clipboard_err_sleep)
-                continue
-            finally:
-                time.sleep(clipboard_sleep)
+                try:
+                    if count == 1:
+                        raw_text = lmbda()
+                    else:
+                        lmbda() # Execute
+                    succeed = True
 
-            try:
-                win32clipboard.CloseClipboard()
-            except Exception as e:
-                print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
-                log_err("CLOSE CLIPBOARD")
-                time.sleep(clipboard_err_sleep)
-                continue
-            finally:
+                except Exception as e:
+                    if count == 0:
+                        print("OPEN CLIPBOARD EXCEPTION:",e,"Trying again...")
+                        log_err("OPEN CLIPBOARD")
+                    elif count == 1:
+                        print("GET CLIPBOARD EXCEPTION:",e,"Trying again...")
+                        log_err("GET CLIPBOARD")
+                    elif count == 2:
+                        print("EmptyClipboard EXCEPTION:",e)
+                        log_err("EMPTY CLIPBOARD")
+                    elif count == 3:
+                        print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
+                        log_err("CLOSE CLIPBOARD")
+                    
                 time.sleep(clipboard_sleep)
-
-            succeed = True
-            # The end of the loop
+                # End of single task loop
+            # The end of the overall task list loop
         return raw_text.splitlines()
 
     raw_text_list = get_from_clipboard()
