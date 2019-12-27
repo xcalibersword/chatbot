@@ -34,7 +34,6 @@ def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1, as_val = 0
     if isinstance(nest_list,list) and len(nest_list) > 0:
         inner_list = nest_list[0]
         if len(inner_list) < 2:
-            if DEBUG: print("<DIVE> inner_list too short: ",inner_list,"original:",nest_list)
             if len(inner_list) == 1:
                 in_in_list = inner_list[0]
                 if isinstance(in_in_list, str):
@@ -84,7 +83,7 @@ def _dive(c_list, c_dir, prefix, failzero = False, DEBUG = 1, full_path = 1):
                 # Returns 0
                 out[valname] = 0
             else:
-                if DEBUG: print("<DIVE> ERROR! Cannot find variable<{}> in {}".format(valname,c_dir))
+                if DEBUG: print("<DIVE> ERROR! Cannot find variable<{}>".format(valname))
     
     return out
 
@@ -109,6 +108,7 @@ def _docloc_to_list(dot_loc, flatlist = False):
 
     pathlist = dot_loc.split(".")
     new_nest_list = []
+
     while 1:
         if len(pathlist) == 0:
             break
@@ -116,14 +116,11 @@ def _docloc_to_list(dot_loc, flatlist = False):
         new_nest_list = collect(curr, new_nest_list)
         
     if not flatlist: new_nest_list = [new_nest_list]
-
-    print("DOTLOC TO LIST RETURNING", new_nest_list)
     return new_nest_list
 
 # Changes info
 def dotpop(dotloc, original_info):
     flatlist = _docloc_to_list(dotloc, flatlist = 1)
-    print("DOTPOP flatlist", flatlist)
     curr_d = original_info
     for ddir in flatlist:
         if ddir == flatlist[-1]:

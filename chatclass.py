@@ -13,7 +13,7 @@ from chatbot_supp import *
 from chatbot_utils import dive_for_dot_values, dive_for_values, cbround
 
 
-SUPER_DEBUG = 1
+SUPER_DEBUG = 0
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
@@ -36,7 +36,11 @@ class StateThreader():
         return thrd
 
     def _get_threadID(self, state):
-        return state["thread"]
+        tid = state.get("thread","")
+        if tid == "":
+            print("<GET THREADID> State has no thread", state)
+            raise Exception("THREAD ID EXCEPTION")
+        return tid
 
     # UNUSED. KIV.
     def state_never_change(self):
@@ -246,6 +250,54 @@ class ChatManager:
             no_reply = ""
             return (no_reply, {}, self._get_current_info())
 
+        uds, NLP_bd, nums = self._policykeeper_parse(msg)
+        
+        self.goto_next_state(uds, msg, nums)
+        
+        calc_ext_dict = self._calculate()
+        reply, topup = self._fetch_reply(uds,calc_ext_dict)
+
+        self._post_process(uds, topup)
+
+        curr_info = self._get_current_info()
+        return (reply, NLP_bd, curr_info)
+
+    def goto_next_state(self, understanding, msg, nums):
+        sip = understanding.get_sip()
+        d_state_obj = self._sip_to_stateobj(sip)
+        intent = understanding.get_orig_intent()
+
+        repeat = False
+        while True:
+            print("<GOTO NEXT STATE> d state obj", d_state_obj.get("key"))
+            # Gatekeeper reqs
+            self._get_slots_from_state(d_state_obj)
+            # Parse for slots
+            self._parse_message_details(msg, intent, nums)
+            # Calculate (for crossroads)
+            self._calculate() 
+            # Try gate and CHANGE STATE
+            self._advance_to_new_state(d_state_obj)
+
+            # FINAL state change
+            crossroad_traverse, d_state_obj = self._traverse_crossroads(d_state_obj)
+
+            if crossroad_traverse:
+                repeat = True
+                d_state_obj = self._sip_to_stateobj(sip.same_state())
+                continue
+            break
+        return
+
+    def _traverse_crossroads(self, state):
+        ow_flag, next_state = self._zone_policy_overwrite(state)
+        return (ow_flag, next_state)
+
+    def old_respond_to_message(self, msg):
+        if self.is_inactive():
+            no_reply = ""
+            return (no_reply, {}, self._get_current_info())
+
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&") # For clarity in terminal     
         firstpass = True
         pg_fail = False
@@ -287,8 +339,7 @@ class ChatManager:
         if SUPER_DEBUG: print("########################################## REPLY CALCULATOR ##########################################")
         calc_ext = self._calculate(double=True)
     
-        intent = full_uds.get_intent()
-        reply, topup = self._fetch_reply(intent, calc_ext)
+        reply, topup = self._fetch_reply(full_uds, calc_ext)
         
         # Clean up. 
         self._post_process(full_uds, topup)
@@ -314,14 +365,25 @@ class ChatManager:
 
         # Mine message details. 
         # This is after gatekeep because gatekeep sets the slots.
-        og_int = uds.get_og_intent()
-        self._parse_message_details(msg, nums,og_int)
+        og_int = uds.get_orig_intent()
+        self._parse_message_details(msg, og_int, nums)
 
         # Preprocess to fill slots with default vals
         self._gatekeeper_preprocess()
 
         return uds, bd
     
+    # Also converts samestate SIP to a state obj
+    def _sip_to_stateobj(self, sip):
+        if sip.is_same_state():
+            if DEBUG: print("<REACTION> SAME STATE FLAGGED")
+            self.samestateflag = True
+            stateobj = self._get_curr_state()
+        else:
+            self.samestateflag = False
+            stateobj = sip.get_state_obj()
+        return stateobj
+
     # Calculate, zonecheck, gatekeep then internalize changes
     # Converts same_state_obj to the current state.
     # Checks if the state is crossroad and needs to be overwritten
@@ -332,13 +394,8 @@ class ChatManager:
         if sip.is_deactivate():
             self.deactivate()
 
-        if sip.is_same_state():
-            if DEBUG: print("<REACTION> SAME STATE FLAGGED")
-            self.samestateflag = True
-            stateobj = self._get_curr_state()
-        else:
-            self.samestateflag = False
-            stateobj = sip.get_state_obj()
+        stateobj = self._sip_to_stateobj(sip)
+        
         if DEBUG: print("<REACTION> Curr state", self._get_curr_state()["key"], "Nxt stateobj", stateobj["key"])
         
         # Check if current target state is in a zone_policy crossroad 
@@ -413,7 +470,8 @@ class ChatManager:
 
     ### Ask Helpers
     # Ask replygen for a reply
-    def _fetch_reply(self,intent, calc_ext):
+    def _fetch_reply(self,uds, calc_ext):
+        intent = uds.get_intent()
         info = self._get_current_info()
         info["calc_ext"] = calc_ext #Add calc ext to the info to be passed in
 
@@ -432,7 +490,7 @@ class ChatManager:
         return self.pkeeper.get_understanding(msg, csk)
 
     # Asks iparser to parse the message
-    def _parse_message_details(self, msg, nums, intent):
+    def _parse_message_details(self, msg, intent, nums):
         slots = self.gatekeeper.get_slots() # Only look out for what is needed
         details = self.iparser.parse(msg, slots, intent)
 
@@ -814,7 +872,6 @@ class DetailManager:
             else:
                 return tree_search(tree, tree_info)
             
-
         curr_info = self.fetch_info()
         ss_default_flag = "DEFAULT" # HARDCODED
         entries = {}

@@ -89,7 +89,7 @@ class Understanding:
     def get_intent(self):
         return self.intent
 
-    def get_og_intent(self):
+    def get_orig_intent(self):
         return self.og_intent
 
     def get_sip(self):
