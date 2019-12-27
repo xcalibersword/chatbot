@@ -11,7 +11,7 @@ import pandas as pd
 GLOBAL = {}
 
 clipboard_sleep = 0.10
-clipboard_open_sleep = 0.5
+clipboard_open_sleep = 1
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
 
@@ -165,6 +165,8 @@ def getRawText():
         ]
         count = 0
         for lmbda in tasks:
+            taskname = names[count]
+            print("Executing",taskname)
             rpt = 0
             succeed = False
             while not succeed and rpt < rpt_limit:
@@ -174,22 +176,18 @@ def getRawText():
                         raw_text = lmbda()
                     else:
                         lmbda() # Execute
-
-                    if count == 0:
-                        time.sleep(clipboard_open_sleep) # Extra sleep for open
-
-                    succeed = True
+                    succeed = True            
                 except Exception as e:
-                    taskname = names[count]
-                    # print(taskname, "EXCEPTION:",e,"Trying again...")
-                    log_err(taskname)
-                    
-                time.sleep(clipboard_sleep)
-                count += 1
-                if rpt > 1:
-                    taskname = names[count]
-                    print(taskname,"took",count,"tries")
+                    if rpt%10 == 0: print(taskname, "EXCEPTION:",e,"Trying again...")
+                    # log_err(taskname)
+                finally:
+                    time.sleep(clipboard_sleep)
                 # End of single task loop
+            
+            if count == 0:
+                time.sleep(clipboard_open_sleep) # Extra sleep for open
+            count += 1
+            if rpt > 5: print(taskname,"succeed?",succeed,"Took:",rpt,"tries")
             # The end of the overall task list loop
         return raw_text.splitlines()
 
