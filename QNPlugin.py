@@ -147,10 +147,8 @@ def log_err(elog):
 # Returns a reverse ordered list
 def getRawText():
     def get_from_clipboard():
-        rpt = 0
         rpt_limit = 50
         raw_text = ""
-
 
         names = [
             "OPEN CLIPBOARD",
@@ -165,9 +163,9 @@ def getRawText():
             win32clipboard.EmptyClipboard,
             win32clipboard.CloseClipboard
         ]
-
+        count = 0
         for lmbda in tasks:
-            count = 0
+            rpt = 0
             succeed = False
             while not succeed and rpt < rpt_limit:
                 rpt += 1
@@ -180,7 +178,6 @@ def getRawText():
                     if count == 0:
                         time.sleep(clipboard_open_sleep) # Extra sleep for open
 
-                    count += 1
                     succeed = True
                 except Exception as e:
                     taskname = names[count]
@@ -188,10 +185,11 @@ def getRawText():
                     log_err(taskname)
                     
                 time.sleep(clipboard_sleep)
-                # End of single task loop
-                if count > 1:
+                count += 1
+                if rpt > 1:
                     taskname = names[count]
                     print(taskname,"took",count,"tries")
+                # End of single task loop
             # The end of the overall task list loop
         return raw_text.splitlines()
 
