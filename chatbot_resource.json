@@ -1899,7 +1899,7 @@
             ],
             "req_vars": [
                 "首次",
-                ["city_info",["shouci_fee"]]
+                "city_info.shouci_fee"
             ],
             "steps": {
                 "1,multi": [
@@ -1920,11 +1920,7 @@
                 "state_month",
                 "ss_purchase_for_month",
                 "state_curr_day",
-                ["city_info",
-                    [
-                        "pay_deadline"
-                    ]
-                ]
+                "city_info.pay_deadline"
             ],
             "steps": {
                 "1,isgreater": [
@@ -1963,10 +1959,7 @@
             "req_vars": [
                 "state_month",
                 "ss_purchase_for_month",
-                [
-                    "city_info",
-                    ["bujiao_period"]
-                ]
+                "city_info.bujiao_period"
             ],
             "steps": {
                 "1,sub":[
@@ -2004,7 +1997,7 @@
             "persist_value":true,
             "conditions": [["flag_sb_gjj",11,["w_svcfee_multi",2,1]]],
             "req_vars": [
-                ["city_info",["svc_fee"]],
+                "city_info.svc_fee",
                 "flag_sb_gjj"
             ],
             "steps": {
@@ -2024,7 +2017,7 @@
             ],
             "persist_value": true,
             "req_vars": [
-                ["city_info",["shebao_payment"]]
+                "city_info.shebao_payment"
             ],
             "optional_vars": [
                 "w_custom_sb_fee",
@@ -2056,9 +2049,7 @@
             ],
             "persist_value": true,
             "req_vars": [
-                [
-                    "city_info",["gongjijin_fee"]
-                ]
+                "city_info.gongjijin_fee"
             ],
             "optional_vars": [
                 "w_custom_gjj_fee",
@@ -2099,7 +2090,7 @@
                 "svc_fee_total",
                 "w_gjj_fee",
                 "w_shebao_payment",
-                ["calc_ext",["w_shouci_fee"]]
+                "calc_ext.w_shouci_fee"
             ],
             "steps": {
                 "1,add": [
@@ -2172,13 +2163,12 @@
             "conditions": [],
             "persist_value": true,
             "req_vars": [
-                ["city_info",
-                    ["base_gjj_jishu","base_gjj_jishu_max_limit"]
-                ]
+                "city_info.base_gjj_jishu",
+                "city_info.base_gjj_jishu_max_limit"
             ],
             "optional_vars":[
                 "gjj_jishu",
-                ["calc_ext",["temp_gjj_jishu"]]
+                "calc_ext.temp_gjj_jishu"
             ],
             "steps": {
                 "0,equals":[
@@ -2220,7 +2210,7 @@
             "conditions": [],
             "persist_value": true,
             "req_vars": [
-                ["city_info",["base_gjj_jishu_multi"]]
+                "city_info.base_gjj_jishu_multi"
             ],
             "optional_vars":[
                 "gjj_jishu"
@@ -2257,13 +2247,12 @@
             "conditions": [],
             "persist_value": true,
             "req_vars": [
-                ["city_info",
-                    ["base_sb_jishu","base_sb_jishu_max_limit"]
-                ]
+                "city_info.base_sb_jishu",
+                "city_info.base_sb_jishu_max_limit"
             ],
             "optional_vars":[
                 "shebao_jishu",
-                ["calc_ext",["temp_sb_jishu"]]
+                "calc_ext.temp_sb_jishu"
             ],
             "steps": {
                 "0,equals":[
@@ -2305,7 +2294,7 @@
             "conditions": [],
             "persist_value": true,
             "req_vars": [
-                ["city_info",["base_sb_jishu_multi"]]
+                "city_info.base_sb_jishu_multi"
             ],
             "optional_vars":[
                 "shebao_jishu"

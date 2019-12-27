@@ -13,7 +13,7 @@ from chatbot_supp import *
 from chatbot_utils import dive_for_dot_values, dive_for_values, cbround
 
 
-SUPER_DEBUG = 0
+SUPER_DEBUG = 1
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
@@ -774,7 +774,7 @@ class DetailManager:
                                 # Is a leaf
                                 out = get_value(ss_branch, t_info)
                                 # Cut from info
-                                pp = curr_d.pop(loc)
+                                pp = cu.dotpop(loc, curr_d)
                                 if SUPER_DEBUG: print("<TREE> pop leaf",pp)
                                 return (True, out)
                         else:
@@ -794,7 +794,7 @@ class DetailManager:
                                 # Is a _ANY leaf
                                 out = get_value(a_branch, t_info)
                                 # Cut from info
-                                pp = curr_d.pop(loc)
+                                pp = cu.dotpop(loc, curr_d)
                                 if SUPER_DEBUG: print("<TREE> pop _ANY leaf",pp)
                                 return (True, out)
                     

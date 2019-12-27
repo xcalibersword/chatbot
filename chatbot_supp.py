@@ -353,7 +353,7 @@ class Announcer():
         
         out_msg = msg
 
-        if SUPER_DEBUG or 1: print("<ANNOUNCE>",out_msg, "| announcement list", alist)
+        if SUPER_DEBUG: print("<ANNOUNCE>",out_msg, "| announcement list", alist)
         for announcement in alist:
             out_msg = add_announcement_text(out_msg, announcement)
             flag_annoucement(announcement)
@@ -679,22 +679,42 @@ class InfoParser():
 
 class Calculator():
     def __init__(self, formulae):
-        self.formula_db = formulae
-        self.build_output_db(self.formula_db)
-        self.req_var_key = "req_vars"
-        self.outputs_key = "writeto"
-        self.feedback_count = 0
-
         self.DEBUG = CALCULATOR_DEBUG
         self.SUPER_DEBUG = SUPER_DEBUG
 
+        self.req_var_key = "req_vars"
+        self.outputs_key = "writeto"
+        self.pv_key = "persist_value"
+
+        self.formula_db = formulae
+        self.build_output_db(self.formula_db)
+        self.feedback_count = 0
+        return
+
     # Builds a lookup table of Output -> Formula Key
     def build_output_db(self, fdb):
+        def write_entry(fname, pv):
+            ext = "calc_ext." #Extension for non persist values
+            if pv:
+                return fname
+            else:
+                return ext + fname
+        
+        def extract_dkey(opline):
+            return opline[0]
+
         table = {}
         for fname, formula in list(fdb.items()):
-            outputs = formula.get(self.outputs_key,[]) # HARDCODED
+            outputs = self._get_writeto(formula)
+            pv = self._get_persist_value(formula)
             for op in outputs:
-                table[op] = fname # Put the key of the formula inside?
+                if isinstance(op,list):
+                    deet_key = extract_dkey(op)
+                    op_key = write_entry(deet_key, pv)
+                    table[op_key] = fname # Put the dot notation key of the formula
+                else:    
+                    op_key = write_entry(op, pv)
+                    table[op_key] = fname # Put the dot notation key of the formula
         self.outputs_lookup = table
 
     # Main Callable function #
@@ -706,19 +726,33 @@ class Calculator():
     # Looks through the formula table to get a list of formulas that must be executed before proceeding
     def trace_req_vars(self, req_vars):
         fkey_queue = []
+        formula_set = {}
         for rq_v in req_vars:
             if rq_v in self.outputs_lookup:
                 fkey = self.outputs_lookup[rq_v]
-                fkey_queue.append(fkey)
+                if not fkey in formula_set:
+                    # Prevent repeat of same formulas
+                    formula_set[fkey] = 1
+                    fkey_queue.append(fkey)
         return fkey_queue
 
     def _get_req_vars(self, f):
         rvs = f.get(self.req_var_key)
         return rvs
+
+    def _get_persist_value(self,f):
+        return f.get(self.pv_key,False)
         
+    def _get_writeto(self, f):
+        return f.get(self.outputs_key, [])
+    
+    def _get_calcs(self, state):
+        return state.get("calcs", [])
+
     def precalculate(self, f, info):
         rvs = self._get_req_vars(f)
         flist = self.trace_req_vars(rvs)
+        self.debug_print("<PRECALCULATING>" + str(flist) + " before performing " + str(f))
         for f in flist:
             self.new_resolve_formula(f, info) # This calls precalculate
         return
@@ -732,9 +766,6 @@ class Calculator():
         CALC_SUPER_DEBUG = self.SUPER_DEBUG
         enhanced = info.copy() 
         calcDB = self.formula_db.copy()
-
-        def get_calcs(state):
-            return state.get("calcs", [])
 
         # Auto includes l_calc_ext and calc_topup
         def add_calc_enh(key, rawstr, rnd = 2, _pv = False):
@@ -772,17 +803,17 @@ class Calculator():
            
         ### MAIN METHOD LOGIC ###
         # Calculations
-        state_calcs = get_calcs(curr_state)
+        state_calcs = self._get_calcs(curr_state)
         for fname in state_calcs:
-            if CALC_DEBUG: print("<RESOLVE FORMULA> Performing:",fname)
+            self.debug_print("<RESOLVE FORMULA> Performing: "+fname)
             if not fname in calcDB:
                 print("<RESOLVE FORMULA> ERROR! No such formula:{}".format(fname))
             else:
                 formula = calcDB[fname]
-                pv_flag = formula.get("persist_value",False)
-                target_key = formula["writeto"]
+                pv_flag = self._get_persist_value(formula)
+                target_keys = self._get_writeto(formula)
                 result_dict = self.resolve_formula(formula, enhanced)
-                assign_outputs(target_key, result_dict)
+                assign_outputs(target_keys, result_dict)
 
             # if CALC_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
         
@@ -792,7 +823,7 @@ class Calculator():
         return (calc_topup, l_calc_ext)
         
     def detect_inf_feedback(self):
-        limit = 20
+        limit = 10
         self.feedback_count += 1
         return self.feedback_count > limit
 
@@ -837,7 +868,7 @@ class Calculator():
             out = None
             for vname in varnames:
                 isnumbr = cbsv.is_number(vname)
-                rel_val = vname if isnumbr else vdic[vname] # variables can be real numbers or variable names
+                rel_val = vname if isnumbr else vdic.get(vname) # variables can be real numbers or variable names
                 if rel_val == "":
                     print("<FORMULA OPERATION> ERROR no value for {} in {}".format(vname, varnames))
                     rel_val = 0
@@ -847,6 +878,7 @@ class Calculator():
                 else:
                     out = operate(out,rel_val,op)
             return out
+
         def get_operator(opname):
             opname = opname.replace(" ","") #Spacing messes up the recognition of logical operators
             if opname == "add":
@@ -899,11 +931,11 @@ class Calculator():
             reqvar_key = "req_vars"
             opvar_key = "optional_vars"
             req_vars = f.get(reqvar_key,[])
-            vd = cu.dive_for_values(req_vars,enh)
+            vd = cu.dive_for_dot_values(req_vars,enh)
 
             # Fetch optional values
             op_vars = f.get(opvar_key, []) # If not found, value = 0
-            op_vars_d = cu.dive_for_values(op_vars, enh,failzero=True)
+            op_vars_d = cu.dive_for_dot_values(op_vars, enh,failzero=True)
             vd.update(op_vars_d)
 
             # Fetch conditional values
@@ -924,6 +956,10 @@ class Calculator():
             opr = get_operator(opname)
             vd[targetkey] = op_on_all(valnames,opr,vd)
         return vd
+
+    def debug_print(self, msg):
+        if self.DEBUG: print(msg)
+        return
 
 if __name__ == "__main__":
     print("Number Converter On!")
