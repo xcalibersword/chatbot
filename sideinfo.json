@@ -39,25 +39,6 @@
             }
         },
         {
-            "writeto": "ss_purchase_cmi_flag",
-            "search_tree": {
-                "purchase_type": {
-                    "normal": {
-                        "w_normal_cmi_flag":{
-                            "1.0": "still_can",
-                            "0.0": "too_late"
-                        }
-                    },
-                    "bujiao": {
-                        "w_bujiao_cmi_flag":{
-                            "1.0": "still_can",
-                            "0.0": "too_late"
-                        }
-                    }   
-                }
-            }
-        },
-        {
             "writeto": "work_hrs_flag",
             "DEFAULT": "no",
             "search_tree": {

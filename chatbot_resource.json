@@ -725,15 +725,6 @@
                 "given_amount"
             ],
             "calcs":[
-                "calc_flag_sb_gjj",
-                "flag_shouci",
-                "sum_svc_fee",
-                "flag_custom_sb",
-                "calc_custom_sb_fee",
-                "shebao_fee_amt",
-                "flag_custom_gjj",
-                "calc_custom_gjj_fee",
-                "gongjijin_fee_amt",
                 "shebao_basic_calc",
                 "calc_component_value",
                 "flag_component_value_match"
@@ -1843,6 +1834,32 @@
         ]
     },
     "formulae": {
+        "flag_purchase_cmi":{
+            "writeto": "ss_purchase_cmi_flag",
+            "persist_value": true,
+            "type": "tree",
+            "req_vars":[
+                "purcahse_type",
+                "w_normal_cmi_flag",
+                "w_bujiao_cmi_flag"
+            ],
+            "search_tree": {
+                "purchase_type": {
+                    "normal": {
+                        "w_normal_cmi_flag":{
+                            "1.0": "still_can",
+                            "0.0": "too_late"
+                        }
+                    },
+                    "bujiao": {
+                        "w_bujiao_cmi_flag":{
+                            "1.0": "still_can",
+                            "0.0": "too_late"
+                        }
+                    }   
+                }
+            }
+        },
         "format_specified_month":{
             "writeto":"spec_month",
             "persist_value": true,

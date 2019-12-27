@@ -1,6 +1,6 @@
 {
     "COMMENTS":"File to decide state transition logic. Called policies. CONSIDER: Changing from list of pairs to dict",
-    "zone_policies":{
+    "crossroad_policies":{
         "city_crossroad":[
             "city",{
                 "湖南": "unsupported_city",

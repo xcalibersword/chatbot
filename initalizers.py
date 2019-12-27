@@ -114,12 +114,12 @@ def init_policykeeper(jdata, pdata):
             continue # Don't overwrite existing policy lookup values
         POLICY_RULES[k] = make_policy([])
 
-    ZONE_POLICIES = pdata["zone_policies"]
+    XROAD_POLICIES = pdata["crossroad_policies"]
 
     ## INITALIZE NLP_API here
     pp = Predictor() 
 
-    return PolicyKeeper(POLICY_RULES, ZONE_POLICIES, INTENTS, STATES, pp)
+    return PolicyKeeper(POLICY_RULES, XROAD_POLICIES, INTENTS, STATES, pp)
 
 def init_replygen(jdata, inf):
     def _init_humanizer(info):

@@ -1,10 +1,11 @@
 import cbsv
 import re
+import copy
 import chatbot_utils as cu
 
 SUPER_DEBUG = 0
 DEBUG = 1
-CALCULATOR_DEBUG = 0
+CALCULATOR_DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
 
@@ -749,6 +750,7 @@ class Calculator():
     def _get_calcs(self, state):
         return state.get("calcs", [])
 
+    # Traces required variables and executes whatever produces the variables
     def precalculate(self, f, info):
         rvs = self._get_req_vars(f)
         flist = self.trace_req_vars(rvs)
@@ -806,13 +808,13 @@ class Calculator():
         state_calcs = self._get_calcs(curr_state)
         for fname in state_calcs:
             self.debug_print("<RESOLVE FORMULA> Performing: "+fname)
-            if not fname in calcDB:
+            formula = calcDB.get(fname, "")
+            if formula == "":
                 print("<RESOLVE FORMULA> ERROR! No such formula:{}".format(fname))
             else:
-                formula = calcDB[fname]
                 pv_flag = self._get_persist_value(formula)
                 target_keys = self._get_writeto(formula)
-                result_dict = self.resolve_formula(formula, enhanced)
+                result_dict = self.new_resolve_formula(formula, enhanced)
                 assign_outputs(target_keys, result_dict)
 
             # if CALC_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
@@ -835,12 +837,112 @@ class Calculator():
         return vd
 
     def _core_resolve_formula(self, f, enh):
-        return self.resolve_formula(f,enh)
+        is_a_tree = (f.get("type", "") == "tree")
+        if is_a_tree:
+            # Is a tree
+            return self.resolve_tree(f, enh)
+        else:
+            # Is a formula
+            return self.resolve_calculation(f,enh)
     
+    # Tree search
+    # Can only return 1 value. For multi values, use multiple trees.
+    def resolve_tree(self, f, enh):
+        def search_through_tree(tree, info, multi):
+            any_val_key = "_ANY"
+
+            def get_leaf_value(branch, info):
+                if isinstance(branch,list):
+                    final = cu.dive_for_dot_values(branch, info, DEBUG=SUPER_DEBUG, as_val = 1)
+                    
+                    if final == {}:
+                        if DEBUG: print("<SECONDARY SLOT GETV> {} not found in info".format(branch))
+                        final = ""
+                    return final
+
+                # If not, is a raw value
+                return branch
+
+            def tree_search(tree, t_info):
+                for slotname, sub_dict in list(tree.items()):
+                    dive_dict = cu.dive_for_dot_values(slotname, t_info) # As dict
+                    if dive_dict == {}:
+                        # IF not found
+                        if SUPER_DEBUG: print("<TREE> ERROR {} not found".format(str(slotname)))
+                        slot_val = ""
+                        break
+
+                    loc, slot_val = list(dive_dict.items())[0]
+                    slot_val = str(slot_val) # Convert to strings because json keys are strings. I.e. for hours
+                    
+                    if SUPER_DEBUG: print("<TREE> Current slot:", loc, "| val:", slot_val)
+                    
+                    # Check if curr_info detail's value is in the subdict
+                    if slot_val in sub_dict:
+                        matched_branch = sub_dict[slot_val]
+                        if isinstance(matched_branch, dict):
+                            # Is a subtree
+                            if SUPER_DEBUG: print("<TREE> Found a subtree",matched_branch, "in",sub_dict)
+                            slotname, sub_tree = list(matched_branch.items())[0]
+                            found, returned = tree_search(sub_tree,t_info)
+                            if found:
+                                return (found, returned)
+                            continue
+
+                        else:
+                            # Is a leaf
+                            out = get_leaf_value(matched_branch, t_info)
+                            pp = cu.dotpop(loc, t_info) # Cut from info
+                            if SUPER_DEBUG: print("<TREE> pop leaf",pp)
+                            return (True, out)
+                    else:
+                        # Fallback and look for _ANY match
+                        a_branch = sub_dict.get(any_val_key,-1)
+                        if not a_branch:
+                            # Search failed
+                            if SUPER_DEBUG: print("<SECONDARY SLOT> Val:", slot_val, "not found in:", sub_dict)
+                            break
+
+                        if isinstance(a_branch, dict):
+                            # Is a _ANY branch
+                            slotname, sub_tree = list(a_branch.items())[0]
+                            found, returned = tree_search(sub_tree,t_info)
+                            if found:
+                                return (found, returned)
+                            continue
+
+                        else:
+                            # Is a _ANY leaf
+                            out = get_leaf_value(a_branch, t_info)
+                            # Cut from info
+                            pp = cu.dotpop(loc, t_info)
+                            if SUPER_DEBUG: print("<TREE> pop _ANY leaf",pp)
+                            return (True, out)
+                    
+                return (False, "")
+
+            tree_info = copy.deepcopy(info)
+            if multi:
+                # Multiple slot
+                collect = []
+                while True:
+                    result, val = tree_search(tree, tree_info)
+                    if not result: break # Once cannot find, break
+                    collect.append(val)
+                found = not (collect == [])
+                return found, collect
+            else:
+                return tree_search(tree, tree_info)
+
+        tree = f.get("search_tree", {})
+        found_flag, val = search_through_tree(tree, enh, False)
+        if not found_flag and SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)
+        return val
+
     # Big method.
     # Takes in a formula (dict)
     # Returns a value of the result
-    def resolve_formula(self, f, enh):
+    def resolve_calculation(self, f, enh):
         def get_steps(f):
             instr = f.get("steps",[])
             if instr == []:

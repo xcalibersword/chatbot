@@ -183,6 +183,7 @@ class ConvoThread:
 class ZoneTracker:
     def __init__(self):
         self.zones = {}
+        self.zkey = "zones"
 
     def _add_zone(self, z, val):
         # if z in self.zones:
@@ -193,9 +194,8 @@ class ZoneTracker:
     # Fetches info from the dm
     def update_zones_from_dm(self, dm):
         all_info = dm.fetch_info()
-        zkey = "zones" # HARDCODED
-        if zkey in all_info:
-            zone_dic = all_info[zkey]
+        if self.zkey in all_info:
+            zone_dic = all_info[self.zkey]
             for z, val in zone_dic.items():
                 self._add_zone(z, val)
         return
@@ -250,6 +250,8 @@ class ChatManager:
             no_reply = ""
             return (no_reply, {}, self._get_current_info())
 
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&") # For clarity in terminal     
+        print("Message recieved:",msg)
         uds, NLP_bd, nums = self._policykeeper_parse(msg)
         
         self.goto_next_state(uds, msg, nums)
@@ -268,12 +270,15 @@ class ChatManager:
         intent = understanding.get_orig_intent()
 
         repeat = False
+        count = 0
         while True:
             print("<GOTO NEXT STATE> d state obj", d_state_obj.get("key"))
             # Gatekeeper reqs
             self._get_slots_from_state(d_state_obj)
             # Parse for slots
             self._parse_message_details(msg, intent, nums)
+            # Preprocess to fill slots with default vals
+            self._gatekeeper_preprocess()
             # Calculate (for crossroads)
             self._calculate() 
             # Try gate and CHANGE STATE
@@ -282,15 +287,17 @@ class ChatManager:
             # FINAL state change
             crossroad_traverse, d_state_obj = self._traverse_crossroads(d_state_obj)
 
-            if crossroad_traverse:
+            if crossroad_traverse and count < 10:
                 repeat = True
                 d_state_obj = self._sip_to_stateobj(sip.same_state())
+                print("<GOTO NEXT STATE> REPEATING", d_state_obj, "count", count)
+                count += 1
                 continue
             break
         return
 
     def _traverse_crossroads(self, state):
-        ow_flag, next_state = self._zone_policy_overwrite(state)
+        ow_flag, next_state = self._xroad_policy_overwrite(state)
         return (ow_flag, next_state)
 
     def old_respond_to_message(self, msg):
@@ -399,7 +406,7 @@ class ChatManager:
         if DEBUG: print("<REACTION> Curr state", self._get_curr_state()["key"], "Nxt stateobj", stateobj["key"])
         
         # Check if current target state is in a zone_policy crossroad 
-        ow_flag, stateobj = self._zone_policy_overwrite(stateobj)
+        ow_flag, stateobj = self._xroad_policy_overwrite(stateobj)
 
         if ow_flag:
             # Gatekeeper gets the requirements from the state
@@ -448,10 +455,10 @@ class ChatManager:
         return passed
 
     # Overwrites state if currently in zone policy aka crossroad
-    def _zone_policy_overwrite(self, og_nxt_state):
+    def _xroad_policy_overwrite(self, og_nxt_state):
         csk = og_nxt_state["key"]
-        zones = self._get_zones()
-        overwrite_flag, ow_state = self.pkeeper.zone_policy_overwrite(csk,zones)
+        info = self._get_current_info()
+        overwrite_flag, ow_state = self.pkeeper.xroad_policy_overwrite(csk,info)
         if DEBUG: print("<ZONE POLICY> Overwrite:",overwrite_flag,ow_state)
         if overwrite_flag:
             next_state = ow_state
@@ -563,9 +570,9 @@ class ChatManager:
 # Keeps policies
 # Also deciphers messages
 class PolicyKeeper:
-    def __init__(self, policy_rules, zone_policies, intent_dict, state_lib,pp):
+    def __init__(self, policy_rules, crossroad_policies, intent_dict, state_lib,pp):
         self.POLICY_RULES = policy_rules
-        self.ZONE_POLICIES = zone_policies
+        self.XROAD_POLICIES = crossroad_policies
         self.INTENT_DICT = intent_dict
         self.STATE_DICT = state_lib
         self.predictor = pp
@@ -635,18 +642,17 @@ class PolicyKeeper:
                     return uds
         return uds
 
-    def zone_policy_overwrite(self, csk, curr_zones):
+    def xroad_policy_overwrite(self, csk, info):
         def check_zonepolicies(state_key):
-            return state_key in self.ZONE_POLICIES
+            return state_key in self.XROAD_POLICIES
 
-        def determine_subsequent_sip(curr_zones, zpd):
-            z_name, paths = zpd
+        def determine_subsequent_sip(curr_info, zpd):
+            detail_name, paths = zpd
             # Zone policy
-            if z_name in curr_zones:
-                z_val = curr_zones[z_name]
+            if detail_name in curr_info:
+                z_val = curr_info[detail_name]
                 if isinstance(z_val, list):
-                    return determine_subsequent_sip(curr_zones, z_val)
-
+                    return determine_subsequent_sip(curr_info, z_val)
                 else:
                     if z_val in paths:
                         target = paths[z_val]
@@ -655,14 +661,14 @@ class PolicyKeeper:
                     next_sip = self._create_state_obj(target)
                     if DEBUG: print("<ZPOL OVERWRITE> new SIP:",next_sip)
                     return (True, next_sip)
-            if DEBUG: print("<ZPOL OVERWRITE> Zone {} not in curr zones: {}".format(z_name, curr_zones))
+            if DEBUG: print("<ZPOL OVERWRITE> Detail {} not in curr_info: {}".format(detail_name, curr_info))
             return (False, "")
 
         if 1: print("<ZPOL> curr state key:",csk)
 
         if check_zonepolicies(csk):
-            zpd = self.ZONE_POLICIES[csk]
-            return determine_subsequent_sip(curr_zones,zpd)
+            zpd = self.XROAD_POLICIES[csk]
+            return determine_subsequent_sip(info,zpd)
         else:
             return (False, "")
         
