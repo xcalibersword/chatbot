@@ -10,8 +10,8 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.5
-clipboard_err_sleep = 0.3
+clipboard_sleep = 0.25
+clipboard_open_sleep = 1
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
 
@@ -171,6 +171,10 @@ def getRawText():
                         raw_text = lmbda()
                     else:
                         lmbda() # Execute
+
+                    if count == 0:
+                        time.sleep(clipboard_open_sleep) # Extra sleep for open
+
                     count += 1
                     succeed = True
                 except Exception as e:

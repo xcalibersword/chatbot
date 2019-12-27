@@ -90,7 +90,7 @@ def _dive(c_list, c_dir, failzero = False, DEBUG = 1):
                 # Returns 0
                 out[valname] = 0
             else:
-                if DEBUG: print("<DIVE> ERROR! Cannot find variable<{}> in {}".format(valname,c_dir))
+                if DEBUG: print("<DIVE> ERROR! Cannot find variable<{}>".format(valname))
     
     return out
 
