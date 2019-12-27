@@ -42,7 +42,6 @@ def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1, as_val = 0
     if isinstance(nest_list,list) and len(nest_list) > 0:
         inner_list = nest_list[0]
         if len(inner_list) < 2:
-            print("<DIVE> inner_list too short: ",inner_list,"original:",nest_list)
             if len(inner_list) == 1:
                 in_in_list = inner_list[0]
                 if isinstance(in_in_list, str):

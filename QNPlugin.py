@@ -10,7 +10,7 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.2
+clipboard_sleep = 0.5
 clipboard_err_sleep = 0.3
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
@@ -171,8 +171,8 @@ def getRawText():
                         raw_text = lmbda()
                     else:
                         lmbda() # Execute
+                    count += 1
                     succeed = True
-
                 except Exception as e:
                     if count == 0:
                         print("OPEN CLIPBOARD EXCEPTION:",e,"Trying again...")
@@ -186,6 +186,7 @@ def getRawText():
                     elif count == 3:
                         print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
                         log_err("CLOSE CLIPBOARD")
+                    
                     
                 time.sleep(clipboard_sleep)
                 # End of single task loop
@@ -280,7 +281,7 @@ def processText(cW,rawText):
     query = ""
     curr_text = ""
     querytime = ""
-    print("RECENT TEXT", recentText[:10])
+    # print("RECENT TEXT", recentText[:10])
     for sent in recentText:
         if re.search(date_time_pattern,sent):
             # NameDate line
