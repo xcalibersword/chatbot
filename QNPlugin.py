@@ -10,8 +10,8 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.25
-clipboard_open_sleep = 0.5
+clipboard_sleep = 0.15
+clipboard_open_sleep = 0.1
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
 
@@ -168,7 +168,6 @@ def getRawText():
         restart_count = 0
         while task_index < len(tasks) and restart_count < restart_limit:
             taskname = names[task_index]
-            print("Executing",taskname)
             lmbda = tasks[task_index]
             try:
                 # Execute
@@ -177,8 +176,6 @@ def getRawText():
                 else:
                     lmbda() 
                 # if SUCCESS
-                if task_index == 0:
-                    time.sleep(clipboard_open_sleep) # Extra sleep for open
                 task_index += 1
 
             except Exception as e:
@@ -188,6 +185,8 @@ def getRawText():
                 restart_count += 1
                 # log_err(taskname)
             finally:
+                if task_index == 0:
+                    time.sleep(clipboard_open_sleep) # Extra sleep for open
                 time.sleep(clipboard_sleep)
             # End of single task loop
             
@@ -368,13 +367,17 @@ def SeekNewCustomerChat(clickImage):
     print("Finding new chat...")
 
     Screen = jpype.JClass('org.sikuli.script.Screen')
-    screen = Screen()
+    Pattern = jpype.JClass('org.sikuli.script.Pattern')
+    newmsg_pattern = Pattern(clickImage)
+    curr_screen = Screen()
 
     try:
-        screen.click(clickImage)
+        newmsg_pattern = newmsg_pattern.exact()
+        curr_screen.click(newmsg_pattern)
+        print("New chat detected!")
         return True
     except Exception as e:
-        print("No new chat", e)
+        print("No new chat detected")
         return False
 
 def select_chat_input_box(cW):
@@ -463,7 +466,7 @@ if __name__ == "__main__":
     #set JAVA path
     defaultJVMpath = (r"C:\Program Files\Java\jdk-12.0.2\bin\server\jvm.dll")
     jarPath = "-Djava.class.path=" + os.path.join(projectDIR,r"sikuliX\sikulixapi.jar")
-    SeekImagePath = os.path.join(projectDIR,r"sikuliX\A.PNG")
+    SeekImagePath = os.path.join(projectDIR,r"sikuliX\newmsg.PNG")
 
     print("Starting JVM...")
     jpype.startJVM(defaultJVMpath,'-ea',jarPath,convertStrings=False)
