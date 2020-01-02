@@ -762,7 +762,7 @@ class Calculator():
         return fkey_queue
 
     def _get_req_vars(self, f):
-        rvs = f.get(self.req_var_key)
+        rvs = f.get(self.req_var_key, [])
         return rvs
 
     def _get_persist_value(self,f):
@@ -975,6 +975,8 @@ class Calculator():
             else:
                 return tree_search(tree, tree_info)
         
+        # PRECALCULATE
+
         tree = f.get("search_tree", {})
         found_flag, val = search_through_tree(tree, enh, False)
         if not found_flag and SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)

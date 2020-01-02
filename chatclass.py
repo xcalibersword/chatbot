@@ -777,7 +777,10 @@ class DetailManager:
             a_loc, opr, b_loc, dp = branch
             opr = opr.replace(" ","")
             raw_a = dive_for_dot_values(a_loc,info, DEBUG=SUPER_DEBUG, as_val = 1)
-            raw_b = dive_for_dot_values(b_loc,info, DEBUG=SUPER_DEBUG, as_val = 1)
+            if isinstance(b_loc, float) or isinstance(b_loc, int):
+                raw_b = b_loc
+            else:
+                raw_b = dive_for_dot_values(b_loc,info, DEBUG=SUPER_DEBUG, as_val = 1)
             bv = float(raw_b)
             av = float(raw_a)
 

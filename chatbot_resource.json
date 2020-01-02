@@ -653,10 +653,7 @@
             "thread": "t_howmuch",
             "terminal_state": true,
             "calcs":[
-                "calc_flag_sb_gjj",
-                "flag_shouci",
-                "sum_svc_fee",
-                "shebao_fee_amt"
+                "fetch_spec_comp_val"
             ],
             "req_info": [
                 ["city","city"],
@@ -793,7 +790,7 @@
             "thread": "t_howmuch",
             "humanify": false,
             "req_info": [
-                ["ss_jishu_amount", "DUMMY_SLOT"],
+                ["user_spec_jishu_amt", "DUMMY_SLOT"],
                 ["chosen_service","service_slot"],
                 ["city","city"]
             ],
@@ -810,7 +807,7 @@
                 ["city","city"],
                 ["chosen_service","service_slot"],
                 ["要公积金", "default_yes"],
-                ["ss_jishu_amount", "DUMMY_SLOT"]
+                ["user_spec_jishu_amt", "DUMMY_SLOT"]
             ],
             "calcs":[
                 "log_custom_gjj",
@@ -830,7 +827,7 @@
             "req_info": [
                 ["city","city"],
                 ["chosen_service","service_slot"],
-                ["ss_jishu_amount", "DUMMY_SLOT"]
+                ["user_spec_jishu_amt", "DUMMY_SLOT"]
             ],
             "calcs":[
                 "log_custom_sb",
@@ -1142,7 +1139,7 @@
                         "ss_purchase_for_month": "要缴哪月？",
                         "given_amount": "要什么基数？",
                         "chosen_service":"指的是社保还是公积金？",
-                        "ss_jishu_amount": "要按照什么基数？",
+                        "user_spec_jishu_amt": "要按照什么基数？",
                         "purchase_type": "是正常缴还是补缴？"
                     }
                 }
@@ -1762,13 +1759,13 @@
                 ],
                 "lookfor": [
                     "chosen_fee",
-                    "ss_user_spec_component_value",
+                    "user_spec_comp_val",
                     "svc_fee_total"
                 ],
                 "if_value": {
                     "chosen_fee":{
                         "服务费":"服务费：单缴社保或公积金是{city_info[svc_fee]}元 代缴双服务费就等于80元",
-                        "DEFAULT":"{chosen_fee}是{ss_user_spec_component_value}"
+                        "DEFAULT":"{chosen_fee}是{user_spec_comp_val}"
                     }
                 }
             },
@@ -1779,7 +1776,7 @@
                 ],
                 "lookfor": [
                     "chosen_fee",
-                    "ss_user_spec_component_value",
+                    "user_spec_comp_val",
                     "w_spec_component_value",
                     "w_fee_type_flag",
                     "exclude_svc_fee",
@@ -1796,7 +1793,7 @@
                             "exclude_svc_fee":{
                                 "not_mentioned": "",
                                 "exclude": "包括服务费要多加{svc_fee_total}哦",
-                                "include": "不包括服务费是{ss_user_spec_component_value}"
+                                "include": "不包括服务费是{user_spec_comp_val}"
                             }
                         }
                     }
@@ -1861,22 +1858,6 @@
                 }
             }
         },
-        "flag_user_spec_comp_val":{
-            "writeto": "ss_user_spec_component_value",
-            "persist_value": true,
-            "type": "tree",
-            "search_tree":{
-                "chosen_fee":{
-                    "一共": ["shebao_basic_total"],
-                    "社保缴纳":["w_shebao_payment"],
-                    "社保基数":["city_info.sb_jishu"],
-                    "公积金缴纳":["w_gjj_fee"],
-                    "公积金基数":["city_info.base_gjj_jishu"],
-                    "首次费":["city_info.shouci_fee"],
-                    "服务费":["svc_fee_total"]
-                }
-            }
-        },
         "format_specified_month":{
             "writeto":"spec_month",
             "persist_value": true,
@@ -1904,6 +1885,51 @@
                 ]
             }
         },
+        "fetch_spec_comp_val": {
+            "writeto": "user_spec_comp_val",
+            "type":"tree",
+            "persist_value": true,
+            "req_vars": [
+                "shebao_basic_total",
+                "w_shebao_payment",
+                "w_gjj_fee",
+                "svc_fee_total"
+            ],
+            "search_tree":{
+                "chosen_fee":{
+                    "一共": ["shebao_basic_total"],
+                    "社保缴纳":["w_shebao_payment"],
+                    "社保基数":["city_info.sb_jishu"],
+                    "公积金缴纳":["w_gjj_fee"],
+                    "公积金基数":["city_info.base_gjj_jishu"],
+                    "首次费":["city_info.shouci_fee"],
+                    "服务费":["svc_fee_total"]
+                }
+            }
+        },
+        "fetch_jishu_amount": {
+            "writeto": "user_spec_jishu_amt",
+            "persist_value": true,
+            "search_tree":{
+                "chosen_service":{
+                    "社保":{
+                        "ctx_slots.jishu_amt":{
+                            "ctx_min":["city_info.base_sb_jishu"],
+                            "ctx_max":["city_info.base_sb_jishu_max_limit"]
+                        }
+                    },
+                    "公积金":{
+                        "ctx_slots.jishu_amt":{
+                            "ctx_min":["city_info.base_gjj_jishu"],
+                            "ctx_max":["city_info.base_gjj_jishu_max_limit"]
+                        }
+                    }
+                },
+                "given_amount":{
+                    "_ANY":["given_amount"]
+                }
+            }
+        },
         "calc_flag_sb_gjj": {
             "writeto": "flag_sb_gjj",
             "persist_value": true,
@@ -1918,8 +1944,7 @@
             "steps": {
                 "1,add": [
                     [
-                        "w_sb",
-                        "w_gjj"
+                        "w_sb","w_gjj"
                     ],
                     "OUTCOME"
                 ]
@@ -2180,11 +2205,11 @@
             "persist_value": false,
             "req_vars": [],
             "optional_vars":[
-                "ss_jishu_amount"
+                "user_spec_jishu_amt"
             ],
             "steps": {
                 "3,add": [
-                    ["ss_jishu_amount", 0],
+                    ["user_spec_jishu_amt", 0],
                     "OUTCOME"
                 ]
             }
@@ -2264,11 +2289,11 @@
             "persist_value": false,
             "req_vars": [],
             "optional_vars":[
-                "ss_jishu_amount"
+                "user_spec_jishu_amt"
             ],
             "steps": {
                 "3,add": [
-                    ["ss_jishu_amount", 0],
+                    ["user_spec_jishu_amt", 0],
                     "OUTCOME"
                 ]
             }
@@ -2356,7 +2381,7 @@
                 "svc_fee_total",
                 "chosen_fee",
                 "exclude_svc_fee",
-                "ss_user_spec_component_value"
+                "user_spec_comp_val"
             ],
             "steps":{
                 "2,multi":[
@@ -2368,7 +2393,7 @@
                     "ww_svc_fee_amt"
                 ],
                 "7,add":[
-                    ["ss_user_spec_component_value", "ww_svc_fee_amt"],
+                    ["user_spec_comp_val", "ww_svc_fee_amt"],
                     "OUTCOME"
                 ],
                 "9,sub":[
