@@ -29,8 +29,8 @@
         ],
         "purchase_type_crossroad":[
             "purchase_cmi_flag",{
-                "1": "city_crossroad",
-                "0": "inform_pay_deadline"
+                "still_can": "city_crossroad",
+                "too_late": "inform_pay_deadline"
             }
         ],
         "turnaround_time_crossroad": [

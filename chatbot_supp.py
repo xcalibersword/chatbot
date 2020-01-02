@@ -828,9 +828,8 @@ class Calculator():
         def add_calc_enh(key, rawstr, rnd = 2, _pv = False):
             local_calc_ext = self.l_calc_ext
             calc_topup = self.calc_topup
-            if rnd == 0:
-                rnd = None
-            flt = round(float(rawstr),rnd) # Round all displayed numbers to 2 dp
+
+            flt = cu.cbround(rawstr,rnd)
             if SUPER_DEBUG: print("<ENHANCE> Adding to Calc Ext {}:{}".format(key,rawstr))
             return cu.add_enh(key,flt,local_calc_ext, "calc_ext", calc_topup, enhanced, persist = _pv, overwrite = True)
 

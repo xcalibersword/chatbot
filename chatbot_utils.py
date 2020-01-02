@@ -1,9 +1,10 @@
 import os
 
 # Useful Functions
+DEBUG_DEFAULT = 0
 
 # Wrapper function for dive_for_values where the detail path is a dot list
-def dive_for_dot_values(dot_locs, info_dir, failzero = False, DEBUG = 1, as_val = 0, full_path = 1):
+def dive_for_dot_values(dot_locs, info_dir, failzero = False, DEBUG = DEBUG_DEFAULT, as_val = 0, full_path = 1):
     if not isinstance(dot_locs, str):
         if isinstance(dot_locs,list):
             if len(dot_locs) == 1:
@@ -27,7 +28,7 @@ def dive_for_dot_values(dot_locs, info_dir, failzero = False, DEBUG = 1, as_val 
 
 # Recursively looks in dicts for nested dicts until finds values.
 # Returns a dict of values
-def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1, as_val = 0, full_path = 1):
+def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = DEBUG_DEFAULT, as_val = 0, full_path = 1):
     if isinstance(nest_list,int) or isinstance(nest_list,float):
         return nest_list
         
@@ -53,7 +54,7 @@ def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1, as_val = 0
     return dive_result
 
 
-def _dive(c_list, c_dir, prefix, failzero = False, DEBUG = 1, full_path = 1):
+def _dive(c_list, c_dir, prefix, failzero = False, DEBUG = DEBUG_DEFAULT, full_path = 1):
     out = {}
     for valname in c_list:
         # if DEBUG: print("<DIVE> vname", valname, "c_list", c_list)
@@ -170,6 +171,9 @@ def log_error(elog):
 
 
 def cbround(val, dp = 0):
+    if isinstance(val, str):
+        return val
+        
     if dp == 0:
         dp_arg = None # round doesnt work with just 0
     else:

@@ -13,7 +13,7 @@ from chatbot_supp import *
 from chatbot_utils import dive_for_dot_values, dive_for_values, cbround
 
 
-SUPER_DEBUG = 0
+SUPER_DEBUG = 1
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
@@ -289,7 +289,6 @@ class ChatManager:
 
             if crossroad_traverse and count < 10:
                 repeat = True
-                d_state_obj = self._sip_to_stateobj(sip.same_state())
                 print("<GOTO NEXT STATE> REPEATING", d_state_obj, "count", count)
                 count += 1
                 continue
@@ -298,6 +297,7 @@ class ChatManager:
 
     def _traverse_crossroads(self, state):
         ow_flag, next_state = self._xroad_policy_overwrite(state)
+        if SUPER_DEBUG: print("<TRAVERSE CROSSROADS> OW flag:", ow_flag, "Next state:", next_state["key"])
         return (ow_flag, next_state)
 
     def old_respond_to_message(self, msg):
@@ -458,7 +458,7 @@ class ChatManager:
 
     # Overwrites state if currently in zone policy aka crossroad
     def _xroad_policy_overwrite(self, og_nxt_state):
-        csk = og_nxt_state["key"]
+        csk = self._get_csk()
         info = self._get_current_info()
         overwrite_flag, ow_state = self.pkeeper.xroad_policy_overwrite(csk,info)
         if DEBUG: print("<ZONE POLICY> Overwrite:",overwrite_flag,ow_state)
@@ -616,10 +616,10 @@ class PolicyKeeper:
         uds = self.intent_to_next_state(curr_state, intent)
         return uds, breakdown, nums
 
-    def _create_state_obj(self, sk):
-        if not sk in self.STATE_DICT:
-            raise Exception("<PolicyKeeper> Illegal state:{}".format(sk))
-        state_obj = self.STATE_DICT[sk]
+    def _create_state_obj(self, skey):
+        if not skey in self.STATE_DICT:
+            raise Exception("<PolicyKeeper> Illegal state:{}".format(skey))
+        state_obj = self.STATE_DICT[skey]
         return state_obj
 
     # METHOD FOR NLP
@@ -650,21 +650,23 @@ class PolicyKeeper:
             detail_name, paths = zpd
             # Zone policy
             if detail_name in curr_info:
-                z_val = curr_info[detail_name]
+                z_val = str(curr_info[detail_name]) # Force value to string
                 if isinstance(z_val, list):
+                    # Subtree
                     return determine_subsequent_sip(curr_info, z_val)
                 else:
                     if z_val in paths:
                         target = paths[z_val]
                     else:
-                        target = paths.get("DEFAULT", "")
+                        if SUPER_DEBUG: print("<XROAD POL OVERWRITE> Detail:", detail_name,"Value:", z_val)
+                        target = paths.get("DEFAULT")
                     next_sip = self._create_state_obj(target)
-                    if DEBUG: print("<ZPOL OVERWRITE> new SIP:",next_sip)
+                    if DEBUG: print("<XROAD POL OVERWRITE> new SIP:",next_sip)
                     return (True, next_sip)
-            if DEBUG: print("<ZPOL OVERWRITE> Detail {} not in curr_info: {}".format(detail_name, curr_info))
+            if DEBUG: print("<XROAD POL OVERWRITE> Detail {} not in curr_info: {}".format(detail_name, curr_info))
             return (False, "")
 
-        if 1: print("<ZPOL> curr state key:",csk)
+        if 1: print("<ZPOLXROAD POL OVERWRITE> curr state key:",csk)
 
         if check_zonepolicies(csk):
             zpd = self.XROAD_POLICIES[csk]
@@ -817,20 +819,20 @@ class DetailManager:
                         dive_dir = dive_for_dot_values(slotname, curr_d) # As dict
                         if dive_dir == {}:
                             # IF not found
-                            if SUPER_DEBUG: print("<SS TREE> ERROR {} not found".format(str(slotname)))
+                            # if SUPER_DEBUG: print("<SS TREE> ERROR {} not found".format(str(slotname)))
                             slot_val = ""
                             break
 
                         loc, slot_val = list(dive_dir.items())[0]
                         slot_val = str(slot_val) # To convert ints to strings. I.e. for hours
                         
-                        if SUPER_DEBUG: print("<SS TREE> Current slot:", loc, "| val:", slot_val)
+                        # if SUPER_DEBUG: print("<SS TREE> Current slot:", loc, "| val:", slot_val)
                         # Check if key is in the subdict
                         if slot_val in sub_dict:
                             ss_branch = sub_dict[slot_val]
                             if isinstance(ss_branch, dict):
                                 # Is a subtree
-                                if SUPER_DEBUG: print("<SS TREE> Found a subtree",ss_branch, "in",sub_dict)
+                                # if SUPER_DEBUG: print("<SS TREE> Found a subtree",ss_branch, "in",sub_dict)
                                 slotname, sub_dict = list(ss_branch.items())[0]
                                 continue
 
@@ -839,14 +841,14 @@ class DetailManager:
                                 out = get_value(ss_branch, t_info)
                                 # Cut from info
                                 pp = cu.dotpop(loc, curr_d)
-                                if SUPER_DEBUG: print("<SS TREE> pop leaf",pp)
+                                # if SUPER_DEBUG: print("<SS TREE> pop leaf",pp)
                                 return (True, out)
                         else:
                             # Fallback and look for _ANY match
                             a_branch = sub_dict.get(any_val_key,-1)
                             if not a_branch:
                                 # Search failed
-                                if SUPER_DEBUG: print("<SS TREE> Val:", slot_val, "not found in:", sub_dict)
+                                # if SUPER_DEBUG: print("<SS TREE> Val:", slot_val, "not found in:", sub_dict)
                                 break
 
                             if isinstance(a_branch, dict):
@@ -859,10 +861,10 @@ class DetailManager:
                                 out = get_value(a_branch, t_info)
                                 # Cut from info
                                 pp = cu.dotpop(loc, curr_d)
-                                if SUPER_DEBUG: print("<SS TREE> pop _ANY leaf",pp)
+                                # if SUPER_DEBUG: print("<SS TREE> pop _ANY leaf",pp)
                                 return (True, out)
                     
-                if SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)
+                # if SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)
                 return (False, "")
 
             tree_info = copy.deepcopy(info)
@@ -905,7 +907,7 @@ class DetailManager:
         out = {}
         out.update(self.chat_prov_info)
         self.vault.add_vault_info(out)
-        if SUPER_DEBUG: print("<FETCH INFO> CTX SLOTS", out.get("ctx_slots","")) #DEBUG
+        # if SUPER_DEBUG: print("<FETCH INFO> CTX SLOTS", out.get("ctx_slots","")) #DEBUG
         return out
 
     def _check_db_init(self):

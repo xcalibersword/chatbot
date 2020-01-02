@@ -1848,14 +1848,14 @@
                 "purchase_type": {
                     "normal": {
                         "w_normal_cmi_flag":{
-                            "1.0": 1,
-                            "0.0": 0
+                            "1": "still_can",
+                            "0": "too_late"
                         }
                     },
                     "bujiao": {
                         "w_bujiao_cmi_flag":{
-                            "1.0": 1,
-                            "0.0": 0
+                            "1": "still_can",
+                            "0": "too_late"
                         }
                     }   
                 }
