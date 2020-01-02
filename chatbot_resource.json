@@ -722,8 +722,6 @@
                 "given_amount"
             ],
             "calcs":[
-                "shebao_basic_calc",
-                "calc_component_value",
                 "flag_component_value_match"
             ],
             "replies": ["{rep_ext[doublecheck_info]}"]
@@ -759,15 +757,6 @@
                 ["要社保", "DEFAULT_SV"]
             ],
             "calcs": [
-                "calc_flag_sb_gjj",
-                "flag_shouci",
-                "sum_svc_fee",
-                "flag_custom_sb",
-                "calc_custom_sb_fee",
-                "shebao_fee_amt",
-                "flag_custom_gjj",
-                "calc_custom_gjj_fee",
-                "gongjijin_fee_amt",
                 "shebao_basic_calc"
             ],
             "replies": [
@@ -810,8 +799,6 @@
                 ["user_spec_jishu_amt", "DUMMY_SLOT"]
             ],
             "calcs":[
-                "log_custom_gjj",
-                "flag_custom_gjj",
                 "calc_custom_gjj_fee"
             ],
             "replies": [
@@ -2560,7 +2547,7 @@
                 "杭州市": {
                     "base_sb_jishu_max_limit": 25000,
                     "base_sb_jishu": 3321.6,
-                    "shebao_payment": 1285.47,
+                    "shebao_payment": 1286,
                     "base_sb_jishu_multi": 0.387,
                     "base_gjj_jishu_max_limit": 30000,
                     "base_gjj_jishu": 2010,
@@ -2586,7 +2573,7 @@
                     "shouci_fee": 50,
                     "pay_deadline": 20,
                     "gongjijin_fee": 100,
-                    "bujiao_period": 3,
+                    "bujiao_period": 0,
                     "xufei_deadline": 10,
                     "link_sb": "https://item.taobao.com/item.htm?id=598103220826",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598232148577"
@@ -2618,6 +2605,7 @@
                     "base_sb_jishu_multi": 0.50,
                     "svc_fee": 40,
                     "shouci_fee": 50,
+                    "bujiao_period": 1,
                     "pay_deadline": 20,
                     "gongjijin_fee": 214,
                     "xufei_deadline": 10,
@@ -2635,6 +2623,7 @@
                     "svc_fee": 40,
                     "shouci_fee": 50,
                     "pay_deadline": 20,
+                    "bujiao_period": 6,
                     "gongjijin_fee": 472,
                     "xufei_deadline": 10,
                     "link_sb":"https://item.taobao.com/item.htm?id=598983643235",
@@ -2643,6 +2632,7 @@
                 "长沙":{
                     "gongjijin_fee":316.0,
                     "xufei_deadline": 10,
+                    "bujiao_period": 3,
                     "base_sb_jishu_max_limit": 25000,
                     "base_gjj_jishu_max_limit": 30000,
                     "base_gjj_jishu_multi":0.50,
