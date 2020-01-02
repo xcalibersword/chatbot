@@ -279,10 +279,10 @@ class ChatManager:
             self._parse_message_details(msg, intent, nums)
             # Preprocess to fill slots with default vals
             self._gatekeeper_preprocess()
-            # Calculate (for crossroads)
-            self._calculate() 
             # Try gate and CHANGE STATE
             self._advance_to_new_state(d_state_obj)
+            # Calculate (for crossroads)
+            self._calculate() 
 
             # FINAL state change
             crossroad_traverse, d_state_obj = self._traverse_crossroads(d_state_obj)
@@ -301,6 +301,8 @@ class ChatManager:
         return (ow_flag, next_state)
 
     def old_respond_to_message(self, msg):
+        pass
+
         if self.is_inactive():
             no_reply = ""
             return (no_reply, {}, self._get_current_info())
@@ -512,16 +514,14 @@ class ChatManager:
     # Ask calculator to crunch numbers.
     # Updates information dict
     def _calculate(self,double=False):
+        if DEBUG: print("<CALCULATE> CALCULATION CALLED")
         info = self._get_current_info()
         curr_state = self._get_curr_state()
-        if SUPER_DEBUG: print("<CALCULATE> Info for calc", info)
+        if SUPER_DEBUG: print("<CALCULATE> Info bef calc", info)
         topup, calc_ext = self.calculator.calculate(curr_state, info)
         if DEBUG: print("<CALCULATE> DM TOPUP",topup)
         self.push_detail_to_dm(topup) # Adds persist values to info
 
-        if double:
-            # This is to solve the problem of secondary slots not catching calculated values
-            calc_ext = self._calculate(double=False)
         return calc_ext
 
     # Clears up values based on state information
@@ -817,20 +817,20 @@ class DetailManager:
                         dive_dir = dive_for_dot_values(slotname, curr_d) # As dict
                         if dive_dir == {}:
                             # IF not found
-                            if SUPER_DEBUG: print("<TREE> ERROR {} not found".format(str(slotname)))
+                            if SUPER_DEBUG: print("<SS TREE> ERROR {} not found".format(str(slotname)))
                             slot_val = ""
                             break
 
                         loc, slot_val = list(dive_dir.items())[0]
                         slot_val = str(slot_val) # To convert ints to strings. I.e. for hours
                         
-                        if SUPER_DEBUG: print("<TREE> Current slot:", loc, "| val:", slot_val)
+                        if SUPER_DEBUG: print("<SS TREE> Current slot:", loc, "| val:", slot_val)
                         # Check if key is in the subdict
                         if slot_val in sub_dict:
                             ss_branch = sub_dict[slot_val]
                             if isinstance(ss_branch, dict):
                                 # Is a subtree
-                                if SUPER_DEBUG: print("<TREE> Found a subtree",ss_branch, "in",sub_dict)
+                                if SUPER_DEBUG: print("<SS TREE> Found a subtree",ss_branch, "in",sub_dict)
                                 slotname, sub_dict = list(ss_branch.items())[0]
                                 continue
 
@@ -839,14 +839,14 @@ class DetailManager:
                                 out = get_value(ss_branch, t_info)
                                 # Cut from info
                                 pp = cu.dotpop(loc, curr_d)
-                                if SUPER_DEBUG: print("<TREE> pop leaf",pp)
+                                if SUPER_DEBUG: print("<SS TREE> pop leaf",pp)
                                 return (True, out)
                         else:
                             # Fallback and look for _ANY match
                             a_branch = sub_dict.get(any_val_key,-1)
                             if not a_branch:
                                 # Search failed
-                                if SUPER_DEBUG: print("<SECONDARY SLOT> Val:", slot_val, "not found in:", sub_dict)
+                                if SUPER_DEBUG: print("<SS TREE> Val:", slot_val, "not found in:", sub_dict)
                                 break
 
                             if isinstance(a_branch, dict):
@@ -859,7 +859,7 @@ class DetailManager:
                                 out = get_value(a_branch, t_info)
                                 # Cut from info
                                 pp = cu.dotpop(loc, curr_d)
-                                if SUPER_DEBUG: print("<TREE> pop _ANY leaf",pp)
+                                if SUPER_DEBUG: print("<SS TREE> pop _ANY leaf",pp)
                                 return (True, out)
                     
                 if SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)

@@ -686,13 +686,20 @@ class Calculator():
         self.req_var_key = "req_vars"
         self.outputs_key = "writeto"
         self.pv_key = "persist_value"
+        self.std_output_key = "OUTCOME"
 
         self.formula_db = formulae
         self.build_output_db(self.formula_db)
         self.feedback_count = 0
         return
 
-    def reset_precalc_list(self):
+    # Resets all local/working values used for calculation
+    def reset_calc_cache(self):
+        self._reset_precalc_list()
+        self.l_calc_ext = {}
+        self.calc_topup = {}
+
+    def _reset_precalc_list(self):
         self.precalc_list = []
         
     def add_precalc(self, calcname):
@@ -701,14 +708,18 @@ class Calculator():
     def check_precalc_skip(self, calcname):
         return calcname in self.precalc_list
 
-    # Builds a lookup table of Output -> Formula Key
+    # Builds a lookup table of Output -> Formula Key (name)
     def build_output_db(self, fdb):
-        def write_entry(fname, pv):
+        def _make_key(fname, pv):
             ext = "calc_ext." #Extension for non persist values
             if pv:
                 return fname
             else:
                 return ext + fname
+
+        def insert_entry(deet_key, pv, fname, d):
+            op_key = _make_key(deet_key, pv)
+            d[op_key] = fname
         
         def extract_dkey(opline):
             return opline[0]
@@ -717,22 +728,25 @@ class Calculator():
         for fname, formula in list(fdb.items()):
             outputs = self._get_writeto(formula)
             pv = self._get_persist_value(formula)
-            for op in outputs:
-                if isinstance(op,list):
+            if not isinstance(outputs,list):
+                deet_key = outputs
+                insert_entry(deet_key, pv, fname, table)
+            else:
+                for op in outputs:
                     deet_key = extract_dkey(op)
-                    op_key = write_entry(deet_key, pv)
-                    table[op_key] = fname # Put the dot notation key of the formula
-                else:    
-                    op_key = write_entry(op, pv)
-                    table[op_key] = fname # Put the dot notation key of the formula
+                    insert_entry(deet_key, pv, fname, table)
+
         self.outputs_lookup = table
+        print("OUTPUT DB", table)
+        return
 
     # Main Callable function #
+    # Returns the topup dict and the calc_extension dict
     def calculate(self, curr_state, curr_info):
         self.feedback_count = 0
-        self.reset_precalc_list()
-        topup, temp = self._do_all_calculations(curr_state, curr_info)
-        return (topup, temp)
+        self.reset_calc_cache()
+        self._do_all_calculations(curr_state, curr_info)
+        return (self.calc_topup, self.l_calc_ext)
     
     # Looks through the formula table to get a list of formulas that must be executed before proceeding
     def trace_req_vars(self, req_vars):
@@ -761,7 +775,7 @@ class Calculator():
         return state.get("calcs", [])
 
     # Get formula obj from dict
-    def _get_formula(self, fname):
+    def _get_formula_obj(self, fname):
         frm = self.formula_db.get(fname, "")
         if frm == "":
             err = "<RESOLVE FORMULA> ERROR! No such formula:{}".format(fname)
@@ -773,93 +787,102 @@ class Calculator():
     def precalculate(self, f, info):
         rvs = self._get_req_vars(f)
         fkey_list = self.trace_req_vars(rvs)
-        self.debug_print("<PRECALCULATING>" + str(fkey_list) + " before performing " + str(f))
+        self.debug_print("<PRECALCULATING>" + str(fkey_list))
         for fkey in fkey_list:
             if not self.check_precalc_skip(fkey):
                 self.add_precalc(fkey)
                 self.new_resolve_formula(fkey, info) # This calls precalculate
+                
         return
 
     # Performs calculations and formats text message replies 
     ############## Major function ##############
     def _do_all_calculations(self, curr_state, info):
-        l_calc_ext = {}
-        calc_topup = {}
         CALC_DEBUG = self.DEBUG
         CALC_SUPER_DEBUG = self.SUPER_DEBUG
-        enhanced = info.copy() 
-
-        # Auto includes l_calc_ext and calc_topup
-        def add_calc_enh(key, rawstr, rnd = 2, _pv = False):
-            if rnd == 0:
-                rnd = None
-            flt = round(float(rawstr),rnd) # Round all displayed numbers to 2 dp
-            if CALC_SUPER_DEBUG: print("<ENHANCE> Adding to Calc Ext {}:{}".format(key,rawstr))
-            return cu.add_enh(key,flt,l_calc_ext, "calc_ext", calc_topup, enhanced, persist = _pv, overwrite = True)
-
-        def assign_outputs(target_key, result_dict):
-            def assign_multiple_outputs(tk_list):
-                # Forumala Multi output
-                for item in tk_list:
-                    tk = item[0]
-                    vdk = item[1]
-                    result = result_dict.get(vdk,"")
-                    if not result == "":
-                        if len(item) == 3:
-                            # Round to specified DP
-                            r = item[2] 
-                            add_calc_enh(tk,result, rnd = r, _pv = pv_flag)
-                        else:
-                            add_calc_enh(tk,result, _pv = pv_flag)
-
-                    else:
-                        print("<RESOLVE FORMULA> ERROR {} not found in formula".format(vdk))
-                return 
-
-            if isinstance(target_key, list):
-                assign_multiple_outputs(target_key)
-            else:
-                result = result_dict["OUTCOME"]
-                add_calc_enh(target_key,result, _pv = pv_flag)
-            return
-           
+        enhanced = info.copy()
+        
         ### MAIN METHOD LOGIC ###
         # Calculations
         state_calcs = self._get_calcs(curr_state)
         for fname in state_calcs:
-            self.debug_print("<RESOLVE FORMULA> Performing: "+fname)
-            formula = self._get_formula(fname)
-            
-            pv_flag = self._get_persist_value(formula)
-            target_keys = self._get_writeto(formula)
-            result_dict = self.new_resolve_formula(fname, enhanced)
-            assign_outputs(target_keys, result_dict)
-
+            self.new_resolve_formula(fname, enhanced)
             # if CALC_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
         
         if CALC_SUPER_DEBUG: print("<RESOLVE FORMULA> Postcalc enh",enhanced)
         if state_calcs == [] and CALC_DEBUG: print("<RESOLVE FORMULA> No calculation performed")
         
-        return (calc_topup, l_calc_ext)
+        return
         
     def detect_inf_feedback(self):
         limit = 10
         self.feedback_count += 1
         return self.feedback_count > limit
     
+    def _assign_outputs(self, result_dict, formula, enhanced):
+        self.debug_print("<ASSIGN OUTPUTS>"+str(result_dict))
+        target_key = self._get_writeto(formula)
+        pv_flag = self._get_persist_value(formula)
+        
+        # Auto includes l_calc_ext and calc_topup
+        def add_calc_enh(key, rawstr, rnd = 2, _pv = False):
+            local_calc_ext = self.l_calc_ext
+            calc_topup = self.calc_topup
+            if rnd == 0:
+                rnd = None
+            flt = round(float(rawstr),rnd) # Round all displayed numbers to 2 dp
+            if SUPER_DEBUG: print("<ENHANCE> Adding to Calc Ext {}:{}".format(key,rawstr))
+            return cu.add_enh(key,flt,local_calc_ext, "calc_ext", calc_topup, enhanced, persist = _pv, overwrite = True)
+
+        def assign_multiple_outputs(tk_list):
+            # Forumala Multi output
+            for item in tk_list:
+                tk = item[0]
+                vdk = item[1]
+                result = result_dict.get(vdk,"")
+                if not result == "":
+                    if len(item) == 3:
+                        # Round to specified DP
+                        dp = item[2] 
+                        add_calc_enh(tk,result, rnd = dp, _pv = pv_flag)
+                    else:
+                        add_calc_enh(tk,result, _pv = pv_flag)
+
+                else:
+                    print("<RESOLVE FORMULA> ERROR {} not found in formula".format(vdk))
+            return 
+
+        if isinstance(target_key, list):
+            assign_multiple_outputs(target_key)
+        else:
+            # Single string. Default key is OUTCOME
+            result = result_dict[self.std_output_key]
+            add_calc_enh(target_key,result, _pv = pv_flag)
+        return
+
+    # Calculates, then assigns values to relevant keys
     def new_resolve_formula(self, fkey, info):
         if self.detect_inf_feedback():
-            cu.log_error("<RESOLVE FORMULA> Infinite Precalc Feedback Loop")
-        form = self._get_formula(fkey)
+            cu.log_error("<NEW RESOLVE FORMULA> Infinite Precalc Feedback Loop")
+
+        form = self._get_formula_obj(fkey)
         self.precalculate(form, info) # This calls new_resolve_formula. Beware of infinite feedback loops
+        self.debug_print("<NEW RESOLVE FORMULA> Performing: "+fkey)
+        if SUPER_DEBUG: print("<NEW RESOLVE FORMULA> Current info:",info)
         vd = self._core_resolve_formula(form, info)
-        return vd
+        self._assign_outputs(vd, form, info)
+        return
 
     def _core_resolve_formula(self, f, enh):
-        is_a_tree = (f.get("type", "") == "tree")
+        is_a_tree = isinstance(f.get("search_tree", "NONE"), dict)
         if is_a_tree:
             # Is a tree
-            return self.resolve_tree(f, enh)
+            treeval = self.resolve_tree(f, enh)
+            writeto = self._get_writeto(f) # Assuming only 1 writeto
+            if isinstance(writeto, list):
+                print("<CORE RESOLVE FORMULA> ERROR expected str but got", writeto)
+                raise Exception("Tree writeto exception")
+            return {self.std_output_key:treeval}
         else:
             # Is a formula
             return self.resolve_calculation(f,enh)
@@ -901,8 +924,8 @@ class Calculator():
                         matched_branch = sub_dict[slot_val]
                         if isinstance(matched_branch, dict):
                             # Is a subtree
-                            if SUPER_DEBUG: print("<TREE> Found a subtree",matched_branch, "in",sub_dict)
-                            slotname, sub_tree = list(matched_branch.items())[0]
+                            sub_tree = matched_branch
+                            if SUPER_DEBUG: print("<TREE> Subtree found. Searching:",str(sub_dict))
                             found, returned = tree_search(sub_tree,t_info)
                             if found:
                                 return (found, returned)
@@ -919,7 +942,7 @@ class Calculator():
                         a_branch = sub_dict.get(any_val_key,-1)
                         if not a_branch:
                             # Search failed
-                            if SUPER_DEBUG: print("<SECONDARY SLOT> Val:", slot_val, "not found in:", sub_dict)
+                            if SUPER_DEBUG: print("<TREE> Val:", slot_val, "not found in:", sub_dict)
                             break
 
                         if isinstance(a_branch, dict):
@@ -952,7 +975,7 @@ class Calculator():
                 return found, collect
             else:
                 return tree_search(tree, tree_info)
-
+        
         tree = f.get("search_tree", {})
         found_flag, val = search_through_tree(tree, enh, False)
         if not found_flag and SUPER_DEBUG: print("<SECONDARY SLOT> TREE SEARCH FAILED",tree)

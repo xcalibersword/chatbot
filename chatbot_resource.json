@@ -743,6 +743,7 @@
                 ["purchase_type", "DEFAULT_SV"]
             ],
             "calcs":[
+                "flag_purchase_cmi",
                 "flag_normal_pay_cmi",
                 "flag_bujiao_month_cmi"
             ],
@@ -1835,11 +1836,11 @@
     },
     "formulae": {
         "flag_purchase_cmi":{
-            "writeto": "ss_purchase_cmi_flag",
+            "writeto": "purchase_cmi_flag",
             "persist_value": true,
             "type": "tree",
             "req_vars":[
-                "purcahse_type",
+                "purchase_type",
                 "w_normal_cmi_flag",
                 "w_bujiao_cmi_flag"
             ],
@@ -1847,16 +1848,32 @@
                 "purchase_type": {
                     "normal": {
                         "w_normal_cmi_flag":{
-                            "1.0": "still_can",
-                            "0.0": "too_late"
+                            "1.0": 1,
+                            "0.0": 0
                         }
                     },
                     "bujiao": {
                         "w_bujiao_cmi_flag":{
-                            "1.0": "still_can",
-                            "0.0": "too_late"
+                            "1.0": 1,
+                            "0.0": 0
                         }
                     }   
+                }
+            }
+        },
+        "flag_user_spec_comp_val":{
+            "writeto": "ss_user_spec_component_value",
+            "persist_value": true,
+            "type": "tree",
+            "search_tree":{
+                "chosen_fee":{
+                    "一共": ["shebao_basic_total"],
+                    "社保缴纳":["w_shebao_payment"],
+                    "社保基数":["city_info.sb_jishu"],
+                    "公积金缴纳":["w_gjj_fee"],
+                    "公积金基数":["city_info.base_gjj_jishu"],
+                    "首次费":["city_info.shouci_fee"],
+                    "服务费":["svc_fee_total"]
                 }
             }
         },
