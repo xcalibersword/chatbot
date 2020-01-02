@@ -3,39 +3,31 @@ import os
 # Useful Functions
 
 # Wrapper function for dive_for_values where the detail path is a dot list
-def dive_for_dot_values(dot_list, info_dir, failzero = False, DEBUG = 1, as_val = 0):
-    if not isinstance(dot_list, str):
-        if isinstance(dot_list,list) and len(dot_list) == 1:
-            dot_list = dot_list[0]
-            return dive_for_dot_values(dot_list,info_dir, failzero, DEBUG, as_val)
+def dive_for_dot_values(dot_locs, info_dir, failzero = False, DEBUG = 1, as_val = 0, full_path = 1):
+    if not isinstance(dot_locs, str):
+        if isinstance(dot_locs,list):
+            if len(dot_locs) == 1:
+                dot_locs = dot_locs[0]
+                return dive_for_dot_values(dot_locs,info_dir, failzero, DEBUG, as_val, full_path = full_path)
+            else:
+                # A list of dot locations
+                out_dict = {}
+                for dotloc in dot_locs:
+                    dive_result = dive_for_dot_values(dotloc, info_dir, failzero, DEBUG, as_val=0, full_path = full_path)
+                    out_dict.update(dive_result) # Dive result must be a dict
+                return out_dict
         else:
-            print("<DIVE FOR DOT> Bad input. Expected string", dot_list)
+            print("<DIVE FOR DOT> Bad input. Expected string or list of strings but got:", dot_locs)
             return {}
 
-    pathlist = dot_list.split(".")
+    new_nest_list = _docloc_to_list(dot_locs)
 
-    new_nest_list = []
-    nested = False
-    while 1:
-        if len(pathlist) == 0:
-            break
-        curr = pathlist.pop(-1)
-        if new_nest_list == []:
-            if isinstance(curr, list):
-                new_nest_list = curr
-            else:
-                new_nest_list = [curr]
-        else:
-            new_nest_list = [curr, new_nest_list]
-            nested = True
-    if nested: new_nest_list = [new_nest_list]
-
-    out = dive_for_values(new_nest_list, info_dir, failzero, DEBUG, as_val)
+    out = dive_for_values(new_nest_list, info_dir, failzero, DEBUG, as_val, full_path = full_path)
     return out
 
 # Recursively looks in dicts for nested dicts until finds values.
 # Returns a dict of values
-def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1, as_val = 0):
+def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1, as_val = 0, full_path = 1):
     if isinstance(nest_list,int) or isinstance(nest_list,float):
         return nest_list
         
@@ -51,7 +43,7 @@ def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1, as_val = 0
                 print("<DIVE> Bad list length, expected len 2 but got len",len(inner_list),nest_list)
                 return {}
                 
-    dive_result = _dive(nest_list, info_dir, failzero, DEBUG)
+    dive_result = _dive(nest_list, info_dir, "", failzero = failzero, DEBUG = DEBUG)
     
     # as_val. Returns a raw value IF there is only 1 entry
     if len(dive_result) == 1 and as_val:
@@ -61,10 +53,10 @@ def dive_for_values(nest_list, info_dir, failzero = False, DEBUG = 1, as_val = 0
     return dive_result
 
 
-def _dive(c_list, c_dir, failzero = False, DEBUG = 1):
+def _dive(c_list, c_dir, prefix, failzero = False, DEBUG = 1, full_path = 1):
     out = {}
     for valname in c_list:
-        # if DEBUG: print("<DIVE> vname, c_list",valname, c_list)
+        # if DEBUG: print("<DIVE> vname", valname, "c_list", c_list)
         if isinstance(valname, list):
             if not len(valname) == 2:
                 raise Exception("<DIVE> Valname expected len 2", str(valname))
@@ -81,7 +73,8 @@ def _dive(c_list, c_dir, failzero = False, DEBUG = 1):
                     return out 
             else:
                 nextdir = c_dir[nextdirname]
-                out.update(_dive(nestlist,nextdir,failzero,DEBUG))
+                new_pfx = _dive_prefix(prefix, nextdirname)
+                out.update(_dive(nestlist,nextdir, new_pfx, failzero=failzero, DEBUG=DEBUG))
         else:
             if valname in c_dir:
                 rawval = c_dir[valname]
@@ -93,6 +86,55 @@ def _dive(c_list, c_dir, failzero = False, DEBUG = 1):
                 if DEBUG: print("<DIVE> ERROR! Cannot find variable<{}>".format(valname))
     
     return out
+
+def _dive_prefix(oldpfx, cdir):
+    tkn = "."
+    final_prefix = cdir + tkn
+    if not oldpfx == "":
+        final_prefix = oldpfx + tkn + final_prefix
+    return final_prefix
+
+def _docloc_to_list(dot_loc, flatlist = False):
+    # str, list
+    def collect(curr, prev):
+        if flatlist:
+            prev.append(curr)
+            return prev
+        else:
+            if prev == []:
+                return [curr]
+            else:
+                return [curr, prev]
+
+    pathlist = dot_loc.split(".")
+    new_nest_list = []
+
+    while 1:
+        if len(pathlist) == 0:
+            break
+        curr = pathlist.pop(-1)
+        new_nest_list = collect(curr, new_nest_list)
+        
+    if not flatlist: new_nest_list = [new_nest_list]
+    return new_nest_list
+
+# Changes info
+def dotpop(dotloc, original_info):
+    flatlist = _docloc_to_list(dotloc, flatlist = 1)
+    curr_d = original_info
+    for ddir in flatlist:
+        if ddir == flatlist[-1]:
+            if ddir in curr_d:
+                popped = curr_d.pop(ddir)
+                return popped
+            else:
+                return False
+
+        if ddir in curr_d:
+            curr_d = curr_d.get(ddir)
+        else:
+            print("<DOTPOP> WARNING ", ddir,"not found in",original_info)
+    return False
 
 def add_enh(key, value, ext_dict, subdict_name, topup, enhanced, persist = False, overwrite = False, DEBUG = 0):
     if DEBUG: print("Enhancing!{}:{}".format(key,value))
