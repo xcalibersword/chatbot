@@ -692,6 +692,15 @@ class Calculator():
         self.feedback_count = 0
         return
 
+    def reset_precalc_list(self):
+        self.precalc_list = []
+        
+    def add_precalc(self, calcname):
+        self.precalc_list.append(calcname)
+    
+    def check_precalc_skip(self, calcname):
+        return calcname in self.precalc_list
+
     # Builds a lookup table of Output -> Formula Key
     def build_output_db(self, fdb):
         def write_entry(fname, pv):
@@ -721,6 +730,7 @@ class Calculator():
     # Main Callable function #
     def calculate(self, curr_state, curr_info):
         self.feedback_count = 0
+        self.reset_precalc_list()
         topup, temp = self._do_all_calculations(curr_state, curr_info)
         return (topup, temp)
     
@@ -750,13 +760,24 @@ class Calculator():
     def _get_calcs(self, state):
         return state.get("calcs", [])
 
+    # Get formula obj from dict
+    def _get_formula(self, fname):
+        frm = self.formula_db.get(fname, "")
+        if frm == "":
+            err = "<RESOLVE FORMULA> ERROR! No such formula:{}".format(fname)
+            cu.log_error(err)
+            raise Exception("RESOLVE FORMULA ERROR")
+        return frm
+
     # Traces required variables and executes whatever produces the variables
     def precalculate(self, f, info):
         rvs = self._get_req_vars(f)
-        flist = self.trace_req_vars(rvs)
-        self.debug_print("<PRECALCULATING>" + str(flist) + " before performing " + str(f))
-        for f in flist:
-            self.new_resolve_formula(f, info) # This calls precalculate
+        fkey_list = self.trace_req_vars(rvs)
+        self.debug_print("<PRECALCULATING>" + str(fkey_list) + " before performing " + str(f))
+        for fkey in fkey_list:
+            if not self.check_precalc_skip(fkey):
+                self.add_precalc(fkey)
+                self.new_resolve_formula(fkey, info) # This calls precalculate
         return
 
     # Performs calculations and formats text message replies 
@@ -767,7 +788,6 @@ class Calculator():
         CALC_DEBUG = self.DEBUG
         CALC_SUPER_DEBUG = self.SUPER_DEBUG
         enhanced = info.copy() 
-        calcDB = self.formula_db.copy()
 
         # Auto includes l_calc_ext and calc_topup
         def add_calc_enh(key, rawstr, rnd = 2, _pv = False):
@@ -808,14 +828,12 @@ class Calculator():
         state_calcs = self._get_calcs(curr_state)
         for fname in state_calcs:
             self.debug_print("<RESOLVE FORMULA> Performing: "+fname)
-            formula = calcDB.get(fname, "")
-            if formula == "":
-                print("<RESOLVE FORMULA> ERROR! No such formula:{}".format(fname))
-            else:
-                pv_flag = self._get_persist_value(formula)
-                target_keys = self._get_writeto(formula)
-                result_dict = self.new_resolve_formula(formula, enhanced)
-                assign_outputs(target_keys, result_dict)
+            formula = self._get_formula(fname)
+            
+            pv_flag = self._get_persist_value(formula)
+            target_keys = self._get_writeto(formula)
+            result_dict = self.new_resolve_formula(fname, enhanced)
+            assign_outputs(target_keys, result_dict)
 
             # if CALC_DEBUG: print("<RESOLVE FORMULA> Intermediate enh",enhanced)
         
@@ -828,12 +846,13 @@ class Calculator():
         limit = 10
         self.feedback_count += 1
         return self.feedback_count > limit
-
-    def new_resolve_formula(self, f, info):
+    
+    def new_resolve_formula(self, fkey, info):
         if self.detect_inf_feedback():
             cu.log_error("<RESOLVE FORMULA> Infinite Precalc Feedback Loop")
-        self.precalculate(f, info) # This calls new_resolve_formula. Beware of infinite feedback loops
-        vd = self._core_resolve_formula(f, info)
+        form = self._get_formula(fkey)
+        self.precalculate(form, info) # This calls new_resolve_formula. Beware of infinite feedback loops
+        vd = self._core_resolve_formula(form, info)
         return vd
 
     def _core_resolve_formula(self, f, enh):
