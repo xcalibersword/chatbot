@@ -10,8 +10,8 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.10
-clipboard_open_sleep = 1
+clipboard_sleep = 0.25
+clipboard_open_sleep = 0.5
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
 
@@ -146,8 +146,9 @@ def log_err(elog):
 
 # Returns a reverse ordered list
 def getRawText():
+    # Performs hardware 
     def get_from_clipboard():
-        rpt_limit = 50
+        restart_limit = 10
         raw_text = ""
 
         names = [
@@ -163,32 +164,35 @@ def getRawText():
             win32clipboard.EmptyClipboard,
             win32clipboard.CloseClipboard
         ]
-        count = 0
-        for lmbda in tasks:
-            taskname = names[count]
+        task_index = 0
+        restart_count = 0
+        while task_index < len(tasks) and restart_count < restart_limit:
+            taskname = names[task_index]
             print("Executing",taskname)
-            rpt = 0
-            succeed = False
-            while not succeed and rpt < rpt_limit:
-                rpt += 1
-                try:
-                    if count == 1:
-                        raw_text = lmbda()
-                    else:
-                        lmbda() # Execute
-                    succeed = True            
-                except Exception as e:
-                    if rpt%10 == 0: print(taskname, "EXCEPTION:",e,"Trying again...")
-                    # log_err(taskname)
-                finally:
-                    time.sleep(clipboard_sleep)
-                # End of single task loop
+            lmbda = tasks[task_index]
+            try:
+                # Execute
+                if taskname == "GET CLIPBOARD":
+                    raw_text = lmbda()
+                else:
+                    lmbda() 
+                # if SUCCESS
+                if task_index == 0:
+                    time.sleep(clipboard_open_sleep) # Extra sleep for open
+                task_index += 1
+
+            except Exception as e:
+                print(taskname, "EXCEPTION:",e,"Trying again...")
+                # Retart from the very beginning
+                task_index = 0
+                restart_count += 1
+                # log_err(taskname)
+            finally:
+                time.sleep(clipboard_sleep)
+            # End of single task loop
             
-            if count == 0:
-                time.sleep(clipboard_open_sleep) # Extra sleep for open
-            count += 1
-            if rpt > 5: print(taskname,"succeed?",succeed,"Took:",rpt,"tries")
-            # The end of the overall task list loop
+        if restart_count >= restart_limit:
+            print("<GET CLIPBOARD> Exceeded max number of tries", restart_count)
         return raw_text.splitlines()
 
     raw_text_list = get_from_clipboard()
