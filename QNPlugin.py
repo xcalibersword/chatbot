@@ -10,8 +10,8 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.15
-clipboard_open_sleep = 0.1
+clipboard_sleep = 0.1
+clipboard_open_sleep = 0.3
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
 
@@ -148,7 +148,7 @@ def log_err(elog):
 def getRawText():
     # Performs hardware 
     def get_from_clipboard():
-        restart_limit = 10
+        restart_limit = 30
         raw_text = ""
 
         names = [
