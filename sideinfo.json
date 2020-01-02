@@ -234,7 +234,7 @@
                     "苏州": ["苏州","suzhou"]
                 }
             },
-            "keyi_slot": {
+            "ctx_keyi_slot": {
                 "map":{
                     "asked": [
                         "(能|行|可以)(.*)(么|吗|嚒|吧|不|嘛)",
@@ -244,7 +244,7 @@
                     "NO_MATCH": ["not_asked"]
                 }
             },
-            "yourenma_slot": {
+            "ctx_yourenma_slot": {
                 "map":{
                     "youma":[
                         "有人(吗|么|嘛|不|没)$"
@@ -264,7 +264,7 @@
                     "NO_MATCH":["not_asked"]
                 }
             },
-            "thanks_slot": {
+            "ctx_thanks_slot": {
                 "map":{
                     "thanked": [
                         "谢了",
