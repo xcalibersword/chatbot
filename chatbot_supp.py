@@ -3,7 +3,7 @@ import re
 import copy
 import chatbot_utils as cu
 
-SUPER_DEBUG = 0
+SUPER_DEBUG = 1
 DEBUG = 1
 CALCULATOR_DEBUG = 1
 
@@ -469,7 +469,7 @@ class InfoParser():
             # Get category regex
             category = obj.get("map", {})
             if category == {}:
-                print ("<BUILD SLOTS DB> ERROR NO CATEGORY FOR {}".format(catkey))
+                if SUPER_DEBUG: print ("<BUILD SLOTS DB> ERROR NO CATEGORY FOR {}".format(catkey))
                 continue 
             cat_map = {}
             for value in list(category.keys()):
