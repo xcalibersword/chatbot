@@ -10,7 +10,7 @@ import string
 import chatbot_be
 from datetime import datetime
 from chatbot_supp import *
-from chatbot_utils import dive_for_dot_values, dive_for_values, cbround
+from chatbot_utils import dive_for_dot_values, dive_for_values, cbround, dotpop
 
 
 SUPER_DEBUG = 1

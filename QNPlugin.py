@@ -10,8 +10,8 @@ import pandas as pd
 
 GLOBAL = {}
 
-clipboard_sleep = 0.05
-clipboard_err_sleep = 0.5
+clipboard_sleep = 0.1
+clipboard_open_sleep = 0.3
 cmd_sleep = 0.05
 GLOBAL["human_input_sleep"] = 5
 
@@ -146,58 +146,52 @@ def log_err(elog):
 
 # Returns a reverse ordered list
 def getRawText():
+    # Performs hardware 
     def get_from_clipboard():
-        rpt = 0
-        rpt_limit = 10
-        succeed = False
+        restart_limit = 30
         raw_text = ""
 
-        while not succeed and rpt < rpt_limit:
-            rpt += 1
-            raw_text = ""
+        names = [
+            "OPEN CLIPBOARD",
+            "GET CLIPBOARD",
+            "EMPTY CLIPBOARD",
+            "CLOSE CLIPBOARD"
+        ]
 
+        tasks = [
+            win32clipboard.OpenClipboard, 
+            win32clipboard.GetClipboardData,
+            win32clipboard.EmptyClipboard,
+            win32clipboard.CloseClipboard
+        ]
+        task_index = 0
+        restart_count = 0
+        while task_index < len(tasks) and restart_count < restart_limit:
+            taskname = names[task_index]
+            lmbda = tasks[task_index]
             try:
-                win32clipboard.OpenClipboard()
-                succeed = True
-            except Exception as e:
-                print("OPEN CLIPBOARD EXCEPTION:",e,"Trying again...")
-                log_err("OPEN CLIPBOARD")
-                continue
-            finally:
-                time.sleep(clipboard_sleep)
+                # Execute
+                if taskname == "GET CLIPBOARD":
+                    raw_text = lmbda()
+                else:
+                    lmbda() 
+                # if SUCCESS
+                task_index += 1
 
-            try:
-                raw_text = win32clipboard.GetClipboardData()
             except Exception as e:
-                print("GET CLIPBOARD EXCEPTION:",e,"Trying again...")
-                log_err("GET CLIPBOARD")
-                time.sleep(clipboard_err_sleep)
-                continue
+                print(taskname, "EXCEPTION:",e,"Trying again...")
+                # Retart from the very beginning
+                task_index = 0
+                restart_count += 1
+                # log_err(taskname)
             finally:
+                if task_index == 0:
+                    time.sleep(clipboard_open_sleep) # Extra sleep for open
                 time.sleep(clipboard_sleep)
-        
-            try:
-                win32clipboard.EmptyClipboard()
-            except Exception as e:
-                print("EmptyClipboard EXCEPTION:",e)
-                log_err("EMPTY CLIPBOARD")
-                time.sleep(clipboard_err_sleep)
-                continue
-            finally:
-                time.sleep(clipboard_sleep)
-
-            try:
-                win32clipboard.CloseClipboard()
-            except Exception as e:
-                print("CLOSE CLIPBOARD EXCEPTION:",e,"Trying again...")
-                log_err("CLOSE CLIPBOARD")
-                time.sleep(clipboard_err_sleep)
-                continue
-            finally:
-                time.sleep(clipboard_sleep)
-
-            succeed = True
-            # The end of the loop
+            # End of single task loop
+            
+        if restart_count >= restart_limit:
+            print("<GET CLIPBOARD> Exceeded max number of tries", restart_count)
         return raw_text.splitlines()
 
     raw_text_list = get_from_clipboard()
@@ -288,7 +282,7 @@ def processText(cW,rawText):
     query = ""
     curr_text = ""
     querytime = ""
-    print("RECENT TEXT", recentText[:10])
+    # print("RECENT TEXT", recentText[:10])
     for sent in recentText:
         if re.search(date_time_pattern,sent):
             # NameDate line
@@ -373,13 +367,17 @@ def SeekNewCustomerChat(clickImage):
     print("Finding new chat...")
 
     Screen = jpype.JClass('org.sikuli.script.Screen')
-    screen = Screen()
+    Pattern = jpype.JClass('org.sikuli.script.Pattern')
+    newmsg_pattern = Pattern(clickImage)
+    curr_screen = Screen()
 
     try:
-        screen.click(clickImage)
+        newmsg_pattern = newmsg_pattern.exact()
+        curr_screen.click(newmsg_pattern)
+        print("New chat detected!")
         return True
     except Exception as e:
-        print("No new chat", e)
+        print("No new chat detected")
         return False
 
 def select_chat_input_box(cW):
@@ -468,7 +466,7 @@ if __name__ == "__main__":
     #set JAVA path
     defaultJVMpath = (r"C:\Program Files\Java\jdk-12.0.2\bin\server\jvm.dll")
     jarPath = "-Djava.class.path=" + os.path.join(projectDIR,r"sikuliX\sikulixapi.jar")
-    SeekImagePath = os.path.join(projectDIR,r"sikuliX\A.PNG")
+    SeekImagePath = os.path.join(projectDIR,r"sikuliX\newmsg.PNG")
 
     print("Starting JVM...")
     jpype.startJVM(defaultJVMpath,'-ea',jarPath,convertStrings=False)
