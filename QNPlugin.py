@@ -273,7 +273,28 @@ def self_sent_message(selfID, namedate_string):
     # print("<SELF SENT MESSAGE>",namedate_string[:idlen], "comparison", selfID)
     return is_self
 
+# Used to clean up link urls
+def cleanup_rawtext(text):
+    def substitute_links(text):
+        link_re = r"http(.*?)taobao(.*?)评价(.*?)\)"
+        out = text
+        i = 0
+        SUB_LIMIT = 20
+        while i < SUB_LIMIT:
+            matches = re.search(link_re, out)
+            if not matches:
+                break
+            matchstr = matches.group()
+            if matchstr in out:
+                pattern = matchstr
+                out = out.replace(pattern, "[link]")
+            i += 1
+        return out
+    final = substitute_links(text)
+    return final
+
 def processText(cW,rawText):
+    rawText = cleanup_rawtext(rawText)
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     recentText = rawText[:50]
     self_name = cW.get_userID()
