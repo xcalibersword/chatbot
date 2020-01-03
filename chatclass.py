@@ -13,7 +13,7 @@ from chatbot_supp import *
 from chatbot_utils import dive_for_dot_values, dive_for_values, cbround, dotpop
 
 
-SUPER_DEBUG = 1
+SUPER_DEBUG = 0
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
