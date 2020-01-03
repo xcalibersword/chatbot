@@ -179,7 +179,7 @@ def getRawText():
                 task_index += 1
 
             except Exception as e:
-                print(taskname, "EXCEPTION:",e,"Trying again...")
+                if restart_count%5 == 0: print(taskname, "EXCEPTION:",e,"Trying again...")
                 # Retart from the very beginning
                 task_index = 0
                 restart_count += 1
