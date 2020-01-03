@@ -13,7 +13,7 @@ from chatbot_supp import *
 from chatbot_utils import dive_for_dot_values, dive_for_values, cbround, dotpop
 
 
-SUPER_DEBUG = 1
+SUPER_DEBUG = 0
 DEBUG = 1
 
 DEBUG = DEBUG or SUPER_DEBUG
@@ -275,7 +275,7 @@ class ChatManager:
         gate_repeat = False
         count = 0
         while True:
-            print("<GOTO NEXT STATE> d state obj", d_state_obj.get("key"))
+            print("<GOTO NEXT STATE> stateobj:", d_state_obj.get("key"))
             # Gatekeeper reqs
             self._get_slots_from_state(d_state_obj)
             # Parse for slots
@@ -522,12 +522,12 @@ class ChatManager:
     # Ask calculator to crunch numbers.
     # Updates information dict
     def _calculate(self,double=False):
-        if DEBUG: print("<CALCULATE> CALCULATION CALLED")
+        if SUPER_DEBUG: print("<CALCULATE> CALCULATION CALLED")
         info = self._get_current_info()
         curr_state = self._get_curr_state()
         if SUPER_DEBUG: print("<CALCULATE> Info bef calc", info)
         topup, calc_ext = self.calculator.calculate(curr_state, info)
-        if DEBUG: print("<CALCULATE> DM TOPUP",topup)
+        if SUPER_DEBUG: print("<CALCULATE> DM TOPUP",topup)
         self.push_detail_to_dm(topup) # Adds persist values to info
 
         return calc_ext
