@@ -44,14 +44,12 @@ class Predictor:
         print("Initalizing Predictor...")
         self.pmodel = load_model(mf)
         self.pmodel.summary()
-        # self.word2int = self._buildWordToInt()
         self.ignore_chars = {" ", ",", ":", "：", "。", "，"}
         self.unknown_token_val = 0
         self._load_jsons()
         if USE_WORD2VECTOR: 
             self.w2v = get_vector_dict(w2v_filepath, limit = VDLIMIT)  
         else: 
-            # self.w2v = list(map(lambda x: x[0],self.word2int))
             self.w2v = list(self.word2int.keys())
 
         print("Finished initalizing Predictor")
@@ -88,10 +86,10 @@ class Predictor:
     
     # MAIN METHOD
     def predict(self, raw):
-        int_arr, wordlist = self.tokenize(raw)
-        if DEBUG: print("<NLP_API PREDICT> input_arr",int_arr)
+        intent_arr, wordlist = self.tokenize(raw)
+        if DEBUG: print("<NLP_API PREDICT> input_arr",intent_arr)
 
-        raw_pred = self.pmodel.predict(int_arr)[0] # We want a single prediction
+        raw_pred = self.pmodel.predict(intent_arr)[0] # We want a single prediction
         outdict = {}
         pred_dict = self.pred_to_word(raw_pred)
 
@@ -132,10 +130,10 @@ class Predictor:
             if is_a_number(item):
                 try:
                     fi = float(item)
+                    out.append(fi)
                 except Exception as e:
                     print("<FILTER NUMBERS> Exception",e)
                 
-                out.append(fi)
         if DEBUG: print("<FILTER NUMBERS>",out)
         return out
 
