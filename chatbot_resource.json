@@ -2012,17 +2012,27 @@
         "sum_svc_fee": {
             "writeto": "svc_fee_total",
             "persist_value":true,
-            "conditions": [["flag_sb_gjj",11,["w_svcfee_multi",2,1]]],
+            "conditions": [["flag_sb_gjj",11,["w_dual_svc_multi",1,0]]],
             "req_vars": [
                 "city_info.svc_fee",
+                "city_info.dual_svc_fee",
                 "flag_sb_gjj"
             ],
             "steps": {
-                "1,multi": [
-                    [
-                        "w_svcfee_multi",
-                        "svc_fee"
-                    ],
+                "1,sub": [
+                    [1,"w_dual_svc_multi"],
+                    "w_single_fee"
+                ],
+                "2,multi": [
+                    ["w_single_fee", "svc_fee"],
+                    "w_single_fee_amt"
+                ],
+                "3,multi": [
+                    ["w_dual_svc_multi", "dual_svc_fee"],
+                    "w_dual_fee_amt"
+                ],
+                "4,add": [
+                    ["w_single_fee_amt", "w_dual_fee_amt"],
                     "OUTCOME"
                 ]
             }
@@ -2435,6 +2445,7 @@
                     "base_gjj_jishu_max_limit": 24633,
                     "shebao_payment": 1937.7,
                     "svc_fee": 40,
+                    "dual_svc_fee": 80,
                     "shouci_fee": 50,
                     "pay_deadline": 22,
                     "pay_deadline_weekday_only": true,
@@ -2454,7 +2465,7 @@
                     "base_gjj_jishu_multi":0.206725,
                     "base_gjj_jishu_max_limit": 37786,
                     "svc_fee": 40,
-                    "dbl_svc_fee": 80,
+                    "dual_svc_fee": 80,
                     "shouci_fee": 50,
                     "pay_deadline": 18,
                     "laoke_pay_deadline": 24,
@@ -2474,7 +2485,7 @@
                     "gongjijin_fee": 498,
                     "base_gjj_jishu_max_limit": 37786,
                     "svc_fee": 40,
-                    "dbl_svc_fee": 80,
+                    "dual_svc_fee": 80,
                     "shouci_fee": 50,
                     "pay_deadline": 18,
                     "laoke_pay_deadline": 24,
@@ -2492,6 +2503,7 @@
                     "base_sb_jishu_max_limit": 25000,
                     "base_gjj_jishu_max_limit": 30000,
                     "svc_fee": 40,
+                    "dual_svc_fee": 80,
                     "shouci_fee": 50,
                     "pay_deadline": 22,
                     "laoke_pay_deadline": 24,
@@ -2510,6 +2522,7 @@
                     "base_gjj_jishu_multi":0.50,
                     "base_sb_jishu_multi": 0.50,
                     "svc_fee": 40,
+                    "dual_svc_fee": 80,
                     "shouci_fee": 50,
                     "pay_deadline": 10,
                     "laoke_pay_deadline": 14,
@@ -2529,6 +2542,7 @@
                     "base_gjj_jishu": 2010,
                     "base_gjj_jishu_multi":0.50,
                     "svc_fee": 40,
+                    "dual_svc_fee": 80,
                     "shouci_fee": 50,
                     "pay_deadline": 14,
                     "laoke_pay_deadline": 18,
@@ -2547,6 +2561,7 @@
                     "base_gjj_jishu_multi":0.50,
                     "base_sb_jishu_multi": 0.50,
                     "svc_fee": 40,
+                    "dual_svc_fee": 80,
                     "shouci_fee": 50,
                     "pay_deadline": 10,
                     "laoke_pay_deadline": 12,
@@ -2566,6 +2581,7 @@
                     "base_gjj_jishu_multi":0.50,
                     "base_sb_jishu_multi": 0.50,
                     "svc_fee": 40,
+                    "dual_svc_fee": 80,
                     "shouci_fee": 50,
                     "pay_deadline": 10,
                     "laoke_pay_deadline": 14,
@@ -2583,6 +2599,7 @@
                     "base_gjj_jishu_multi":0.50,
                     "base_sb_jishu_multi": 0.50,
                     "svc_fee": 40,
+                    "dual_svc_fee": 80,
                     "shouci_fee": 50,
                     "bujiao_period": 1,
                     "pay_deadline": 12,
@@ -2618,6 +2635,7 @@
                     "pay_deadline": 10,
                     "laoke_pay_deadline": 12,
                     "svc_fee": 40,
+                    "dual_svc_fee": 80,
                     "base_sb_jishu_max_limit": 25000,
                     "base_gjj_jishu_max_limit": 30000,
                     "base_gjj_jishu_multi":0.50,
