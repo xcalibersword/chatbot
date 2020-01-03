@@ -9,7 +9,7 @@ from cb_sql import MSSQL_readwriter
 
 
 dbfolder = "userdata"
-DEBUG = 1
+DEBUG = 0
 READ_FROM_JSON = 1
 WRITE_TO_JSON = 1
 
@@ -174,11 +174,13 @@ def record_chatlog_to_json(chatID, chatlog):
     if os.path.isfile(log_filepath):
         towrite = read_json(log_filepath)
         loglen = len(towrite)
-        if DEBUG: print("<RECORD CHATLOG> Existing chatlog for {}: {} lines".format(chatID,towrite))
+        if DEBUG: print("<RECORD CHATLOG> Existing chatlog for {}: {} lines".format(chatID,loglen))
     else:
         towrite = []
+
     towrite.extend(chatlog)
-    if DEBUG: print("<RECORD CHATLOG> Final write:".format(towrite))
+    loglen = len(towrite)
+    if DEBUG: print("<RECORD CHATLOG> Final write: {} lines".format(loglen))
 
     # Write to json file
     dump_to_json(log_filepath,towrite,DEBUG=1,OVERRIDE=1)
