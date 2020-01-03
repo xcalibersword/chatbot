@@ -3,9 +3,9 @@ import re
 import copy
 import chatbot_utils as cu
 
-SUPER_DEBUG = 1
+SUPER_DEBUG = 0
 DEBUG = 1
-CALCULATOR_DEBUG = 1
+CALCULATOR_DEBUG = 0
 
 DEBUG = DEBUG or SUPER_DEBUG
 
@@ -298,7 +298,6 @@ class Announcer():
             return make, entry
 
         def _check_condition(an):
-            print("Check condition", an)
             csk = cstate["key"]
             curr_info = cinfo
             etype = an["trigger"]
