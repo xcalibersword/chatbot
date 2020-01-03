@@ -259,6 +259,8 @@ class ChatManager:
         calc_ext_dict = self._calculate()
         reply, topup = self._fetch_reply(uds,calc_ext_dict)
 
+        self._record_messages_in_chat(msg,reply)
+
         self._post_process(uds, topup)
 
         curr_info = self._get_current_info()
@@ -1163,6 +1165,7 @@ class Chat:
         if self.save_chat_logs:
             log = self.get_chatlog()
             chatid = self.chatID
+            print("WRITING TO DB:", log)
             chatbot_be.record_chatlog_to_json(chatid, log)
             self.clear_chatlot()
         return

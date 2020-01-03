@@ -9,7 +9,7 @@ from cb_sql import MSSQL_readwriter
 
 
 dbfolder = "userdata"
-DEBUG = 0
+DEBUG = 1
 READ_FROM_JSON = 1
 WRITE_TO_JSON = 1
 
@@ -166,16 +166,19 @@ def record_chatlog_to_json(chatID, chatlog):
     direct = os.getcwd()
     log_folder = "chatlogs"
     if not os.path.isdir(os.path.join(direct,log_folder)):
-        if DEBUG: print("Creating chatlogs folder...")
+        print("Creating chatlogs folder...")
         os.mkdir(os.path.join(direct,"chatlogs")) # If no folder, make a folder
     
     log_filepath = os.path.join(direct,"chatlogs/" + chatID + ".json")
     
     if os.path.isfile(log_filepath):
         towrite = read_json(log_filepath)
+        loglen = len(towrite)
+        if DEBUG: print("<RECORD CHATLOG> Existing chatlog for {}: {} lines".format(chatID,towrite))
     else:
         towrite = []
     towrite.extend(chatlog)
+    if DEBUG: print("<RECORD CHATLOG> Final write:".format(towrite))
 
     # Write to json file
     dump_to_json(log_filepath,towrite,DEBUG=1,OVERRIDE=1)
