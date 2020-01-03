@@ -271,7 +271,8 @@ class ChatManager:
         d_state_obj = self._sip_to_stateobj(sip)
         intent = understanding.get_orig_intent()
 
-        repeat = False
+        trigger_repeat = False
+        gate_repeat = False
         count = 0
         while True:
             print("<GOTO NEXT STATE> d state obj", d_state_obj.get("key"))
@@ -282,15 +283,20 @@ class ChatManager:
             # Preprocess to fill slots with default vals
             self._gatekeeper_preprocess()
             # Try gate and CHANGE STATE
-            self._advance_to_new_state(d_state_obj)
+            pass_gate = self._advance_to_new_state(d_state_obj)
             # Calculate (for crossroads)
             self._calculate() 
 
             # FINAL state change
             crossroad_traverse, d_state_obj = self._traverse_crossroads(d_state_obj)
 
-            if crossroad_traverse and count < 10:
-                repeat = True
+            if not pass_gate and not gate_repeat: 
+                gate_repeat = True
+                trigger_repeat = True
+
+            trigger_repeat = crossroad_traverse or trigger_repeat
+            if trigger_repeat and count < 10:
+                trigger_repeat = False
                 print("<GOTO NEXT STATE> REPEATING", d_state_obj, "count", count)
                 count += 1
                 continue
