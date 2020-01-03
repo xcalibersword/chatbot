@@ -300,8 +300,10 @@ if MAIN:
         ("生病之后去办理医保可以吗","query_sick"),
         ("参保可以吗 因为我已经生病了","query_sick"),
         ("看病没关系吧","query_sick_light"),
+        ("若出问题，及时联系","request_notify"),
         ("好了就联系我哦","request_notify"),
-        ("如果那边有什么问题要及时通知我哦","request_notify")
+        ("如果那边有什么问题要及时通知我哦","request_notify"),
+        ("http://a.m.taobao.com/i123.htm","send_link")
     ]
 
     print("Please enter the model filename")
