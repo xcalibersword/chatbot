@@ -263,23 +263,23 @@ cnn = BatchNormalization(momentum=0.99)(cnn)
 flat = Flatten()(cnn)
 flat = Dropout(0.15)(flat)
 
-flat = Dense(units=256, activation='relu')(flat) # 
+flat = Dense(units=128, activation='relu')(flat) # 
 flat = Dropout(0.15)(flat)
 
-flat = Dense(units=512, activation='relu')(flat) # 
+flat = Dense(units=1024, activation='relu')(flat) # 
 
 outs = Dense(units=num_intents, activation='sigmoid')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
 
-LEARN_RATE = 2.0e-5 
+LEARN_RATE = 2e-5 
 optimizer = Adam(learning_rate=LEARN_RATE)
 # optimizer = RMSprop(learning_rate = 3e-5)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
-# Best so far bs = 32
-model.fit(x=embed_xvals,y=cat_yval,epochs=120,verbose=1,validation_split=0.0,batch_size=25,shuffle=True) # Can't have validation because of the number of intents.
+
+model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=25,shuffle=True) # Can't have validation because of the number of intents.
 
 # Post Training
 model.save(save_model_name)

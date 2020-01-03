@@ -188,7 +188,7 @@ def test_predictor(pred_obj):
                 fail_dict[ans] = 1
         
         
-        print("In:",testin, "passed?", passed)
+        print("In:<",testin, "> Passed?:", passed)
         if not passed or DEBUG:
             print(passedstr, "Expected:", ans)
             print("Predicted Intent:",out)
@@ -303,7 +303,8 @@ if MAIN:
         ("若出问题，及时联系","request_notify"),
         ("好了就联系我哦","request_notify"),
         ("如果那边有什么问题要及时通知我哦","request_notify"),
-        ("http://a.m.taobao.com/i123.htm","send_link")
+        ("[link]","greet"),
+        ("[link]我还需要什么资料吗","query_req_resources")
     ]
 
     print("Please enter the model filename")
