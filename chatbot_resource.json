@@ -65,18 +65,21 @@
             "default_target": "SAME_STATE",
             "replies": []
         },
-        "explore_option": {
-            "key": "explore_option",
-            "default_set": true,
-            "default_target": "SAME_STATE",
-            "replies": []
-        },
         "inform":{
             "key": "inform",
             "default_set": true,
             "humanify": false,
             "default_target": "SAME_STATE",
             "replies": []
+        },
+        "send_link":{
+            "key": "send_link",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": [
+                "您好 有什么能帮助您的？",
+                "亲，有什么能帮助您的？"
+            ]
         },
         "unsupported_request": {
             "key": "unsupported_request",
@@ -86,6 +89,12 @@
             "replies": [
                 "抱歉哦亲😞，小店暂时不提供这项业务哦"
             ]
+        },
+        "general_query":{
+            "key": "general_query",
+            "default_set": true,
+            "default_target": "SAME_STATE",
+            "replies": ["您好 有什么能帮助您的？"]
         },
         "define":{
             "key": "define",
@@ -116,12 +125,6 @@
                 "他们叫我王俊杰！",
                 "我名客服，姓机器人"
             ]
-        },
-        "indicate_query": {
-            "key": 1702,
-            "default_set": true,
-            "default_target": "SAME_STATE",
-            "replies": []
         },
         "ask_can_topup": {
             "key": "ask_can_topup",
@@ -163,14 +166,6 @@
             "default_target": "SAME_STATE",
             "replies": [
                 "淘宝付费，然后我们操作把你加到我们公司名下，每个月参保缴费"
-            ]
-        },
-        "ask_can_still_make_it":{
-            "key": "info_can_still_make_it",
-            "default_set": true,
-            "default_target": "SAME_STATE",
-            "replies": [
-                "亲可以白天来小店找客服核实是否来的及哈"
             ]
         },
         "ask_how_much": {
@@ -278,7 +273,7 @@
         "query_how_settle": {
             "key": "info_how_settle",
             "default_set": true,
-            "default_target": "inform_pai",
+            "default_target": "inform_how_pai",
             "replies": []
         },
         "query_multiple_locations":{
@@ -427,7 +422,7 @@
             "default_set": true,
             "humanify": false,
             "default_target": "inform_what_this_for",
-            "replies": ["亲，大部分客户是用来公积金贷款的哈"]
+            "replies": []
         },
         "daikuan": {
             "key": "daikuan (same as housing)",
@@ -484,7 +479,7 @@
         "inform_paid": {
             "key": "180 inform_paid",
             "default_set": true,
-            "default_target": "inform_finished_payment",
+            "default_target": "finished_payment",
             "replies": []
         },
         "inform_payment_history": {
@@ -492,14 +487,6 @@
             "default_set": true,
             "default_target": "SAME_STATE",
             "replies": []
-        },
-        "inform_early_paid": {
-            "key": "181 inform_early_paid",
-            "default_set": true,
-            "default_target": "SAME_STATE",
-            "replies": [
-                "看到了亲 放心我们一定会及时缴纳的 谢谢❤️"
-            ]
         },
         "purchase": {
             "key": "purchase",
@@ -763,15 +750,6 @@
                 "{rep_ext[entire_plan_proposal]}"
             ]
         },
-        "offer_product_links": {
-            "key": "offer_product_links",
-            "gated": false,
-            "thread": "t_presale",
-            "req_info": [],
-            "replies": [
-                "亲 要{city_district}宝贝的链接吗?"
-            ]
-        },
         "custom_jishu_crossroad":{
             "key":"custom_jishu_crossroad",
             "gated": true,
@@ -899,8 +877,8 @@
             "req_info": [],
             "replies":["亲，我们在参保成功后发货哦"]
         },
-        "assure_inform_fahuo":{
-            "key": "assure_inform_fahuo",
+        "inform_fahuo_assure":{
+            "key": "inform_fahuo_assure",
             "gated": false,
             "thread": "t_fahuo",
             "terminal_state": true,
@@ -938,8 +916,8 @@
                 "{rep_ext[how_check_gjj]}"
             ]
         },
-        "inform_pai": {
-            "key": "260 inform pai",
+        "inform_how_pai": {
+            "key": "260 inform_how_pai",
             "gated": false,
             "thread": "t_pai",
             "req_info": "",
@@ -1087,15 +1065,8 @@
                 "{rep_ext[xufei_info]}"
             ]
         },        
-        "PREV_STATE": {
-            "key": "299 PREV_STATE",
-            "gated": false,
-            "thread": "NONE",
-            "req_info": "",
-            "replies": []
-        },
-        "inform_finished_payment": {
-            "key": "inform_finished_payment",
+        "finished_payment": {
+            "key": "finished_payment",
             "gated": true,
             "thread": "t_pai",
             "terminal_state": true,
@@ -1199,7 +1170,7 @@
             {
                 "writeto": "finish_payment_info",
                 "states": [
-                    "inform_finished_payment"
+                    "finished_payment"
                 ],
                 "lookfor": [
                     "city_district",

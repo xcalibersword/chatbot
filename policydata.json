@@ -75,35 +75,26 @@
             ["inform","purchase_type_crossroad"],
             ["deny", "goodbye"]
         ],
-        "offer_product_links": [
-            ["purchase","city_crossroad"],
-            ["inform","city_crossroad"],
-            ["next_step", "provide_taobao_link"],
-            ["affirm", "provide_taobao_link"],
-            ["thankyou","provide_taobao_link"],
-            ["query_pay_process", "inform_pai"],            
-            ["deny","initplus"]
-        ],
         "provide_taobao_link": [
             ["inform","city_crossroad"],
             ["purchase","city_crossroad"],
-            ["affirm", "inform_pai"],
-            ["next_step","inform_pai"],
-            ["inform_done","inform_finished_payment"],
-            ["inform_paid","inform_finished_payment"],
-            ["thankyou", "inform_finished_payment"],
+            ["affirm", "inform_how_pai"],
+            ["next_step","inform_how_pai"],
+            ["inform_done","finished_payment"],
+            ["inform_paid","finished_payment"],
+            ["thankyou", "finished_payment"],
             ["deny","initplus"]
         ],
-        "inform_pai": [
+        "inform_how_pai": [
             ["inform", "city_crossroad"],
             ["purchase","city_crossroad"],
-            ["affirm", "inform_finished_payment"],
-            ["next_step", "inform_finished_payment"],
-            ["inform_done", "inform_finished_payment"],
-            ["inform_paid","inform_finished_payment"],
-            ["thankyou","inform_finished_payment"]
+            ["affirm", "finished_payment"],
+            ["next_step", "finished_payment"],
+            ["inform_done", "finished_payment"],
+            ["inform_paid","finished_payment"],
+            ["thankyou","finished_payment"]
         ],
-        "inform_finished_payment": [
+        "finished_payment": [
             ["inform", "city_crossroad"],
             ["purchase","city_crossroad"],
             ["affirm", "initplus"],
@@ -112,7 +103,7 @@
             ["goodbye", "goodbye"]
         ],
         "inform_fahuo":[
-            ["question_reliability","assure_inform_fahuo"]
+            ["question_reliability","inform_fahuo_assure"]
         ],
         "pass_to_human": [
             ["affirm","initplus"]
