@@ -411,6 +411,7 @@ class InfoVault():
         self.vault_info = json_data["vault_info"]
         self.general_info = self.vault_info["general_info"]
         self.lookup_info = self.vault_info["lookup_info"]
+        self.db_protocol = self.vault_info.get("database_protocol")
         self.slot_list = list(self.lookup_info.keys())
     
     # Modifies the dict directly
@@ -440,6 +441,9 @@ class InfoVault():
         gen_info = {"general_info":self.general_info}
         ci.update(gen_info)
         return
+        
+    def _get_db_protocol(self):
+        return self.db_protocol
         
 # Takes in a message and returns some info (if any)
 # Note: thing about re.search is that only the first match is pulled.

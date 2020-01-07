@@ -687,6 +687,7 @@ class PolicyKeeper:
 class DetailManager:
     def __init__(self, info_vault,secondary_slots,zonelist):
         self.vault = info_vault
+        self.db_protocol = self.vault._get_db_protocol()
         self.inital_dict = {}
         self.inital_dict["zones"] = {}
         self.chat_prov_info = self.inital_dict
@@ -754,7 +755,7 @@ class DetailManager:
             "city", "city_district", "要社保", "要公积金", 
             "首次","shebao_jishu", "gjj_jishu", 
             "svc_fee_total", "shebao_basic_total",
-            "made_purchase", "苏州区", "北京农城"
+            "made_purchase", "苏州区", "北京农城", "laokehu_flag"
         } # HARDCODED
         not_user_info = [
             "requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", 
@@ -926,11 +927,18 @@ class DetailManager:
             raise Exception("DatabaseRunner not initalized for DetailManager!")
         return True
 
-    # Checks with DB Runner for if the User is a laoke. Writes to the laokehu_flag
+    # Checks with DB Runner for if the User is found. Writes to the specified slot.
     def check_database_for_user(self, userID):
         found, prev_info = self.dbrunner.fetch_user_info(userID)
-        lkh_val = "yes" if found else "no" # HARDCODED!!
-        prev_info["laokehu_flag"] = lkh_val # HARDCODED!!
+        find_protocol = self.db_protocol.get("_on_find")
+        slotname = find_protocol.get("slotname")
+
+        if found:
+            slotvalue = find_protocol.get("on_true")
+        else:
+            slotvalue = find_protocol.get("on_false")
+
+        prev_info[slotname] = slotvalue
         self.log_detail(prev_info)
         return 
 

@@ -2012,17 +2012,11 @@
                     "w_final_lower_limit"
                 ],
                 "5,isgreater": [
-                    [
-                        "w_final_lower_limit",
-                        "ss_purchase_for_month"
-                    ],
+                    ["w_final_lower_limit","ss_purchase_for_month"],
                     "OUTCOME"
                 ],
                 "6,sub":[
-                    [
-                        1,
-                        "OUTCOME"
-                    ],
+                    [1,"OUTCOME"],
                     "OUTCOME"
                 ]
             }
@@ -2448,6 +2442,13 @@
         }
     },
     "vault_info": {
+        "database_protocol":{
+            "_on_find":{
+                "slotname":"laokehu_flag",
+                "on_true": "yes",
+                "on_false": "no"
+            }
+        },
         "general_info":{
             "link_fuwu": "https://item.taobao.com/item.htm?id=598104660990"
         },

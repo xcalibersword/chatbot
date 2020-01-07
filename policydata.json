@@ -70,7 +70,9 @@
     "policy_rules":{  
         "push_xufei":[
             ["affirm","provide_taobao_link"],
-            ["purchase", "purchase_type_crossroad"],
+            ["next_step","provide_taobao_link"],
+            ["purchase", "provide_taobao_link"],
+            ["inform_paid","finished_payment"],
             ["greet", "init"],
             ["deny", "initplus"]
         ],
@@ -115,7 +117,11 @@
             ["goodbye", "goodbye"]
         ],
         "inform_fahuo":[
-            ["question_reliability","inform_fahuo_assure"]
+            ["question_reliability","inform_fahuo_assure"],
+            ["affirm", "initplus"]
+        ],
+        "inform_fahuo_assure":[
+            ["affirm", "initplus"]
         ],
         "pass_to_human": [
             ["affirm","initplus"]
