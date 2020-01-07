@@ -94,7 +94,8 @@
         "chosen_service":"社保",
         "exclude_svc_fee":"not_mentioned",
         "given_amount": "",
-        "purchase_type":"normal"
+        "purchase_type":"normal",
+        "laokehu_flag": "no"
     },
     "info_parser": {
         "permanent_slots": [

@@ -101,7 +101,9 @@ class DatabaseRunner():
         print("<MODIFIED FETCH>", mod)
         return mod
               
+    # Returns a tuple of (Bool, Dict)
     def fetch_user_info(self, user):
+        BLANK_ENTRY = {}
         def _fetch_from_JSON(user):
             # self.database reflects the entire json database
             if not user in self.database:
@@ -124,8 +126,9 @@ class DatabaseRunner():
             if not success:
                 if READ_FROM_JSON:
                     _fetch_from_JSON(user)
-            
-        return self.database[user]
+
+        found = not self.database[user] == BLANK_ENTRY
+        return (found, self.database[user])
 
     def trigger_backup(self):
         if self.timer_on:

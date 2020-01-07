@@ -1,6 +1,12 @@
 {
     "COMMENTS":"File to decide state transition logic. Called policies. CONSIDER: Changing from list of pairs to dict",
     "crossroad_policies":{
+        "laoke_crossroad":[
+            "laokehu_flag",{
+                "yes": "push_xufei",
+                "no": "init"
+            }  
+        ],
         "city_crossroad":[
             "city",{
                 "湖南": "unsupported_city",
@@ -62,8 +68,14 @@
         ]
     },
     "policy_rules":{  
+        "push_xufei":[
+            ["affirm","provide_taobao_link"],
+            ["purchase", "purchase_type_crossroad"],
+            ["greet", "init"],
+            ["deny", "initplus"]
+        ],
         "init": [
-            ["greet","SAME_STATE"],
+            ["greet","laoke_crossroad"],
             ["purchase", "purchase_type_crossroad"],
             ["inform","purchase_type_crossroad"],
             ["affirm", "initplus"],

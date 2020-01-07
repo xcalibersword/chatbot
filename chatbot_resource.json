@@ -573,6 +573,24 @@
                 "{rep_ext[initplus_reply]}"
             ]
         },
+        "laoke_crossroad":{
+            "key": "laoke_crossroad",
+            "gated": false,
+            "transition_state": true,
+            "thread": "BASE",
+            "humanify": false,
+            "req_info": [["laokehu_flag", "DEFAULT_SV"]],
+            "replies": []
+        },
+        "push_xufei":{
+            "key": "push_xufei",
+            "gated": true,
+            "transition_state": true,
+            "thread": "BASE",
+            "humanify": false,
+            "req_info": [["city", "city"]],
+            "replies": ["您好，要续费吗？"]
+        },
         "city_crossroad":{
             "key": "city_crossroad",
             "gated": false,

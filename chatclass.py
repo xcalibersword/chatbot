@@ -926,14 +926,21 @@ class DetailManager:
             raise Exception("DatabaseRunner not initalized for DetailManager!")
         return True
 
+    # Checks with DB Runner for if the User is a laoke. Writes to the laokehu_flag
+    def check_database_for_user(self, userID):
+        found, prev_info = self.dbrunner.fetch_user_info(userID)
+        lkh_val = "yes" if found else "no" # HARDCODED!!
+        prev_info["laokehu_flag"] = lkh_val # HARDCODED!!
+        self.log_detail(prev_info)
+        return 
+
     # This is called during the creation of a new chat
     def clone(self, chatID):   
         self._check_db_init()
         clonetrooper = DetailManager(self.vault, self.second_slots, self.zonelist)
         clonetrooper._set_chatID(chatID)
         clonetrooper.set_runner(self.dbrunner)
-        prev_info = self.dbrunner.fetch_user_info(chatID)
-        clonetrooper.log_detail(prev_info)
+        clonetrooper.check_database_for_user(chatID)
         return clonetrooper
 
     def write_info_to_db(self):
