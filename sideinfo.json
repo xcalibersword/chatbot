@@ -460,7 +460,7 @@
             "trigger": "state",
             "repeat": false,
             "trigger_d":{
-                "statenames":["inform_finished_payment"]
+                "statenames":["finished_payment"]
             },
             "position": 1,
             "text":"两点注意：1.每个月的{city_info[pay_deadline]}号前，来淘宝缴费，不要更改淘宝ID和缴费基数 2.如果要停缴或者已入职新单位的，请通知我们。比如你6月份停缴，最晚在6月15号前通知我们，可以在小程序上提交终止服务的申请，或者拍下1元停缴宝贝、留言备注好退工日期，以防影响你下家单位交金；如不备注一律以我司办理为准，谢谢亲的配合。（PS. 只缴社保和公积金是没有个税记录的哦，如需要个税申报的麻烦联系客服办理哦）"
