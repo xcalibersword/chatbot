@@ -268,7 +268,7 @@ flat = Dropout(0.15)(flat)
 
 flat = Dense(units=1024, activation='relu')(flat) # 
 
-outs = Dense(units=num_intents, activation='sigmoid')(flat)
+outs = Dense(units=num_intents, activation='softmax')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
 
