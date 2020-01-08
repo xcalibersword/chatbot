@@ -1801,7 +1801,7 @@
                 "if_value":{
                     "bill_settled_flag":{
                         "1":"",
-                        "DEFAULT":["亲 还有别的要问吗？","亲 有其他问题吗？"]
+                        "DEFAULT":["恩恩","嗯"]
                     }
                 }
             }
