@@ -382,8 +382,9 @@ def get_only_messages(hist,cW):
     for sent in history:
         if re.search(date_time_pattern,sent):
             # Name line
-            if not re.search(cW.userID,sent):
-                # Customer ID
+            # CHECK LEFT SIDE
+            if not self_sent_message(cW.get_userID(),sent):
+                # If not own ID then it must be Customer ID
                 # custid = re.sub(date_time_pattern,"",sent)
                 # querytime = re.search(date_time_pattern,sent).group(0)
                 out.append(curr_text)

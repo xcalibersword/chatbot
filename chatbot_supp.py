@@ -625,7 +625,6 @@ class InfoParser():
         # Permanent slot parse (overwrites existing slots)
         for msg in in_order_history:
             self._default_parse(msg, out, PDB = False)
-        if DEBUG: print("<PARSE HISTORY> History info:",out)
         return out 
 
     # Converts a python array to a string delimited by the '|' character
