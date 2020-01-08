@@ -248,7 +248,7 @@ def remove_QN_fluff(txt):
         "您好，欢迎光临唯洛社保，很高兴为您服务(.*)联系不到客服怎么办？"
         ]
 
-    fluff_list = [("当前用户来自 淘宝移动端","start"),("end","新消息")]
+    fluff_list = [("start","当前用户来自 淘宝移动端"),("end","新消息")]
     out = txt
     bef = out
     for reg in regex_fluff_list:
