@@ -300,22 +300,27 @@ class Announcer():
         def _check_condition(an):
             csk = cstate["key"]
             curr_info = cinfo
-            etype = an["trigger"]
-            etd = an["trigger_d"]
-            if etype == "state":
-                trigger_states = etd["statenames"]
-                print("cstate",csk, "trig states", trigger_states)
-                if csk in trigger_states:
-                    return True
-            elif etype == "slotfill":
-                sn = etd["slotname"]
-                val = etd["value"]
-                info_vd = cu.dive_for_dot_values(sn, curr_info)
-                info_val = info_vd.get(sn,"")
-                if info_val == val:
-                    return True
-            else:
-                print("<Announce> Unrecognized trigger type:", etype)
+            t_slots = an["trigger_slots"]
+            t_states = an["trigger_states"]
+            
+          
+            trigger_states = t_states
+            correct_state = "_ANY" in trigger_states or csk in trigger_states
+            if correct_state:
+                for ts in t_slots:
+                    sn = ts.get("slotname","")
+                    ex_val = ts["value"]
+                    info_vd = cu.dive_for_dot_values(sn, curr_info)
+                    if len(info_vd) == 0:
+                        if SUPER_DEBUG: print("<ANNOUNCE> Slot",sn,"not found in info")
+                    info_val = info_vd.get(sn,"")
+                
+                    if not info_val == ex_val:
+                        # ALL slot values must be satisfied
+                        return False
+                
+                return True
+            if DEBUG: print("<ANNOUNCE> Not correct state. cstate",csk, "trig states", trigger_states)
             return False
             
         anns_to_make = []
