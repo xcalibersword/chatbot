@@ -273,7 +273,7 @@
         "query_how_settle": {
             "key": "info_how_settle",
             "default_set": true,
-            "default_target": "inform_how_pai",
+            "default_target": "settlement_laoke_crossroad",
             "replies": []
         },
         "query_multiple_locations":{
@@ -584,6 +584,15 @@
         },
         "purchase_laoke_crossroad":{
             "key": "purchase_laoke_crossroad",
+            "gated": false,
+            "transition_state": true,
+            "thread": "BASE",
+            "humanify": false,
+            "req_info": [["laokehu_flag", "DEFAULT_SV"]],
+            "replies": []
+        },
+        "settlement_laoke_crossroad":{
+            "key": "settlement_laoke_crossroad",
             "gated": false,
             "transition_state": true,
             "thread": "BASE",

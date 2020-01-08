@@ -13,6 +13,12 @@
                 "no": "purchase_type_crossroad"
             }
         ],
+        "settlement_laoke_crossroad":[
+            "laokehu_flag",{
+                "yes": "provide_taobao_link",
+                "no": "inform_how_pai"
+            }
+        ],
         "city_crossroad":[
             "city",{
                 "湖南": "unsupported_city",
@@ -78,6 +84,8 @@
             ["affirm","provide_taobao_link"],
             ["next_step","provide_taobao_link"],
             ["purchase", "provide_taobao_link"],
+            ["query_how_settle","provide_taobao_link"],
+            ["query_pay_process", "provide_taobao_link"],
             ["inform_paid","finished_payment"],
             ["greet", "init"],
             ["deny", "initplus"]
