@@ -573,8 +573,17 @@
                 "{rep_ext[initplus_reply]}"
             ]
         },
-        "laoke_crossroad":{
-            "key": "laoke_crossroad",
+        "xufei_push_crossroad":{
+            "key": "xufei_push_crossroad",
+            "gated": false,
+            "transition_state": true,
+            "thread": "BASE",
+            "humanify": false,
+            "req_info": [["laokehu_flag", "DEFAULT_SV"]],
+            "replies": []
+        },
+        "purchase_laoke_crossroad":{
+            "key": "purchase_laoke_crossroad",
             "gated": false,
             "transition_state": true,
             "thread": "BASE",
