@@ -186,5 +186,5 @@ def record_chatlog_to_json(chatID, chatlog):
     if DEBUG: print("<RECORD CHATLOG> Final write: {} lines".format(loglen))
 
     # Write to json file
-    dump_to_json(log_filepath,towrite,DEBUG=1,OVERRIDE=1)
+    dump_to_json(log_filepath,towrite,DEBUG=0,OVERRIDE=1)
     return
