@@ -10,6 +10,7 @@ from keras.initializers import Constant, RandomNormal, RandomUniform, glorot_nor
 from keras.layers import Concatenate, Dropout, Embedding, LSTM, Dense, Conv1D, Flatten, BatchNormalization, MaxPooling1D
 from keras.models import Model, Input
 from keras.optimizers import Adam, RMSprop
+from keras.backend import clear_session
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences 
 from keras.regularizers import l1,l2
@@ -18,6 +19,8 @@ from nlp_utils import preprocess_sequence, postprocess_sequence
 
 #### NOTES ####
 # Run from 'embedding' folder
+
+clear_session() # CLEAR KERAS SESSION
 
 # Helpful functions
 def save_to_json(filename, data):
@@ -130,7 +133,8 @@ def buildWordToInt(w2v,ut):
     return d
 
 
-def arrayWordToInt(nparr, d, dbg=False):
+def arrayWordToInt(nparr, d):
+    dbg=False
     nparr = np.array(nparr)
     newArray = np.copy(nparr)
     for k, v in d.items(): newArray[nparr==k] = v
@@ -240,63 +244,64 @@ embed = my_embedding(main_input)
 embed = BatchNormalization(momentum=0.99)(embed)
 
 # 词窗大小分别为 2 3 4. Oringially 3 4 5 
-cnnUnits = 128 
-halfUnits = cnnUnits//2
+cnnUnits = 64 
+bigCnnUnits = cnnUnits//2
 cnn2 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu')(embed)
 cnn3 = Conv1D(cnnUnits, 3, padding='same', strides=1, activation='relu')(embed)
-cnn4 = Conv1D(halfUnits, 4, padding='same', strides=1, activation='relu')(embed)
-cnn5 = Conv1D(halfUnits, 5, padding='same', strides=1, activation='relu')(embed)
+cnn4 = Conv1D(bigCnnUnits, 4, padding='same', strides=1, activation='relu')(embed)
+cnn5 = Conv1D(bigCnnUnits, 5, padding='same', strides=1, activation='relu')(embed)
 
+# Pool size is the sliding window length.
+# Strides is the number of indices that are moved between each pool sample.
+DO_POOL = True
+if DO_POOL:
+    # No sense having pool_size bigger than stride because its MaxPool.
+    # Having a bigger pool than stride means each max point will obscure the results more.
+    cnn2 = MaxPooling1D(pool_size=3, strides=3)(cnn2)
+    cnn3 = MaxPooling1D(pool_size=3, strides=3)(cnn3)
+    cnn4 = MaxPooling1D(pool_size=3, strides=3)(cnn4)
+    cnn5 = MaxPooling1D(pool_size=3, strides=3)(cnn5)
+    # f_nopool = Flatten()(cnn5)
+    f_pool = Concatenate(axis=-1)([cnn2, cnn3, cnn4,cnn5]) # 合并三个模型的输出向量
+    flat = Flatten()(f_pool)
+    # flat = Concatenate(axis=-1)([f_nopool, f_pool])
+else:
+    flat = Concatenate(axis=-1)([cnn2,cnn3,cnn4,cnn5])
 
-cnn2 = MaxPooling1D(pool_size=4)(cnn2)
-cnn3 = MaxPooling1D(pool_size=4)(cnn3)
-cnn4 = MaxPooling1D(pool_size=4)(cnn4)
-cnn5 = MaxPooling1D(pool_size=4)(cnn5)
+flat = BatchNormalization(momentum=0.99)(flat)
+flat = Dropout(0.2)(flat)
 
-# 合并三个模型的输出向量
-# Concat 3/4 outputs into one
-# cnn = Concatenate(axis=-1)([cnn2, cnn3, cnn4])
-# cnn = Concatenate(axis=-1)([cnn3, cnn4, cnn5])
-cnn = Concatenate(axis=-1)([cnn2, cnn3, cnn4, cnn5])
-cnn = BatchNormalization(momentum=0.99)(cnn)
+flat = Dense(units=256, activation='relu')(flat) # 
+flat = Dropout(0.2)(flat)
 
-flat = Flatten()(cnn)
-flat = Dropout(0.15)(flat)
-
-flat = Dense(units=128, activation='relu')(flat) # 
-flat = Dropout(0.15)(flat)
-
-flat = Dense(units=1024, activation='relu')(flat) # 
+flat = Dense(units=1024, activation='relu')(flat) #
 
 outs = Dense(units=num_intents, activation='softmax')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
 
-LEARN_RATE = 2e-5 
+LEARN_RATE = 1.8e-5 
 optimizer = Adam(learning_rate=LEARN_RATE)
 # optimizer = RMSprop(learning_rate = 3e-5)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 
-model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=25,shuffle=True) # Can't have validation because of the number of intents.
+model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=20,shuffle=True) # Can't have validation because of the number of intents.
 
 # Post Training
 model.save(save_model_name)
 print("This Model has been saved! Rejoice")
 
-test_in = ["我在苏州的不是首次","我是要付社保行吗","哦了解了", "我已经填好了", "我拍好了", "流程到底是怎么样的？", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
+# test_in = ["我在苏州的不是首次","我是要付社保行吗","哦了解了", "我已经填好了", "我拍好了", "流程到底是怎么样的？", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
 
-ti = myTokenize(test_in)
-# print("input",test_in)
-input_array = arrayWordToInt(ti,word_index,0)
-input_array = np.reshape(input_array,(input_array.shape[0],input_array.shape[2])) # Remove the 1 in the middle
-output_array = model.predict(input_array)
-# print("raw",output_array)
+# ti = myTokenize(test_in)
+# input_array = arrayWordToInt(ti,word_index)
+# input_array = np.reshape(input_array,(input_array.shape[0],input_array.shape[2])) # Remove the 1 in the middle
+# output_array = model.predict(input_array)
 
-i = 0
-for bleh in output_array:
-    print(test_in[i])
-    print(input_array[i])
-    i+=1
-    pred_to_word(bleh)
+# i = 0
+# for bleh in output_array:
+#     print(test_in[i])
+#     i+=1
+#     pred_to_word(bleh)

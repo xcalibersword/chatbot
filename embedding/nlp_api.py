@@ -292,7 +292,7 @@ if MAIN:
         ("我给朋友推荐了你们公司","complicated"),
         ("会有什么影响吗？","query_various_effects"),
         ("有什么后果吗？","query_various_effects"),
-        ("不缴公积金会有什么影响啊","query_break"),
+        ("不缴公积金会有什么影响啊","query_various_effects"),
         ("断了会怎么样吗","query_break"),
         ("费用为啥80","doublecheck_value"),
         ("这个1937是包括费用么","doublecheck_value"),
@@ -304,7 +304,8 @@ if MAIN:
         ("好了就联系我哦","request_notify"),
         ("如果那边有什么问题要及时通知我哦","request_notify"),
         ("[link]","greet"),
-        ("[link]我还需要什么资料吗","query_req_resources")
+        ("[link]我还需要什么资料吗","query_req_resources"),
+        ("请问社保卡怎么弄","query_shebao_card")
     ]
 
     print("Please enter the model filename")
