@@ -243,8 +243,12 @@ def get_customer_id_from_history(self_id,rawText):
 
 
 def remove_QN_fluff(txt):
-    regex_fluff_list = ["该用户由(.*)客服转交给(.*)客服","以上为历史消息"]
-    fluff_list = [(1,"新消息")]
+    regex_fluff_list = [
+        "该用户由(.*)客服转交给(.*)客服","以上为历史消息",
+        "您好，欢迎光临唯洛社保，很高兴为您服务(.*)联系不到客服怎么办？"
+        ]
+
+    fluff_list = [("当前用户来自 淘宝移动端","start"),("end","新消息")]
     out = txt
     bef = out
     for reg in regex_fluff_list:
@@ -255,7 +259,7 @@ def remove_QN_fluff(txt):
             
     for pos, f in fluff_list:
         f_len = len(f)
-        if pos:
+        if pos == "end":
             # End position
             if out[-f_len:] == f:
                 out = out[:-f_len]
