@@ -705,7 +705,7 @@
             "gated": false,
             "humanify":false,
             "terminal_state":true,
-            "req_info":[["spec_element", "element_slot"]],
+            "req_info":[["spec_element", "terms_slot"]],
             "thread": "t_define",
             "replies":["{rep_ext[definition_info]}"]
         },
@@ -1105,14 +1105,14 @@
                 ],
                 "if_value": {
                     "requested_info": {
-                        "city": "您是哪个城市呢？",
+                        "city": ["您是哪个城市呢？","想交哪个城市？"],
                         "首次": ["之前有交过吗？","以前有代缴过吗？"],
                         "要公积金": "交公积金吗？",
                         "苏州区": "是市区还是园区呢？",
                         "北京农城": "是城镇还是农业呢？",
                         "chosen_fee": "哪个部分？（比如：社保/公积金/服务费）",
                         "spec_element": "问哪个呢？",
-                        "ss_purchase_for_month": "要缴哪月？",
+                        "ss_purchase_for_month": ["要缴哪月？","想交哪月呢？"],
                         "given_amount": "要什么基数？",
                         "chosen_service":"指的是社保还是公积金？",
                         "user_spec_jishu_amt": "要按照什么基数？",
@@ -1180,7 +1180,7 @@
                 ],
                 "if_value":{
                     "spec_element":{
-                        "减员":"因为只有一家公司可以帮你交社保公，所以先要上家公司把你的钱转出来我们才能帮你交",
+                        "减员":"减员是您上家公司把钱转出来。因为只有一家公司可以帮你交社保公，所以先要减员我们才能帮你交",
                         "挂靠":"就是说跟可以借用我们公司的名字"
                     }
                 }

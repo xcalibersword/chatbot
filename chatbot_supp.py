@@ -3,7 +3,7 @@ import re
 import copy
 import chatbot_utils as cu
 
-SUPER_DEBUG = 0
+SUPER_DEBUG = 1
 DEBUG = 1
 CALCULATOR_DEBUG = 0
 

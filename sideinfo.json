@@ -107,7 +107,7 @@
             ["chosen_fee","fee_slot"],
             ["exclude_svc_fee", "exclude_svc_fee_slot"],
             ["purchase_type","purchase_type_slot"],
-            ["spec_element", "element_slot"]
+            ["spec_element", "terms_slot"]
         ],
         "COMMENT":"ctx slots are also permanent",
         "contextual_slots":[
@@ -179,6 +179,12 @@
                     "昆山": ["昆山","kunshan"],
                     "苏州": ["苏州(?!合计)","suzhou"],
                     "长沙": ["长沙","changsha"]
+                }
+            },
+            "terms_slot":{
+                "map":{
+                    "减员": ["减员"],
+                    "挂靠": ["挂靠"]
                 }
             },
             "ctx_keyi_slot": {
