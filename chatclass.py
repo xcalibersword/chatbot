@@ -264,6 +264,7 @@ class ChatManager:
         self._post_process(uds, topup)
 
         curr_info = self._get_current_info()
+        print("回复:",reply, "智能理解:", NLP_bd, "信息:", curr_info) # Operational Printout
         return (reply, NLP_bd, curr_info)
 
     def goto_next_state(self, understanding, msg, nums):
@@ -307,66 +308,6 @@ class ChatManager:
         ow_flag, next_state = self._xroad_policy_overwrite(state)
         if SUPER_DEBUG: print("<TRAVERSE CROSSROADS> OW flag:", ow_flag, "Next state:", next_state["key"])
         return (ow_flag, next_state)
-
-    def old_respond_to_message(self, msg):
-        pass
-
-        if self.is_inactive():
-            no_reply = ""
-            return (no_reply, {}, self._get_current_info())
-
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&") # For clarity in terminal     
-        firstpass = True
-        pg_fail = False
-        for rc in range(0, 5):
-            # Parse the message and get an understanding
-            full_uds, bd = self._parse_message_overall(msg)
-            true_sip = full_uds.get_sip()
-
-            if firstpass:
-                firstpass = False
-                sip = true_sip # This is to prevent intents (eg affirm) applying more than once
-            else:
-                sip = sip.same_state()
-
-            # Calls the calculator. Crunch numbers for state change
-            if SUPER_DEBUG: print("########################################## LOOP CALCULATOR ##########################################")
-            self._calculate()
-
-            state_bef = self._get_curr_state()
-            # Digest and internalize the new info
-            zone_overwrite, pg = self.react_to_sip(sip) #STATE CHANGE
-            state_aft = self._get_curr_state()
-
-            if DEBUG: print("<RTM LOOP> Repeats", rc,"Curr SIP", sip.toString(), "True SIP", true_sip.toString(),"Zone Overwrite",zone_overwrite,"Pass gate:",pg)
-
-            if not pg and not pg_fail:
-                pg_fail = True
-                continue
-
-            # Breaks
-            case1 = (not true_sip.is_trans_state() and not sip.is_same_state()) 
-            case2 = state_bef == state_aft
-            if case1 or case2:
-                if case1 and DEBUG: print("<RTM LOOP> Not trans state, breaking")
-                if case2 and DEBUG: print("<RTM LOOP> Same state before and after, breaking")
-                break
-
-        # Calls calculator. Crunch numbers for replying
-        if SUPER_DEBUG: print("########################################## REPLY CALCULATOR ##########################################")
-        calc_ext = self._calculate(double=True)
-    
-        reply, topup = self._fetch_reply(full_uds, calc_ext)
-        
-        # Clean up. 
-        self._post_process(full_uds, topup)
-
-        # Records message logs
-        self._record_messages_in_chat(msg,reply)
-
-        # Return this for debugging purposes
-        curr_info = self._get_current_info()
-        return (reply, bd, curr_info)
 
     # Makes sense of message.
     # Calls policykeeper to get intent (NLP) and next state
@@ -469,7 +410,6 @@ class ChatManager:
         csk = self._get_csk()
         info = self._get_current_info()
         overwrite_flag, ow_state = self.pkeeper.xroad_policy_overwrite(csk,info)
-        if DEBUG: print("<ZONE POLICY> Overwrite:",overwrite_flag,ow_state)
         if overwrite_flag:
             next_state = ow_state
         else:
@@ -522,7 +462,6 @@ class ChatManager:
     # Ask calculator to crunch numbers.
     # Updates information dict
     def _calculate(self,double=False):
-        if SUPER_DEBUG: print("<CALCULATE> CALCULATION CALLED")
         info = self._get_current_info()
         curr_state = self._get_curr_state()
         if SUPER_DEBUG: print("<CALCULATE> Info bef calc", info)
@@ -645,7 +584,7 @@ class PolicyKeeper:
             for pair in intent_lst:
                 c_int, next_sip = pair
                 if intent == c_int:
-                    if 0 and DEBUG: print("<INTENT MATCH>",intent)
+                    if SUPER_DEBUG: print("<INTENT MATCH>",intent)
                     uds = Understanding(intent_obj, intent_obj, next_sip)
                     return uds
         return uds
@@ -671,7 +610,7 @@ class PolicyKeeper:
                     next_sip = self._create_state_obj(target)
                     if DEBUG: print("<XROAD POL OVERWRITE> new SIP:",next_sip)
                     return (True, next_sip)
-            if DEBUG: print("<XROAD POL OVERWRITE> Detail {} not in curr_info: {}".format(detail_name, curr_info))
+            if SUPER_DEBUG: print("<XROAD POL OVERWRITE> Detail {} not in curr_info: {}".format(detail_name, curr_info))
             return (False, "")
 
         if 1: print("<ZPOLXROAD POL OVERWRITE> curr state key:",csk)
@@ -970,7 +909,7 @@ class ReplyGenerator:
         
     # OVERALL METHOD
     def get_reply(self, curr_state, intent, secondslot, info = -1):
-        if DEBUG: print("<GET_REPLY> INFO calc_ext:",info.get("calc_ext", {}), "rep_ext", info.get("rep_ext", {}))
+        if SUPER_DEBUG: print("<GET_REPLY> INFO calc_ext:",info.get("calc_ext", {}), "rep_ext", info.get("rep_ext", {}))
         rdb = self.getreplydb(intent, curr_state, secondslot)
         infoplus = self._enhance_info(curr_state, info)
         reply, topup = self.generate_reply_message(rdb, curr_state, infoplus)
@@ -1101,12 +1040,12 @@ class ReplyGenerator:
             return hflag
 
         def get_replylist(obj):
-            if DEBUG: print("<replydb> Pulling reply from:", obj["key"])
+            if SUPER_DEBUG: print("<replydb> Pulling reply from:", obj["key"])
             return obj["replies"]
     
         LOCALDEBUG = 0 or DEBUG
         
-        if LOCALDEBUG: print("<REPLYDB> Curr State:", curr_state["key"],curr_state["thread"])
+        if LOCALDEBUG: print("<REPLYDB> Curr State:", curr_state["key"], "Thread", curr_state["thread"])
 
         # Decides priority of lookup. 
         # If same state flagged, look at intents first
@@ -1186,7 +1125,6 @@ class Chat:
         if self.save_chat_logs:
             log = self.get_chatlog()
             chatid = self.chatID
-            print("WRITING TO DB:", log)
             chatbot_be.record_chatlog_to_json(chatid, log)
             self.clear_chatlot()
         return

@@ -1801,7 +1801,7 @@
                 "if_value":{
                     "bill_settled_flag":{
                         "1":"",
-                        "DEFAULT":["恩恩","嗯"]
+                        "DEFAULT":[""]
                     }
                 }
             }
