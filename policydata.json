@@ -124,10 +124,13 @@
             ["affirm", "initplus"]
         ],
         "pass_to_human": [
-            ["affirm","initplus"]
+            ["affirm","initplus"],
+            ["purchase", "purchase_type_crossroad"],
+            ["deny", "goodbye"]
         ],
         "night_time_cannot": [
             ["affirm","initplus"],
+            ["purchase", "purchase_type_crossroad"],
             ["thankyou","initplus"]
         ],
         "goodbye":[
