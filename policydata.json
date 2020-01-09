@@ -86,6 +86,7 @@
             ["purchase", "provide_taobao_link"],
             ["query_how_settle","provide_taobao_link"],
             ["query_pay_process", "provide_taobao_link"],
+            ["query_xufei", "provide_taobao_link"],
             ["inform_paid","finished_payment"],
             ["greet", "init"],
             ["deny", "initplus"]
