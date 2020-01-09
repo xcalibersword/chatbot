@@ -262,7 +262,6 @@ def cleanup_rawtext(rawText):
             r"请注意参.*们不负责任哦。"
             r"各城市的续保时间节点（老客户超时未续费的将默认停保）点开查看",
             r"我司只负责代缴，不提供劳动合同等任何证明材料，请知悉，谢谢",
-            r"订单详情.*[0-9]*件"
         ]
         out = []
         for line in rawTextList:
@@ -282,6 +281,7 @@ def cleanup_rawtext(rawText):
             r"http(.*?)taobao(.*?)评价(.*?)\)",
             r"宝贝详情(.*)￥..\...",
             r"宝贝详情(.*)￥[0-9]*"
+            r"订单详情.*[0-9]*共件"
         ]
         out = []
         for line in rawTextList:
