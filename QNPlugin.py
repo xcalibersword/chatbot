@@ -213,10 +213,7 @@ def getRawText():
         # 
 
     raw_text = get_from_clipboard()
-    processed_text = cleanup_rawtext(raw_text)
-    processed_text_list = processed_text.splitlines()
-    processed_text_list.reverse()
-    return processed_text_list
+    return raw_text
 
 # Check_counts if last sent message matches with bot generated message
 def check_if_edited(self_last_sent, query, custID):
@@ -301,35 +298,35 @@ def cleanup_rawtext(rawTextList):
             r"您好，欢迎光临唯洛社保，很高兴为您服务(.*)联系不到客服怎么办？"
         ]
         out = []
-        i = 0
         for line in rawTextList:
+            entry = line
             for fluff_re in fluff_re_list:
                 matches = re.search(fluff_re, line)
                 if matches:
                     matchstr = matches.group()
                     if matchstr in out:
-                        entry = line.replace(matchstr, "")
-                        out.append(entry)        
-                i += 1
+                        entry = entry.replace(matchstr, "")
+                
+            out.append(entry)        
         return out
 
-    def substitute_links(text):
+    def substitute_links(rawTextList):
         link_re_list = [
             r"http(.*?)taobao(.*?)评价(.*?)\)",
             r"宝贝详情(.*)￥..\...",
             r"宝贝详情(.*)￥[0-9]*"
         ]
-        out = text
-        i = 0
+        out = []
         for line in rawTextList:
+            entry = line
             for link_re in link_re_list:
                 matches = re.search(link_re, line)
                 if matches:
                     matchstr = matches.group()
                     if matchstr in out:
-                        entry = line.replace(matchstr, "[link]")
-                        out.append(entry)        
-                i += 1
+                        entry = entry.replace(matchstr, "[link]")
+
+            out.append(entry)        
         return out
         
     if len(rawTextList) == 1:
@@ -340,17 +337,15 @@ def cleanup_rawtext(rawTextList):
         
     return cleanText
 
-def processText(cW,rawTextList):
-    rawText = cleanup_rawtext(rawTextList)
+def get_id_and_query(cW,textList):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
-    recentText = rawText[:50]
+    recentText = textList[:100] # Limit to save memory
     self_name = cW.get_userID()
     custid = ""
     self_last_sent = ""
     query = ""
     curr_text = ""
     querytime = ""
-    # print("RECENT TEXT", recentText[:10])
     for sent in recentText:
         if re.search(date_time_pattern,sent):
             # NameDate line
@@ -396,7 +391,10 @@ def check_new_message(cW):
     rawText = mine_chat_text(cW)
     # print("*"*10+"Copied"+"*"*10)
     # print(rawText)
-    query, cust_QN_ID = processText(cW,rawText)
+    processed_text_list = cleanup_rawtext(rawText)
+    processed_text_list.reverse()
+
+    query, cust_QN_ID = get_id_and_query(cW,processed_text_list)
     print("Customer ID: {} Query: {}".format(cust_QN_ID, query))
     return query, cust_QN_ID
 
