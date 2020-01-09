@@ -290,18 +290,22 @@ def self_sent_message(selfID, namedate_string):
     return is_self
 
 # Used to clean up link urls
-def cleanup_rawtext(rawTextList):
+def cleanup_rawtext(rawText):
     def local_remove_QN_fluff(rawTextList):
         fluff_re_list = [
             r"以上为历史消息",
             r"该用户由(.*)客服转交给(.*)客服",
-            r"您好，欢迎光临唯洛社保，很高兴为您服务(.*)联系不到客服怎么办？"
+            r"您好，欢迎光临唯洛社保，很高兴为您服务(.*)请务必提前告知",
+            r"注意：(.*)如有隐瞒恶意代缴的责任自负",
+            r"请注意参(.*))们不负责任哦。"
+            r"各城市的续保时间节点（老客户超时未续费的将默认停保）点开查看",
+            r"我司只负责代缴，不提供劳动合同等任何证明材料，请知悉，谢谢"
         ]
         out = []
         for line in rawTextList:
             entry = line
             for fluff_re in fluff_re_list:
-                matches = re.search(fluff_re, line)
+                matches = re.search(fluff_re, entry)
                 if matches:
                     matchstr = matches.group()
                     if matchstr in out:
@@ -320,7 +324,7 @@ def cleanup_rawtext(rawTextList):
         for line in rawTextList:
             entry = line
             for link_re in link_re_list:
-                matches = re.search(link_re, line)
+                matches = re.search(link_re, entry)
                 if matches:
                     matchstr = matches.group()
                     if matchstr in out:
@@ -329,12 +333,13 @@ def cleanup_rawtext(rawTextList):
             out.append(entry)        
         return out
         
-    if len(rawTextList) == 1:
-        return rawTextList
-   
+    
+    if len(rawText) < 1:
+        return []
+
+    rawTextList = rawText.splitlines()
     cleanText = substitute_links(rawTextList)
     cleanText = local_remove_QN_fluff(cleanText)
-        
     return cleanText
 
 def get_id_and_query(cW,textList):
