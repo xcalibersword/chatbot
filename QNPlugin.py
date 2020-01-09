@@ -4,7 +4,9 @@ import os
 import time
 import traceback
 import threading
-import win32gui, win32api, win32clipboard, win32con, jpype
+import win32gui, win32api, win32con, jpype
+import win32clipboard
+import tkinter
 from chatbot import Chatbot
 import pandas as pd
 
@@ -148,58 +150,70 @@ def log_err(elog):
 def getRawText():
     # Performs hardware 
     def get_from_clipboard():
+        succeed = False
         restart_limit = 30
-        raw_text = ""
-
-        names = [
-            "OPEN CLIPBOARD",
-            "GET CLIPBOARD",
-            "EMPTY CLIPBOARD",
-            "CLOSE CLIPBOARD"
-        ]
-
-        tasks = [
-            win32clipboard.OpenClipboard, 
-            win32clipboard.GetClipboardData,
-            win32clipboard.EmptyClipboard,
-            win32clipboard.CloseClipboard
-        ]
-        task_index = 0
-        restart_count = 0
-        while task_index < len(tasks) and restart_count < restart_limit:
-            taskname = names[task_index]
-            lmbda = tasks[task_index]
+        count = 0
+        while not succeed and count < restart_limit:
             try:
-                # Execute
-                if taskname == "GET CLIPBOARD":
-                    raw_text = lmbda()
-                else:
-                    lmbda() 
-                # if SUCCESS
-                task_index += 1
-
+                raw_text = tkinter.Tk().clipboard_get()
+                tkinter.Tk().clipboard_clear
+                succeed = True
             except Exception as e:
-                if restart_count%5 == 0: print(taskname, "EXCEPTION:",e,"Trying again...")
-                # Retart from the very beginning
-                task_index = 0
-                restart_count += 1
-                # log_err(taskname)
+                if count%5 == 0: print("<GET RAW TEXT> Exception!", e)
             finally:
-                if task_index == 0:
-                    time.sleep(clipboard_open_sleep) # Extra sleep for open
-                time.sleep(clipboard_sleep)
-            # End of single task loop
-            
-        if restart_count >= restart_limit:
-            print("<GET CLIPBOARD> Exceeded max number of tries", restart_count)
-        return raw_text.splitlines()
+                count += 1
+        if count >= restart_limit:
+            print("<GET CLIPBOARD> Exceeded max number of tries", count)
+        return raw_text
 
-    raw_text_list = get_from_clipboard()
-    processed_text_list = []
-    for sent in raw_text_list:
-        sent = sent.strip()
-        if sent != "" and sent != "以上为历史消息":
-            processed_text_list.append(sent)
+        # restart_limit = 30
+        # raw_text = ""
+
+        # names = [
+        #     "OPEN CLIPBOARD",
+        #     "GET CLIPBOARD",
+        #     "EMPTY CLIPBOARD",
+        #     "CLOSE CLIPBOARD"
+        # ]
+
+        # tasks = [
+        #     win32clipboard.OpenClipboard, 
+        #     win32clipboard.GetClipboardData,
+        #     win32clipboard.EmptyClipboard,
+        #     win32clipboard.CloseClipboard
+        # ]
+
+        # task_index = 0
+        # restart_count = 0
+        # while task_index < len(tasks) and restart_count < restart_limit:
+        #     taskname = names[task_index]
+        #     lmbda = tasks[task_index]
+        #     try:
+        #         # Execute
+        #         if taskname == "GET CLIPBOARD":
+        #             raw_text = lmbda()
+        #         else:
+        #             lmbda() 
+        #         # if SUCCESS
+        #         if task_index == 0:
+        #             time.sleep(clipboard_open_sleep) # Extra sleep for open
+        #         task_index += 1
+
+        #     except Exception as e:
+        #         if restart_count%5 == 0: print(taskname, "EXCEPTION:",e,"Trying again...")
+        #         # Retart from the very beginning
+        #         task_index = 0
+        #         restart_count += 1
+        #         # log_err(taskname)
+        #     finally:
+        #         time.sleep(clipboard_sleep)
+        #     # End of single task loop
+            
+        # 
+
+    raw_text = get_from_clipboard()
+    processed_text = cleanup_rawtext(raw_text)
+    processed_text_list = processed_text.splitlines()
     processed_text_list.reverse()
     return processed_text_list
 
@@ -245,7 +259,7 @@ def get_customer_id_from_history(self_id,rawText):
 def remove_QN_fluff(txt):
     regex_fluff_list = [
         "该用户由(.*)客服转交给(.*)客服","以上为历史消息",
-        "您好，欢迎光临唯洛社保，很高兴为您服务(.*)联系不到客服怎么办？"
+        "您好，欢迎光临唯洛社保，很高兴为您服务(.*)联系不到客服怎么办？",
         ]
 
     fluff_list = [("start","当前用户来自 淘宝移动端"),("end","新消息")]
@@ -278,31 +292,48 @@ def self_sent_message(selfID, namedate_string):
     return is_self
 
 # Used to clean up link urls
-def cleanup_rawtext(textlist):
-    def substitute_links(text):
-        link_re = r"http(.*?)taobao(.*?)评价(.*?)\)"
+def cleanup_rawtext(rawText):
+    def remove_QN_fluff(text):
+        fluff_re_list = [
+            r"以上为历史消息",
+            r"该用户由(.*)客服转交给(.*)客服",
+            r"您好，欢迎光临唯洛社保，很高兴为您服务(.*)联系不到客服怎么办？"
+        ]
         out = text
         i = 0
-        SUB_LIMIT = 20
-        while i < SUB_LIMIT:
+        for link_re in fluff_re_list:
             matches = re.search(link_re, out)
-            if not matches:
-                break
-            matchstr = matches.group()
-            if matchstr in out:
-                pattern = matchstr
-                out = out.replace(pattern, "[link]")
+            if matches:
+                matchstr = matches.group()
+                while matchstr in out:
+                    out = out.replace(matchstr, "")
+            i += 1
+        return out
+
+    def substitute_links(text):
+        link_re_list = [
+            r"http(.*?)taobao(.*?)评价(.*?)\)",
+            r"宝贝详情(.*)￥..\...",
+            r"宝贝详情(.*)￥[0-9]*"
+        ]
+        out = text
+        i = 0
+        for link_re in link_re_list:
+            matches = re.search(link_re, out)
+            if matches:
+                matchstr = matches.group()
+                while matchstr in out:
+                    out = out.replace(matchstr, "[link]")
             i += 1
         return out
         
-    if textlist == []:
+    if len(textlist) == 0:
         return textlist
-
-    final = []
-    for msg in textlist:
-        cleaned_msg = substitute_links(msg)
-        final.append(cleaned_msg)
-    return final
+   
+    cleanText = substitute_links(rawText)
+    cleanText = remove_QN_fluff(cleanText)
+        
+    return cleanText
 
 def processText(cW,rawTextList):
     rawText = cleanup_rawtext(rawTextList)
