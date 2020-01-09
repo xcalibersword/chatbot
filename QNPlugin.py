@@ -35,15 +35,23 @@ class QianNiuWindow:
         self.msg_dlg = None
         self.userID = "女人罪爱" # HARDCODED. More general so that you don't catch 同事
 
+    def initialize(self):
+        print("Initalizing handle locations")
+        self.maximize()
+        self.setAsForegroundWindow()
+        self.find_handle()
+
     def get_userID(self):
         return self.userID
         
-    def SetAsForegroundWindow(self):
+    def setAsForegroundWindow(self):
         # First, make sure all (other) always-on-top windows are hidden.
         self.hide_always_on_top_windows()
         win32gui.SetForegroundWindow(self.main_window)
-    def Maximize(self):
+
+    def maximize(self):
         win32gui.ShowWindow(self.main_window, win32con.SW_NORMAL)
+
     def _window_enum_callback(self, hwnd, regex):
         '''Pass to win32gui.EnumWindows() to check all open windows'''
         if self.main_window is None and re.match(regex, str(win32gui.GetWindowText(hwnd))) is not None:
@@ -52,6 +60,7 @@ class QianNiuWindow:
     def find_window_regex(self, regex):
         self.main_window = None
         win32gui.EnumWindows(self._window_enum_callback, regex)
+
     def hide_always_on_top_windows(self):
         win32gui.EnumWindows(self._window_enum_callback_hide, None)
 
@@ -69,21 +78,29 @@ class QianNiuWindow:
                     # Note that if we tried to hide the window with SW_HIDE,
                     # it would disappear from the Task Bar as well.
                     win32gui.ShowWindow(hwnd, win32con.SW_FORCEMINIMIZE)
+
+    def refind_handle(self):
+        self.setAsForegroundWindow()
     def find_handle(self):
-        aa = win32gui.FindWindowEx(self.main_window, 0, "StandardWindow", "")
-        aaa = win32gui.FindWindowEx(aa, 0, "StandardWindow", "")
-        aaa = win32gui.FindWindowEx(aa, aaa, "StandardWindow", "")
-        aaa = win32gui.FindWindowEx(aa, aaa, "StandardWindow", "")
-        aaaa = win32gui.FindWindowEx(aaa, 0, "SplitterBar", "")
+        print("<Finding Window Handle>")
+        try:
+            aa = win32gui.FindWindowEx(self.main_window, 0, "StandardWindow", "")
+            aaa = win32gui.FindWindowEx(aa, 0, "StandardWindow", "")
+            aaa = win32gui.FindWindowEx(aa, aaa, "StandardWindow", "")
+            aaa = win32gui.FindWindowEx(aa, aaa, "StandardWindow", "")
+            splitterbar = win32gui.FindWindowEx(aaa, 0, "SplitterBar", "")
 
-        b = win32gui.FindWindowEx(aaaa, 0, "StandardWindow", "")
-        bb = win32gui.FindWindowEx(aaaa, b, "StandardWindow", "")
-        self.input_dlg = win32gui.FindWindowEx(bb,0,"RichEditComponent", "")
+            b = win32gui.FindWindowEx(splitterbar, 0, "StandardWindow", "")
+            chat_entry_space = win32gui.FindWindowEx(splitterbar, b, "StandardWindow", "")
+            self.input_dlg = win32gui.FindWindowEx(chat_entry_space,0,"RichEditComponent", "")
 
-        c = win32gui.FindWindowEx(b, 0, "PrivateWebCtrl", "")
-        cc = win32gui.FindWindowEx(c,0,"Aef_WidgetWin_0","")
-        self.msg_dlg = win32gui.FindWindowEx(cc,0,"Aef_RenderWidgetHostHWND", "Chrome Legacy Window")
-        self.send_but = win32gui.FindWindowEx(bb,0,"StandardButton", "发送")
+            c = win32gui.FindWindowEx(b, 0, "PrivateWebCtrl", "")
+            cc = win32gui.FindWindowEx(c,0,"Aef_WidgetWin_0","")
+            self.msg_dlg = win32gui.FindWindowEx(cc,0,"Aef_RenderWidgetHostHWND", "Chrome Legacy Window")
+            self.send_but = win32gui.FindWindowEx(chat_entry_space,0,"StandardButton", "发送")
+        except Exception as e:
+            print("FIND HANDLE EXCEPTION", e)
+            log_err("FIND HANDLE EXCEPTION")
 
 def save2troubleshoot(right,wrong,query,intent,slot,id):
     print("<CHANGED REPLY> Writing to troubleshoot.csv")
@@ -107,10 +124,18 @@ def send_message_QN(reply,cW,mode):
         win32gui.SendMessage(cW.send_but, 0xF5, 0, 0)
         print("Message Sent: {}".format(reply))
 
-def setActiveScreen(target_window, CLICK_INSIDE = False):
-    try:
-        win32gui.SetForegroundWindow(target_window)
-    except:
+def setActiveScreen(target_window, qnclass, CLICK_INSIDE = False):
+    repeat = 0
+    while repeat < 2:
+        try:
+            win32gui.SetForegroundWindow(target_window)
+            break
+        except:
+            qnclass.initialize()
+            repeat += 1
+
+    if repeat == 2:
+        # FAILED
         log_err("SET_ACTIVE_SCREEN ERROR")
         return False
 
@@ -347,7 +372,8 @@ def get_id_and_query(cW,textList):
     return query,custid
 
 def mine_chat_text(cW):
-    got_active = setActiveScreen(cW.msg_dlg, CLICK_INSIDE=True)
+    print("Mining chat text...")
+    got_active = setActiveScreen(cW.msg_dlg, cW, CLICK_INSIDE=True)
     if not got_active:
         return "" # NO TEXT
 
@@ -419,7 +445,10 @@ def select_chat_input_box(cW):
     if GLOBAL["mode"] == 0:
         print("Allowing user to enter input......")
         
-        setActiveScreen(cW.input_dlg) # Select text input box
+        foundbox = False
+        while not foundbox:
+            foundbox = setActiveScreen(cW.input_dlg, cW) # Select text input box
+        
         
         # Check for blank text box.
         while True:
@@ -489,9 +518,7 @@ if __name__ == "__main__":
         regex = r".*(?= - 接待中心)"
         cW = QianNiuWindow()
         cW.find_window_regex(regex)
-        cW.Maximize()
-        cW.SetAsForegroundWindow()
-        cW.find_handle()
+        cW.initialize()
         print(cW.userID,cW.msg_dlg,cW.input_dlg,cW.send_but)
     except:
         log_err("WINDOW HANDLE FIND")
