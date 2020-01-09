@@ -160,6 +160,7 @@ def getRawText():
                 succeed = True
             except Exception as e:
                 if count%5 == 0: print("<GET RAW TEXT> Exception!", e)
+                time.sleep(clipboard_sleep)
             finally:
                 count += 1
         if count >= restart_limit:
@@ -292,22 +293,24 @@ def self_sent_message(selfID, namedate_string):
     return is_self
 
 # Used to clean up link urls
-def cleanup_rawtext(rawText):
-    def remove_QN_fluff(text):
+def cleanup_rawtext(rawTextList):
+    def local_remove_QN_fluff(rawTextList):
         fluff_re_list = [
             r"以上为历史消息",
             r"该用户由(.*)客服转交给(.*)客服",
             r"您好，欢迎光临唯洛社保，很高兴为您服务(.*)联系不到客服怎么办？"
         ]
-        out = text
+        out = []
         i = 0
-        for link_re in fluff_re_list:
-            matches = re.search(link_re, out)
-            if matches:
-                matchstr = matches.group()
-                while matchstr in out:
-                    out = out.replace(matchstr, "")
-            i += 1
+        for line in rawTextList:
+            for fluff_re in fluff_re_list:
+                matches = re.search(fluff_re, line)
+                if matches:
+                    matchstr = matches.group()
+                    if matchstr in out:
+                        entry = line.replace(matchstr, "")
+                        out.append(entry)        
+                i += 1
         return out
 
     def substitute_links(text):
@@ -318,20 +321,22 @@ def cleanup_rawtext(rawText):
         ]
         out = text
         i = 0
-        for link_re in link_re_list:
-            matches = re.search(link_re, out)
-            if matches:
-                matchstr = matches.group()
-                while matchstr in out:
-                    out = out.replace(matchstr, "[link]")
-            i += 1
+        for line in rawTextList:
+            for link_re in link_re_list:
+                matches = re.search(link_re, line)
+                if matches:
+                    matchstr = matches.group()
+                    if matchstr in out:
+                        entry = line.replace(matchstr, "[link]")
+                        out.append(entry)        
+                i += 1
         return out
         
-    if len(textlist) == 0:
-        return textlist
+    if len(rawTextList) == 1:
+        return rawTextList
    
-    cleanText = substitute_links(rawText)
-    cleanText = remove_QN_fluff(cleanText)
+    cleanText = substitute_links(rawTextList)
+    cleanText = local_remove_QN_fluff(cleanText)
         
     return cleanText
 
