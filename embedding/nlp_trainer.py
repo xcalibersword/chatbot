@@ -243,13 +243,13 @@ main_input = Input(shape=(max_review_length,), dtype='int32')
 embed = my_embedding(main_input)
 embed = BatchNormalization(momentum=0.99)(embed)
 
-# 词窗大小分别为 2 3 4. Oringially 3 4 5 
-cnnUnits = 64 
-bigCnnUnits = cnnUnits//2
-cnn2 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu')(embed)
-cnn3 = Conv1D(cnnUnits, 3, padding='same', strides=1, activation='relu')(embed)
-cnn4 = Conv1D(bigCnnUnits, 4, padding='same', strides=1, activation='relu')(embed)
-cnn5 = Conv1D(bigCnnUnits, 5, padding='same', strides=1, activation='relu')(embed)
+# 词窗大小分别为 2, 3, 4, 5
+cnnUnits = 128
+bigCnnUnits = cnnUnits
+cnn2 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu', kernel_regularizer=None)(embed)
+cnn3 = Conv1D(cnnUnits, 3, padding='same', strides=1, activation='relu', kernel_regularizer=None)(embed)
+cnn4 = Conv1D(bigCnnUnits, 4, padding='same', strides=1, activation='relu', kernel_regularizer=None)(embed)
+cnn5 = Conv1D(bigCnnUnits, 5, padding='same', strides=1, activation='relu', kernel_regularizer=None)(embed)
 
 # Pool size is the sliding window length.
 # Strides is the number of indices that are moved between each pool sample.
@@ -257,30 +257,38 @@ DO_POOL = True
 if DO_POOL:
     # No sense having pool_size bigger than stride because its MaxPool.
     # Having a bigger pool than stride means each max point will obscure the results more.
-    cnn2 = MaxPooling1D(pool_size=3, strides=3)(cnn2)
-    cnn3 = MaxPooling1D(pool_size=3, strides=3)(cnn3)
-    cnn4 = MaxPooling1D(pool_size=3, strides=3)(cnn4)
-    cnn5 = MaxPooling1D(pool_size=3, strides=3)(cnn5)
-    # f_nopool = Flatten()(cnn5)
-    f_pool = Concatenate(axis=-1)([cnn2, cnn3, cnn4,cnn5]) # 合并三个模型的输出向量
-    flat = Flatten()(f_pool)
-    # flat = Concatenate(axis=-1)([f_nopool, f_pool])
+    # Originally, all were size 4.
+    cnn2 = MaxPooling1D(pool_size=4, strides=4)(cnn2) # 4
+    fcnn2 = Flatten()(cnn2)
+
+    cnn3 = MaxPooling1D(pool_size=4, strides=4)(cnn3) # 4
+    fcnn3 = Flatten()(cnn3)
+    
+    cnn4 = MaxPooling1D(pool_size=6, strides=6)(cnn4) # 4
+    fcnn4 = Flatten()(cnn4)
+
+    cnn5 = MaxPooling1D(pool_size=8, strides=8)(cnn5) # 4
+    fcnn5 = Flatten()(cnn5)
+
+    flat = Concatenate(axis=-1)([fcnn2, fcnn3, fcnn4,fcnn5]) # 合并4个模型的输出向量
+    # flat = Concatenate(axis=-1)([fcnn2, fcnn3, fcnn4]) # 合并少数个模型的输出向量
 else:
-    flat = Concatenate(axis=-1)([cnn2,cnn3,cnn4,cnn5])
+    # flat = Concatenate(axis=-1)([cnn2,cnn3,cnn4,cnn5])
+    flat = Concatenate(axis=-1)([cnn2, cnn3, cnn4]) 
 
 flat = BatchNormalization(momentum=0.99)(flat)
-flat = Dropout(0.2)(flat)
+flat = Dropout(0.15)(flat)
 
 flat = Dense(units=256, activation='relu')(flat) # 
-flat = Dropout(0.2)(flat)
+flat = Dropout(0.15)(flat)
 
-flat = Dense(units=1024, activation='relu')(flat) #
+flat = Dense(units=512, activation='relu')(flat) #
 
 outs = Dense(units=num_intents, activation='softmax')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
 
-LEARN_RATE = 1.8e-5 
+LEARN_RATE = 1.6e-5 
 optimizer = Adam(learning_rate=LEARN_RATE)
 # optimizer = RMSprop(learning_rate = 3e-5)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
