@@ -108,7 +108,11 @@ def send_message_QN(reply,cW,mode):
         print("Message Sent: {}".format(reply))
 
 def setActiveScreen(target_window, CLICK_INSIDE = False):
-    win32gui.SetForegroundWindow(target_window)
+    try:
+        win32gui.SetForegroundWindow(target_window)
+    except:
+        log_err("SET_ACTIVE_SCREEN ERROR")
+        return False
 
     left, top, right, bot = win32gui.GetWindowRect(target_window)
     if CLICK_INSIDE: 
@@ -117,6 +121,8 @@ def setActiveScreen(target_window, CLICK_INSIDE = False):
         time.sleep(cmd_sleep)
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0,0,0)
         time.sleep(cmd_sleep)
+
+    return True
 
 def select_copy():
     #ctrl a
@@ -138,6 +144,7 @@ def select_copy():
     time.sleep(cmd_sleep)
 
 def log_err(elog):
+    print("ERROR LOGGED!", elog)
     chatbot = os.getcwd()
     filename = os.path.join(chatbot,"errorlog",GLOBAL["today_date"] +".txt")
     
@@ -166,51 +173,6 @@ def getRawText():
         if count >= restart_limit:
             print("<GET CLIPBOARD> Exceeded max number of tries", count)
         return raw_text
-
-        # restart_limit = 30
-        # raw_text = ""
-
-        # names = [
-        #     "OPEN CLIPBOARD",
-        #     "GET CLIPBOARD",
-        #     "EMPTY CLIPBOARD",
-        #     "CLOSE CLIPBOARD"
-        # ]
-
-        # tasks = [
-        #     win32clipboard.OpenClipboard, 
-        #     win32clipboard.GetClipboardData,
-        #     win32clipboard.EmptyClipboard,
-        #     win32clipboard.CloseClipboard
-        # ]
-
-        # task_index = 0
-        # restart_count = 0
-        # while task_index < len(tasks) and restart_count < restart_limit:
-        #     taskname = names[task_index]
-        #     lmbda = tasks[task_index]
-        #     try:
-        #         # Execute
-        #         if taskname == "GET CLIPBOARD":
-        #             raw_text = lmbda()
-        #         else:
-        #             lmbda() 
-        #         # if SUCCESS
-        #         if task_index == 0:
-        #             time.sleep(clipboard_open_sleep) # Extra sleep for open
-        #         task_index += 1
-
-        #     except Exception as e:
-        #         if restart_count%5 == 0: print(taskname, "EXCEPTION:",e,"Trying again...")
-        #         # Retart from the very beginning
-        #         task_index = 0
-        #         restart_count += 1
-        #         # log_err(taskname)
-        #     finally:
-        #         time.sleep(clipboard_sleep)
-        #     # End of single task loop
-            
-        # 
 
     raw_text = get_from_clipboard()
     return raw_text
@@ -388,7 +350,10 @@ def get_id_and_query(cW,textList):
     return query,custid
 
 def mine_chat_text(cW):
-    setActiveScreen(cW.msg_dlg, CLICK_INSIDE=True)
+    got_active = setActiveScreen(cW.msg_dlg, CLICK_INSIDE=True)
+    if not got_active:
+        return "" # NO TEXT
+
     select_copy()
     return getRawText()
 
