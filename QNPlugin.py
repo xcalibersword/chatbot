@@ -222,6 +222,13 @@ def remove_QN_fluff(txt):
         "您好，欢迎光临唯洛社保，很高兴为您服务(.*)联系不到客服怎么办？",
         ]
 
+    regex_link_list = [
+        r"订单详情.*共件",
+        r"http(.*?)taobao(.*?)评价(.*?)\)",
+        r"宝贝详情(.*)￥[0-9]*\.[0-9][0-9]",
+        r"宝贝详情(.*)￥[0-9]*"
+    ]
+
     fluff_list = [("start","当前用户来自 淘宝移动端"),("end","新消息")]
     out = txt
     bef = out
@@ -230,6 +237,12 @@ def remove_QN_fluff(txt):
         if mch:
             match_str = mch.group(0)
             out = out.replace(match_str," ")
+    
+    for lreg in regex_link_list:
+        mch = re.search(lreg, out)
+        if mch:
+            match_str = mch.group(0)
+            out = out.replace(match_str,"[link]")
             
     for pos, f in fluff_list:
         f_len = len(f)
@@ -269,32 +282,16 @@ def cleanup_rawtext(rawText):
             for fluff_re in fluff_re_list:
                 matches = re.search(fluff_re, entry)
                 if matches:
-                    matchstr = matches.group()
+                    matchstr = matches.groups()
                     if matchstr in out:
                         entry = entry.replace(matchstr, "")
                 
             out.append(entry)        
         return out
 
-    def substitute_links(rawTextList):
-        link_re_list = [
-            r"http(.*?)taobao(.*?)评价(.*?)\)",
-            r"宝贝详情(.*)￥..\...",
-            r"宝贝详情(.*)￥[0-9]*"
-            r"订单详情.*[0-9]*共件"
-        ]
-        out = []
-        for line in rawTextList:
-            entry = line
-            for link_re in link_re_list:
-                matches = re.search(link_re, entry)
-                if matches:
-                    matchstr = matches.group()
-                    if matchstr in out:
-                        entry = entry.replace(matchstr, "[link]")
-
-            out.append(entry)        
-        return out
+    # DO NOTHING. SHIFTED TO AFTER COMBINING
+    def substitute_links(rawTextList):    
+        return rawTextList
         
     
     if len(rawText) < 1:
