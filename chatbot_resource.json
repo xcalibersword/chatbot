@@ -1106,7 +1106,7 @@
             "gated": true,
             "thread": "t_pai",
             "terminal_state": true,
-            "req_info": [["city","city"]],
+            "req_info": [["city","city"],["purchase_type","DEFAULT_SV"]],
             "calcs":["flag_bill_settled"],
             "replies": ["{rep_ext[finish_payment_info]}"]
         }
