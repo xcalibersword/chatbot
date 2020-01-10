@@ -10,14 +10,17 @@ from keras.initializers import Constant, RandomNormal, RandomUniform, glorot_nor
 from keras.layers import Concatenate, Dropout, Embedding, LSTM, Dense, Conv1D, Flatten, BatchNormalization, MaxPooling1D
 from keras.models import Model, Input
 from keras.optimizers import Adam, RMSprop
+from keras.backend import clear_session
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences 
 from keras.regularizers import l1,l2
 from keras.utils import to_categorical
-from nlp_utils import preprocess_sequence, postprocess_sequence
+from nlp_utils import preprocess_sequence, postprocess_sequence, get_test_set
 
 #### NOTES ####
 # Run from 'embedding' folder
+
+clear_session() # CLEAR KERAS SESSION
 
 # Helpful functions
 def save_to_json(filename, data):
@@ -65,15 +68,18 @@ yval = np.reshape(yval,(count-1))
 
 intent_tokenizer = Tokenizer(max_intents,filters="",oov_token=0)
 intent_tokenizer.fit_on_texts(yval)
-ints_yval = intent_tokenizer.texts_to_sequences(yval)
-# print(ints_yval[:50])
-cat_yval = to_categorical(ints_yval)
+
+def intents_to_categorical(raw_y):    
+    ints_yval = intent_tokenizer.texts_to_sequences(raw_y)
+    return to_categorical(ints_yval)
+
+cat_yval = intents_to_categorical(yval)
 
 # SAVE Y VAL TOKENIZER
 save_tokenizer(intent_tokenizer, "yval_tokens.json")
 
 num_intents = len(intent_tokenizer.word_index) + 1
-print('Found %s unique intents.' %num_intents)
+print('Found %s unique intents.' %len(intent_tokenizer.word_index))
 
 reverse_word_map = dict(map(reversed, intent_tokenizer.word_index.items()))
 
@@ -130,12 +136,15 @@ def buildWordToInt(w2v,ut):
     return d
 
 
-def arrayWordToInt(nparr, d, dbg=False):
+def arrayWordToInt(nparr, d):
     nparr = np.array(nparr)
     newArray = np.copy(nparr)
     for k, v in d.items(): newArray[nparr==k] = v
-    newArray[isinstance(newArray,str)] = 0
-    if dbg: print(newArray)
+    for i in range(len(newArray)):
+        row = newArray[i]
+        for j in range(len(row)):
+            if isinstance(row[j], str):
+                newArray[i][j] = 0
     return newArray
 
 # Returns an nparray of sequences, padded
@@ -164,6 +173,16 @@ def convert_txvals(t_xvals):
     ints_xvals = t.texts_to_sequences(t_xvals)
     return (ints_xvals, t)
 
+def reshape_xvals(xvals):
+    # Remove the column (x, 1 ,x') in the middle
+    return np.reshape(xvals,(xvals.shape[0],xvals.shape[2]))
+
+def prep_feed_model(x, wordindex):
+    x = np.array(x)
+    mid = reshape_xvals(x)
+    out = arrayWordToInt(mid, wordindex)
+    return out
+
 # EMBEDDING
 prep_xvals = myTokenize(xval)
 # embed_xvals, xvt = convert_txvals(prep_xvals)
@@ -171,47 +190,14 @@ prep_xvals = myTokenize(xval)
 # embed_xvals = np.array(embed_xvals)
 
 ut = get_unique_tokens(prep_xvals)
-# if USE_WORD2VECTOR:
-    # embed_dict = get_vector_dict(w2v_filepath,limit = VDLIMIT)
-    # zero_vector = [0] * embedding_vector_length
-    # word2int = buildWordToInt(embed_dict,ut)
-    # prep_xvals = arrayWordToInt(prep_xvals,word2int)
-    # print("split",prep_xvals[100:105])
-    # # prep_xvals = pad_sequences(prep_xvals, maxlen = max_review_length, dtype = object, value="0")
-    # # print("padd",prep_xvals[100:105])
-    # embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) # Remove the 1 in the middle
-    # print("shape", prep_xvals.shape)
-
-    # # prepare embedding matrix
-    # num_words = len(embed_dict) + embed_xvals.shape[0]
-    # embedding_matrix = np.zeros((num_words, embedding_vector_length))
-    # idx = 0
-
-    # # Build dict for VECTORS
-    # for word, i in word2int.items():
-    #     if word in embed_dict:
-    #         embedding_matrix[i] = embed_dict[word]
-    #     else:
-    #         # words not found in embedding index will be all-zeros.
-    #         embedding_matrix[i] = zero_vector
-    #     # word_to_int[word] = i
-    #     idx += 1
-
-    # print("embedding mat shape",embedding_matrix.shape)
-    # # for k,v in word_to_int.items(): embed_xvals[prep_xvals==k] = v # Dict lookup for npArrays
-
-    # my_embedding = Embedding(
-    #     num_words,
-    #     embedding_vector_length,
-    #     embeddings_initializer=Constant(embedding_matrix),
-    #     input_length=max_review_length,
-    #     trainable = False
-    #     )
-# else:
 num_words = len(ut)
 word_index = buildWordToInt(ut,[])
-prep_xvals = arrayWordToInt(prep_xvals,word_index)
-embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) # Remove the 1 in the middle
+
+embed_xvals = prep_feed_model(prep_xvals,word_index)
+rawtest_x, rawtest_y = get_test_set()
+rawtest_x = myTokenize(rawtest_x)
+test_x = prep_feed_model(rawtest_x,word_index)
+test_y = intents_to_categorical(rawtest_y)
 
 save_to_json("xval_man_tokens.json",str(word_index))
 
@@ -231,6 +217,8 @@ my_embedding = Embedding(
 
 print('Shape of data tensor:', embed_xvals.shape)
 print("xval sample", embed_xvals[156])
+print('Shape of test tensor:', test_x.shape)
+print("test xval sample", test_x[0])
 
 # MODEL CONSTRUCTION
 
@@ -239,64 +227,76 @@ main_input = Input(shape=(max_review_length,), dtype='int32')
 embed = my_embedding(main_input)
 embed = BatchNormalization(momentum=0.99)(embed)
 
-# 词窗大小分别为 2 3 4. Oringially 3 4 5 
-cnnUnits = 128 
-halfUnits = cnnUnits//2
-cnn2 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu')(embed)
-cnn3 = Conv1D(cnnUnits, 3, padding='same', strides=1, activation='relu')(embed)
-cnn4 = Conv1D(halfUnits, 4, padding='same', strides=1, activation='relu')(embed)
-cnn5 = Conv1D(halfUnits, 5, padding='same', strides=1, activation='relu')(embed)
+# 词窗大小分别为 2, 3, 4, 5
+cnnUnits = 128
+bigCnnUnits = cnnUnits
+cnn2 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu', kernel_regularizer=None)(embed)
+cnn3 = Conv1D(cnnUnits, 3, padding='same', strides=1, activation='relu', kernel_regularizer=None)(embed)
+cnn4 = Conv1D(bigCnnUnits, 4, padding='same', strides=1, activation='relu', kernel_regularizer=None)(embed)
+cnn5 = Conv1D(bigCnnUnits, 5, padding='same', strides=1, activation='relu', kernel_regularizer=None)(embed)
 
+# Pool size is the sliding window length.
+# Strides is the number of indices that are moved between each pool sample.
+DO_POOL = True
+if DO_POOL:
+    # No sense having pool_size bigger than stride because its MaxPool.
+    # Having a bigger pool than stride means each max point will obscure the results more.
+    # Originally, all were size 4.
+    cnn2 = MaxPooling1D(pool_size=4, strides=4)(cnn2) # 4
+    fcnn2 = Flatten()(cnn2)
 
-cnn2 = MaxPooling1D(pool_size=4)(cnn2)
-cnn3 = MaxPooling1D(pool_size=4)(cnn3)
-cnn4 = MaxPooling1D(pool_size=4)(cnn4)
-cnn5 = MaxPooling1D(pool_size=4)(cnn5)
+    cnn3 = MaxPooling1D(pool_size=4, strides=4)(cnn3) # 4
+    fcnn3 = Flatten()(cnn3)
+    
+    cnn4 = MaxPooling1D(pool_size=6, strides=6)(cnn4) # 6
+    fcnn4 = Flatten()(cnn4)
 
-# 合并三个模型的输出向量
-# Concat 3/4 outputs into one
-# cnn = Concatenate(axis=-1)([cnn2, cnn3, cnn4])
-# cnn = Concatenate(axis=-1)([cnn3, cnn4, cnn5])
-cnn = Concatenate(axis=-1)([cnn2, cnn3, cnn4, cnn5])
-cnn = BatchNormalization(momentum=0.99)(cnn)
+    cnn5 = MaxPooling1D(pool_size=8, strides=8)(cnn5) # 8
+    fcnn5 = Flatten()(cnn5)
 
-flat = Flatten()(cnn)
-flat = Dropout(0.15)(flat)
+    flat = Concatenate(axis=-1)([fcnn2, fcnn3, fcnn4,fcnn5]) # 合并4个模型的输出向量
+    # flat = Concatenate(axis=-1)([fcnn2, fcnn3, fcnn4]) # 合并少数个模型的输出向量
+else:
+    # flat = Concatenate(axis=-1)([cnn2,cnn3,cnn4,cnn5])
+    flat = Concatenate(axis=-1)([cnn2, cnn3, cnn4]) 
 
-flat = Dense(units=128, activation='relu')(flat) # 
-flat = Dropout(0.15)(flat)
+flat = BatchNormalization(momentum=0.99)(flat)
+flat = Dropout(0.2)(flat)
 
-flat = Dense(units=1024, activation='relu')(flat) # 
+flat = Dense(units=256, activation='relu')(flat) # 
+flat = Dropout(0.10)(flat)
 
-outs = Dense(units=num_intents, activation='sigmoid')(flat)
+flat = Dense(units=512, activation='relu')(flat) #
+
+outs = Dense(units=num_intents, activation='softmax')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
+# VAl accuracy of 0.94
 
-LEARN_RATE = 2e-5 
+LEARN_RATE = 1.5e-5 
 optimizer = Adam(learning_rate=LEARN_RATE)
 # optimizer = RMSprop(learning_rate = 3e-5)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 
-model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=25,shuffle=True) # Can't have validation because of the number of intents.
+test_set = (test_x, test_y)
+# Can't have validation split because too many intents.
+model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=16,shuffle=True,validation_data=test_set) 
 
 # Post Training
 model.save(save_model_name)
 print("This Model has been saved! Rejoice")
 
-test_in = ["我在苏州的不是首次","我是要付社保行吗","哦了解了", "我已经填好了", "我拍好了", "流程到底是怎么样的？", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
+# test_in = ["我在苏州的不是首次","我是要付社保行吗","哦了解了", "我已经填好了", "我拍好了", "流程到底是怎么样的？", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
 
-ti = myTokenize(test_in)
-# print("input",test_in)
-input_array = arrayWordToInt(ti,word_index,0)
-input_array = np.reshape(input_array,(input_array.shape[0],input_array.shape[2])) # Remove the 1 in the middle
-output_array = model.predict(input_array)
-# print("raw",output_array)
+# ti = myTokenize(test_in)
+# input_array = arrayWordToInt(ti,word_index)
+# input_array = np.reshape(input_array,(input_array.shape[0],input_array.shape[2])) # Remove the 1 in the middle
+# output_array = model.predict(input_array)
 
-i = 0
-for bleh in output_array:
-    print(test_in[i])
-    print(input_array[i])
-    i+=1
-    pred_to_word(bleh)
+# i = 0
+# for bleh in output_array:
+#     print(test_in[i])
+#     i+=1
+#     pred_to_word(bleh)
