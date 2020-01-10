@@ -328,6 +328,7 @@ def cleanup_rawtext(rawText):
     return cleanText
 
 def get_id_and_query(cW,textList):
+    
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     recentText = textList[:100] # Limit to save memory
     self_name = cW.get_userID()
@@ -336,6 +337,10 @@ def get_id_and_query(cW,textList):
     query = ""
     curr_text = ""
     querytime = ""
+    reached_query_end = False
+    
+    # The textlist is in reverse
+    # Messages are collected from the back into a query
     for sent in recentText:
         if re.search(date_time_pattern,sent):
             # NameDate line
@@ -343,13 +348,16 @@ def get_id_and_query(cW,textList):
                 # Self
                 if self_last_sent == "":
                     self_last_sent = curr_text[:-2] # Remove the 已读/未读
+                
+                # This is checked when reaching chatbot ID line because this marks the end of the most recent query
+                reached_query_end = len(query) > 0 # This means that there have been customer messages collected alr
             else:
                 # Customer
                 custid = get_pure_customer_id(date_time_pattern, sent)
                 if querytime == "": querytime = re.search(date_time_pattern,sent).group(0) # Get datetime of the query
                 query = collect_texts(query, curr_text)
 
-            if len(query) > 0 and len(self_last_sent) > 0:
+            if reached_query_end:
                 break
             curr_text = ""
         else:
@@ -437,8 +445,8 @@ def SeekNewCustomerChat(clickImage):
         curr_screen.click(newmsg_pattern)
         print("New chat detected!")
         return True
-    except Exception as e:
-        print("No new chat detected. Except:", e)
+    except:
+        print("No new chat detected")
         return False
 
 def select_chat_input_box(cW):
@@ -475,13 +483,14 @@ def main(cW,bot,SeekImagePath,mode,cycle_delay):
         newchat = False
         if check_counts >= GLOBAL["new_chat_check_interval"]:
             newchat = SeekNewCustomerChat(SeekImagePath)
-            setActiveScreen(cW.msg_dlg)
+            setActiveScreen(cW.msg_dlg, cW, CLICK_INSIDE=True)
             check_counts = 0
 
         if no_history or newchat:
             read_history(cW,bot)
             GLOBAL["last_cust_id"] = custID
             GLOBAL["got_new_message"] = True
+            if newchat: continue
         
         if GLOBAL["got_new_message"]:
             reply_template = bot.get_bot_reply(custID,query) # Gets a tuple of 3 things
