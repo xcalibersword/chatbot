@@ -15,7 +15,7 @@ from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences 
 from keras.regularizers import l1,l2
 from keras.utils import to_categorical
-from nlp_utils import preprocess_sequence, postprocess_sequence
+from nlp_utils import preprocess_sequence, postprocess_sequence, get_test_set
 
 #### NOTES ####
 # Run from 'embedding' folder
@@ -68,15 +68,18 @@ yval = np.reshape(yval,(count-1))
 
 intent_tokenizer = Tokenizer(max_intents,filters="",oov_token=0)
 intent_tokenizer.fit_on_texts(yval)
-ints_yval = intent_tokenizer.texts_to_sequences(yval)
-# print(ints_yval[:50])
-cat_yval = to_categorical(ints_yval)
+
+def intents_to_categorical(raw_y):    
+    ints_yval = intent_tokenizer.texts_to_sequences(raw_y)
+    return to_categorical(ints_yval)
+
+cat_yval = intents_to_categorical(yval)
 
 # SAVE Y VAL TOKENIZER
 save_tokenizer(intent_tokenizer, "yval_tokens.json")
 
 num_intents = len(intent_tokenizer.word_index) + 1
-print('Found %s unique intents.' %num_intents)
+print('Found %s unique intents.' %len(intent_tokenizer.word_index))
 
 reverse_word_map = dict(map(reversed, intent_tokenizer.word_index.items()))
 
@@ -134,12 +137,16 @@ def buildWordToInt(w2v,ut):
 
 
 def arrayWordToInt(nparr, d):
-    dbg=False
+    dbg=True
     nparr = np.array(nparr)
     newArray = np.copy(nparr)
     for k, v in d.items(): newArray[nparr==k] = v
-    newArray[isinstance(newArray,str)] = 0
-    if dbg: print(newArray)
+    for i in range(len(newArray)):
+        row = newArray[i]
+        for j in range(len(row)):
+            if isinstance(row[j], str):
+                newArray[i][j] = 0
+    print(newArray[:5])
     return newArray
 
 # Returns an nparray of sequences, padded
@@ -168,6 +175,16 @@ def convert_txvals(t_xvals):
     ints_xvals = t.texts_to_sequences(t_xvals)
     return (ints_xvals, t)
 
+def reshape_xvals(xvals):
+    # Remove the column (x, 1 ,x') in the middle
+    return np.reshape(xvals,(xvals.shape[0],xvals.shape[2]))
+
+def prep_feed_model(x, wordindex):
+    x = np.array(x)
+    mid = reshape_xvals(x)
+    out = arrayWordToInt(mid, wordindex)
+    return out
+
 # EMBEDDING
 prep_xvals = myTokenize(xval)
 # embed_xvals, xvt = convert_txvals(prep_xvals)
@@ -175,47 +192,14 @@ prep_xvals = myTokenize(xval)
 # embed_xvals = np.array(embed_xvals)
 
 ut = get_unique_tokens(prep_xvals)
-# if USE_WORD2VECTOR:
-    # embed_dict = get_vector_dict(w2v_filepath,limit = VDLIMIT)
-    # zero_vector = [0] * embedding_vector_length
-    # word2int = buildWordToInt(embed_dict,ut)
-    # prep_xvals = arrayWordToInt(prep_xvals,word2int)
-    # print("split",prep_xvals[100:105])
-    # # prep_xvals = pad_sequences(prep_xvals, maxlen = max_review_length, dtype = object, value="0")
-    # # print("padd",prep_xvals[100:105])
-    # embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) # Remove the 1 in the middle
-    # print("shape", prep_xvals.shape)
-
-    # # prepare embedding matrix
-    # num_words = len(embed_dict) + embed_xvals.shape[0]
-    # embedding_matrix = np.zeros((num_words, embedding_vector_length))
-    # idx = 0
-
-    # # Build dict for VECTORS
-    # for word, i in word2int.items():
-    #     if word in embed_dict:
-    #         embedding_matrix[i] = embed_dict[word]
-    #     else:
-    #         # words not found in embedding index will be all-zeros.
-    #         embedding_matrix[i] = zero_vector
-    #     # word_to_int[word] = i
-    #     idx += 1
-
-    # print("embedding mat shape",embedding_matrix.shape)
-    # # for k,v in word_to_int.items(): embed_xvals[prep_xvals==k] = v # Dict lookup for npArrays
-
-    # my_embedding = Embedding(
-    #     num_words,
-    #     embedding_vector_length,
-    #     embeddings_initializer=Constant(embedding_matrix),
-    #     input_length=max_review_length,
-    #     trainable = False
-    #     )
-# else:
 num_words = len(ut)
 word_index = buildWordToInt(ut,[])
-prep_xvals = arrayWordToInt(prep_xvals,word_index)
-embed_xvals = np.reshape(prep_xvals,(prep_xvals.shape[0],prep_xvals.shape[2])) # Remove the 1 in the middle
+
+embed_xvals = prep_feed_model(prep_xvals,word_index)
+rawtest_x, rawtest_y = get_test_set()
+rawtest_x = myTokenize(rawtest_x)
+test_x = prep_feed_model(rawtest_x,word_index)
+test_y = intents_to_categorical(rawtest_y)
 
 save_to_json("xval_man_tokens.json",str(word_index))
 
@@ -235,6 +219,8 @@ my_embedding = Embedding(
 
 print('Shape of data tensor:', embed_xvals.shape)
 print("xval sample", embed_xvals[156])
+print('Shape of test tensor:', test_x.shape)
+print("test xval sample", test_x[0])
 
 # MODEL CONSTRUCTION
 
@@ -258,7 +244,7 @@ if DO_POOL:
     # No sense having pool_size bigger than stride because its MaxPool.
     # Having a bigger pool than stride means each max point will obscure the results more.
     # Originally, all were size 4.
-    cnn2 = MaxPooling1D(pool_size=4, strides=4)(cnn2) # 4
+    cnn2 = MaxPooling1D(pool_size=2, strides=2)(cnn2) # 4
     fcnn2 = Flatten()(cnn2)
 
     cnn3 = MaxPooling1D(pool_size=4, strides=4)(cnn3) # 4
@@ -277,10 +263,10 @@ else:
     flat = Concatenate(axis=-1)([cnn2, cnn3, cnn4]) 
 
 flat = BatchNormalization(momentum=0.99)(flat)
-flat = Dropout(0.15)(flat)
+flat = Dropout(0.2)(flat)
 
 flat = Dense(units=256, activation='relu')(flat) # 
-flat = Dropout(0.15)(flat)
+# flat = Dropout(0.15)(flat)
 
 flat = Dense(units=512, activation='relu')(flat) #
 
@@ -288,14 +274,16 @@ outs = Dense(units=num_intents, activation='softmax')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
 
-LEARN_RATE = 1.6e-5 
+LEARN_RATE = 1.5e-5 
 optimizer = Adam(learning_rate=LEARN_RATE)
 # optimizer = RMSprop(learning_rate = 3e-5)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 
-model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=20,shuffle=True) # Can't have validation because of the number of intents.
+test_set = (test_x, test_y)
+# Can't have validation split because too many intents.
+model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=20,shuffle=True,validation_data=test_set) 
 
 # Post Training
 model.save(save_model_name)
