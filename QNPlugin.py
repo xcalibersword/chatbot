@@ -433,12 +433,12 @@ def SeekNewCustomerChat(clickImage):
     curr_screen = Screen()
 
     try:
-        newmsg_pattern = newmsg_pattern.exact()
+        newmsg_pattern = newmsg_pattern.exact() # Match the image exactly
         curr_screen.click(newmsg_pattern)
         print("New chat detected!")
         return True
     except Exception as e:
-        print("No new chat detected")
+        print("No new chat detected. Except:", e)
         return False
 
 def select_chat_input_box(cW):
@@ -448,7 +448,6 @@ def select_chat_input_box(cW):
         foundbox = False
         while not foundbox:
             foundbox = setActiveScreen(cW.input_dlg, cW) # Select text input box
-        
         
         # Check for blank text box.
         while True:
@@ -476,6 +475,7 @@ def main(cW,bot,SeekImagePath,mode,cycle_delay):
         newchat = False
         if check_counts >= GLOBAL["new_chat_check_interval"]:
             newchat = SeekNewCustomerChat(SeekImagePath)
+            setActiveScreen(cW.msg_dlg)
             check_counts = 0
 
         if no_history or newchat:
