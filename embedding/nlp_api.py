@@ -9,13 +9,13 @@ if __name__ == "__main__":
     MAIN = True
     rootpath = ''
     from unzipper import get_vector_dict
-    from nlp_utils import is_a_number, preprocess_sequence, postprocess_sequence
+    from nlp_utils import is_a_number, preprocess_sequence, postprocess_sequence, test_set
 
 else:
     MAIN = False
     rootpath = 'embedding/'
     from embedding.unzipper import get_vector_dict
-    from embedding.nlp_utils import is_a_number, preprocess_sequence, postprocess_sequence
+    from embedding.nlp_utils import is_a_number, preprocess_sequence, postprocess_sequence, test_set
 
 
 from keras.models import load_model
@@ -169,6 +169,38 @@ class Predictor:
             p_out = self.pred_to_word(out)
             print(p_out)
 
+    def test_predictor(self,test_set):
+        # Test the predictor
+        fail_dict = {}
+        score = 0
+        for testin, ans in test_set:
+            out = self.predict(testin)
+            pred = out["prediction"]
+            passed = pred == ans
+            if passed: score+=1
+            if passed:
+                passedstr = "PASSED" 
+            else:
+                passedstr = "@@@@@@@@@@@@@@@@@@ FAILED TEST"
+                if ans in fail_dict:
+                    fail_dict[ans] = fail_dict[ans] + 1
+                else:
+                    fail_dict[ans] = 1
+            
+            
+            print("In:<",testin, "> Passed?:", passed)
+            if not passed or DEBUG:
+                print(passedstr, "Expected:", ans)
+                print("Predicted Intent:",out)
+            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+        print("---------------RESULTS---------------")
+        print("Performance:{}/{}".format(score,len(test_set)))
+        print("Failed topics:")
+        for t, c in fail_dict.items():
+            print(t,c)
+        print("---------------------------------------------")
+
 
 if MAIN:
     print("Please enter the model filename")
@@ -176,6 +208,6 @@ if MAIN:
     if len(nmf) < 2:
         nmf = "trained.h5"
         print("No name given,using", nmf)
-
+    
     pp = Predictor(nmf)
-    pp.predict_loop()
+    pp.test_predictor(test_set)

@@ -137,7 +137,6 @@ def buildWordToInt(w2v,ut):
 
 
 def arrayWordToInt(nparr, d):
-    dbg=True
     nparr = np.array(nparr)
     newArray = np.copy(nparr)
     for k, v in d.items(): newArray[nparr==k] = v
@@ -146,7 +145,6 @@ def arrayWordToInt(nparr, d):
         for j in range(len(row)):
             if isinstance(row[j], str):
                 newArray[i][j] = 0
-    print(newArray[:5])
     return newArray
 
 # Returns an nparray of sequences, padded
@@ -244,16 +242,16 @@ if DO_POOL:
     # No sense having pool_size bigger than stride because its MaxPool.
     # Having a bigger pool than stride means each max point will obscure the results more.
     # Originally, all were size 4.
-    cnn2 = MaxPooling1D(pool_size=2, strides=2)(cnn2) # 4
+    cnn2 = MaxPooling1D(pool_size=4, strides=4)(cnn2) # 4
     fcnn2 = Flatten()(cnn2)
 
     cnn3 = MaxPooling1D(pool_size=4, strides=4)(cnn3) # 4
     fcnn3 = Flatten()(cnn3)
     
-    cnn4 = MaxPooling1D(pool_size=6, strides=6)(cnn4) # 4
+    cnn4 = MaxPooling1D(pool_size=6, strides=6)(cnn4) # 6
     fcnn4 = Flatten()(cnn4)
 
-    cnn5 = MaxPooling1D(pool_size=8, strides=8)(cnn5) # 4
+    cnn5 = MaxPooling1D(pool_size=8, strides=8)(cnn5) # 8
     fcnn5 = Flatten()(cnn5)
 
     flat = Concatenate(axis=-1)([fcnn2, fcnn3, fcnn4,fcnn5]) # 合并4个模型的输出向量
@@ -266,13 +264,14 @@ flat = BatchNormalization(momentum=0.99)(flat)
 flat = Dropout(0.2)(flat)
 
 flat = Dense(units=256, activation='relu')(flat) # 
-# flat = Dropout(0.15)(flat)
+flat = Dropout(0.10)(flat)
 
 flat = Dense(units=512, activation='relu')(flat) #
 
 outs = Dense(units=num_intents, activation='softmax')(flat)
 model = Model(inputs=main_input, outputs=outs)
 
+# VAl accuracy of 0.94
 
 LEARN_RATE = 1.5e-5 
 optimizer = Adam(learning_rate=LEARN_RATE)
@@ -283,7 +282,7 @@ model.summary()
 
 test_set = (test_x, test_y)
 # Can't have validation split because too many intents.
-model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=20,shuffle=True,validation_data=test_set) 
+model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=16,shuffle=True,validation_data=test_set) 
 
 # Post Training
 model.save(save_model_name)

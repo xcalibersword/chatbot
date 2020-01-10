@@ -55,7 +55,7 @@ def remove_stopwords(seq):
 
 # Test suite    
 test_set = [
-    ("1月份的已经缴纳了哈","ask_shebao_status"),
+    ("1月份社保已经缴纳了吗","ask_shebao_status"),
     ("[link]有人吗","greet"),
     ("我在上海，以前交过","inform"),
     ("上海的以前没交过","inform"),
@@ -125,6 +125,7 @@ test_set = [
     ("要多久能查到呢？","query_when_check_shebao_status"),
     ("请问可以代缴上海社保吗","purchase"),
     ("我想交11月社保不断的可以吗","purchase"),
+    ("我准备离职中间两个月不交社保。这里可以帮我代缴吗","purchase"),
     ("我是想要代缴9月的","purchase"),
     ("想要代缴昆山社保的","purchase"),
     ("这里能代缴广州五险一金吗","purchase"),
@@ -149,7 +150,6 @@ test_set = [
     ("外地人能交社保吗","complicated"),
     ("不是500吗怎么变了1000呢？","complicated"),
     ("您好我这个月离职","complicated"),
-    ("我准备离职中间两个月不交社保。这里可以帮我代缴吗","complicated"),
     ("我给朋友推荐了你们公司","complicated"),
     ("会有什么影响吗？","query_various_effects"),
     ("有什么后果吗？","query_various_effects"),
@@ -159,20 +159,20 @@ test_set = [
     ("这个1937是包括费用么","doublecheck_value"),
     ("1000是吧","doublecheck_value"),
     ("生病之后去办理医保可以吗","query_sick"),
-    ("参保可以吗 因为我已经生病了","query_sick"),
+    ("参保可以吗 我现在住院","query_sick"),
     ("看病没关系吧","query_sick_light"),
     ("若出问题，及时联系","request_notify"),
     ("好了就联系我哦","request_notify"),
     ("[link]如果有什么事及时联系我","request_notify"),
     ("如果那边有什么问题要及时通知我哦","request_notify"),
     ("[link]我还需要给什么资料吗","query_req_resources"),
-    ("请问社保卡怎么弄","query_shebao_card"),
-    ("请问公积金卡怎么去弄的","query_shebao_card"),
+    ("要社保卡是怎么办理","query_shebao_card"),
+    ("请问公积金卡怎么去弄的","query_gjj_card"),
     ("交这个月续费","purchase_xufei"),
     ("几号可以开户？","query_when_kaihu"),
     ("减员是什么意思呀","define"),
     ("你们的公司叫什么名啊","query_company_name"),
-    ("接着应怎么弄？","next_step"),
+    ("然后？","next_step"),
     ("弄好了哈","inform_done")
 ]
 
@@ -184,3 +184,7 @@ def get_test_set():
         test_x.append(x)
         test_y.append(y)
     return (test_x, test_y)
+
+if __name__ == "__main__":
+    result = int(0.8655 * len(test_set))
+    print(result, "/",len(test_set))
