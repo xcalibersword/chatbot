@@ -31,12 +31,11 @@ SQL_JSON = {
             "table": "基本信息",
             "conditions": "where 员工缴费状态='正常缴费' or 员工缴费状态='新进'or 员工缴费状态='新进补缴'"
         },
-        "bill_info_history_query": {
+        "amt_payable_query": {
             "cust_tb_id_col":"淘宝会员名",
-            "writevals":[],
-            "column": "账单月份_文本值",
+            "writevals":["amt_payable", "账单月份_文本值"],
             "table": "billinfo_淘宝_主表",
-            "conditions": "where 账单月份_文本值 = '{yyyymm}'"
+            "conditions": "where (where 员工缴费状态='正常缴费' or 员工缴费状态='新进'or 员工缴费状态='新进补缴') and 账单月份_文本值 = '{yyyymm}'"
         },
         "yuangongxinxi_query": {
             "cust_tb_id_col":"淘宝ID",
@@ -71,6 +70,7 @@ db_read_pass = read_info["pass"]
 db_read_dbname = read_info["dbname"]
 db_read_queries = SQL_JSON["predef_queries"]
 INITIAL_QUERY = db_read_queries["init_get_info_query"]
+AMT_PAYABLE_QUERY = db_read_queries["amt_payable_query"]
 
 write_conn = None
 read_conn = None
@@ -264,10 +264,15 @@ class MSSQL_readwriter:
 
         iq = INITIAL_QUERY
         if DEBUG: print("<SQL FETCH INFO> Looking for {}".format(user_name))
-        found, f_dict = self.execute_predef_query(iq, user_name)
-
+        found1, f_dict = self.execute_predef_query(iq, user_name)
         uid_f = f_dict
-        return found, uid_f
+
+        found2, f_dict= self.execute_predef_query(AMT_PAYABLE_QUERY, user_name) 
+        uid_f.update(f_dict)
+        print("Basic info search:", found1, "Amt payable search:",found2)
+        if found1 and not found2:
+            print("Manged to find", user_name, "in 基本信息 but not billinfo_淘宝_主表")
+        return found1, uid_f
 
     def fetch_all_from_sqltable(self,tablename):
         f = self.fetch_all_from_con(tablename)
