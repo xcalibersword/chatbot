@@ -306,8 +306,11 @@ class Announcer():
           
             trigger_states = t_states
             correct_state = "_ANY" in trigger_states or csk in trigger_states
+            
             if correct_state:
+                slots_satisfied = False
                 for ts in t_slots:
+                    slot_is_AND = (ts.get("eval","AND") == "AND") # Default is AND
                     sn = ts.get("slotname","")
                     ex_val = ts["value"]
                     info_vd = cu.dive_for_dot_values(sn, curr_info)
@@ -315,11 +318,15 @@ class Announcer():
                         if SUPER_DEBUG: print("<ANNOUNCE> Slot",sn,"not found in info")
                     info_val = info_vd.get(sn,"")
                 
-                    if not info_val == ex_val:
+                    if info_val == ex_val:
+                        slots_satisfied = True
+                    elif slot_is_AND:
                         # ALL slot values must be satisfied
-                        return False
+                        return False # One fail all fail
+                        
+                        
                 
-                return True
+                return slots_satisfied
             if DEBUG: print("<ANNOUNCE> Not correct state. cstate",csk, "trig states", trigger_states)
             return False
             
