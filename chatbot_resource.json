@@ -1119,19 +1119,19 @@
                     "push_xufei"
                 ],
                 "lookfor":[
-                    "city",
+                    "state_month",
                     "customer_fullname",
                     "curr_month_amt_due"
                 ],
                 "if_present":{
-                    "city":["您好，要续费吗？\r\n"]
+                    "state_month":["您好，要续费吗？\r\n"]
                 },
                 "if_value":{
                     "customer_fullname":{
-                        "DEFAULT":["《{customer_fullname}》 "]
+                        "DEFAULT":["参保人：{customer_fullname} |"]
                     },
                     "curr_month_amt_due":{
-                        "DEFAULT":["这个月得付一共 ¥{curr_month_amt_due} "]
+                        "DEFAULT":["本月({state_month}月)共需付款¥{curr_month_amt_due} "]
                     }
 
                 }
