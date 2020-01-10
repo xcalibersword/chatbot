@@ -1086,6 +1086,9 @@ class ReplyGenerator:
         def _announceify(msg):
             return self.announcer.add_announcements(msg,curr_state,info)
 
+        def add_newlines(msg):
+            return msg.replace("//", "\r\n")
+
         reply_template = rand_response(rdb)
         if DEBUG: print("<GEN REPLY> Template:",reply_template)
         if SUPER_DEBUG: print("<GEN REPLY> Enhanced info:",info)
@@ -1098,6 +1101,8 @@ class ReplyGenerator:
 
         # Post-enhancement message additions
         final_msg = _humanify(final_msg)
+
+        final_msg = add_newlines(final_msg)
         
         return final_msg, topup
 

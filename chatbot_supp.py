@@ -327,7 +327,6 @@ class Announcer():
                         
                 
                 return slots_satisfied
-            if DEBUG: print("<ANNOUNCE> Not correct state. cstate",csk, "trig states", trigger_states)
             return False
             
         anns_to_make = []
