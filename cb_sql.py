@@ -21,7 +21,7 @@ SQL_JSON = {
                 ("curr_payment_status", "员工缴费状态")
             ],
             "table": "基本信息",
-            "conditions": ""
+            "conditions": "where 淘宝会员名 = '{customer_ID}'"
         },
         "get_customer_and_bill_query":{
             "cust_tb_id_col": "淘宝会员名",
@@ -30,7 +30,7 @@ SQL_JSON = {
                 ("curr_month_amt_due", "本月应付")
             ],
             "table": "Billinfo_淘宝_主表",
-            "conditions": "where 账单月份_文本值 like " + "'" + cu.get_yearmonth() + "'",
+            "conditions": "where 账单月份_文本值 like '{yyyymm}'",
         },
         "cust_payment_status_query": {
             "cust_tb_id_col":"淘宝会员名",
@@ -118,7 +118,7 @@ def add_to_str(s, thing):
 
 def build_context_info():
     yearmonth_str = cu.get_yearmonth()
-    info_dict = {'yearmonth':yearmonth_str}
+    info_dict = {'yyyymm':yearmonth_str}
     return info_dict
 
 class Alarmy:
@@ -268,7 +268,6 @@ class MSSQL_readwriter:
         if self.cannot_read():
             # Try to connect again
             self.connect_to_read()
-
         iq = INITIAL_QUERY
         if DEBUG: print("<SQL FETCH INFO> Looking for {}".format(user_name))
         found1, f_dict = self.execute_predef_query(iq, user_name)
@@ -293,8 +292,12 @@ class MSSQL_readwriter:
         tb_id_col = query.get("cust_tb_id_col")
         write_vals = query.get("writevals")
         conds = query.get("conditions", "")
-        # conds = conds.format(context_info) # Fill with dynamic values IS BUGGED
-        f_rows = self.fetch_all_from_con(table, condition= conds)
+
+        context_info = build_context_info()
+        context_info["customer_ID"] = uid
+        final_conds = conds.format(**context_info)
+
+        f_rows = self.fetch_all_from_con(table, condition= final_conds)
         if DEBUG: print("<PREDEF Q> fetched {} queries".format(str(len(f_rows))))
 
         count = 0

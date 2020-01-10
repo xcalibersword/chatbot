@@ -695,7 +695,8 @@ class DetailManager:
             "city", "city_district", "要社保", "要公积金", 
             "首次","shebao_jishu", "gjj_jishu", 
             "svc_fee_total", "shebao_basic_total",
-            "made_purchase", "苏州区", "北京农城", "laokehu_flag"
+            "made_purchase", "苏州区", "北京农城", "laokehu_flag",
+            "curr_month_amt_due", "customer_fullname"
         } # HARDCODED
         not_user_info = [
             "requested_info", "ctx_slots", "zones", "chosen_fee", "work_hrs_flag", 
@@ -920,7 +921,7 @@ class ReplyGenerator:
         return reply, topup
 
     def _enhance_info(self,curr_state,info):
-        RF_DEBUG = 0 or SUPER_DEBUG # DEBUG FLAG
+        RF_DEBUG = 1 or SUPER_DEBUG # DEBUG FLAG
         cskey = curr_state["key"]
         rep_ext = {}
         enhanced = copy.deepcopy(info)

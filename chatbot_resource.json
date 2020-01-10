@@ -607,7 +607,7 @@
             "thread": "BASE",
             "humanify": false,
             "req_info": [["city", "city"]],
-            "replies": ["您好，要续费吗？"]
+            "replies": ["{rep_ext[push_xufei_message]}"]
         },
         "city_crossroad":{
             "key": "city_crossroad",
@@ -1113,6 +1113,29 @@
     },
     "reply_formatting": {
         "msg_formats": [
+            {
+                "writeto": "push_xufei_message",
+                "states": [
+                    "push_xufei"
+                ],
+                "lookfor":[
+                    "city",
+                    "customer_fullname",
+                    "curr_month_amt_due"
+                ],
+                "if_present":{
+                    "city":["您好，要续费吗？\r\n"]
+                },
+                "if_value":{
+                    "customer_fullname":{
+                        "DEFAULT":["《{customer_fullname}》 "]
+                    },
+                    "curr_month_amt_due":{
+                        "DEFAULT":["这个月得付一共 ¥{curr_month_amt_due} "]
+                    }
+
+                }
+            },
             {
                 "writeto": "request_string",
                 "states": [
