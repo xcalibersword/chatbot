@@ -1088,7 +1088,7 @@ class ReplyGenerator:
             return self.announcer.add_announcements(msg,curr_state,info)
 
         def add_newlines(msg):
-            return msg.replace("//", "\r\n")
+            return msg.replace("<>", "\r\n")
 
         reply_template = rand_response(rdb)
         if DEBUG: print("<GEN REPLY> Template:",reply_template)
