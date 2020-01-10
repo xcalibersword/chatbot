@@ -87,6 +87,7 @@
             ["query_how_settle","provide_taobao_link"],
             ["query_pay_process", "provide_taobao_link"],
             ["query_xufei", "provide_taobao_link"],
+            ["purchase_xufei", "provide_taobao_link"]
             ["inform_paid","finished_payment"],
             ["greet", "init"],
             ["deny", "initplus"]
@@ -94,6 +95,7 @@
         "init": [
             ["greet","xufei_push_crossroad"],
             ["purchase", "purchase_laoke_crossroad"],
+            ["purchase_xufei", "purchase_laoke_crossroad"],
             ["inform","purchase_laoke_crossroad"],
             ["affirm", "initplus"],
             ["deny", "goodbye"]
@@ -101,14 +103,15 @@
         "initplus": [
             ["greet", "xufei_push_crossroad"],
             ["purchase", "purchase_laoke_crossroad"],
+            ["purchase_xufei", "purchase_laoke_crossroad"],
             ["inform","purchase_laoke_crossroad"],
             ["deny", "goodbye"]
         ],
         "provide_taobao_link": [
             ["inform","city_crossroad"],
             ["purchase","city_crossroad"],
-            ["affirm", "inform_how_pai"],
             ["next_step","inform_how_pai"],
+            ["affirm", "finished_payment"],
             ["inform_done","finished_payment"],
             ["inform_paid","finished_payment"],
             ["thankyou", "finished_payment"],
