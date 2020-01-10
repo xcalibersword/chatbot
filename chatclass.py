@@ -929,6 +929,7 @@ class ReplyGenerator:
         formatDB = self.formatDB["msg_formats"]
 
         def add_txt_enh(key, rawstr):
+            print("RAWSTR",rawstr)
             wstr = rawstr.format(**enhanced)
             enhstr = cbsv.conv_numstr(wstr)
             if RF_DEBUG: print("Writing {} to {}".format(rawstr, key))

@@ -1124,9 +1124,19 @@
                     "curr_month_amt_due"
                 ],
                 "if_present":{
-                    "state_month":["您好，要续费吗？//"],
-                    "customer_fullname":"参保人：{customer_fullname}//",
-                    "curr_month_amt_due": "本月({state_month}月)共需付款¥{curr_month_amt_due} "
+                    "state_month":["您好，要续费吗？//"]
+                },
+                "if_value":{
+                    "customer_fullname":{
+                        "":"",
+                        "0":"",
+                        "DEFAULT":["参保人：{customer_fullname}//"]
+                    },
+                    "curr_month_amt_due": {
+                        "":"",
+                        "0":"",
+                        "DEFAULT":["本月({state_month}月)共需付款¥{curr_month_amt_due}//"]
+                    }
                 }
             },
             {
