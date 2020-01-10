@@ -64,6 +64,14 @@ class DatabaseRunner():
         default_details = {"首次":"no"}
         mod.update(default_details)
         modlist = {
+            "curr_payment_status":{
+                "writeto":"curr_payment_status",
+                "swaps":[
+                    ("正常缴费", "normal"),
+                    ("新进", "normal"),
+                    ("新进补缴", "normal")
+                ]
+            },
             "cust_city":{
                 "writeto":"city",
                 "swaps":[("苏州","苏州"),("上海","上海")]

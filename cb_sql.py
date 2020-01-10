@@ -2,8 +2,9 @@
 import os
 import pymssql as msql # Ignore the error message from this. But it means this is lib incompatible with Python 3.8 and above.
 import threading
-from datetime import datetime
+import chatbot_utils as cu
 from localfiles.details import get_read_details, get_write_details
+
 write_info = get_write_details()
 read_info = get_read_details()
 
@@ -20,7 +21,16 @@ SQL_JSON = {
                 ("curr_payment_status", "员工缴费状态")
             ],
             "table": "基本信息",
-            "conditions": "where 员工缴费状态='正常缴费' or 员工缴费状态='新进'or 员工缴费状态='新进补缴'"
+            "conditions": ""
+        },
+        "get_customer_and_bill_query":{
+            "cust_tb_id_col": "淘宝会员名",
+            "writevals":[
+                ("customer_fullname", "姓名"),
+                ("curr_month_amt_due", "本月应付")
+            ],
+            "table": "Billinfo_淘宝_主表",
+            "conditions": "where 账单月份_文本值 like " + "'" + cu.get_yearmonth() + "'",
         },
         "cust_payment_status_query": {
             "cust_tb_id_col":"淘宝会员名",
@@ -70,7 +80,7 @@ db_read_pass = read_info["pass"]
 db_read_dbname = read_info["dbname"]
 db_read_queries = SQL_JSON["predef_queries"]
 INITIAL_QUERY = db_read_queries["init_get_info_query"]
-AMT_PAYABLE_QUERY = db_read_queries["amt_payable_query"]
+AMT_PAYABLE_QUERY = db_read_queries["get_customer_and_bill_query"]
 
 write_conn = None
 read_conn = None
@@ -107,11 +117,8 @@ def add_to_str(s, thing):
     return s + thing + ";"
 
 def build_context_info():
-    dt_now = datetime.now()
-    year = dt_now.year
-    month = dt_now.month
-    yearmonth_str = str(year) + str(month)
-    info_dict = {"yyyymm":yearmonth_str}
+    yearmonth_str = cu.get_yearmonth()
+    info_dict = {'yearmonth':yearmonth_str}
     return info_dict
 
 class Alarmy:
@@ -269,9 +276,8 @@ class MSSQL_readwriter:
 
         found2, f_dict= self.execute_predef_query(AMT_PAYABLE_QUERY, user_name) 
         uid_f.update(f_dict)
-        print("Basic info search:", found1, "Amt payable search:",found2)
         if found1 and not found2:
-            print("Manged to find", user_name, "in 基本信息 but not billinfo_淘宝_主表")
+            print("<FETCH USERINFO FROM SQL>Manged to find", user_name, "in 基本信息 but not billinfo_淘宝_主表")
         return found1, uid_f
 
     def fetch_all_from_sqltable(self,tablename):
@@ -283,13 +289,11 @@ class MSSQL_readwriter:
         out = {}
         if not SQL_READ_ENABLED:
             return (matchfound, out)
-        
-        context_info = build_context_info()
         table = query.get("table")
         tb_id_col = query.get("cust_tb_id_col")
         write_vals = query.get("writevals")
-        conds = query.get("conditions")
-        conds = conds.format(context_info) # Fill with dynamic values
+        conds = query.get("conditions", "")
+        # conds = conds.format(context_info) # Fill with dynamic values IS BUGGED
         f_rows = self.fetch_all_from_con(table, condition= conds)
         if DEBUG: print("<PREDEF Q> fetched {} queries".format(str(len(f_rows))))
 

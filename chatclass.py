@@ -10,7 +10,7 @@ import string
 import chatbot_be
 from datetime import datetime
 from chatbot_supp import *
-from chatbot_utils import dive_for_dot_values, dive_for_values, cbround, dotpop
+from chatbot_utils import dive_for_dot_values, dive_for_values, cbround, dotpop, get_yearmonth
 
 
 SUPER_DEBUG = 0
@@ -711,12 +711,15 @@ class DetailManager:
                 dic[key] = contents
         return dic
     
+    # Adds serverside info like date and time.
+    # SUPER HARDCODED
     def _update_server_state_info(self):
         dt_now = datetime.now()
         server_info = {}
         server_info["state_curr_hour"] = dt_now.hour
         server_info["state_month"] = dt_now.month
         server_info["state_curr_day"] = dt_now.day
+        server_info["yyyymm"] = get_yearmonth()
         self.chat_prov_info.update(server_info)
         return
 

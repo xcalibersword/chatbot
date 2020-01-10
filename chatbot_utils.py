@@ -1,5 +1,5 @@
 import os
-
+import datetime as dt
 # Useful Functions
 DEBUG_DEFAULT = 0
 
@@ -180,3 +180,15 @@ def cbround(val, dp = 0):
         dp_arg = dp
     
     return round(val,dp_arg)
+
+def get_yearmonth():
+    dtobj = dt.datetime.now()
+    years = str(dtobj.year)
+    raw_months = str(dtobj.month)
+    if len(raw_months) == 1:
+        months = "0" + str(raw_months)
+    else:
+        months = raw_months
+    out = years + months
+    assert(len(out) == 6)
+    return out
