@@ -1120,22 +1120,22 @@
                 ],
                 "lookfor":[
                     "state_month",
-                    "customer_fullname",
-                    "curr_month_amt_due"
+                    "ls_bill_name_list",
+                    "ls_bill_total_amt"
                 ],
                 "if_present":{
                     "state_month":["您好，要续费吗？<>"]
                 },
                 "if_value":{
-                    "customer_fullname":{
+                    "ls_bill_name_list":{
                         "":"",
                         "0":"",
-                        "DEFAULT":["参保人：{customer_fullname}<>"]
+                        "DEFAULT":["参保人：{ls_bill_name_list}<>"]
                     },
-                    "curr_month_amt_due": {
+                    "ls_bill_total_amt": {
                         "":"",
                         "0":"",
-                        "DEFAULT":["本月({state_month}月)共需付款¥{curr_month_amt_due}<>"]
+                        "DEFAULT":["本月({state_month}月)共需付款¥{ls_bill_total_amt}<>"]
                     }
                 }
             },
@@ -2486,17 +2486,17 @@
         }
     },
     "list_string_templates":{
-        "bill_info":[
+        "bills":[
             {
                 "collection": "seq",
                 "delimiter": "，",
                 "element_template": "{0}(¥{1})",
-                "writeto":"bill_name_list"
+                "writeto":"ls_bill_name_list"
             },
             {
                 "collection": "sum",
-                "indexes": [0],
-                "writeto": "bill_total_amt"
+                "indexes": [1],
+                "writeto": "ls_bill_total_amt"
             }
              
             

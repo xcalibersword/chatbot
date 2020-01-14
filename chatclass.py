@@ -904,11 +904,12 @@ class DetailManager:
 
 # Generates reply text based on current state info
 class ReplyGenerator:
-    def __init__(self, formattingDB, humanizer, announcer, def_confused):
+    def __init__(self, formattingDB, humanizer, announcer, listprinter, def_confused):
         self.formatDB = formattingDB
         self.formatter = string.Formatter()
         self.humanizer = humanizer
         self.announcer = announcer
+        self.listprinter = listprinter
         self.hflag = True
         self.default_confused = def_confused
         
@@ -921,11 +922,25 @@ class ReplyGenerator:
         return reply, topup
 
     def _enhance_info(self,curr_state,info):
+        def _add_listmsgs(info):
+            out = copy.deepcopy(info)
+            liststr_dict = self.listprinter.generate_liststrings(info)
+            out.update(liststr_dict)
+            return out
+
+        def curr_state_needs_txt_enh(tmp,curr_state_key):
+            states = tmp["states"]
+            return curr_state_key in states
+
+        def get_reply_template(pulled):
+            if isinstance(pulled, list):
+                return random.choice(pulled)
+            return pulled
+
         RF_DEBUG = 1 or SUPER_DEBUG # DEBUG FLAG
         cskey = curr_state["key"]
         rep_ext = {}
-        enhanced = copy.deepcopy(info)
-
+        enhanced = _add_listmsgs(info)
         formatDB = self.formatDB["msg_formats"]
 
         def add_txt_enh(key, rawstr):
@@ -936,15 +951,6 @@ class ReplyGenerator:
             cu.add_enh(key,enhstr,rep_ext,"rep_ext",{},enhanced, persist = False)
             return 
         
-        def curr_state_needs_txt_enh(tmp,curr_state_key):
-            states = tmp["states"]
-            return curr_state_key in states
-
-        def get_reply_template(pulled):
-            if isinstance(pulled, list):
-                return random.choice(pulled)
-            return pulled
-
         def enhance_if_vals(vd, ifvl, tkey):   
             # Recursive function
             def if_val_tree_enh(t_info, name_tree, tkey):
@@ -1079,13 +1085,17 @@ class ReplyGenerator:
     def generate_reply_message(self, rdb, curr_state, info):
         def rand_response(response_list):
             return random.choice(response_list)
+
         def _humanify(msg):
             if not self.hflag:
                 # Do nothing
                 return msg 
             return self.humanizer.humanify(msg,info)
+
         def _announceify(msg):
             return self.announcer.add_announcements(msg,curr_state,info)
+
+        
 
         def add_newlines(msg):
             return msg.replace("<>", "\r\n")
@@ -1095,7 +1105,7 @@ class ReplyGenerator:
         if SUPER_DEBUG: print("<GEN REPLY> Enhanced info:",info)
         
         # Pre-enhancement additions to base template
-        reply_template, topup = _announceify(reply_template)
+        reply_template, announce_topup = _announceify(reply_template)
 
         # Uses kwargs to fill the reply slots
         final_msg = reply_template.format(**info)
@@ -1105,7 +1115,7 @@ class ReplyGenerator:
 
         final_msg = add_newlines(final_msg)
         
-        return final_msg, topup
+        return final_msg, announce_topup
 
 # Deals only with text
 # Does not deal with state or information

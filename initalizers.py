@@ -2,7 +2,7 @@ import json
 import os
 from cbsv import read_json
 from embedding.nlp_api import Predictor
-from chatbot_supp import SIP, Policy, InfoVault, InfoParser, ReqGatekeeper, Humanizer, Calculator, Announcer
+from chatbot_supp import SIP, Policy, InfoVault, InfoParser, ReqGatekeeper, Humanizer, Calculator, Announcer, ListPrinter
 from chatclass import DetailManager, ReplyGenerator, PolicyKeeper
 
 def init_calculator(jdata):
@@ -122,6 +122,9 @@ def init_policykeeper(jdata, pdata):
     return PolicyKeeper(POLICY_RULES, XROAD_POLICIES, INTENTS, STATES, pp)
 
 def init_replygen(jdata, inf):
+    def _init_listprinter(info):
+        i = info["list_string_templates"]
+        return ListPrinter(i)
     def _init_humanizer(info):
         i = info["humanizer"]
         return Humanizer(i)
@@ -131,9 +134,10 @@ def init_replygen(jdata, inf):
 
     hz = _init_humanizer(inf)
     an = _init_announcer(inf)
+    lp = _init_listprinter(jdata)
     FORMAT_DB = jdata["reply_formatting"]
     DEFAULT_RESPONSE = jdata["intents"]["unknown"]["replies"]
-    return ReplyGenerator(FORMAT_DB,hz,an,DEFAULT_RESPONSE)
+    return ReplyGenerator(FORMAT_DB,hz,an,lp,DEFAULT_RESPONSE)
 
 
 def master_initalize(filename = ""):
