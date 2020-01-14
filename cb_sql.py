@@ -13,6 +13,7 @@ SQL_JSON = {
         "init_get_info_query":{
             "cust_tb_id_col":"淘宝会员名",
             "writevals":[
+                ("user_id", "淘宝会员名"),
                 ("cust_city", "缴费城市"),
                 ("shebao_jishu", "社保基数"),
                 ("gjj_jishu", "公积金基数"),
@@ -30,22 +31,24 @@ SQL_JSON = {
                 ("curr_month_amt_due", "本月应付")
             ],
             "table": "Billinfo_淘宝_主表",
-            "conditions": "where 账单月份_文本值 like '{yyyymm}'",
+            "conditions": "where 账单月份_文本值 like '{yyyymm}' and 淘宝会员名 = '{customer_ID}'",
         },
-        "cust_payment_status_query": {
+        "active_customer_query": {
             "cust_tb_id_col":"淘宝会员名",
             "writevals":[
                 ("cust_city", "缴费城市")
             ],
             "column":"员工缴费状态", 
             "table": "基本信息",
-            "conditions": "where 员工缴费状态='正常缴费' or 员工缴费状态='新进'or 员工缴费状态='新进补缴'"
+            "conditions": "where 淘宝会员名 = '{customer_ID}'and (员工缴费状态='正常缴费' or 员工缴费状态='新进'or 员工缴费状态='新进补缴')"
         },
-        "amt_payable_query": {
+        "get_usernames_query": {
             "cust_tb_id_col":"淘宝会员名",
-            "writevals":["amt_payable", "账单月份_文本值"],
-            "table": "billinfo_淘宝_主表",
-            "conditions": "where (where 员工缴费状态='正常缴费' or 员工缴费状态='新进'or 员工缴费状态='新进补缴') and 账单月份_文本值 = '{yyyymm}'"
+            "writevals":[
+                ("user_id", "淘宝会员名")
+            ],
+            "table": "基本信息",
+            "conditions": ""
         },
         "yuangongxinxi_query": {
             "cust_tb_id_col":"淘宝ID",
@@ -81,6 +84,8 @@ db_read_dbname = read_info["dbname"]
 db_read_queries = SQL_JSON["predef_queries"]
 INITIAL_QUERY = db_read_queries["init_get_info_query"]
 AMT_PAYABLE_QUERY = db_read_queries["get_customer_and_bill_query"]
+ACTIVE_CUST_QUERY = db_read_queries["active_customer_query"]
+USERNAME_QUERY = db_read_queries["get_usernames_query"]
 
 write_conn = None
 read_conn = None
@@ -116,9 +121,11 @@ def check_local_files_bad(sql):
 def add_to_str(s, thing):
     return s + thing + ";"
 
-def build_context_info():
+def build_context_info(uid):
     yearmonth_str = cu.get_yearmonth()
     info_dict = {'yyyymm':yearmonth_str}
+    info_dict["customer_ID"] = uid
+
     return info_dict
 
 class Alarmy:
@@ -268,22 +275,28 @@ class MSSQL_readwriter:
         if self.cannot_read():
             # Try to connect again
             self.connect_to_read()
-        iq = INITIAL_QUERY
         if DEBUG: print("<SQL FETCH INFO> Looking for {}".format(user_name))
-        found1, f_dict = self.execute_predef_query(iq, user_name)
+
+        is_exists, f_dict = self._execute_predef_query(INITIAL_QUERY, user_name)
         uid_f = f_dict
 
-        found2, f_dict= self.execute_predef_query(AMT_PAYABLE_QUERY, user_name) 
+        is_active, f_dict= self._execute_predef_query(ACTIVE_CUST_QUERY, user_name) 
         uid_f.update(f_dict)
-        if found1 and not found2:
+
+        is_billed, f_dict= self._execute_predef_query(AMT_PAYABLE_QUERY, user_name) 
+        uid_f.update(f_dict)
+
+        status = (is_exists, is_active, is_billed)
+
+        if is_exists and not is_billed:
             print("<FETCH USERINFO FROM SQL>Manged to find", user_name, "in 基本信息 but not billinfo_淘宝_主表")
-        return found1, uid_f
+        return is_exists, uid_f, status
 
     def fetch_all_from_sqltable(self,tablename):
         f = self.fetch_all_from_con(tablename)
         return f
 
-    def execute_predef_query(self, query, uid):
+    def _execute_predef_query(self, query, uid):
         matchfound = False
         out = {}
         if not SQL_READ_ENABLED:
@@ -293,26 +306,33 @@ class MSSQL_readwriter:
         write_vals = query.get("writevals")
         conds = query.get("conditions", "")
 
-        context_info = build_context_info()
-        context_info["customer_ID"] = uid
+        context_info = build_context_info(uid)
         final_conds = conds.format(**context_info)
 
         f_rows = self.fetch_all_from_con(table, condition= final_conds)
-        if DEBUG: print("<PREDEF Q> fetched {} queries".format(str(len(f_rows))))
+        if DEBUG: print("<PREDEF Q> Searching for {} in {} fetched {} queries".format(uid, table, str(len(f_rows))))
 
-        count = 0
-        
         for row in f_rows:
-            if row.get(tb_id_col,"") == uid:
-                if DEBUG: print("<PREDEF Q> FOUND a match for {}".format(uid), "L00ked through {} rows".format(count))
-                for k, colname in write_vals:
-                    out[k] = row.get(colname, "")
+            for k, colname in write_vals:
+                if not k in out:
+                    out[k] = []
                 
-                matchfound = True
-            count += 1
+                val = row.get(colname, "")
+                if not val == "":
+                    out[k].append(val)
+        
+        if len(out) > 0:
+            matchfound = True
 
-        if out == {}:
-            if DEBUG: print("<PREDEF Q> NO MATCH for {}".format(uid))
+        
+        # for row in f_rows:
+        #     if row.get(tb_id_col,"") == uid:
+        #         if DEBUG: print("<PREDEF Q> FOUND a match for {}".format(uid), "L00ked through {} rows".format(count))
+        #         for k, colname in write_vals:
+        #             out[k] = row.get(colname, "")
+                
+        #         matchfound = True
+        #     count += 1
 
         return (matchfound, out)
 
@@ -322,8 +342,11 @@ asdf = {"alina":{"userID":"小花朵","city":"北京", "首次":"yes"}}
 
 if __name__ == "__main__":
     sqr = MSSQL_readwriter()
-    tablename = db_tablename
-    uid = "dreampaopao"
-    pq = db_read_queries["init_get_info_query"]
-    pf = sqr.execute_predef_query(pq, uid)
-    print(pf)
+    bl, allnames_qr = sqr._execute_predef_query(USERNAME_QUERY, "")
+    listof = list(allnames_qr.items())
+    po = listof[:10][:10][:10][:10]
+    print(po, "END OF NAMES")
+    while 1:
+        username = input("Please enter a username: ")
+        pf = sqr.fetch_user_info_from_sqltable(username)
+        print(pf)
