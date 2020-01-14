@@ -2485,6 +2485,23 @@
             }
         }
     },
+    "list_string_templates":{
+        "bill_info":[
+            {
+                "collection": "seq",
+                "delimiter": "，",
+                "element_template": "{0}(¥{1})",
+                "writeto":"bill_name_list"
+            },
+            {
+                "collection": "sum",
+                "indexes": [0],
+                "writeto": "bill_total_amt"
+            }
+             
+            
+        ]
+    },
     "vault_info": {
         "database_protocol":{
             "_on_find":{

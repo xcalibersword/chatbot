@@ -1119,6 +1119,61 @@ class Calculator():
         if self.DEBUG: print(msg)
         return
 
+class ListPrinter():
+    def __init__(self, chatbot_resource):
+        self.list_templates = chatbot_resource.get("list_string_templates")
+        return
+
+    def _get_templates(self, k):
+        return self.list_templates.get(k, {})
+    
+    def _in_templates(self, e):
+        return e in self.list_templates
+
+    def _generate_lsdict(self, deetname, info):
+        def _write_ls(template, val_list):
+            ls_type = template.get("collection")
+            if ls_type == "seq":
+                e_temp = template.get("element_template")
+                dlmt = template.get("delimiter")
+                mid_str = ""
+                for row in val_list:
+                    el = e_temp.format(row)
+                    mid_str = el + dlmt
+                final_str = mid_str[:-1]
+            elif ls_type == "sum":
+                final_num = 0
+                idxes = template.get("indexes")
+                for row in val_list:
+                    el = 0
+                    for idx in idxes:
+                        el = row[idx]
+                    final_num = final_num + el
+                final_str = str(final_num)
+            else:
+                raise Exception("<WRITE LISTSTRING> Unknown collection type: {}",format(ls_type))
+            
+            return final_str
+        curr_templates = self._get_templates(deetname)
+        tkk = "writeto"
+        val_list = info.get(deetname)
+        out_d = {}
+        for sub_t in curr_templates:
+            tk = sub_t.get(tkk,"")
+            list_string = _write_ls(sub_t, val_list)  
+            out_d[tk] = list_string
+        return out_d
+
+    def generate_liststrings(self, info):
+        infolist = list(info.items())
+        out = {}
+        for entry, infoval in infolist:
+            if self._in_templates(entry):
+                ls_dict = self._generate_lsdict(entry, info)
+                out.update(ls_dict)
+        return out
+
+
 if __name__ == "__main__":
     print("Number Converter On!")
     while 1:
