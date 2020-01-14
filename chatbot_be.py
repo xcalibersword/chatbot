@@ -140,12 +140,14 @@ class DatabaseRunner():
                 "shebao_jishu":{
                     "writeto":"要社保",
                     "if_present": "yes",
-                    "swaps":[("None","no"), ("", "no")]
+                    "if_none": "no",
+                    "swaps":[("", "no")]
                 },
                 "gjj_jishu":{
                     "writeto":"要公积金",
                     "if_present": "yes",
-                    "swaps":[("None","no"), ("", "no")]
+                    "if_none": "no",
+                    "swaps":[("", "no")]
                 }
             }
 
@@ -155,6 +157,11 @@ class DatabaseRunner():
                     curr_mod = modlist[d_name]
                     new_key = curr_mod["writeto"]
                     ip_flag = curr_mod.get("if_present",False)
+                    none_val = curr_mod.get("if_none","")
+                    if val is None:
+                        mod[d_name] = none_val
+                        continue
+                    
                     if ip_flag:
                         raw_value = curr_mod["if_present"]
                         if curr_mod.get("keep_og", True):
