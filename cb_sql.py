@@ -12,13 +12,17 @@ SQL_JSON = {
     "predef_queries":{
         "init_get_info_query":{
             "cust_tb_id_col":"淘宝会员名",
+            "key_col":"最后修改日期",
+            "query_key":"basic",
             "writevals":[
                 ("user_id", "淘宝会员名"),
                 ("cust_city", "缴费城市"),
+                ("cust_city_detailed", "社保类型"),
                 ("shebao_jishu", "社保基数"),
                 ("gjj_jishu", "公积金基数"),
                 ("shebao_svc_fee", "社保服务费"),
-                ("start_date","计费开始日期"),
+                ("plan_start_date","社保开始日期"),
+                ("last_changed", "最后修改日期"),
                 ("curr_payment_status", "员工缴费状态")
             ],
             "table": "基本信息",
@@ -26,6 +30,8 @@ SQL_JSON = {
         },
         "get_customer_and_bill_query":{
             "cust_tb_id_col": "淘宝会员名",
+            "key_col":"姓名",
+            "query_key":"bill_info",
             "writevals":[
                 ("customer_fullname", "姓名"),
                 ("curr_month_amt_due", "本月应付")
@@ -34,10 +40,12 @@ SQL_JSON = {
             "conditions": "where 账单月份_文本值 like '{yyyymm}' and 淘宝会员名 = '{customer_ID}'",
         },
         "active_customer_query": {
+            "COMMENTS": "This might be redundant because exist query looks for this detail already",
             "cust_tb_id_col":"淘宝会员名",
-            "writevals":[
-                ("cust_city", "缴费城市")
-            ],
+            "date_col":"最后修改日期",
+            "key_col":"最后修改日期",
+            "query_key":"active",
+            "writevals":[],
             "column":"员工缴费状态", 
             "table": "基本信息",
             "conditions": "where 淘宝会员名 = '{customer_ID}'and (员工缴费状态='正常缴费' or 员工缴费状态='新进'or 员工缴费状态='新进补缴')"
@@ -272,25 +280,33 @@ class MSSQL_readwriter:
             self.commit_to_con(connection, qry, vals)
 
     def fetch_user_info_from_sqltable(self, user_name):
+        def update_dict(collector, retrieved, query):
+            qkey = query.get("query_key")
+            collector[qkey] = retrieved
+
+        def execute_and_update(collector, query, user_name):
+            flag, f_dict = self._execute_predef_query(query, user_name)
+            update_dict(collector, f_dict, query)
+            return flag
+
         if self.cannot_read():
             # Try to connect again
             self.connect_to_read()
         if DEBUG: print("<SQL FETCH INFO> Looking for {}".format(user_name))
 
-        is_exists, f_dict = self._execute_predef_query(INITIAL_QUERY, user_name)
-        uid_f = f_dict
+        master_d = {}
+        is_exists = execute_and_update(master_d, INITIAL_QUERY, user_name)
+        # print("Exists", master_d)
 
-        is_active, f_dict= self._execute_predef_query(ACTIVE_CUST_QUERY, user_name) 
-        uid_f.update(f_dict)
+        is_billed = execute_and_update(master_d, AMT_PAYABLE_QUERY, user_name) 
+        # print("Billed", master_d)
 
-        is_billed, f_dict= self._execute_predef_query(AMT_PAYABLE_QUERY, user_name) 
-        uid_f.update(f_dict)
-
-        status = (is_exists, is_active, is_billed)
+        status = (is_exists, is_billed)
 
         if is_exists and not is_billed:
-            print("<FETCH USERINFO FROM SQL>Manged to find", user_name, "in 基本信息 but not billinfo_淘宝_主表")
-        return is_exists, uid_f, status
+            print("<FETCH USERINFO FROM SQL>Manged to find {} in 基本信息 but not billinfo_淘宝_主表".format(user_name))
+        
+        return status, master_d
 
     def fetch_all_from_sqltable(self,tablename):
         f = self.fetch_all_from_con(tablename)
@@ -302,7 +318,7 @@ class MSSQL_readwriter:
         if not SQL_READ_ENABLED:
             return (matchfound, out)
         table = query.get("table")
-        tb_id_col = query.get("cust_tb_id_col")
+        key_col = query.get("key_col")
         write_vals = query.get("writevals")
         conds = query.get("conditions", "")
 
@@ -313,13 +329,13 @@ class MSSQL_readwriter:
         if DEBUG: print("<PREDEF Q> Searching for {} in {} fetched {} queries".format(uid, table, str(len(f_rows))))
 
         for row in f_rows:
+            key = row.get(key_col,False)
+            if not key: raise Exception("No key found! Table:{}. Key_col:{}".format(table, key_col))
+            entry = {}
             for k, colname in write_vals:
-                if not k in out:
-                    out[k] = []
-                
-                val = row.get(colname, "")
-                if not val == "":
-                    out[k].append(val)
+                entry[k] = row.get(colname, "")
+            
+            out[key] = entry
         
         if len(out) > 0:
             matchfound = True
@@ -342,10 +358,11 @@ asdf = {"alina":{"userID":"小花朵","city":"北京", "首次":"yes"}}
 
 if __name__ == "__main__":
     sqr = MSSQL_readwriter()
-    bl, allnames_qr = sqr._execute_predef_query(USERNAME_QUERY, "")
-    listof = list(allnames_qr.items())
-    po = listof[:10][:10][:10][:10]
-    print(po, "END OF NAMES")
+    # bl, allnames_qr = sqr._execute_predef_query(USERNAME_QUERY, "")
+    # listof = list(allnames_qr.items())
+    # po = listof[:10][:10][:10][:10]
+    # po = sqr.fetch_all_from_con("Billinfo_淘宝_主表", condition="where 淘宝会员名 = 'dreampaopao'")
+    # print(po, "<END>")
     while 1:
         username = input("Please enter a username: ")
         pf = sqr.fetch_user_info_from_sqltable(username)

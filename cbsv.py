@@ -12,7 +12,7 @@ def DEFAULT_CONFUSED():
     return ["不好意思,我听不懂","不好意思,我不明白亲说啥"]
 
 def CHINA_CITIES():
-    cities = ["上海","北京","深圳","杭州","广州", "上海", "成都", "shanghai", "beijing"]
+    cities = ["聊城","上海","北京","深圳","广州","杭州","成都","昆山","苏州","长沙"]
     return cities
 
 # Digits in regex form
