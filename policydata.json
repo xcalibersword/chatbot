@@ -2,9 +2,12 @@
     "COMMENTS":"File to decide state transition logic. Called policies. CONSIDER: Changing from list of pairs to dict",
     "crossroad_policies":{
         "xufei_push_crossroad":[
-            "laokehu_flag",{
-                "yes": "push_xufei",
-                "no": "init"
+            "customer_status",{
+                "Active_Bill": "push_xufei",
+                "Active_NoBill": "push_xufei",
+                "Inactive_Bill": "init",
+                "Inactive_NoBill": "init",
+                "DEFAULT":"init"
             }  
         ],
         "purchase_laoke_crossroad":[
