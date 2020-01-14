@@ -1133,7 +1133,10 @@ class ListPrinter():
         def _write_ls(template, val_list):
             ls_type = template.get("collection")
             if ls_type == "seq":
-                e_temp = template.get("element_template")
+                if len(val_list) <= 1:
+                    e_temp = template.get("single_template")
+                else:
+                    e_temp = template.get("element_template")
                 dlmt = template.get("delimiter")
                 mid_str = ""
                 for row in val_list:
