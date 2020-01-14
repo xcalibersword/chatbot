@@ -11,6 +11,7 @@ from cb_sql import MSSQL_readwriter
 
 
 dbfolder = "userdata"
+SUPER_DEBUG = 0
 DEBUG = 0
 READ_FROM_JSON = 1
 WRITE_TO_JSON = 1
@@ -152,7 +153,7 @@ class DatabaseRunner():
             }
 
             for d_name, val in d.items():
-                print("<MOD DB FETCH> Mod",mod," + ", d_name)
+                if SUPER_DEBUG: print("<MOD DB FETCH> Mod",mod," + ", d_name)
                 if d_name in modlist:                    
                     curr_mod = modlist[d_name]
                     new_key = curr_mod["writeto"]
@@ -183,7 +184,7 @@ class DatabaseRunner():
                     mod[new_key] = outval
                 else:
                     mod[d_name] = val
-            print("<MODIFIED FETCH>", mod)
+            if SUPER_DEBUG: print("<MODIFIED FETCH>", mod)
             return mod
 
         def attach_status(d, status):

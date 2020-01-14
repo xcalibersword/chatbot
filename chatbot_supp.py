@@ -241,7 +241,7 @@ class ReqGatekeeper:
                     info_topup[slotname] = val
                     post_unfilled.remove(slot)
                     if DEBUG: print("<DEFAULT VALS> {} assigned default value: {}".format(slotname, val))
-        if DEBUG: print("<DEFAULT VALS> post top up", info_topup)
+        if SUPER_DEBUG: print("<DEFAULT VALS> post top up", info_topup)
         return (post_unfilled, info_topup)
 
 class Humanizer():
@@ -439,13 +439,12 @@ class InfoVault():
             if chatval in v_subdict:
                 v_info = v_subdict[chatval]
                 entry = {t_key:v_info}
-                # if DEBUG: print("<ADD VAULT INFO> entry",entry,t_key,":",v_info)
                 chatinfo.update(entry)
-        # if DEBUG: print("<ADD VAULT INFO> list:",self.slot_list)
+            return
+
         for s in self.slot_list:
             if s in chatinfo:
-                add_entry(s)
-                
+                add_entry(s)    
         return
 
     def _add_general_info(self, ci):
@@ -510,7 +509,7 @@ class InfoParser():
             grp_num = vs.get("group_pos")
             pv = pos_regex(pattern, grp_num)
             if not pv == "":
-                print("<VAL SLOTS> PV", pv)
+                if DEBUG: print("<VAL SLOTS> PV", pv)
                 wk = vs.get("key")
                 out_dict[wk] = pv
 
@@ -1138,7 +1137,6 @@ class ListPrinter():
                 dlmt = template.get("delimiter")
                 mid_str = ""
                 for row in val_list:
-                    print("GENERATE LS Sequence> Curr row:", row)
                     el = e_temp.format(*row)
                     mid_str = el + dlmt
                 final_str = mid_str[:-1]
@@ -1172,7 +1170,7 @@ class ListPrinter():
             if self._in_templates(entry):
                 ls_dict = self._generate_lsdict(entry, infoval)
                 out.update(ls_dict)
-        print("GENERATE LSDICT> OUT:", out)
+        if SUPER_DEBUG: print("<GENERATE LSDICT> OUT:", out)
         return out
 
 

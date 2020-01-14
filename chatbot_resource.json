@@ -2490,6 +2490,7 @@
             {
                 "collection": "seq",
                 "delimiter": "，",
+                "single_template": "{0}",
                 "element_template": "{0}(¥{1})",
                 "writeto":"ls_bill_name_list"
             },
@@ -2498,8 +2499,6 @@
                 "indexes": [1],
                 "writeto": "ls_bill_total_amt"
             }
-             
-            
         ]
     },
     "vault_info": {

@@ -109,7 +109,8 @@ class StateThreader():
         if UPDATE_STATE_BOOL:
             self.get_curr_thread().update_state(new_state_obj)
 
-        if DEBUG: print("<STATETHREADER>Statestack", self.threadIDstack)
+        # Totally useless atm
+        # if SUPER_DEBUG: print("<STATETHREADER>Statestack", self.threadIDstack)
 
         return UPDATE_STATE_BOOL
 
@@ -251,7 +252,7 @@ class ChatManager:
             return (no_reply, {}, self._get_current_info())
 
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&") # For clarity in terminal     
-        print("Message recieved:",msg)
+        print("<RESPOND TO MESSAGE> Message recieved: ",msg)
         uds, NLP_bd, nums = self._policykeeper_parse(msg)
         
         self.goto_next_state(uds, msg, nums)
@@ -264,7 +265,7 @@ class ChatManager:
         self._post_process(uds, topup)
 
         curr_info = self._get_current_info()
-        print("回复:",reply, "智能理解:", NLP_bd, "信息:", curr_info) # Operational Printout
+        print("回复: \r\n'{}' \r\n智能理解:\r\n{} \r\n信息:{}".format(reply, NLP_bd, curr_info)) # Operational Printout
         return (reply, NLP_bd, curr_info)
 
     def goto_next_state(self, understanding, msg, nums):
@@ -609,12 +610,12 @@ class PolicyKeeper:
                         if SUPER_DEBUG: print("<XROAD POL OVERWRITE> Detail:", detail_name,"Value:", z_val)
                         target = paths.get("DEFAULT")
                     next_sip = self._create_state_obj(target)
-                    if DEBUG: print("<XROAD POL OVERWRITE> new SIP:",next_sip)
+                    if SUPER_DEBUG: print("<XROAD POL OVERWRITE> new SIP:",next_sip)
                     return (True, next_sip)
             if SUPER_DEBUG: print("<XROAD POL OVERWRITE> Detail {} not in curr_info: {}".format(detail_name, curr_info))
             return (False, "")
 
-        if 1: print("<ZPOLXROAD POL OVERWRITE> curr state key:",csk)
+        if DEBUG: print("<XROAD POL OVERWRITE> curr state key:",csk)
 
         if check_zonepolicies(csk):
             zpd = self.XROAD_POLICIES[csk]
@@ -937,14 +938,14 @@ class ReplyGenerator:
                 return random.choice(pulled)
             return pulled
 
-        RF_DEBUG = 1 or SUPER_DEBUG # DEBUG FLAG
+        RF_DEBUG = 0 or SUPER_DEBUG # DEBUG FLAG
         cskey = curr_state["key"]
         rep_ext = {}
         enhanced = _add_listmsgs(info)
         formatDB = self.formatDB["msg_formats"]
 
         def add_txt_enh(key, rawstr):
-            print("RAWSTR",rawstr)
+            if SUPER_DEBUG: print("RAWSTR",rawstr)
             wstr = rawstr.format(**enhanced)
             enhstr = cbsv.conv_numstr(wstr)
             if RF_DEBUG: print("Writing {} to {}".format(rawstr, key))
