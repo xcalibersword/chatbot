@@ -42,7 +42,6 @@ SQL_JSON = {
         "active_customer_query": {
             "COMMENTS": "This might be redundant because exist query looks for this detail already",
             "cust_tb_id_col":"淘宝会员名",
-            "date_col":"最后修改日期",
             "key_col":"最后修改日期",
             "query_key":"active",
             "writevals":[],

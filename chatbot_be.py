@@ -58,9 +58,19 @@ class DatabaseRunner():
             return dobj
 
         def convert_object_to_values(obj):
+            if isinstance(obj, dict):
+                return convert_object_to_values(obj)
+            if isinstance(obj, list):
+                return obj
             obj = decimal_obj_to_float(obj)
             obj = datetime_obj_to_str(obj)
             return obj
+
+        def convert_dict_values(raw_d):
+            pro_d = {}
+            for k, v in raw_d.items():
+                pro_d[k] = convert_object_to_values(v)
+            return pro_d
 
         # Removes the ones with bad cust city
         def filter_inpure_exist_entries(d):
@@ -71,8 +81,8 @@ class DatabaseRunner():
             exceptional_k = "exceptional_case"
             secondary_k = "secondary_shebao"
             deciding_key = "cust_city"
-            
-            valid_vals = CHINA_CITIES()
+            # Because cust_city is filled with other junk and we are only interested in real cities
+            valid_vals = CHINA_CITIES() 
             
             extra_count = 0
             basic_dict_list = list(basic_dict.values())
@@ -80,6 +90,7 @@ class DatabaseRunner():
                 deciding_entry_val = ed_entry.get(deciding_key,"")
                 for v in valid_vals:
                     if v in deciding_entry_val:
+                        print("<FILTER> basic dict entry: ", ed_entry, "DV:",deciding_entry_val)
                         if out == {}:
                             out.update(ed_entry)
                             break
@@ -98,7 +109,8 @@ class DatabaseRunner():
                 outlist = [] 
                 bd_itemlist = list(bd.items())
                 for realname, details in bd_itemlist:
-                    amt_due = details.get("curr_month_amt_due","")
+                    ramt_due = details.get("curr_month_amt_due","")
+                    amt_due = convert_object_to_values(ramt_due)
                     l_entry = (realname, amt_due)
                     outlist.append(l_entry)
                 return outlist
@@ -137,25 +149,33 @@ class DatabaseRunner():
                 }
             }
 
-            for d_name, val in dbf.items():
+            for d_name, val in d.items():
                 print("<MOD DB FETCH> Mod",mod," + ", d_name)
                 if d_name in modlist:                    
                     curr_mod = modlist[d_name]
                     new_key = curr_mod["writeto"]
-                    if curr_mod.get("if_present",False):
-                        outval = curr_mod["if_present"]
+                    ip_flag = curr_mod.get("if_present",False)
+                    if ip_flag:
+                        raw_value = curr_mod["if_present"]
                         if curr_mod.get("keep_og", True):
-                            mod[d_name] = convert_object_to_values(val)
+                            mod[d_name] = val
+                    else:
+                        raw_value = val
 
-                    for regex, output in curr_mod.get("swaps",[]):
-                        if regex in val:
-                            outval = output
-                        else: 
-                            outval = val
+                    # Check if comparison is possible
+                    if isinstance(val, float) or isinstance(val, int):
+                        outval = raw_value
+                    else:
+                        # Check against table and swap values
+                        for regex, swapped_output in curr_mod.get("swaps",[]):
+                            if regex in val:
+                                outval = swapped_output
+                            else: 
+                                outval = raw_value
                     
                     mod[new_key] = outval
                 else:
-                    mod[d_name] = convert_object_to_values(val)
+                    mod[d_name] = val
             print("<MODIFIED FETCH>", mod)
             return mod
 
@@ -163,7 +183,7 @@ class DatabaseRunner():
             # Returns a string the represents the status of the customer
             def judge_status(d, status):
                 exist, bill = status
-                pay_status_key = "员工缴费状态"
+                pay_status_key = "curr_payment_status"
                 valid_status = ["正常缴费", "新进", "新进补缴"]
                 pay_status = d.get(pay_status_key, "")
 
@@ -183,17 +203,15 @@ class DatabaseRunner():
             status_tup = judge_status(d, status)
             d["customer_status"] = status_tup                
         
-        base = filter_inpure_exist_entries(dbf)
+        rbase = filter_inpure_exist_entries(dbf)
         bill_list = billing_to_list(dbf)
-
+        base = convert_dict_values(rbase)
         final = repackage_base_details(base)
         final["bills"] = bill_list
         attach_status(final,status)
 
         return final
 
-        
-              
     # Returns a tuple of (Bool, Dict)
     def fetch_user_info(self, user):
         BLANK_ENTRY = {}
