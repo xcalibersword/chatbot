@@ -107,6 +107,7 @@ test_set = [
     ("其实我是想购房的","query_housing"),
     ("这个会影响购房么？","query_housing"),
     ("落户苏州","luohu"),
+    ("请问你们可以办理上海落户吗","luohu"),
     ("落户可以办理吗","luohu"),
     ("我要交杭州社保落户用的","luohu"),
     ("我不太懂哦","confused"),
@@ -173,8 +174,20 @@ test_set = [
     ("减员是什么意思呀","define"),
     ("你们的公司叫什么名啊","query_company_name"),
     ("然后？","next_step"),
-    ("弄好了哈","inform_done")
+    ("弄好了哈","inform_done"),
+    ("你家生育保险怎么操作","query_shengyubao"),
+    ("生育保险可以代缴吧","query_shengyubao"),
+    ("减员好了吗","query_jianyuan_status"),
+    ("给我退吧","ask_to_jianyuan"),
 ]
+
+def get_unique_intents():
+    out = {}
+    for pair in test_set:
+        NOTUSED, y = pair
+        if y not in out:
+            out[y] = 1
+    return out
 
 def get_test_set():
     test_x = []
@@ -186,5 +199,4 @@ def get_test_set():
     return (test_x, test_y)
 
 if __name__ == "__main__":
-    result = int(0.8655 * len(test_set))
-    print(result, "/",len(test_set))
+    print("You have just run nlp_utils.py!")
