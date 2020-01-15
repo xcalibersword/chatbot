@@ -401,6 +401,13 @@
             "default_target": "inform_region_coverage",
             "replies": []
         },
+        "query_shengyubao":{
+            "key": "query_shengyubao",
+            "default_set": true,
+            "humanify": false,
+            "default_target": "NA",
+            "replies": ["亲，我们不办理生育津贴哦，也不提供任何材料哈"]
+        },
         "query_various_effects": {
             "key": "query_various_effects",
             "default_set": true,
