@@ -229,12 +229,12 @@ embed = Dropout(0.2)(embed)
 embed = BatchNormalization(momentum=0.99)(embed)
 
 # 词窗大小分别为 2, 3, 4, 5
-cnnUnits = [256, 128, 64, 64]
+cnnUnits = [256, 256, 128, 128]
 cnn_activ = 'relu'
 cnn2 = Conv1D(cnnUnits[0], 2, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
 cnn3 = Conv1D(cnnUnits[1], 3, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
 cnn4 = Conv1D(cnnUnits[2], 4, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
-cnn5 = Conv1D(cnnUnits[3], 5, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
+cnn5 = Conv1D(cnnUnits[3], 8, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
 
 # Pool size is the sliding window length.
 # Strides is the number of indices that are moved between each pool sample.
@@ -243,16 +243,17 @@ if DO_POOL:
     # No sense having pool_size bigger than stride because its MaxPool.
     # Having a bigger pool than stride means each max point will obscure the results more.
     # Originally, all were size 4.
-    cnn2 = MaxPooling1D(pool_size=8, strides=8)(cnn2) # 4
+    pool_n = 2
+    cnn2 = MaxPooling1D(pool_size=8*pool_n*2, strides=8*pool_n*2)(cnn2) # 2x2 = 8
     fcnn2 = Flatten()(cnn2)
 
-    cnn3 = MaxPooling1D(pool_size=8, strides=8)(cnn3) # 4
+    cnn3 = MaxPooling1D(pool_size=6*pool_n*2, strides=6*pool_n*2)(cnn3) # 2x3 = 6
     fcnn3 = Flatten()(cnn3)
     
-    cnn4 = MaxPooling1D(pool_size=4, strides=4)(cnn4) # 4
+    cnn4 = MaxPooling1D(pool_size=4*pool_n*2, strides=4*pool_n*2)(cnn4) # 8
     fcnn4 = Flatten()(cnn4)
 
-    cnn5 = MaxPooling1D(pool_size=4, strides=4)(cnn5) # 4
+    cnn5 = MaxPooling1D(pool_size=8*pool_n, strides=8*pool_n)(cnn5) # 5
     fcnn5 = Flatten()(cnn5)
 
     flat = Concatenate(axis=-1)([fcnn2, fcnn3, fcnn4,fcnn5]) # 合并4个模型的输出向量
@@ -290,8 +291,8 @@ model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 cbks = [
     callbacks.TerminateOnNaN(),
-    callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, verbose=1),
-    callbacks.EarlyStopping(monitor='loss', min_delta=0, patience=5, verbose=1, baseline=None, restore_best_weights=True)
+    callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=7, verbose=1),
+    callbacks.EarlyStopping(monitor='loss', min_delta=0, patience=10, verbose=1, baseline=None, restore_best_weights=True)
 ]
 
 model.summary()
