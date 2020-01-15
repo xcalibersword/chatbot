@@ -2631,11 +2631,11 @@
                     "svc_fee": 40,
                     "dual_svc_fee": 80,
                     "shouci_fee": 50,
-                    "pay_deadline": 12,
+                    "pay_deadline": 18,
                     "laoke_pay_deadline": 18,
                     "gongjijin_fee": 482,
                     "bujiao_period": 3,
-                    "xufei_deadline": 10,
+                    "xufei_deadline": 12,
                     "link_sb": "https://item.taobao.com/item.htm?id=598232088077",
                     "link_gjj":"https://item.taobao.com/item.htm?id=598525470715"
                 },
