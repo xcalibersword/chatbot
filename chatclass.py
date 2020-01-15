@@ -598,6 +598,7 @@ class PolicyKeeper:
         def determine_subsequent_sip(curr_info, zpd):
             detail_name, paths = zpd
             # Zone policy
+            default_target = paths.get("DEFAULT",None)
             if detail_name in curr_info:
                 z_val = str(curr_info[detail_name]) # Force value to string
                 if isinstance(z_val, list):
@@ -608,11 +609,18 @@ class PolicyKeeper:
                         target = paths[z_val]
                     else:
                         if SUPER_DEBUG: print("<XROAD POL OVERWRITE> Detail:", detail_name,"Value:", z_val)
-                        target = paths.get("DEFAULT")
+                        target = default_target
                     next_sip = self._create_state_obj(target)
                     if SUPER_DEBUG: print("<XROAD POL OVERWRITE> new SIP:",next_sip)
                     return (True, next_sip)
-            if SUPER_DEBUG: print("<XROAD POL OVERWRITE> Detail {} not in curr_info: {}".format(detail_name, curr_info))
+            else:
+                # Detail is not in info
+                if SUPER_DEBUG: print("<XROAD POL OVERWRITE> Detail {} not in curr_info: {}".format(detail_name, curr_info))
+                if not default_target is None:
+                    next_sip = self._create_state_obj(default_target)
+                    if SUPER_DEBUG: print("<XROAD POL OVERWRITE> DEFAULT new SIP:",next_sip)
+                    return (True, next_sip)
+
             return (False, "")
 
         if DEBUG: print("<XROAD POL OVERWRITE> curr state key:",csk)
