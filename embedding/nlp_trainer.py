@@ -6,11 +6,12 @@ import jieba as jb
 
 from unzipper import get_vector_dict
 from keras.constraints import MaxNorm
+from keras.callbacks import callbacks
 from keras.initializers import Constant, RandomNormal, RandomUniform, glorot_normal, glorot_uniform
-from keras.layers import Concatenate, Dropout, Embedding, LSTM, Dense, Conv1D, Flatten, BatchNormalization, MaxPooling1D
+from keras.layers import Concatenate, Dropout, Embedding, LSTM, Dense, Conv1D, Flatten, BatchNormalization, MaxPooling1D, Reshape, ReLU
 from keras.models import Model, Input
 from keras.optimizers import Adam, RMSprop
-from keras.backend import clear_session
+from keras.backend import clear_session, expand_dims
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences 
 from keras.regularizers import l1,l2
@@ -46,8 +47,8 @@ dataset_fp = "generated_data.csv"
 save_model_name = 'trained.h5'
 
 # Parameters
-max_review_length = 30 #maximum length of the sentence
-embedding_vector_length = 128
+max_review_length = 32 # maximum length of the sentence
+embedding_vector_length = 128 # Note that new/unseen words will have a n sized zero-vector
 max_intents = 150
 
 ### Information preprocessing ###
@@ -56,15 +57,14 @@ with open(dataset_fp, 'r',encoding='gb18030') as f:
     rows = csv.reader(f, delimiter = ',')
     data = []
     for r in rows:
-        if count > 0:
-            data.append(r)
+        data.append(r)
         count += 1
     print("Read {} rows".format(count))
     npdata = np.array(data,dtype=str)
 
 xval = npdata[:,0]
 yval = npdata[:,1]
-yval = np.reshape(yval,(count-1))
+yval = np.reshape(yval,count)
 
 intent_tokenizer = Tokenizer(max_intents,filters="",oov_token=0)
 intent_tokenizer.fit_on_texts(yval)
@@ -225,15 +225,16 @@ print("test xval sample", test_x[0])
 main_input = Input(shape=(max_review_length,), dtype='int32')
 
 embed = my_embedding(main_input)
+embed = Dropout(0.2)(embed)
 embed = BatchNormalization(momentum=0.99)(embed)
 
 # 词窗大小分别为 2, 3, 4, 5
-cnnUnits = 128
-bigCnnUnits = cnnUnits
-cnn2 = Conv1D(cnnUnits, 2, padding='same', strides=1, activation='relu', kernel_regularizer=None)(embed)
-cnn3 = Conv1D(cnnUnits, 3, padding='same', strides=1, activation='relu', kernel_regularizer=None)(embed)
-cnn4 = Conv1D(bigCnnUnits, 4, padding='same', strides=1, activation='relu', kernel_regularizer=None)(embed)
-cnn5 = Conv1D(bigCnnUnits, 5, padding='same', strides=1, activation='relu', kernel_regularizer=None)(embed)
+cnnUnits = [256, 128, 64, 64]
+cnn_activ = 'relu'
+cnn2 = Conv1D(cnnUnits[0], 2, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
+cnn3 = Conv1D(cnnUnits[1], 3, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
+cnn4 = Conv1D(cnnUnits[2], 4, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
+cnn5 = Conv1D(cnnUnits[3], 5, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
 
 # Pool size is the sliding window length.
 # Strides is the number of indices that are moved between each pool sample.
@@ -242,53 +243,67 @@ if DO_POOL:
     # No sense having pool_size bigger than stride because its MaxPool.
     # Having a bigger pool than stride means each max point will obscure the results more.
     # Originally, all were size 4.
-    cnn2 = MaxPooling1D(pool_size=4, strides=4)(cnn2) # 4
+    cnn2 = MaxPooling1D(pool_size=8, strides=8)(cnn2) # 4
     fcnn2 = Flatten()(cnn2)
 
-    cnn3 = MaxPooling1D(pool_size=4, strides=4)(cnn3) # 4
+    cnn3 = MaxPooling1D(pool_size=8, strides=8)(cnn3) # 4
     fcnn3 = Flatten()(cnn3)
     
-    cnn4 = MaxPooling1D(pool_size=6, strides=6)(cnn4) # 6
+    cnn4 = MaxPooling1D(pool_size=4, strides=4)(cnn4) # 4
     fcnn4 = Flatten()(cnn4)
 
-    cnn5 = MaxPooling1D(pool_size=8, strides=8)(cnn5) # 8
+    cnn5 = MaxPooling1D(pool_size=4, strides=4)(cnn5) # 4
     fcnn5 = Flatten()(cnn5)
 
     flat = Concatenate(axis=-1)([fcnn2, fcnn3, fcnn4,fcnn5]) # 合并4个模型的输出向量
     # flat = Concatenate(axis=-1)([fcnn2, fcnn3, fcnn4]) # 合并少数个模型的输出向量
 else:
-    # flat = Concatenate(axis=-1)([cnn2,cnn3,cnn4,cnn5])
-    flat = Concatenate(axis=-1)([cnn2, cnn3, cnn4]) 
+    flat = Concatenate(axis=-1)([cnn2,cnn3,cnn4,cnn5])
+    # flat = Concatenate(axis=-1)([cnn2, cnn3, cnn4]) 
 
-flat = BatchNormalization(momentum=0.99)(flat)
+flat = BatchNormalization(momentum=0.9)(flat)
 flat = Dropout(0.2)(flat)
 
 flat = Dense(units=256, activation='relu')(flat) # 
-flat = Dropout(0.10)(flat)
+flat = Dropout(0.1)(flat)
 
-flat = Dense(units=512, activation='relu')(flat) #
+flat = Dense(units=2048, activation='relu')(flat) # 
+flat = Dropout(0.2)(flat)
 
-outs = Dense(units=num_intents, activation='softmax')(flat)
+# flat = Dense(units=512, activation='relu')(flat) # 
+# flat = Dropout(0.2)(flat)
+
+# LSTM takes forever
+# LSTM_shape = (256, 1)
+# flat = Reshape(LSTM_shape)(flat)
+# flat = LSTM(units=128, activation='tanh', dropout=0.2)(flat) #
+
+outs = Dense(units=num_intents, activation='softmax')(flat) # Sigmoid or softmax?
 model = Model(inputs=main_input, outputs=outs)
 
-# VAl accuracy of 0.94
+# VAl accuracy of 0.94 is good
 
-LEARN_RATE = 1.5e-5 
-optimizer = Adam(learning_rate=LEARN_RATE)
+INITIAL_LEARN_RATE = 5e-4 
+optimizer = Adam(learning_rate=INITIAL_LEARN_RATE)
 # optimizer = RMSprop(learning_rate = 3e-5)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
+
+cbks = [
+    callbacks.TerminateOnNaN(),
+    callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, verbose=1),
+    callbacks.EarlyStopping(monitor='loss', min_delta=0, patience=5, verbose=1, baseline=None, restore_best_weights=True)
+]
 
 model.summary()
 
 test_set = (test_x, test_y)
 # Can't have validation split because too many intents.
-model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=16,shuffle=True,validation_data=test_set) 
+model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=16,shuffle=True,validation_data=test_set,callbacks=cbks) 
 
 # Post Training
 model.save(save_model_name)
 print("This Model has been saved! Rejoice")
 
-# test_in = ["我在苏州的不是首次","我是要付社保行吗","哦了解了", "我已经填好了", "我拍好了", "流程到底是怎么样的？", "苏州社保可以交吗", "可以交昆山社保吗", "交卡行吗哦", "代缴社保", "落户上海", "上海社保可以吗", "这个我不太懂哦","社保可以补交吗","公积金可以补交吗","需要我提供什东西吗","要啥材料吗","社保卡怎么弄"]
 
 # ti = myTokenize(test_in)
 # input_array = arrayWordToInt(ti,word_index)

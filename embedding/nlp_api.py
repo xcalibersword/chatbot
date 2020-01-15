@@ -40,7 +40,7 @@ def read_json(json_filename):
 
 class Predictor:
     def __init__(self, mf = model_filename):
-        self.max_review_length = 30
+        self.max_review_length = 32
         print("Initalizing Predictor...")
         self.pmodel = load_model(mf)
         self.pmodel.summary()
@@ -204,7 +204,8 @@ class Predictor:
 
 if MAIN:
     print("Please enter the model filename")
-    nmf = input()
+    # nmf = input()
+    nmf = ""
     if len(nmf) < 2:
         nmf = "trained.h5"
         print("No name given,using", nmf)
