@@ -229,38 +229,26 @@ embed = Dropout(0.2)(embed)
 embed = BatchNormalization(momentum=0.99)(embed)
 
 # 词窗大小分别为 2, 3, 4, 5
-cnnUnits = [256, 256, 128, 128]
+base_units = 64
+cnnUnits_multi = [2, 2, 2, 2]
+pool_multi = [4, 4, 4, 4]
+filter_sizes = [3, 4, 6, 8] # Original was 3,4,5
 cnn_activ = 'relu'
-cnn2 = Conv1D(cnnUnits[0], 2, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
-cnn3 = Conv1D(cnnUnits[1], 3, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
-cnn4 = Conv1D(cnnUnits[2], 4, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
-cnn5 = Conv1D(cnnUnits[3], 8, padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
 
 # Pool size is the sliding window length.
 # Strides is the number of indices that are moved between each pool sample.
-DO_POOL = True
-if DO_POOL:
-    # No sense having pool_size bigger than stride because its MaxPool.
-    # Having a bigger pool than stride means each max point will obscure the results more.
-    # Originally, all were size 4.
-    pool_n = 2
-    cnn2 = MaxPooling1D(pool_size=8*pool_n*2, strides=8*pool_n*2)(cnn2) # 2x2 = 8
-    fcnn2 = Flatten()(cnn2)
+# No sense having pool_size bigger than stride because its MaxPool.
+# Having a bigger pool than stride means each max point will obscure the results more.
+# Originally, all were size 4.
+fcnns = []
+for i in range(0,4):
+    cl = Conv1D(cnnUnits_multi[i]*base_units, filter_sizes[i], padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
+    pool_unit = int(cnnUnits_multi[i]*pool_multi[i])
+    pl = MaxPooling1D(pool_size=pool_unit, strides=pool_unit)(cl)
+    fl = Flatten()(pl)
+    fcnns.append(fl)
 
-    cnn3 = MaxPooling1D(pool_size=6*pool_n*2, strides=6*pool_n*2)(cnn3) # 2x3 = 6
-    fcnn3 = Flatten()(cnn3)
-    
-    cnn4 = MaxPooling1D(pool_size=4*pool_n*2, strides=4*pool_n*2)(cnn4) # 8
-    fcnn4 = Flatten()(cnn4)
-
-    cnn5 = MaxPooling1D(pool_size=8*pool_n, strides=8*pool_n)(cnn5) # 5
-    fcnn5 = Flatten()(cnn5)
-
-    flat = Concatenate(axis=-1)([fcnn2, fcnn3, fcnn4,fcnn5]) # 合并4个模型的输出向量
-    # flat = Concatenate(axis=-1)([fcnn2, fcnn3, fcnn4]) # 合并少数个模型的输出向量
-else:
-    flat = Concatenate(axis=-1)([cnn2,cnn3,cnn4,cnn5])
-    # flat = Concatenate(axis=-1)([cnn2, cnn3, cnn4]) 
+flat = Concatenate(axis=-1)(fcnns) # 合并4个模型的输出向量
 
 flat = BatchNormalization(momentum=0.9)(flat)
 flat = Dropout(0.2)(flat)
@@ -284,14 +272,14 @@ model = Model(inputs=main_input, outputs=outs)
 
 # VAl accuracy of 0.94 is good
 
-INITIAL_LEARN_RATE = 5e-4 
+INITIAL_LEARN_RATE = 4e-4 
 optimizer = Adam(learning_rate=INITIAL_LEARN_RATE)
 # optimizer = RMSprop(learning_rate = 3e-5)
 model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
 
 cbks = [
     callbacks.TerminateOnNaN(),
-    callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=7, verbose=1),
+    callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=7, verbose=1),
     callbacks.EarlyStopping(monitor='loss', min_delta=0, patience=10, verbose=1, baseline=None, restore_best_weights=True)
 ]
 
