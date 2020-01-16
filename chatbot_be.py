@@ -240,8 +240,8 @@ class DatabaseRunner():
             self.database[user] = ndic
             return found
 
+        found_in_sql = _fetch_from_SQL(user)
         if not user in self.database:
-            found_in_sql = _fetch_from_SQL(user)
             if not found_in_sql:
                 if READ_FROM_JSON:
                     _fetch_from_JSON(user)
