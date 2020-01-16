@@ -314,6 +314,8 @@ def cleanup_rawtext(rawText):
     return cleanText
 
 def get_customer_id_from_history(self_id,rawText):
+    hl = len(rawText)
+    print("HISTORY length{}".format(hl))
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     BLANKID = ""
     custid = BLANKID
@@ -324,10 +326,10 @@ def get_customer_id_from_history(self_id,rawText):
                 continue
             else:
                 custid = get_pure_customer_id(date_time_pattern, sent)
-                if not custid == BLANKID:
+                if not custid == BLANKID or custid == " ":
                     break
     
-    print("<GET CUSTOMER ID> Got Customer ID:", custid)
+    print("<GET CUSTOMER ID> Got Customer ID: '{}'".format(custid))
     return custid
 
 def get_id_and_query(cW,textList):
@@ -406,7 +408,7 @@ def check_new_message(cW):
 def read_history(cW,bot):
     print('<HISTORY> Reading chat history')
     history = mine_chat_text(cW)
-    cust_QN_ID = get_customer_id_from_history(cW.userID,history)
+    cust_QN_ID = get_customer_id_from_history(cW.userID, history)
     mhist = get_only_messages(history,cW)
     bot.parse_transferred_messages(cust_QN_ID, mhist)
     return 
@@ -489,12 +491,13 @@ def main(cW,bot,SeekImagePath,mode,cycle_delay):
             check_counts = 0
 
         if no_history or newchat:
-            read_history(cW,bot)
+            read_history(cW, bot)
             GLOBAL["last_cust_id"] = custID
             GLOBAL["got_new_message"] = True
             if newchat: continue
         
         if GLOBAL["got_new_message"]:
+            print("<REPLYING TO MESSAGE>")
             reply_template = bot.get_bot_reply(custID,query) # Gets a tuple of 3 things
             reply = reply_template[0]
             GLOBAL["last_bot_reply"] = reply
