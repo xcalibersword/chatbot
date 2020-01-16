@@ -392,9 +392,8 @@ def mine_chat_text(cW):
     select_copy()
     return getRawText()
 
-def check_new_message(cW):
+def check_new_message(rawText):
     print('Checking for new messages...')
-    rawText = mine_chat_text(cW)
     # print("*"*10+"Copied"+"*"*10)
     # print(rawText)
     processed_text_list = cleanup_rawtext(rawText)
@@ -405,11 +404,10 @@ def check_new_message(cW):
     return query, cust_QN_ID
 
 # Returns nothing. Updates bot internal state.
-def read_history(cW,bot):
+def read_history(cW,bot,history_text):
     print('<HISTORY> Reading chat history')
-    history = mine_chat_text(cW)
     cust_QN_ID = get_customer_id_from_history(cW.userID, history)
-    mhist = get_only_messages(history,cW)
+    mhist = get_only_messages(history_text,cW)
     bot.parse_transferred_messages(cust_QN_ID, mhist)
     return 
 
@@ -480,7 +478,9 @@ def main(cW,bot,SeekImagePath,mode,cycle_delay):
     check_counts = 0
     GLOBAL["last_cust_id"] = ""
     while True:
-        query, custID = check_new_message(cW)
+        rawText = mine_chat_text(cW)
+
+        query, custID = check_new_message(rawText)
 
         no_history = is_new_chat(custID) # Mainly to trigger history check on first chat
         
@@ -491,10 +491,9 @@ def main(cW,bot,SeekImagePath,mode,cycle_delay):
             check_counts = 0
 
         if no_history or newchat:
-            read_history(cW, bot)
+            read_history(cW, bot,rawText)
             GLOBAL["last_cust_id"] = custID
             GLOBAL["got_new_message"] = True
-            if newchat: continue
         
         if GLOBAL["got_new_message"]:
             print("<REPLYING TO MESSAGE>")
