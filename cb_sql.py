@@ -314,6 +314,10 @@ class MSSQL_readwriter:
     def _execute_predef_query(self, query, uid):
         matchfound = False
         out = {}
+
+        if uid == "" or uid == " ":
+            return (matchfound, out)
+
         if not SQL_READ_ENABLED:
             return (matchfound, out)
         table = query.get("table")

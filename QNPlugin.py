@@ -224,22 +224,6 @@ def get_pure_customer_id(dtp, line):
     print("Got customer ID: {}".format(cust_id))
     return cust_id
 
-def get_customer_id_from_history(self_id,rawText):
-    date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
-    custid = ""
-    for sent in rawText:
-        if re.search(date_time_pattern,sent):
-            if self_sent_message(self_id, sent):
-                # Contains Self ID
-                continue
-            else:
-     
-                custid = get_pure_customer_id(date_time_pattern, sent)
-                break
-    
-    if custid == "": print("<GET CUSTOMER ID> Cannot find Customer ID")
-    return custid
-
 
 def remove_QN_fluff(txt):
     regex_fluff_list = [
@@ -329,8 +313,24 @@ def cleanup_rawtext(rawText):
     cleanText = local_remove_QN_fluff(cleanText)
     return cleanText
 
-def get_id_and_query(cW,textList):
+def get_customer_id_from_history(self_id,rawText):
+    date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
+    BLANKID = ""
+    custid = BLANKID
+    for sent in rawText:
+        if re.search(date_time_pattern,sent):
+            if self_sent_message(self_id, sent):
+                # Contains Self ID
+                continue
+            else:
+                custid = get_pure_customer_id(date_time_pattern, sent)
+                if not custid == BLANKID:
+                    break
     
+    if custid == "": print("<GET CUSTOMER ID> Cannot find Customer ID")
+    return custid
+
+def get_id_and_query(cW,textList):
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     recentText = textList[:100] # Limit to save memory
     self_name = cW.get_userID()
