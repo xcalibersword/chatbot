@@ -313,20 +313,20 @@ def cleanup_rawtext(rawText):
     cleanText = local_remove_QN_fluff(cleanText)
     return cleanText
 
-def get_customer_id_from_history(self_id,rawText):
-    hl = len(rawText)
+def get_customer_id_from_history(self_id,ptl):
+    hl = len(ptl)
     print("HISTORY length{}".format(hl))
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     BLANKID = ""
     custid = BLANKID
-    for sent in rawText:
+    for sent in ptl:
         if re.search(date_time_pattern,sent):
             if self_sent_message(self_id, sent):
                 # Contains Self ID
                 continue
             else:
                 custid = get_pure_customer_id(date_time_pattern, sent)
-                if not custid == BLANKID or custid == " ":
+                if not custid == BLANKID:
                     break
     
     print("<GET CUSTOMER ID> Got Customer ID: '{}'".format(custid))
@@ -392,45 +392,37 @@ def mine_chat_text(cW):
     select_copy()
     return getRawText()
 
-def check_new_message(rawText):
+def check_new_message(ptl):
     print('Checking for new messages...')
     # print("*"*10+"Copied"+"*"*10)
     # print(rawText)
-    processed_text_list = cleanup_rawtext(rawText)
-    processed_text_list.reverse()
 
-    query, cust_QN_ID = get_id_and_query(cW,processed_text_list)
+    query, cust_QN_ID = get_id_and_query(cW,ptl)
     print("Customer ID: {} Query: {}".format(cust_QN_ID, query))
     return query, cust_QN_ID
 
 # Returns nothing. Updates bot internal state.
-def read_history(cW,bot,history_text):
+def read_history(cW, bot, ptl):
     print('<HISTORY> Reading chat history')
-    cust_QN_ID = get_customer_id_from_history(cW.userID, history)
-    mhist = get_only_messages(history_text,cW)
+    cust_QN_ID = get_customer_id_from_history(cW.userID, ptl)
+    mhist = get_only_messages(ptl,cW)
     bot.parse_transferred_messages(cust_QN_ID, mhist)
     return 
 
 def get_only_messages(hist,cW):
     historyLimit = 500
     history = hist[:historyLimit]
-    curr_text = ""
+    curr_query = ""
     out = []
     date_time_pattern = re.compile(r"\d*-\d*-\d* \d{2}:\d{2}:\d{2}")
     for sent in history:
         if re.search(date_time_pattern,sent):
             # Name line
-            # CHECK LEFT SIDE
-            if not self_sent_message(cW.get_userID(),sent):
-                # If not own ID then it must be Customer ID
-                # custid = re.sub(date_time_pattern,"",sent)
-                # querytime = re.search(date_time_pattern,sent).group(0)
-                out.append(curr_text)
-            
-            curr_text = ""
+            out.append(curr_query)            
+            curr_query = ""
         else:
             # Text line
-            curr_text = collect_texts(curr_text, sent) # Collect messages
+            curr_query = collect_texts(curr_query, sent) # Collect messages
     return out
 
 #insert image path here for the series of place for the OCR to click on
@@ -474,13 +466,24 @@ def select_chat_input_box(cW):
 def is_new_chat(cid):
     return not (cid == GLOBAL["last_cust_id"])
 
+def get_processed_textlist(cW):
+    rawText = mine_chat_text(cW)
+    _ptl = _raw_to_ptl(rawText)
+    return _ptl
+
+def _raw_to_ptl(raw_text):
+    processed_text_list = cleanup_rawtext(raw_text)
+    processed_text_list.reverse()
+    return processed_text_list
+
 def main(cW,bot,SeekImagePath,mode,cycle_delay): 
     check_counts = 0
     GLOBAL["last_cust_id"] = ""
     while True:
-        rawText = mine_chat_text(cW)
 
-        query, custID = check_new_message(rawText)
+        processed_text_list = get_processed_textlist(cW)
+
+        query, custID = check_new_message(processed_text_list)
 
         no_history = is_new_chat(custID) # Mainly to trigger history check on first chat
         
@@ -491,7 +494,7 @@ def main(cW,bot,SeekImagePath,mode,cycle_delay):
             check_counts = 0
 
         if no_history or newchat:
-            read_history(cW, bot,rawText)
+            read_history(cW, bot, processed_text_list)
             GLOBAL["last_cust_id"] = custID
             GLOBAL["got_new_message"] = True
         
