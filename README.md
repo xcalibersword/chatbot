@@ -1,7 +1,7 @@
 > # **Project Q!i@a#n$N%i^u Chatbot**
 
 ## Project Dependencies
-- tensorflow 1.14
+- tensorflow (2.0.0)
 - pywin32
 - Jpype1
 - jieba
@@ -10,7 +10,7 @@
 - pymssql<3.0
 - aiohttp
 - python-socketio
-- JAVA VERSION
+- Java >8
 - jdk 12.0.2
 
 ## Key Features to be built for
