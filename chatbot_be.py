@@ -241,13 +241,13 @@ class DatabaseRunner():
             return found
 
         if not user in self.database:
-            success = _fetch_from_SQL(user)
-            if not success:
+            found_in_sql = _fetch_from_SQL(user)
+            if not found_in_sql:
                 if READ_FROM_JSON:
                     _fetch_from_JSON(user)
 
         found = not self.database[user] == BLANK_ENTRY
-        return (found, self.database[user])
+        return (found_in_sql, self.database[user])
 
     def trigger_backup(self):
         if self.timer_on:

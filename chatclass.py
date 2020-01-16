@@ -882,11 +882,11 @@ class DetailManager:
 
     # Checks with DB Runner for if the User is found. Writes to the specified slot.
     def check_database_for_user(self, userID):
-        found, prev_info = self.dbrunner.fetch_user_info(userID)
+        found_in_sql, prev_info = self.dbrunner.fetch_user_info(userID)
         find_protocol = self.db_protocol.get("_on_find")
         slotname = find_protocol.get("slotname")
 
-        if found:
+        if found_in_sql:
             slotvalue = find_protocol.get("on_true")
         else:
             slotvalue = find_protocol.get("on_false")
