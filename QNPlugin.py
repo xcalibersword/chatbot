@@ -327,7 +327,7 @@ def get_customer_id_from_history(self_id,rawText):
                 if not custid == BLANKID:
                     break
     
-    if custid == "": print("<GET CUSTOMER ID> Cannot find Customer ID")
+    print("<GET CUSTOMER ID> Got Customer ID:", custid)
     return custid
 
 def get_id_and_query(cW,textList):
