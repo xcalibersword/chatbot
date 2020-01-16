@@ -226,27 +226,22 @@ class DatabaseRunner():
         def _fetch_from_JSON(user):
             # self.database reflects the entire json database
             if not user in self.database:
-                self.database[user] = {}
+                # Create empty entry for new user
+                self.database[user] = BLANK_ENTRY
+            return
 
         def _fetch_from_SQL(user):
-            # Create empty entry for new user
             status, fetch = self.SQLrw.fetch_user_info_from_sqltable(user)
             found = status[0] # (exists, has bill)
-
             if found:
                 ndic = self.repackage_sql_fetched(fetch, status)
+                self.database[user] = ndic
             else:
-                ndic = {}
-            self.database[user] = ndic
+                _fetch_from_JSON(user)
+
             return found
 
         found_in_sql = _fetch_from_SQL(user)
-        if not user in self.database:
-            if not found_in_sql:
-                if READ_FROM_JSON:
-                    _fetch_from_JSON(user)
-
-        found = not self.database[user] == BLANK_ENTRY
         return (found_in_sql, self.database[user])
 
     def trigger_backup(self):
