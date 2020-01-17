@@ -1000,6 +1000,7 @@
             "terminal_state": true,
             "humanify":false,
             "calcs": [
+                "get_payment_deadline_date",
                 "format_specified_month",
                 "flag_normal_pay_cmi",
                 "flag_bujiao_month_cmi"
@@ -1126,7 +1127,10 @@
             "thread": "t_pai",
             "terminal_state": true,
             "req_info": [["city","city"],["purchase_type","DEFAULT_SV"]],
-            "calcs":["flag_bill_settled"],
+            "calcs":[
+                "get_payment_deadline_date",
+                "flag_bill_settled"
+            ],
             "replies": ["{rep_ext[finish_payment_info]}"]
         }
     },
@@ -1255,7 +1259,7 @@
                 ],
                 "lookfor": [
                     "city_district",
-                    ["city_info",["pay_deadline"]]
+                    "payment_deadline_date"
                 ],
                 "if_value": {
                     "city_district": {
@@ -1674,12 +1678,17 @@
                 ],
                 "lookfor": [
                     "city_district",
-                    ["city_info",["pay_deadline"]]
+                    ["city_info",[
+                        "laoke_pay_deadline",
+                        "xinke_pay_deadline"
+                        ]
+                    ],
+                    "payment_deadline_date"
                 ],
                 "if_value": {
                     "city_district":{
                         "苏州市区": "每月10日前拍下次月费用，最晚不能超过20号，老客户20号前未付款系统自动减员。凡是超出时间未续费的客户，我司有权利停止参保，未及时续费造成损失由客户个人承担。",
-                        "DEFAULT":"{city_district}最好在{city_info[pay_deadline]}号前拍下宝贝，在小程序上提交参保资料哦"
+                        "DEFAULT":"{city_district}最好在{payment_deadline_date}号前拍下宝贝，在小程序上提交参保资料哦"
                     }
                 }
 
@@ -1897,6 +1906,22 @@
                 }
             }
         },
+        "get_payment_deadline_date":{
+            "writeto": "payment_deadline_date",
+            "persist_value": true,
+            "type": "tree",
+            "req_vars":[
+                "laokehu_flag",
+                "city_info.xinke_pay_deadline",
+                "city_info.laoke_pay_deadline"
+            ],
+            "search_tree": {
+                "laokehu_flag": {
+                    "yes": ["city_info.laoke_pay_deadline"],
+                    "no": ["city_info.xinke_pay_deadline"]
+                }   
+            }
+        },
         "format_specified_month":{
             "writeto":"spec_month",
             "persist_value": true,
@@ -2018,7 +2043,7 @@
                 "state_month",
                 "ss_purchase_for_month",
                 "state_curr_day",
-                "city_info.pay_deadline"
+                "payment_deadline_date"
             ],
             "steps": {
                 "1,isgreater": [
@@ -2030,7 +2055,7 @@
                     "w_is_this_month"
                 ],
                 "3,isgreater":[
-                    ["state_curr_day","pay_deadline"],
+                    ["state_curr_day","payment_deadline_date"],
                     "w_past_date"
                 ],
                 "4,sub":[
@@ -2545,7 +2570,7 @@
                     "svc_fee": 40,
                     "dual_svc_fee": 80,
                     "shouci_fee": 50,
-                    "pay_deadline": 15,
+                    "xinke_pay_deadline": 15,
                     "pay_deadline_weekday_only": true,
                     "laoke_pay_deadline": 26,
                     "gongjijin_fee": 338,
@@ -2565,7 +2590,7 @@
                     "svc_fee": 40,
                     "dual_svc_fee": 80,
                     "shouci_fee": 50,
-                    "pay_deadline": 18,
+                    "xinke_pay_deadline": 18,
                     "laoke_pay_deadline": 24,
                     "gongjijin_fee": 498,
                     "bujiao_period": 3,
@@ -2585,7 +2610,7 @@
                     "svc_fee": 40,
                     "dual_svc_fee": 80,
                     "shouci_fee": 50,
-                    "pay_deadline": 18,
+                    "xinke_pay_deadline": 18,
                     "laoke_pay_deadline": 24,
                     "bujiao_period": 3,
                     "xufei_deadline": 15,
@@ -2603,7 +2628,7 @@
                     "svc_fee": 40,
                     "dual_svc_fee": 80,
                     "shouci_fee": 50,
-                    "pay_deadline": 22,
+                    "xinke_pay_deadline": 22,
                     "laoke_pay_deadline": 24,
                     "gongjijin_fee": 540,
                     "bujiao_period": 3,
@@ -2622,7 +2647,7 @@
                     "svc_fee": 40,
                     "dual_svc_fee": 80,
                     "shouci_fee": 50,
-                    "pay_deadline": 10,
+                    "xinke_pay_deadline": 10,
                     "laoke_pay_deadline": 14,
                     "gongjijin_fee": 540,
                     "bujiao_period": 2,
@@ -2643,7 +2668,7 @@
                     "svc_fee": 40,
                     "dual_svc_fee": 80,
                     "shouci_fee": 50,
-                    "pay_deadline": 18,
+                    "xinke_pay_deadline": 18,
                     "laoke_pay_deadline": 14,
                     "gongjijin_fee": 482,
                     "bujiao_period": 3,
@@ -2662,7 +2687,7 @@
                     "svc_fee": 40,
                     "dual_svc_fee": 80,
                     "shouci_fee": 50,
-                    "pay_deadline": 10,
+                    "xinke_pay_deadline": 10,
                     "laoke_pay_deadline": 12,
                     "gongjijin_fee": 100,
                     "bujiao_period": 0,
@@ -2682,7 +2707,7 @@
                     "svc_fee": 40,
                     "dual_svc_fee": 80,
                     "shouci_fee": 50,
-                    "pay_deadline": 10,
+                    "xinke_pay_deadline": 10,
                     "laoke_pay_deadline": 14,
                     "bujiao_period": 1,
                     "xufei_deadline": 10,
@@ -2701,7 +2726,7 @@
                     "dual_svc_fee": 80,
                     "shouci_fee": 50,
                     "bujiao_period": 1,
-                    "pay_deadline": 12,
+                    "xinke_pay_deadline": 12,
                     "laoke_pay_deadline": 14,
                     "gongjijin_fee": 214,
                     "xufei_deadline": 10,
@@ -2719,7 +2744,7 @@
                     "svc_fee": 60,
                     "dual_svc_fee": 80,
                     "shouci_fee": 50,
-                    "pay_deadline": 12,
+                    "xinke_pay_deadline": 12,
                     "laoke_pay_deadline": 15,
                     "bujiao_period": 6,
                     "gongjijin_fee": 472,
@@ -2731,7 +2756,7 @@
                     "gongjijin_fee":316.0,
                     "xufei_deadline": 10,
                     "bujiao_period": 3,
-                    "pay_deadline": 10,
+                    "xinke_pay_deadline": 10,
                     "laoke_pay_deadline": 12,
                     "svc_fee": 40,
                     "dual_svc_fee": 80,
