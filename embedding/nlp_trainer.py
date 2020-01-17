@@ -8,13 +8,14 @@ from unzipper import get_vector_dict
 from keras.constraints import MaxNorm
 from keras.callbacks import callbacks
 from keras.initializers import Constant, RandomNormal, RandomUniform, glorot_normal, glorot_uniform
+from keras.losses import categorical_crossentropy
 from keras.layers import Concatenate, Dropout, Embedding, LSTM, Dense, Conv1D, Flatten, BatchNormalization, MaxPooling1D, Reshape, ReLU
 from keras.models import Model, Input
 from keras.optimizers import Adam, RMSprop
 from keras.backend import clear_session, expand_dims
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences 
-from keras.regularizers import l1,l2
+from keras.regularizers import l1, l2, l1_l2
 from keras.utils import to_categorical
 from nlp_utils import preprocess_sequence, postprocess_sequence, get_test_set
 
@@ -202,8 +203,12 @@ test_y = intents_to_categorical(rawtest_y)
 save_to_json("xval_man_tokens.json",str(word_index))
 
 reg = l2(0.01)
+reg_2 = l1_l2()
 # embed_init = RandomUniform(seed=313)
 embed_init = RandomUniform(seed=15)
+
+# Activity reg deals with outputs
+# Embeddings regs deals with hidden values
 
 my_embedding = Embedding(
     num_words,
@@ -211,6 +216,7 @@ my_embedding = Embedding(
     embeddings_initializer = embed_init,
     activity_regularizer = reg,
     embeddings_constraint = MaxNorm(max_value=2,axis=0),
+    embeddings_regularizer = None,
     input_length=max_review_length,
     trainable = True
     )
@@ -230,9 +236,18 @@ embed = BatchNormalization(momentum=0.99)(embed)
 
 # 词窗大小分别为 2, 3, 4, 5
 base_units = 64
-cnnUnits_multi = [2, 2, 2, 2]
-pool_multi = [4, 4, 4, 4]
-filter_sizes = [3, 4, 6, 8] # Original was 3,4,5
+three = False
+if three:
+    cnnUnits_multi = [2, 2, 2] # Best was 2, 2, 2, 2
+    pool_multi = [4, 4, 4] # Best was 4, 4, 4, 4
+    filter_sizes = [4, 6, 8] # Original was 3,4,5. Best was 3, 4, 6, 8
+
+else:
+    cnnUnits_multi = [2, 2, 2, 2] # Best was 2, 2, 2, 2
+    pool_multi = [4, 4, 4, 4] # Best was 4, 4, 4, 4
+    filter_sizes = [3, 4, 5, 8] # Original was 3,4,5. Best was 3, 4, 6, 8
+# filter_sizes = [4, 6, 8, 10]
+
 cnn_activ = 'relu'
 
 # Pool size is the sliding window length.
@@ -241,7 +256,7 @@ cnn_activ = 'relu'
 # Having a bigger pool than stride means each max point will obscure the results more.
 # Originally, all were size 4.
 fcnns = []
-for i in range(0,4):
+for i in range(len(filter_sizes)):
     cl = Conv1D(cnnUnits_multi[i]*base_units, filter_sizes[i], padding='same', strides=1, activation=cnn_activ, kernel_regularizer=None)(embed)
     pool_unit = int(cnnUnits_multi[i]*pool_multi[i])
     pl = MaxPooling1D(pool_size=pool_unit, strides=pool_unit)(cl)
@@ -249,14 +264,13 @@ for i in range(0,4):
     fcnns.append(fl)
 
 flat = Concatenate(axis=-1)(fcnns) # 合并4个模型的输出向量
-
-flat = BatchNormalization(momentum=0.9)(flat)
 flat = Dropout(0.2)(flat)
+flat = BatchNormalization(momentum=0.99)(flat)
 
 flat = Dense(units=256, activation='relu')(flat) # 
-flat = Dropout(0.1)(flat)
+# flat = Dropout(0.1)(flat)
 
-flat = Dense(units=2048, activation='relu')(flat) # 
+flat = Dense(units=2048, activation='relu')(flat) # Best was 2048
 flat = Dropout(0.2)(flat)
 
 # flat = Dense(units=512, activation='relu')(flat) # 
@@ -270,16 +284,14 @@ flat = Dropout(0.2)(flat)
 outs = Dense(units=num_intents, activation='softmax')(flat) # Sigmoid or softmax?
 model = Model(inputs=main_input, outputs=outs)
 
-# VAl accuracy of 0.94 is good
-
-INITIAL_LEARN_RATE = 4e-4 
+INITIAL_LEARN_RATE = 10e-5 
 optimizer = Adam(learning_rate=INITIAL_LEARN_RATE)
 # optimizer = RMSprop(learning_rate = 3e-5)
-model.compile(optimizer, 'categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer, loss=categorical_crossentropy(label_smoothing = 0.005), metrics=['accuracy'])
 
 cbks = [
     callbacks.TerminateOnNaN(),
-    callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=7, verbose=1),
+    callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, verbose=1),
     callbacks.EarlyStopping(monitor='loss', min_delta=0, patience=10, verbose=1, baseline=None, restore_best_weights=True)
 ]
 
@@ -287,7 +299,8 @@ model.summary()
 
 test_set = (test_x, test_y)
 # Can't have validation split because too many intents.
-model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=16,shuffle=True,validation_data=test_set,callbacks=cbks) 
+# Val accuracy of 0.94 is good
+model.fit(x=embed_xvals,y=cat_yval,epochs=100,verbose=1,validation_split=0.0,batch_size=25,shuffle=True,validation_data=test_set,callbacks=cbks) 
 
 # Post Training
 model.save(save_model_name)
