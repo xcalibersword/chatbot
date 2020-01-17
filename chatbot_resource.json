@@ -219,6 +219,7 @@
         "query_delay_fahuo":{
             "key":"query_delay_fahuo",
             "default_set": true,
+            "humanify": false,
             "default_target": "SAME_STATE",
             "replies":["不可以哦亲，我们在参保成功后，就会发货哦"]
         },
