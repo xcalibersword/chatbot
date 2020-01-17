@@ -276,6 +276,18 @@
             "default_target": "settlement_laoke_crossroad",
             "replies": []
         },
+        "query_jianyuan_status":{
+            "key": "query_jianyuan_status",
+            "default_set": true,
+            "default_target": "complication_crossroad",
+            "replies": []
+        },
+        "ask_to_jianyuan":{
+            "key": "ask_to_jianyuan",
+            "default_set": true,
+            "default_target": "complication_crossroad",
+            "replies": []
+        },
         "query_multiple_locations":{
             "key": "info_multiple_locations",
             "default_set": true,
@@ -2632,7 +2644,7 @@
                     "dual_svc_fee": 80,
                     "shouci_fee": 50,
                     "pay_deadline": 18,
-                    "laoke_pay_deadline": 18,
+                    "laoke_pay_deadline": 14,
                     "gongjijin_fee": 482,
                     "bujiao_period": 3,
                     "xufei_deadline": 12,
